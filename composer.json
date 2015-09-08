@@ -1,0 +1,48 @@
+{
+    "name": "cloudcreativity/laravel-json-api",
+    "description": "JSON API (jsonapi.org) support for Laravel applications.",
+    "keywords": [
+        "jsonapi.org",
+        "json-api",
+        "jsonapi",
+        "cloudcreativity",
+        "json",
+        "api",
+        "laravel"
+    ],
+    "homepage": "https://github.com/cloudcreativity/laravel-json-api",
+    "support": {
+        "issues": "https://github.com/cloudcreativity/laravel-json-api/issues"
+    },
+    "license": "Apache-2.0",
+    "authors": [
+        {
+            "name": "Cloud Creativity Ltd",
+            "email": "info@cloudcreativity.co.uk"
+        }
+    ],
+    "require": {
+        "php": ">=5.5.0",
+        "neomerx/json-api": "^0.5.11",
+        "illuminate/support": "^5.0",
+        "cloudcreativity/json-api": "dev-feature-config",
+        "illuminate/routing": "^5.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^4.7"
+    },
+    "minimum-stability": "stable",
+    "autoload": {
+        "psr-4": {
+            "CloudCreativity\\JsonApi\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "CloudCreativity\\JsonApi\\": "test/"
+        }
+    },
+    "config": {
+        "bin-dir": "bin"
+    }
+}
