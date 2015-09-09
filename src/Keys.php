@@ -1,16 +1,16 @@
 <?php
 
-namespace CloudCreativity\JsonApi\Config;
+namespace CloudCreativity\JsonApi;
 
 /**
  * Class Config
  * @package CloudCreativity\JsonApi
  */
-class Config
+class Keys
 {
 
-    /** The config file name. */
-    const KEY = 'json-api';
+    /** The config file name, and the name of the route middleware. */
+    const NAME = 'json-api';
 
     /** If a true boolean, Json Api support will be initialised for the entire application. */
     const IS_GLOBAL = 'is-global';
@@ -25,5 +25,5 @@ class Config
     const CODEC_MATCHER = 'codec-matcher';
 
     /** The key for Exception Render Container config */
-    const EXCEPTION_RENDER_CONTAINER = 'exception-render-container';
+    const EXCEPTIONS = 'exceptions';
 }

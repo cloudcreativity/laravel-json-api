@@ -10,24 +10,23 @@ use CloudCreativity\JsonApi\Contracts\Config\CodecMatcherRepositoryInterface;
 use CloudCreativity\JsonApi\Contracts\Config\EncoderOptionsRepositoryInterface;
 use CloudCreativity\JsonApi\Contracts\Config\EncodersRepositoryInterface;
 use CloudCreativity\JsonApi\Contracts\Config\SchemasRepositoryInterface;
-use CloudCreativity\JsonApi\Exceptions\RenderContainer;
-use CloudCreativity\JsonApi\Integration\LaravelIntegration;
+use CloudCreativity\JsonApi\Contracts\Stdlib\ConfigurableInterface;
 use CloudCreativity\JsonApi\Error\ExceptionThrower;
-use CloudCreativity\JsonApi\Config\Config as C;
-use CloudCreativity\JsonApi\Http\Middleware\Middleware as M;
+use CloudCreativity\JsonApi\Exceptions\RenderContainer;
 use CloudCreativity\JsonApi\Http\Middleware\InitCodecMatcher;
+use CloudCreativity\JsonApi\Integration\LaravelIntegration;
+use CloudCreativity\JsonApi\Keys as C;
 use Illuminate\Contracts\Config\Repository;
-use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
+use Neomerx\JsonApi\Contracts\Exceptions\RenderContainerInterface;
 use Neomerx\JsonApi\Contracts\Factories\FactoryInterface;
-use Neomerx\JsonApi\Factories\Factory;
 use Neomerx\JsonApi\Contracts\Integration\CurrentRequestInterface;
+use Neomerx\JsonApi\Contracts\Integration\ExceptionThrowerInterface;
 use Neomerx\JsonApi\Contracts\Integration\NativeResponsesInterface;
 use Neomerx\JsonApi\Contracts\Responses\ResponsesInterface;
-use Neomerx\JsonApi\Contracts\Integration\ExceptionThrowerInterface;
-use Neomerx\JsonApi\Contracts\Exceptions\RenderContainerInterface;
+use Neomerx\JsonApi\Factories\Factory;
 use Neomerx\JsonApi\Responses\Responses;
 
 /**
@@ -50,10 +49,10 @@ class ServiceProvider extends BaseServiceProvider
     public function boot(Router $router, Repository $repository, Kernel $kernel)
     {
         // Add Json Api middleware to the router.
-        $router->middleware(M::JSON_API, InitCodecMatcher::class);
+        $router->middleware(C::NAME, InitCodecMatcher::class);
 
         // If the whole application is set to be a Json Api, push the init middleware into the kernel.
-        $key = sprintf('%s.%s', C::KEY, C::IS_GLOBAL);
+        $key = sprintf('%s.%s', C::NAME, C::IS_GLOBAL);
         $global = $repository->get($key, false);
 
         if (true === $global && method_exists($kernel, 'pushMiddleware')) {
@@ -68,47 +67,44 @@ class ServiceProvider extends BaseServiceProvider
      */
     public function register()
     {
+        $container = $this->app;
+
         // Factory
-        $this->app->singleton(FactoryInterface::class, Factory::class);
+        $container->singleton(FactoryInterface::class, Factory::class);
 
         // Schemas Repository
-        $this->app->singleton(SchemasRepositoryInterface::class, function (Container $container) {
-            /** @var Repository $config */
-            $config = $container->make('config');
-            $key = sprintf('%s.%s', C::KEY, C::SCHEMAS);
-            return new SchemasRepository((array) $config->get($key));
+        $container->singleton(SchemasRepositoryInterface::class, SchemasRepository::class);
+        $container->resolving(SchemasRepositoryInterface::class, function (ConfigurableInterface $repository) {
+            $repository->configure($this->getConfig(C::SCHEMAS));
         });
 
         // Encoder Options Repository
-        $this->app->singleton(EncoderOptionsRepositoryInterface::class, function (Container $container) {
-            /** @var Repository $config */
-            $config = $container->make('config');
-            $key = sprintf('%s.%s', C::KEY, C::ENCODER_OPTIONS);
-            return new EncoderOptionsRepository((array) $config->get($key));
+        $container->singleton(EncoderOptionsRepositoryInterface::class, EncoderOptionsRepository::class);
+        $container->resolving(EncoderOptionsRepositoryInterface::class, function (ConfigurableInterface $repository) {
+            $repository->configure($this->getConfig(C::ENCODER_OPTIONS));
         });
 
         // Encoders Repository
-        $this->app->singleton(EncodersRepositoryInterface::class, EncodersRepository::class);
+        $container->singleton(EncodersRepositoryInterface::class, EncodersRepository::class);
 
         // Codec Matcher Repository
-        $this->app->singleton(CodecMatcherRepositoryInterface::class, CodecMatcherRepository::class);
+        $container->singleton(CodecMatcherRepositoryInterface::class, CodecMatcherRepository::class);
+        $container->resolving(CodecMatcherRepositoryInterface::class, function (ConfigurableInterface $repository) {
+            $repository->configure($this->getConfig(C::CODEC_MATCHER));
+        });
 
         // Laravel Integration
-        $this->app->alias(CurrentRequestInterface::class, LaravelIntegration::class);
-        $this->app->alias(NativeResponsesInterface::class, LaravelIntegration::class);
-        $this->app->singleton(ResponsesInterface::class, Responses::class);
+        $container->alias(CurrentRequestInterface::class, LaravelIntegration::class);
+        $container->alias(NativeResponsesInterface::class, LaravelIntegration::class);
+        $container->singleton(ResponsesInterface::class, Responses::class);
 
         // Exception Thrower
-        $this->app->singleton(ExceptionThrowerInterface::class, ExceptionThrower::class);
+        $container->singleton(ExceptionThrowerInterface::class, ExceptionThrower::class);
 
         // Exception Render Container
-        $this->app->singleton(RenderContainerInterface::class, function (Container $container) {
-            /** @var Repository $config */
-            $config = $container->make('config');
-            $key = sprintf('%s.%s', C::KEY, C::EXCEPTION_RENDER_CONTAINER);
-            $renderContainer = new RenderContainer();
-            $renderContainer->configure((array) $config->get($key));
-            return $renderContainer;
+        $container->singleton(RenderContainerInterface::class, RenderContainer::class);
+        $container->resolving(RenderContainerInterface::class, function (ConfigurableInterface $renderContainer) {
+            $renderContainer->configure($this->getConfig(C::EXCEPTIONS));
         });
     }
 
@@ -129,4 +125,18 @@ class ServiceProvider extends BaseServiceProvider
             RenderContainerInterface::class,
         ];
     }
+
+    /**
+     * @param $key
+     * @return array
+     */
+    protected function getConfig($key)
+    {
+        /** @var Repository $config */
+        $config = $this->app->make('config');
+        $key = sprintf('%s.%s', C::NAME, $key);
+
+        return (array) $config->get($key);
+    }
+
 }
