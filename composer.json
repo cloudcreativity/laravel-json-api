@@ -23,9 +23,9 @@
     ],
     "require": {
         "php": ">=5.5.0",
-        "neomerx/json-api": "^0.5.11",
+        "neomerx/json-api": "dev-develop",
         "illuminate/support": "^5.0",
-        "cloudcreativity/json-api": "dev-feature-config",
+        "cloudcreativity/json-api": "dev-master",
         "illuminate/routing": "^5.0"
     },
     "require-dev": {

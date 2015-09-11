@@ -14,9 +14,10 @@ class Router extends BaseRouter
     /**
      * @param $name
      * @param $controller
+     * @param array $options
      * @return void
      */
-    public function jsonApi($name, $controller)
+    public function jsonApi($name, $controller, array $options = [])
     {
         if ($this->container && $this->container->bound(ResourceRegistrar::class)) {
             /** @var ResourceRegistrar $registrar */
