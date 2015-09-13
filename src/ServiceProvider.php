@@ -9,8 +9,14 @@ use CloudCreativity\JsonApi\Contracts\Repositories\EncoderOptionsRepositoryInter
 use CloudCreativity\JsonApi\Contracts\Repositories\EncodersRepositoryInterface;
 use CloudCreativity\JsonApi\Contracts\Repositories\SchemasRepositoryInterface;
 use CloudCreativity\JsonApi\Contracts\Stdlib\ConfigurableInterface;
-use CloudCreativity\JsonApi\Error\ExceptionThrower;
-use CloudCreativity\JsonApi\Exceptions\RenderContainer;
+use CloudCreativity\JsonApi\Contracts\Stdlib\MutableConfigInterface;
+use CloudCreativity\JsonApi\Error\ErrorException;
+use CloudCreativity\JsonApi\Error\MultiErrorException;
+use CloudCreativity\JsonApi\Error\ThrowableError;
+use CloudCreativity\JsonApi\Exceptions\ErrorRenderer;
+use CloudCreativity\JsonApi\Exceptions\ErrorsAwareRenderer;
+use CloudCreativity\JsonApi\Exceptions\ExceptionThrower;
+use CloudCreativity\JsonApi\Exceptions\StandardRenderer;
 use CloudCreativity\JsonApi\Http\Middleware\BootJsonApi;
 use CloudCreativity\JsonApi\Http\Middleware\SupportedExt;
 use CloudCreativity\JsonApi\Integration\LaravelIntegration;
@@ -24,13 +30,15 @@ use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
-use Neomerx\JsonApi\Contracts\Exceptions\RenderContainerInterface;
+use Neomerx\JsonApi\Contracts\Exceptions\RendererContainerInterface;
+use Neomerx\JsonApi\Contracts\Exceptions\RendererInterface;
 use Neomerx\JsonApi\Contracts\Factories\FactoryInterface;
 use Neomerx\JsonApi\Contracts\Integration\CurrentRequestInterface;
 use Neomerx\JsonApi\Contracts\Integration\ExceptionThrowerInterface;
 use Neomerx\JsonApi\Contracts\Integration\NativeResponsesInterface;
 use Neomerx\JsonApi\Contracts\Parameters\ParametersFactoryInterface;
 use Neomerx\JsonApi\Contracts\Responses\ResponsesInterface;
+use Neomerx\JsonApi\Exceptions\RendererContainer;
 use Neomerx\JsonApi\Factories\Factory;
 use Neomerx\JsonApi\Responses\Responses;
 
@@ -87,6 +95,14 @@ class ServiceProvider extends BaseServiceProvider
         $container->resolving(EncodersRepositoryInterface::class, function (ConfigurableInterface $repository) {
             $repository->configure($this->getConfig(C::ENCODERS, []));
         });
+        $container->resolving(EncoderOptionsRepositoryInterface::class, function (EncoderOptionsRepositoryInterface $repository) {
+            $repository->addModifier(function (MutableConfigInterface $config) {
+                $key = EncoderOptionsRepositoryInterface::URL_PREFIX;
+                if (!$config->has($key)) {
+                    $config->set($key, \Request::getSchemeAndHttpHost());
+                };
+            });
+        });
 
         // Decoders Repository
         $container->singleton(DecodersRepositoryInterface::class, DecodersRepository::class);
@@ -109,9 +125,19 @@ class ServiceProvider extends BaseServiceProvider
         $container->singleton(ExceptionThrowerInterface::class, ExceptionThrower::class);
 
         // Exception Render Container
-        $container->singleton(RenderContainerInterface::class, RenderContainer::class);
-        $container->resolving(RenderContainerInterface::class, function (ConfigurableInterface $renderContainer) {
-            $renderContainer->configure($this->getConfig(C::EXCEPTIONS, []));
+        $container->singleton(RendererInterface::class, StandardRenderer::class);
+        $container->singleton(RendererContainerInterface::class, RendererContainer::class);
+        $container->resolving(RendererInterface::class, function (ConfigurableInterface $renderer) {
+            $renderer->configure($this->getConfig(C::EXCEPTIONS));
+        });
+        $container->resolving(RendererContainerInterface::class, function (RendererContainerInterface $rendererContainer) use ($container) {
+            /** @var ResponsesInterface $response */
+            $responses = $container->make(ResponsesInterface::class);
+            $errorRenderer = new ErrorRenderer($responses);
+            $errorsRenderer = new ErrorsAwareRenderer($responses);
+            $rendererContainer->registerRenderer(ThrowableError::class, $errorRenderer);
+            $rendererContainer->registerRenderer(ErrorException::class, $errorsRenderer);
+            $rendererContainer->registerRenderer(MultiErrorException::class, $errorsRenderer);
         });
     }
 
@@ -132,7 +158,7 @@ class ServiceProvider extends BaseServiceProvider
             NativeResponsesInterface::class,
             ResponsesInterface::class,
             ExceptionThrowerInterface::class,
-            RenderContainerInterface::class,
+            RendererContainerInterface::class,
         ];
     }
 

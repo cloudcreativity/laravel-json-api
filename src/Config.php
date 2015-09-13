@@ -24,6 +24,6 @@ class Config
     /** The key for decoders configuration */
     const DECODERS = 'decoders';
 
-    /** The key for Exception Render Container config */
+    /** The key for Exception Renderer Container config */
     const EXCEPTIONS = 'exceptions';
 }

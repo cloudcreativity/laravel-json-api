@@ -35,7 +35,7 @@ Add the package service provider to your `config/app.php` providers array:
 \CloudCreativity\JsonApi\ServiceProvider::class
 ```
 
-And add the following to the list of aliases in the same file (`config/app.php`) so that you can use the JsonApi facade:
+And add the following to the list of aliases in the same file (`config/app.php`) so that you can use the `JsonApi` facade:
 
 ``` php
 'aliases' => [
@@ -60,7 +60,7 @@ Route::group(['middleware' => M::JSON_API], function () {
 });
 ```
 
-If every route in your application is a JSON API endpoint, then you can set the `C::IS_GLOBAL` option to true. This will install the same piece of middleware on the HTTP Kernel, so that it is invoked for every single request.
+If every route in your application is a JSON API endpoint, then you can set the `C::IS_GLOBAL` option to true. This will install the same piece of middleware on the HTTP Kernel, so that it is invoked for every request.
 
 #### Defining Endpoints
 
@@ -73,10 +73,10 @@ Route::group(['middleware' => M::JSON_API], function () {
     	'hasOne' => ['author'],
     	'hasMany' => ['comments'],
     ]);
-    JsonApi::resource('people', 'App\PeopleController');
+    JsonApi::resource('people', 'Api\PeopleController');
 });
 ```
-Per resource type, the following endpoints will be registered (when supplied with `articles` as the resource type):
+Per resource type, the following endpoints will be registered (using the `articles` resource type in the example above):
 
 | URL | HTTP Method | Controller Method |
 | :-- | :---------- | :---------------- |
@@ -102,7 +102,7 @@ The `M::JSON_API` middleware effectively boots JSON API support for the routes o
 1. Creates a `CodecMatcherInterface` from your configuration.
 2. Creates a `ParametersInterface` from the received request.
 3. Checks that the request headers match to an encoder in the codec matcher.
-4. Parses the request query parameters. (Note they are not validated at this stage.)
+4. Parses the request query parameters.
 
 If the checks pass, then the codec matcher instance and parameters instances are registered on the `JsonApi` service. These can be accessed through the `JsonApi` facade:
 
@@ -110,6 +110,8 @@ If the checks pass, then the codec matcher instance and parameters instances are
 * `JsonApi::getParameters()` returns a `Neomerx\JsonApi\Contracts\Parameters\ParametersInterface` instance.
 
 Exceptions will be thrown if the checks do not pass.
+
+If at any point you need to check whether the middleware was run (i.e. whether you're currently in a JsonApi route), then use the `JsonApi::isActive()` method.
 
 ### Supported Extensions
 
@@ -123,7 +125,7 @@ Route::group([
 });
 ```
 
-Middleware makes it easy to register multiple routes (or even an entire API) that support the same extensions. Alternatively, you can use the supported extension middleware as controller middleware if needed.
+Middleware makes it easy to register multiple routes (or even an entire API) that support the same extensions. Alternatively, you can use the supported extension middleware as controller middleware if desired.
 
 ### Controller
 
@@ -161,3 +163,42 @@ class Handler extends ExceptionHandler
     }
 }
 ```
+
+#### Configuring Exception Rendering
+
+You can configure the exception renderer in your `json-api` config file under the `C::EXCEPTIONS` key. This takes a default HTTP status (which is `500` if not provided) plus a map of exceptions. The map should be an array of Exception class names as keys, with their values either being an HTTP status code or an array representing the JSON API Error object to return. For example:
+
+``` php
+
+use CloudCreativty\JsonApi\Exceptions\StandardRenderer as Renderer;
+use CloudCreativity\JsonApi\Contracts\Error\ErrorObjectInterface as Error;
+
+[
+  // ... other config
+
+  C::EXCEPTIONS => [
+
+    Renderer::DEFAULT_STATUS => 500,
+    Renderer::MAP => [
+      'FooException' => 504,
+      'BarException' => [
+        Error::TITLE => 'Teapot',
+        Error::DETAIL => "I'm a teapot, not a server.",
+        Error::STATUS => 418,
+      ],
+    ],
+  ],
+];
+```
+
+If providing an array template, then remember to include an `Error::STATUS` code so that the HTTP status of the response is set correctly.
+
+#### Sending JSON API Error Responses
+
+If during the course of your application's logic you need to return a JSON API error object to the client, throw one of the following exceptions:
+
+* `CloudCreativity\JsonApi\Error\ThrowableError` - an exception that is an error object.
+* `CloudCreativity\JsonApi\Error\ErrorException` - an exception that takes a `Neormerx\JsonApi\Contracts\Document\ErrorInterface` object as its first argument, effectively allowing you to throw an error object.
+* `CloudCreativity\JsonApi\Error\MultiErrorException` - an exception that takes a `CloudCreativity\Jsonapi\Contracts\Error\ErrorCollectionInterface` object as its first object.
+
+None of the above classes need to be registered in your config file's exception map because the renderer automatically handles them.

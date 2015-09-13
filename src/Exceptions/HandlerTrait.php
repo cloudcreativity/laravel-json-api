@@ -3,6 +3,7 @@
 namespace CloudCreativity\JsonApi\Exceptions;
 
 use App;
+use CloudCreativity\JsonApi\Contracts\Encoder\EncoderAwareInterface;
 use Exception;
 use Illuminate\Http\Response;
 use JsonApi;
@@ -39,6 +40,10 @@ trait HandlerTrait
         }
 
         $renderer = $renderContainer->getRenderer(get_class($e));
+
+        if ($renderer instanceof EncoderAwareInterface) {
+            $renderer->setEncoder($codecMatcher->getEncoder());
+        }
 
         /** @var SupportedExtensionsInterface|null $ext */
         $supportedExtensions = JsonApi::getSupportedExtensions();
