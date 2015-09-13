@@ -12,7 +12,6 @@ use Illuminate\Http\Request;
 use JsonApi;
 use Neomerx\JsonApi\Contracts\Codec\CodecMatcherInterface;
 use Neomerx\JsonApi\Contracts\Decoder\DecoderInterface;
-use Neomerx\JsonApi\Contracts\Integration\ExceptionThrowerInterface;
 use RuntimeException;
 
 /**
@@ -33,9 +32,7 @@ trait DocumentDecoderTrait
         $decoder = $codecMatcher->getDecoder();
 
         if (!$decoder instanceof DecoderInterface) {
-            /** @var ExceptionThrowerInterface $thrower */
-            $thrower = App::make(ExceptionThrowerInterface::class);
-            $thrower->throwBadRequest();
+            throw new RuntimeException('A decoder should be set by now. Are you in a JSON API route?');
         }
 
         if ($validator && !$decoder instanceof ValidatorAwareInterface) {

@@ -2,8 +2,8 @@
 
 namespace CloudCreativity\JsonApi\Http\Controllers;
 
-use CloudCreativity\JsonApi\Validator\Relationships\BelongsToValidator;
 use CloudCreativity\JsonApi\Validator\Relationships\HasManyValidator;
+use CloudCreativity\JsonApi\Validator\Relationships\HasOneValidator;
 use CloudCreativity\JsonApi\Validator\Resource\IlluminateResourceValidator;
 
 /**
@@ -47,11 +47,11 @@ trait DocumentValidatorTrait
 
     /**
      * @param string|string[]|null $expectedTypeOrTypes
-     * @return BelongsToValidator
+     * @return HasOneValidator
      */
     public function getHasOneValidator($expectedTypeOrTypes = null)
     {
-        return new BelongsToValidator($expectedTypeOrTypes);
+        return new HasOneValidator($expectedTypeOrTypes);
     }
 
     /**

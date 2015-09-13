@@ -2,10 +2,9 @@
 
 namespace CloudCreativity\JsonApi\Http\Controllers;
 
-use CloudCreativity\JsonApi\Error\ErrorException;
 use CloudCreativity\JsonApi\Error\ThrowableError;
+use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
-use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
 
 /**
  * Class JsonApiController
@@ -15,7 +14,8 @@ class JsonApiController extends Controller
 {
 
     use QueryCheckerTrait,
-        DocumentValidatorTrait;
+        DocumentValidatorTrait,
+        ReplyTrait;
 
     /**
      * Whether query parameters should automatically be checked before the controller action method is invoked.
@@ -41,21 +41,32 @@ class JsonApiController extends Controller
     /**
      * @param array $parameters
      * @return void
-     * @throws ErrorInterface
+     * @throws ThrowableError
      */
     public function missingMethod($parameters = [])
     {
-        throw new ThrowableError('Method Not Allowed', 405);
+        throw new ThrowableError('Method Not Allowed', Response::HTTP_METHOD_NOT_ALLOWED);
     }
 
     /**
      * @param string $method
      * @param array $parameters
      * @return void
-     * @throws ErrorException
+     * @throws ThrowableError
      */
     public function __call($method, $parameters)
     {
-        throw new ThrowableError('Not Implemented', 501);
+        throw new ThrowableError('Not Implemented', Response::HTTP_NOT_IMPLEMENTED);
+    }
+
+    /**
+     * Helper method to throw a not found exception.
+     *
+     * @return void
+     * @throws ThrowableError
+     */
+    public function notFound()
+    {
+        throw new ThrowableError('Not Found', Response::HTTP_NOT_FOUND);
     }
 }

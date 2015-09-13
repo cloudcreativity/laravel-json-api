@@ -12,7 +12,17 @@ For full information on the spec, plus examples, see http://jsonapi.org
 
 ## Features
 
-@todo
+* Encoding of JSON API responses using the `neomerx/json-api` package.
+* Start JSON API support on route groups through a single piece of middleware, which automatically checks request headers and loads JSON API query parameters.
+* Registration of JSON API defined resource end-points via a simple route helper.
+* Define supported JSON API extensions via middleware (on route groups or individual controllers).
+* A JSON API controller providers helpers to:
+  - Automatically check request query parameters.
+  - Decode request body content into objects with a standard, fluent, interface. Makes handling content easier.
+  - Validate request body content as it is being decoded, including using Laravel validates on resource object attributes.
+  - Helpers for sending common JSON API responses, that automatically include requested encoding parameters, the encoded media type plus registered supported extensions.
+* Rendering of exceptions into JSON API error responses, plus easy sending of error responses via throwable JSON API error objects.
+* Configuration settings - including schemas, encoders, decoders and exception rendering - all defined in a configuration file in your Laravel application.
 
 ## Installation
 
@@ -60,7 +70,7 @@ Route::group(['middleware' => M::JSON_API], function () {
 });
 ```
 
-If every route in your application is a JSON API endpoint, then you can set the `C::IS_GLOBAL` option to true. This will install the same piece of middleware on the HTTP Kernel, so that it is invoked for every request.
+If every route in your application is a JSON API endpoint, then you can set the `C::IS_GLOBAL` option to `true`. This will install the same piece of middleware on the HTTP Kernel, so that it is invoked for every request.
 
 #### Defining Endpoints
 
@@ -89,7 +99,7 @@ Per resource type, the following endpoints will be registered (using the `articl
 | /articles/:id/relationships/author | GET | `readAuthorRelationship($id)` |
 | /articles/:id/relationships/author | PATCH | `updateAuthorRelationship($id)` |
 | /articles/:id/comments | GET | `readComments($id)` |
-| /articles/:id/relationships/comments | GET | `readCommentRelationship($id)` |
+| /articles/:id/relationships/comments | GET | `readCommentsRelationship($id)` |
 | /articles/:id/relationships/comments | PATCH | `updateCommentsRelationship($id)` |
 | /articles/:id/relationships/comments | DELETE | `deleteCommentsRelationship($id)` |
 
@@ -145,7 +155,7 @@ Note that if you are adding the trait to your own custom controller, you will ne
 
 #### HTTP Content Body
 
-To decode the request content body with the decoder that matched the request `Content-Type` header, then call `$this->getContentBody()`. If no decoder has matched the request header, calling this method will result in a `400 Bad Request` response to the client.
+To decode the request content body with the decoder that matched the request `Content-Type` header, then call `$this->getContentBody()`.
 
 If you want to use a `CloudCreativity\JsonApi\Contracts\Object\DocumentInterface` object to handle the request content in your controller action, use `$this->getDocumentObject()`. This method ensures the decoder has returned a `DocumentInterface` object, or if it has returned a `stdClass` object it will be cast to a `DocumentInterface` object.
 Shorthands are also provided if you are expecting the document to contain a resource object in its data member, or if the provided document represents a relationship. Use `$this->getResourceObject()` and `$this->getRelationshipObject()` respectively.
@@ -217,6 +227,45 @@ class ArticlesController extends JsonApiController
 These helper methods are provided by the `DocumentValidatorTrait`, which uses the `DocumentDecoderTrait`.
 
 #### Responses
+
+The class `CloudCreativity\JsonApi\Http\Responses\ResponsesHelper` provides a number of methods for constructing JSON API responses. This helper automatically uses request encoding parameters, the matched encoding media type plus any registered supported extensions.
+
+If you have extended the `JsonApiController`, you can use this helper by calling `$this->reply()` then the method for the type of response you want to send. For example, to send a content response:
+
+``` php
+class ArticlesController extends JsonApiController
+{
+  // ...
+
+  public function read($id)
+  {
+    $article = Article::find($id);
+
+    if (!$article) {
+      $this->notFound();
+    }
+
+    return $this
+      ->reply()
+      ->content($article);
+  }
+}
+```
+
+The available helpers are:
+
+| Method | Detail |
+| :----- | :----- |
+| `statusCode` | Send a status code only reply |
+| `noContent` | Send a no content reply (204) |
+| `meta` | Send meta only |
+| `content` | Send content (resource object, null, or collection) |
+| `created` | Send a resource created response (encoded object, location header and 201 status |
+| `relationship` | Send a relationship response (encoded identifier, null, or collection of identifiers) |
+
+See the class for the parameters that each helper method accepts.
+
+The reply method is added to the controller via the `ReplyTrait`.
 
 ### Exception Handling
 
