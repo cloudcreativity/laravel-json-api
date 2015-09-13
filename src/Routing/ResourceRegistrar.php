@@ -78,24 +78,30 @@ class ResourceRegistrar
             $name = ucfirst(camel_case($relation));
 
             $this->router->get($related, sprintf('%s@read%s', $controller, $name));
-            $this->router->get($identifier, sprintf('%s@read%sIdentifier', $controller, $name));
-            $this->router->patch($identifier, sprintf('%s@update%sIdentifier', $controller, $name));
+            $this->router->get($identifier, sprintf('%s@read%sRelationship', $controller, $name));
+            $this->router->patch($identifier, sprintf('%s@update%sRelationship', $controller, $name));
         }
 
         return $this;
     }
 
+    /**
+     * @param $objectUrl
+     * @param $controller
+     * @param array $relations
+     * @return $this
+     */
     private function registerHasMany($objectUrl, $controller, array $relations)
     {
         foreach ($relations as $relation) {
             $related = sprintf('%s/%s', $objectUrl, $relation);
             $identifier = sprintf('%s/relationships/%s', $objectUrl, $relation);
-            $name = ucfirst(str_singular(camel_case($relation)));
+            $name = ucfirst(camel_case($relation));
 
             $this->router->get($related, sprintf('%s@read%s', $controller, $name));
-            $this->router->get($identifier, sprintf('%s@read%sIdentifiers', $controller, $name));
-            $this->router->patch($identifier, sprintf('%s@read%sIdentifiers', $controller, $name));
-            $this->router->delete($identifier, sprintf('%s@read%sIdentifiers', $controller, $name));
+            $this->router->get($identifier, sprintf('%s@read%sRelationship', $controller, $name));
+            $this->router->patch($identifier, sprintf('%s@read%sRelationship', $controller, $name));
+            $this->router->delete($identifier, sprintf('%s@read%sRelationship', $controller, $name));
         }
 
         return $this;

@@ -1,0 +1,162 @@
+<?php
+
+namespace CloudCreativity\JsonApi\Http\Controllers;
+
+use App;
+use JsonApi;
+use Neomerx\JsonApi\Contracts\Integration\ExceptionThrowerInterface;
+use Neomerx\JsonApi\Contracts\Parameters\ParametersInterface;
+use Neomerx\JsonApi\Contracts\Parameters\QueryCheckerInterface;
+use Neomerx\JsonApi\Contracts\Parameters\ParametersFactoryInterface;
+
+/**
+ * Class QueryCheckerTrait
+ * @package CloudCreativity\JsonApi
+ */
+trait QueryCheckerTrait
+{
+
+    /**
+     * Whether unrecognized parameters should be allowed.
+     *
+     * @var bool
+     */
+    protected $allowUnrecognizedParams = false;
+
+    /**
+     * What include paths the client is allowed to request.
+     *
+     * Empty array = clients are not allowed to specify include paths.
+     * Null = all paths are allowed.
+     *
+     * @var string[]|null
+     */
+    protected $allowedIncludePaths = [];
+
+    /**
+     * What field sets the client is allowed to request per JSON API resource object type.
+     *
+     * Null = the client can specify any fields for any resource object type.
+     * Empty array = the client cannot specify any fields for any resource object type (i.e. all denied.)
+     * Non-empty array = configuration per JSON API resource object type. The key should be the type, the value should
+     * be either null (all fields allowed for that type), empty array (no fields allowed for that type) or an array
+     * of string values listing the allowed fields for that type.
+     *
+     * @var array|null
+     */
+    protected $allowedFieldSetTypes = null;
+
+    /**
+     * What sort field names can be sent by the client.
+     *
+     * Empty array = clients are not allowed to specify sort fields.
+     * Null = clients can specify any sort fields.
+     *
+     * @var string[]|null
+     */
+    protected $allowedSortFields = [];
+
+    /**
+     * What paging fields can be sent by the client.
+     *
+     * Empty array = clients are not allowed to request paging.
+     * Null = clients can specify any paging fields they want.
+     *
+     * @var string[]|null
+     */
+    protected $allowedPagingParameters = [];
+
+    /**
+     * What filtering fields can be sent by the client.
+     *
+     * Empty array = clients are not allowed to request filtering.
+     * Null = clients can specify any filtering fields they want.
+     *
+     * @var string[]|null
+     */
+    protected $allowedFilteringParameters = [];
+
+    /**
+     * @var QueryCheckerInterface|null
+     */
+    private $queryChecker;
+
+    /**
+     * @var bool
+     */
+    private $checkedParameters = false;
+
+    /**
+     * @return QueryCheckerInterface
+     */
+    public function getQueryChecker()
+    {
+        if (!$this->queryChecker instanceof QueryCheckerInterface) {
+            $this->queryChecker = $this->generateQueryChecker();
+        }
+
+        return $this->queryChecker;
+    }
+
+    /**
+     * @return ParametersInterface
+     */
+    public function getParameters()
+    {
+        return JsonApi::getParameters();
+    }
+
+    /**
+     * @return ParametersInterface
+     */
+    public function checkParameters()
+    {
+        if (true === $this->checkedParameters) {
+            return $this->getParameters();
+        }
+
+        $checker = $this->getQueryChecker();
+        $params = $this->getParameters();
+
+        $checker->checkQuery($params);
+
+        $this->checkedParameters = true;
+
+        return $params;
+    }
+
+    /**
+     * @return $this
+     */
+    public function checkParametersEmpty()
+    {
+        if (!$this->checkParameters()->isEmpty()) {
+            /** @var ExceptionThrowerInterface $thrower */
+            $thrower = App::make(ExceptionThrowerInterface::class);
+            $thrower->throwBadRequest();
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return QueryCheckerInterface
+     */
+    private function generateQueryChecker()
+    {
+        /** @var ParametersFactoryInterface $factory */
+        $factory = App::make(ParametersFactoryInterface::class);
+        /** @var ExceptionThrowerInterface $thrower */
+        $thrower = App::make(ExceptionThrowerInterface::class);
+
+        return $factory->createQueryChecker(
+            $thrower,
+            $this->allowUnrecognizedParams,
+            $this->allowedIncludePaths,
+            $this->allowedFieldSetTypes,
+            $this->allowedSortFields,
+            $this->allowedPagingParameters,
+            $this->allowedFilteringParameters
+        );
+    }
+}

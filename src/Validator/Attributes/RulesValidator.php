@@ -7,6 +7,7 @@ use CloudCreativity\JsonApi\Validator\AbstractValidator;
 use CloudCreativity\JsonApi\Validator\Helper\RequiredTrait;
 use Illuminate\Contracts\Support\MessageBag;
 use Illuminate\Contracts\Validation\Validator;
+use Validator as ValidatorFacade;
 
 /**
  * Class AttributesValidator
@@ -47,26 +48,26 @@ class RulesValidator extends AbstractValidator
     /**
      * @var array
      */
-    protected $_rules;
+    private $rules;
 
     /**
      * @var array
      */
-    protected $_validationMessages;
+    private $validationMessages;
 
     /**
      * The last Laravel validator that was used, or null if no validation has occurred.
      *
      * @var Validator|null
      */
-    protected $_validator;
+    private $validator;
 
     /**
      * @param array $rules
      * @param array $validationMessages
      * @param bool $required
      */
-    public function __construct(array $rules = [], array $validationMessages = [], $required = false)
+    public function __construct(array $rules = [], array $validationMessages = [], $required = true)
     {
         $this->setRules($rules)
             ->setValidationMessages($validationMessages)
@@ -79,7 +80,7 @@ class RulesValidator extends AbstractValidator
      */
     public function setRules(array $rules)
     {
-        $this->_rules = $rules;
+        $this->rules = $rules;
 
         return $this;
     }
@@ -89,7 +90,7 @@ class RulesValidator extends AbstractValidator
      */
     public function getRules()
     {
-        return (array) $this->_rules;
+        return (array) $this->rules;
     }
 
     /**
@@ -98,7 +99,7 @@ class RulesValidator extends AbstractValidator
      */
     public function setValidationMessages(array $messages)
     {
-        $this->_validationMessages = $messages;
+        $this->validationMessages = $messages;
 
         return $this;
     }
@@ -108,7 +109,7 @@ class RulesValidator extends AbstractValidator
      */
     public function getValidationMessages()
     {
-        return (array) $this->_validationMessages;
+        return (array) $this->validationMessages;
     }
 
     /**
@@ -116,7 +117,7 @@ class RulesValidator extends AbstractValidator
      */
     public function getValidator()
     {
-        return $this->_validator;
+        return $this->validator;
     }
 
     /**
@@ -143,9 +144,9 @@ class RulesValidator extends AbstractValidator
      */
     protected function make(array $values)
     {
-        $this->_validator = \Validator::make($values, $this->getRules(), $this->getValidationMessages());
+        $this->validator = ValidatorFacade::make($values, $this->getRules(), $this->getValidationMessages());
 
-        return $this->_validator;
+        return $this->validator;
     }
 
     /**

@@ -86,12 +86,12 @@ Per resource type, the following endpoints will be registered (using the `articl
 | /articles/:id | PATCH | `update($id)` |
 | /articles/:id | DELETE | `delete($id)` |
 | /articles/:id/author | GET | `readAuthor($id)` |
-| /articles/:id/relationships/author | GET | `readAuthorIdentifier($id)` |
-| /articles/:id/relationships/author | PATCH | `updateAuthorIdentifier($id)` |
+| /articles/:id/relationships/author | GET | `readAuthorRelationship($id)` |
+| /articles/:id/relationships/author | PATCH | `updateAuthorRelationship($id)` |
 | /articles/:id/comments | GET | `readComments($id)` |
-| /articles/:id/relationships/comments | GET | `readCommentIdentifiers($id)` |
-| /articles/:id/relationships/comments | PATCH | `updateCommentIdentifiers($id)` |
-| /articles/:id/relationships/comments | DELETE | `deleteCommentIdentifiers($id)` |
+| /articles/:id/relationships/comments | GET | `readCommentRelationship($id)` |
+| /articles/:id/relationships/comments | PATCH | `updateCommentsRelationship($id)` |
+| /articles/:id/relationships/comments | DELETE | `deleteCommentsRelationship($id)` |
 
 **You do not need to implement all these methods** if extending this package's `Http\Controllers\JsonApiController`. The controller is configured to send a `501 Not Implemented` response for any missing methods.
 
@@ -129,13 +129,94 @@ Middleware makes it easy to register multiple routes (or even an entire API) tha
 
 ### Controller
 
+JSON API support in controllers can be added by extending `CloudCreativity\JsonApi\Http\Controllers\JsonApiController`. This has a number of helper methods to assist in handling JSON API requests and sending responses.
+
+Each of the following pieces of functionality are implemented using traits. So if you want to include any of the functionality in your own custom controllers, just include the relevant trait. The traits are in the same namespace as the `JsonApiController`.
+
 #### Query Parameters
+
+The `JsonApiController` will automatically check the query parameters before your controller action method is invoked. To define what query parameters your controller allows, set the properties that are defined in the `QueryCheckerTrait`.
+
+This automatic checking means that by the time your controller action method is invoked, the request headers and query parameters have all been checked. Your action method can get the query parameters by calling `$this->getParameters()`.
+
+If you want to disable automatic checking of query parameters before your controller methods are invoked, then set the `$autoCheckQueryParameters` property of your controller to `false`.
+
+Note that if you are adding the trait to your own custom controller, you will need to call `$this->checkParameters()` to trigger the checking of parameters.
 
 #### HTTP Content Body
 
+To decode the request content body with the decoder that matched the request `Content-Type` header, then call `$this->getContentBody()`. If no decoder has matched the request header, calling this method will result in a `400 Bad Request` response to the client.
+
+If you want to use a `CloudCreativity\JsonApi\Contracts\Object\DocumentInterface` object to handle the request content in your controller action, use `$this->getDocumentObject()`. This method ensures the decoder has returned a `DocumentInterface` object, or if it has returned a `stdClass` object it will be cast to a `DocumentInterface` object.
+Shorthands are also provided if you are expecting the document to contain a resource object in its data member, or if the provided document represents a relationship. Use `$this->getResourceObject()` and `$this->getRelationshipObject()` respectively.
+
+These helper methods are implemented in the `DocumentDecoderTrait`.
+
 #### Content Body Validation
 
-### Responses
+If desired, you can validate the body content as it is decoded. All of the content body getter methods accept an optional validator that is applied when the document content is decoded. All of methods for getting the request body content take an optional validator argument.
+
+If the received content is a resource object, you can use the `$this->getResourceObjectValidator()` method. For example:
+
+``` php
+class ArticlesController extends JsonApiController
+{
+  // ...
+
+  public function update($id)
+  {
+    $validator = $this
+      ->getResourceObjectValidator(
+        // the expected resource type
+        'articles',
+        // the expected id (use null for new resources)
+        $id,
+        // the rules for the attributes - uses the Laravel validation implementation.
+        [
+          'title' => 'string|max:250',
+          'content' => 'string',
+          'draft' => 'boolean',
+        ],
+        // Laravel validation messages, if you need to customise them
+        [],
+        // whether the attributes member must be present in the resource object
+        true
+      );
+
+   $object = $this->getResourceObject($validator);
+   // ...
+  }
+}
+```
+
+The validator returned by `$this->getResourceObjectValidator()` provides helper methods for also defining relationship validation rules.
+
+For relationship endpoints, you can get a validator for the relationship provided using one of the following helper methods:
+
+``` php
+class ArticlesController extends JsonApiController
+{
+  // ...
+
+  public function updateAuthorRelationship($id)
+  {
+    $validator = $this->getHasOneValidator('person');
+    $relationship = $this->getRelationshipObject($validator);
+    // ...
+  }
+
+  public function updateCommentsRelationship($id)
+  {
+    $validator = $this->getHasManyValidator('comments');
+    $relationship = $this->getRelationshipObject($validator);
+    // ...
+  }
+}
+```
+
+These helper methods are provided by the `DocumentValidatorTrait`, which uses the `DocumentDecoderTrait`.
+
+#### Responses
 
 ### Exception Handling
 

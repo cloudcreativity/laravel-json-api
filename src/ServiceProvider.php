@@ -41,6 +41,7 @@ use Neomerx\JsonApi\Contracts\Responses\ResponsesInterface;
 use Neomerx\JsonApi\Exceptions\RendererContainer;
 use Neomerx\JsonApi\Factories\Factory;
 use Neomerx\JsonApi\Responses\Responses;
+use Neomerx\JsonApi\Contracts\Parameters\QueryCheckerInterface;
 
 /**
  * Class ServiceProvider
@@ -158,6 +159,7 @@ class ServiceProvider extends BaseServiceProvider
             NativeResponsesInterface::class,
             ResponsesInterface::class,
             ExceptionThrowerInterface::class,
+            RendererInterface::class,
             RendererContainerInterface::class,
         ];
     }
