@@ -3,6 +3,7 @@
 namespace CloudCreativity\JsonApi\Http\Responses;
 
 use CloudCreativity\JsonApi\Services\EnvironmentService;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Response;
 use Neomerx\JsonApi\Contracts\Encoder\EncoderInterface;
 use Neomerx\JsonApi\Contracts\Parameters\Headers\MediaTypeInterface;
@@ -80,6 +81,10 @@ class ResponsesHelper
      */
     public function content($data, $statusCode = Response::HTTP_OK, $links = [], $meta = null, array $headers = [])
     {
+        if ($data instanceof Collection) {
+            $data = $data->all();
+        }
+
         $content = $this
             ->getEncoder()
             ->withLinks($links)

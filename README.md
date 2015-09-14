@@ -32,20 +32,13 @@ Install using [Composer](http://getcomposer.org):
 $ composer require cloudcreativity/laravel-json-api
 ```
 
-Then publish the package config file:
-
-``` bash
-$ php artisan vendor:publish --provider="CloudCreativity\JsonApi\ServiceProvider"
-```
-> Configuration settings are describe in the usage section below.
-
-Add the package service provider to your `config/app.php` providers array:
+Add the package service provider to your `config/app.php` providers array. It is important that it is added **before** your application's route service provider.
 
 ``` php
 \CloudCreativity\JsonApi\ServiceProvider::class
 ```
 
-And add the following to the list of aliases in the same file (`config/app.php`) so that you can use the `JsonApi` facade:
+Plus add the following to the list of aliases in the same file (`config/app.php`) so that you can use the `JsonApi` facade:
 
 ``` php
 'aliases' => [
@@ -53,6 +46,14 @@ And add the following to the list of aliases in the same file (`config/app.php`)
   'JsonApi' => CloudCreativity\JsonApi\Facade::class
 ]
 ```
+
+Then publish the package config file:
+
+``` bash
+$ php artisan vendor:publish --provider="CloudCreativity\JsonApi\ServiceProvider"
+```
+> Configuration settings are describe in the usage section below.
+
 
 ## Usage
 

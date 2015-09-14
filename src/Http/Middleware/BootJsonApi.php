@@ -68,6 +68,8 @@ class BootJsonApi
         $currentRequest = $this->app->make(CurrentRequestInterface::class);
 
         $codecMatcher = $repository->getCodecMatcher($name);
+        $this->env->registerCodecMatcher($codecMatcher);
+
         $parameters = $parametersFactory
             ->createParametersParser()
             ->parse($currentRequest, $exceptionThrower);
@@ -76,8 +78,6 @@ class BootJsonApi
             ->createHeadersChecker($exceptionThrower, $codecMatcher)
             ->checkHeaders($parameters);
 
-        $this->env
-            ->registerCodecMatcher($codecMatcher)
-            ->registerParameters($parameters);
+        $this->env->registerParameters($parameters);
     }
 }

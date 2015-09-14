@@ -12,6 +12,15 @@ class Middleware
     const SUPPORTED_EXT = 'json-api-supported-ext';
 
     /**
+     * @param string|null $codecMatcherName
+     * @return string
+     */
+    public static function jsonApi($codecMatcherName = null)
+    {
+        return ($codecMatcherName) ? sprintf('%s:%s', static::JSON_API, $codecMatcherName) : static::JSON_API;
+    }
+
+    /**
      * @return string
      */
     public static function ext()
