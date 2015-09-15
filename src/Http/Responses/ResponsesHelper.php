@@ -73,13 +73,13 @@ class ResponsesHelper
 
     /**
      * @param mixed $data
-     * @param int $statusCode
      * @param array $links
      * @param mixed|null $meta
+     * @param int $statusCode
      * @param array $headers
      * @return Response
      */
-    public function content($data, $statusCode = Response::HTTP_OK, $links = [], $meta = null, array $headers = [])
+    public function content($data, array $links = [], $meta = null, $statusCode = Response::HTTP_OK, array $headers = [])
     {
         if ($data instanceof Collection) {
             $data = $data->all();
@@ -101,7 +101,7 @@ class ResponsesHelper
      * @param array $headers
      * @return mixed
      */
-    public function created($resource, $links = [], $meta = null, array $headers = [])
+    public function created($resource, array $links = [], $meta = null, array $headers = [])
     {
         $encoder = $this->getEncoder();
         $options = $encoder->getEncoderOptions();
