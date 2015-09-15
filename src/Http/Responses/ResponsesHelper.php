@@ -101,7 +101,7 @@ class ResponsesHelper
      * @param array $headers
      * @return mixed
      */
-    public function created($resource, $links = [], $meta = null, $headers = [])
+    public function created($resource, $links = [], $meta = null, array $headers = [])
     {
         $encoder = $this->getEncoder();
         $options = $encoder->getEncoderOptions();
