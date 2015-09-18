@@ -3,11 +3,11 @@
 namespace CloudCreativity\JsonApi\Http\Controllers;
 
 use App;
-use JsonApi;
+use CloudCreativity\JsonApi\Contracts\Integration\EnvironmentInterface;
 use Neomerx\JsonApi\Contracts\Integration\ExceptionThrowerInterface;
+use Neomerx\JsonApi\Contracts\Parameters\ParametersFactoryInterface;
 use Neomerx\JsonApi\Contracts\Parameters\ParametersInterface;
 use Neomerx\JsonApi\Contracts\Parameters\QueryCheckerInterface;
-use Neomerx\JsonApi\Contracts\Parameters\ParametersFactoryInterface;
 
 /**
  * Class QueryCheckerTrait
@@ -103,7 +103,10 @@ trait QueryCheckerTrait
      */
     public function getParameters()
     {
-        return JsonApi::getParameters();
+        /** @var EnvironmentInterface $environment */
+        $environment= App::make(EnvironmentInterface::class);
+
+        return $environment->getParameters();
     }
 
     /**

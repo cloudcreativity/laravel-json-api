@@ -3,13 +3,12 @@
 namespace CloudCreativity\JsonApi\Http\Middleware;
 
 use Closure;
+use CloudCreativity\JsonApi\Contracts\Integration\EnvironmentInterface;
 use CloudCreativity\JsonApi\Contracts\Repositories\CodecMatcherRepositoryInterface;
-use CloudCreativity\JsonApi\Services\EnvironmentService;
-use Illuminate\Contracts\Foundation\Application;
+use CloudCreativity\JsonApi\Contracts\Repositories\SchemasRepositoryInterface;
+use CloudCreativity\JsonApi\Integration\EnvironmentService;
 use Illuminate\Http\Request;
-use Neomerx\JsonApi\Contracts\Integration\CurrentRequestInterface;
-use Neomerx\JsonApi\Contracts\Integration\ExceptionThrowerInterface;
-use Neomerx\JsonApi\Contracts\Parameters\ParametersFactoryInterface;
+use RuntimeException;
 
 /**
  * Class InitCodecMatcher
@@ -19,65 +18,85 @@ class BootJsonApi
 {
 
     /**
-     * @var Application
-     */
-    private $app;
-
-    /**
      * @var EnvironmentService
      */
-    private $env;
+    private $environment;
 
     /**
-     * @param Application $application
-     * @param EnvironmentService $environment
+     * @var CodecMatcherRepositoryInterface
      */
-    public function __construct(Application $application, EnvironmentService $environment)
-    {
-        $this->app = $application;
-        $this->env = $environment;
+    private $codecMatcherRepository;
+
+    /**
+     * @var SchemasRepositoryInterface
+     */
+    private $schemasRepository;
+
+    /**
+     * @param EnvironmentInterface $environment
+     * @param CodecMatcherRepositoryInterface $codecMatcherRepository
+     * @param SchemasRepositoryInterface $schemasRepository
+     */
+    public function __construct(
+        EnvironmentInterface $environment,
+        CodecMatcherRepositoryInterface $codecMatcherRepository,
+        SchemasRepositoryInterface $schemasRepository
+    ) {
+        if (!$environment instanceof EnvironmentService) {
+            throw new RuntimeException(sprintf('%s is built to work with the %s instance of %s.', static::class, EnvironmentService::class, EnvironmentInterface::class));
+        }
+
+        $this->environment = $environment;
+        $this->codecMatcherRepository = $codecMatcherRepository;
+        $this->schemasRepository = $schemasRepository;
     }
 
     /**
      * @param Request $request
      * @param Closure $next
-     * @param string|null $codecMatcherName
-     *      the name of the codec matcher that should be used, or null to use the default.
+     * @param $urlNamespace
+     *      the url namespace to add to the HTTP schema/host, e.g. '/api/v1'
+     * @param $schemasName
+     *      the name of the set of schemas to use, or empty to use the default set.
      * @return mixed
      */
-    public function handle($request, Closure $next, $codecMatcherName = null)
+    public function handle($request, Closure $next, $urlNamespace = null, $schemasName = null)
     {
-        $this->register(($codecMatcherName ?: null));
+        $schemasName = ($schemasName) ?: null;
+        $urlPrefix = $this->urlPrefix($request, $urlNamespace);
+
+        $this->register($schemasName, $urlPrefix);
 
         return $next($request);
     }
 
     /**
-     * @param string|null $name
-     *      the codec matcher name that should be used, or null for the default.
+     * @param $schemasName
+     * @param $urlPrefix
      */
-    private function register($name)
+    private function register($schemasName, $urlPrefix)
     {
-        /** @var CodecMatcherRepositoryInterface $repository */
-        $repository = $this->app->make(CodecMatcherRepositoryInterface::class);
-        /** @var ExceptionThrowerInterface $exceptionThrower */
-        $exceptionThrower = $this->app->make(ExceptionThrowerInterface::class);
-        /** @var ParametersFactoryInterface $parametersFactory */
-        $parametersFactory = $this->app->make(ParametersFactoryInterface::class);
-        /** @var CurrentRequestInterface $currentRequest */
-        $currentRequest = $this->app->make(CurrentRequestInterface::class);
+        $schemas = $this->schemasRepository->getSchemas($schemasName);
 
-        $codecMatcher = $repository->getCodecMatcher($name);
-        $this->env->registerCodecMatcher($codecMatcher);
+        $codecMatcher = $this
+            ->codecMatcherRepository
+            ->registerSchemas($schemas)
+            ->registerUrlPrefix($urlPrefix)
+            ->getCodecMatcher();
 
-        $parameters = $parametersFactory
-            ->createParametersParser()
-            ->parse($currentRequest, $exceptionThrower);
+        $this->environment
+            ->registerSchemas($schemas)
+            ->registerUrlPrefix($urlPrefix)
+            ->registerCodecMatcher($codecMatcher);
+    }
 
-        $parametersFactory
-            ->createHeadersChecker($exceptionThrower, $codecMatcher)
-            ->checkHeaders($parameters);
-
-        $this->env->registerParameters($parameters);
+    /**
+     * @param Request $request
+     * @param $urlNamespace
+     * @return string
+     */
+    private function urlPrefix(Request $request, $urlNamespace)
+    {
+        return $request->getSchemeAndHttpHost() . $urlNamespace;
     }
 }

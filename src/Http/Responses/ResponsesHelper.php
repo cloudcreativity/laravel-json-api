@@ -2,13 +2,11 @@
 
 namespace CloudCreativity\JsonApi\Http\Responses;
 
-use CloudCreativity\JsonApi\Services\EnvironmentService;
-use Illuminate\Database\Eloquent\Collection;
+use CloudCreativity\JsonApi\Contracts\Integration\EnvironmentInterface;
 use Illuminate\Http\Response;
+use Illuminate\Support\Collection;
 use Neomerx\JsonApi\Contracts\Encoder\EncoderInterface;
-use Neomerx\JsonApi\Contracts\Parameters\Headers\MediaTypeInterface;
 use Neomerx\JsonApi\Contracts\Responses\ResponsesInterface;
-use RuntimeException;
 
 /**
  * Class ResponsesHelper
@@ -18,9 +16,9 @@ class ResponsesHelper
 {
 
     /**
-     * @var EnvironmentService
+     * @var EnvironmentInterface
      */
-    private $env;
+    private $environment;
 
     /**
      * @var ResponsesInterface
@@ -28,12 +26,12 @@ class ResponsesHelper
     private $responses;
 
     /**
-     * @param EnvironmentService $env
+     * @param EnvironmentInterface $environment
      * @param ResponsesInterface $responses
      */
-    public function __construct(EnvironmentService $env, ResponsesInterface $responses)
+    public function __construct(EnvironmentInterface $environment, ResponsesInterface $responses)
     {
-        $this->env = $env;
+        $this->environment = $environment;
         $this->responses = $responses;
     }
 
@@ -81,6 +79,7 @@ class ResponsesHelper
      */
     public function content($data, array $links = [], $meta = null, $statusCode = Response::HTTP_OK, array $headers = [])
     {
+        /** Eloquent collections do not encode properly, so we'll get all just in case it's an Eloquent collection */
         if ($data instanceof Collection) {
             $data = $data->all();
         }
@@ -89,7 +88,7 @@ class ResponsesHelper
             ->getEncoder()
             ->withLinks($links)
             ->withMeta($meta)
-            ->encodeData($data, $this->env->getParameters());
+            ->encodeData($data, $this->environment->getParameters());
 
         return $this->respond($statusCode, $content, $headers);
     }
@@ -104,25 +103,26 @@ class ResponsesHelper
     public function created($resource, array $links = [], $meta = null, array $headers = [])
     {
         $encoder = $this->getEncoder();
-        $options = $encoder->getEncoderOptions();
 
         $content = $encoder
             ->withLinks($links)
             ->withMeta($meta)
             ->encodeData($resource, $this->getEncodingParameters());
 
-        $urlPrefix = ($options) ? $options->getUrlPrefix() : null;
-        // @todo need to get the schema container so that the location header can be worked out:
-        // $subHref = $container->getSchema($resource)->getSelfSubLink($resource)->getSubHref();
-        $subHref = null;
+        $subHref = $this
+            ->environment
+            ->getSchemas()
+            ->getSchema($resource)
+            ->getSelfSubLink($resource)
+            ->getSubHref();
 
         return $this
             ->responses
             ->getCreatedResponse(
-                $urlPrefix . $subHref,
-                $this->getMediaType(),
+                $this->environment->getUrlPrefix() . $subHref,
+                $this->environment->getEncoderMediaType(),
                 $content,
-                $this->getSupportedExtensions(),
+                $this->environment->getSupportedExtensions(),
                 $headers
             );
     }
@@ -175,9 +175,9 @@ class ResponsesHelper
             ->responses
             ->getResponse(
                 (int) $statusCode,
-                $this->getMediaType(),
+                $this->environment->getEncoderMediaType(),
                 $content,
-                $this->getSupportedExtensions(),
+                $this->environment->getSupportedExtensions(),
                 $headers
             );
     }
@@ -187,16 +187,7 @@ class ResponsesHelper
      */
     public function getEncoder()
     {
-        $encoder = $this
-            ->env
-            ->getCodecMatcher()
-            ->getEncoder();
-
-        if (!$encoder instanceof EncoderInterface) {
-            throw new RuntimeException('No encoder available. Are you in a JSON API route?');
-        }
-
-        return $encoder;
+        return $this->environment->getEncoder();
     }
 
     /**
@@ -204,33 +195,6 @@ class ResponsesHelper
      */
     public function getEncodingParameters()
     {
-        return $this->env->getParameters();
-    }
-
-    /**
-     * @return MediaTypeInterface
-     */
-    private function getMediaType()
-    {
-        $type = $this
-            ->env
-            ->getCodecMatcher()
-            ->getEncoderRegisteredMatchedType();
-
-        if (!$type instanceof MediaTypeInterface) {
-            throw new RuntimeException('No encoder media type available. Are you in a JSON API route?');
-        }
-
-        return $type;
-    }
-
-    /**
-     * @return \Neomerx\JsonApi\Contracts\Parameters\SupportedExtensionsInterface|null
-     */
-    private function getSupportedExtensions()
-    {
-        return $this
-            ->env
-            ->getSupportedExtensions();
+        return $this->environment->getParameters();
     }
 }

@@ -18,11 +18,8 @@ class Config
     /** The key for codec matchers configuration */
     const CODEC_MATCHER = 'codec-matcher';
 
-    /** The key for encoders configuration */
-    const ENCODERS = 'encoders';
-
-    /** The key for decoders configuration */
-    const DECODERS = 'decoders';
+    /** The key for the schemas configuration */
+    const SCHEMAS = 'schemas';
 
     /** The key for Exception Renderer Container config */
     const EXCEPTIONS = 'exceptions';

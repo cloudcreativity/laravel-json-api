@@ -1,11 +1,11 @@
 <?php
 
-use CloudCreativity\JsonApi\Contracts\Repositories\CodecMatcherRepositoryInterface as Codec;
-use CloudCreativity\JsonApi\Contracts\Repositories\EncodersRepositoryInterface as Enc;
-use CloudCreativity\JsonApi\Contracts\Repositories\DecodersRepositoryInterface as Dec;
-use CloudCreativity\JsonApi\Exceptions\StandardRenderer as Renderer;
-use CloudCreativity\JsonApi\Contracts\Error\ErrorObjectInterface as Error;
 use CloudCreativity\JsonApi\Config as C;
+use CloudCreativity\JsonApi\Contracts\Error\ErrorObjectInterface as Error;
+use CloudCreativity\JsonApi\Contracts\Repositories\CodecMatcherRepositoryInterface as Codec;
+use CloudCreativity\JsonApi\Contracts\Repositories\SchemasRepositoryInterface as Schemas;
+use CloudCreativity\JsonApi\Decoders\DocumentDecoder;
+use CloudCreativity\JsonApi\Exceptions\StandardRenderer as Renderer;
 
 return [
 
@@ -20,21 +20,27 @@ return [
      * Codec Matchers
      */
     C::CODEC_MATCHER => [
-        // @todo
+        Codec::ENCODERS => [
+            'application/vnd.api+json',
+            'text/plain' => JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES,
+        ],
+        Codec::DECODERS => [
+            'application/vnd.api+json' => DocumentDecoder::class,
+        ],
     ],
 
     /**
-     * Encoders
+     * Schemas
      */
-    C::ENCODERS => [
-        // @todo
-    ],
-
-    /**
-     * Decoders
-     */
-    C::DECODERS => [
-        // @todo
+    C::SCHEMAS => [
+        Schemas::DEFAULTS => [
+            'Article' => 'ArticleSchema',
+            'Comment' => 'CommentSchema',
+        ],
+        // merged with defaults if JSON API middleware uses the 'extra-schemas' name.
+        'extra-schemas' => [
+            'Person' => 'PersonSchema',
+        ],
     ],
 
     /**

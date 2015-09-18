@@ -2,8 +2,8 @@
 
 namespace CloudCreativity\JsonApi;
 
+use CloudCreativity\JsonApi\Contracts\Integration\EnvironmentInterface;
 use Illuminate\Support\Facades\Facade as BaseFacade;
-use CloudCreativity\JsonApi\Services\EnvironmentService;
 
 class Facade extends BaseFacade
 {
@@ -13,6 +13,6 @@ class Facade extends BaseFacade
      */
     protected static function getFacadeAccessor()
     {
-        return EnvironmentService::class;
+        return EnvironmentInterface::class;
     }
 }

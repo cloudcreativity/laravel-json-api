@@ -3,15 +3,13 @@
 namespace CloudCreativity\JsonApi\Http\Controllers;
 
 use App;
+use CloudCreativity\JsonApi\Contracts\Integration\EnvironmentInterface;
 use CloudCreativity\JsonApi\Contracts\Object\Document\DocumentInterface;
 use CloudCreativity\JsonApi\Contracts\Validator\ValidatorAwareInterface;
 use CloudCreativity\JsonApi\Contracts\Validator\ValidatorInterface;
 use CloudCreativity\JsonApi\Object\Document\Document;
 use CloudCreativity\JsonApi\Validator\Document\DocumentValidator;
 use Illuminate\Http\Request;
-use JsonApi;
-use Neomerx\JsonApi\Contracts\Codec\CodecMatcherInterface;
-use Neomerx\JsonApi\Contracts\Decoder\DecoderInterface;
 use RuntimeException;
 
 /**
@@ -27,13 +25,9 @@ trait DocumentDecoderTrait
      */
     public function getContentBody(ValidatorInterface $validator = null)
     {
-        /** @var CodecMatcherInterface $codecMatcher */
-        $codecMatcher = JsonApi::getCodecMatcher();
-        $decoder = $codecMatcher->getDecoder();
-
-        if (!$decoder instanceof DecoderInterface) {
-            throw new RuntimeException('A decoder should be set by now. Are you in a JSON API route?');
-        }
+        /** @var EnvironmentInterface $environment */
+        $environment = App::make(EnvironmentInterface::class);
+        $decoder = $environment->getDecoder();
 
         if ($validator && !$decoder instanceof ValidatorAwareInterface) {
             throw new RuntimeException('To use a validator on content body, your decoder must implement the ValidatorAwareInterface.');

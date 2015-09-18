@@ -4,12 +4,10 @@ namespace CloudCreativity\JsonApi\Exceptions;
 
 use App;
 use CloudCreativity\JsonApi\Contracts\Encoder\EncoderAwareInterface;
+use CloudCreativity\JsonApi\Contracts\Integration\EnvironmentInterface;
 use Exception;
 use Illuminate\Http\Response;
-use JsonApi;
-use Neomerx\JsonApi\Contracts\Codec\CodecMatcherInterface;
 use Neomerx\JsonApi\Contracts\Exceptions\RendererContainerInterface;
-use Neomerx\JsonApi\Contracts\Parameters\SupportedExtensionsInterface;
 
 trait HandlerTrait
 {
@@ -19,7 +17,10 @@ trait HandlerTrait
      */
     public function isJsonApi()
     {
-        return JsonApi::isActive();
+        /** @var EnvironmentInterface $environment */
+        $environment = App::make(EnvironmentInterface::class);
+
+        return $environment->hasSchemas();
     }
 
     /**
@@ -29,37 +30,32 @@ trait HandlerTrait
      */
     public function renderJsonApi($request, Exception $e)
     {
-        /** @var RendererContainerInterface $renderContainer */
-        $renderContainer = App::make(RendererContainerInterface::class);
-        /** @var CodecMatcherInterface $codecMatcher */
-        $codecMatcher = JsonApi::getCodecMatcher();
+        /** @var RendererContainerInterface $rendererContainer */
+        $rendererContainer = App::make(RendererContainerInterface::class);
+        /** @var EnvironmentInterface $environment */
+        $environment = App::make(EnvironmentInterface::class);
 
         // If there is no encoder, then we bug out. The client doesn't accept a content type we can render.
-        if (!$codecMatcher->getEncoder()) {
+        if (!$environment->hasEncoder()) {
             return new Response(null, 406);
         }
 
-        $renderer = $renderContainer->getRenderer(get_class($e));
+        $renderer = $rendererContainer->getRenderer(get_class($e));
 
+        // set encoder if needed
         if ($renderer instanceof EncoderAwareInterface) {
-            $renderer->setEncoder($codecMatcher->getEncoder());
+            $renderer->setEncoder($environment->getEncoder());
         }
 
-        /** @var SupportedExtensionsInterface|null $ext */
-        $supportedExtensions = JsonApi::getSupportedExtensions();
+        // set supported extensions if there are any
+        $supportedExtensions = $environment->getSupportedExtensions();
 
         if ($supportedExtensions) {
             $renderer->withSupportedExtensions($supportedExtensions);
         }
 
-        $contentType = $codecMatcher->getEncoderHeaderMatchedType();
-
-        if (!$contentType) {
-            $contentType = $codecMatcher->getEncoderRegisteredMatchedType();
-        }
-
         return $renderer
-            ->withMediaType($contentType)
+            ->withMediaType($environment->getEncoderMediaType())
             ->render($e);
     }
 }

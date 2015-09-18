@@ -57,28 +57,43 @@ $ php artisan vendor:publish --provider="CloudCreativity\JsonApi\ServiceProvider
 
 ## Usage
 
-- **Configuration keys** are stored in constants on the `CloudCreativity\JsonApi\Config` class (and will be referred to as **`C::`** below).
-- **Middleware names** are stored in the `CloudCreativity\JsonApi\Middleware` class (and will be referred to as **`M::`** below). This class also has some static methods for easily constructing middleware names with middleware options.
-
+- **Configuration keys** are stored in constants on the `CloudCreativity\JsonApi\Config` class (and will be referred to
+as **`C::`** below).
 
 ### Routing
 
-To define JSON API endpoints, the `M::JSON_API` middleware must be used. This is easily done by using route groups, for example:
+To define JSON API endpoints, the JSON API middleware must be used. This is easily done by using route groups, for
+example:
 
 ``` php
-Route::group(['middleware' => M::JSON_API], function () {
+Route::group(['middleware' => 'json-api'], function () {
   // define JSON-API routes here.
 });
 ```
 
-If every route in your application is a JSON API endpoint, then you can set the `C::IS_GLOBAL` option to `true`. This will install the same piece of middleware on the HTTP Kernel, so that it is invoked for every request.
+This middleware takes two optional parameters. The first is a URL namespace to add to the HTTP scheme and host when
+encoding JSON API links. For example, if your JSON API endpoints are at `http://www.example.tld/api/v1`, then the
+URL namespace is `/api/v1`. The second middleware argument is the name of the schemas set you wish to use (if your
+application is using multiple schema sets).
+
+For example, the following sets the `/api/v1` namespace, and uses the `extra-schemas` schema set:
+
+``` php
+Route::group(['middleware' => 'json-api:/api/v1,extra-schemas'], function () {
+  // define JSON-API routes here.
+});
+```
+
+If every route in your application is a JSON API endpoint, then you can set the `C::IS_GLOBAL` option to `true`. This
+will install the same piece of middleware on the HTTP Kernel, so that it is invoked for every request.
 
 #### Defining Endpoints
 
-The JSON API spec defines the endpoints that should exist for each resource object type, and the HTTP methods that relate to these. Defining resource object endpoints is as easy as:
+The JSON API spec defines the endpoints that should exist for each resource object type, and the HTTP methods that
+relate to these. Defining resource object endpoints is as easy as:
 
 ``` php
-Route::group(['middleware' => M::JSON_API], function () {
+Route::group(['middleware' => 'json-api'], function () {
 
     JsonApi::resource('articles', 'Api\ArticlesController', [
     	'hasOne' => ['author'],
@@ -104,68 +119,90 @@ Per resource type, the following endpoints will be registered (using the `articl
 | /articles/:id/relationships/comments | PATCH | `updateCommentsRelationship($id)` |
 | /articles/:id/relationships/comments | DELETE | `deleteCommentsRelationship($id)` |
 
-**You do not need to implement all these methods** if extending this package's `Http\Controllers\JsonApiController`. The controller is configured to send a `501 Not Implemented` response for any missing methods.
+**You do not need to implement all these methods** if extending this package's `Http\Controllers\JsonApiController`.
+The controller is configured to send a `501 Not Implemented` response for any missing methods.
 
 ### The Middleware
 
-The `M::JSON_API` middleware effectively boots JSON API support for the routes on which it is applied. As part of this boot process it:
+The `json-api` middleware effectively boots JSON API support for the routes on which it is applied. As part of this
+boot process it:
 
-1. Creates a `CodecMatcherInterface` from your configuration.
-2. Creates a `ParametersInterface` from the received request.
-3. Checks that the request headers match to an encoder in the codec matcher.
-4. Parses the request query parameters.
+1. Loads schemas from you configuration.
+2. Creates a `CodecMatcherInterface` from your configuration.
+3. Creates a `ParametersInterface` from the received request.
+4. Checks that the request headers match to an encoder in the codec matcher.
+5. Parses the request query parameters.
 
-If the checks pass, then the codec matcher instance and parameters instances are registered on the `JsonApi` service. These can be accessed through the `JsonApi` facade:
+If the checks pass, then generated instances are registered. These can be accessed through the `JsonApi` facade, e.g.:
 
-* `JsonApi::getCodecMatcher()` returns a `Neomerx\JsonApi\Contracts\Codec\CodecMatcherInterface` instance.
-* `JsonApi::getParameters()` returns a `Neomerx\JsonApi\Contracts\Parameters\ParametersInterface` instance.
+* `JsonApi::getSchemas()` returns the schema set for the current request.
+* `JsonApi::getEncoder()` returns the encoder for the current request.
+* `JsonApi::getParameters()` returns the parsed JSON API parameters for the current request.
 
-Exceptions will be thrown if the checks do not pass.
+Other methods are also available - see the `CloudCreativity\JsonApi\Contract\Integration\EnvironmentInterface` for
+available methods.
 
-If at any point you need to check whether the middleware was run (i.e. whether you're currently in a JsonApi route), then use the `JsonApi::isActive()` method.
+Exceptions will be thrown if the checks do not pass. If at any point you need to check whether the middleware was run
+(i.e. whether you're currently in a JSON API route), then use the `JsonApi::hasSchemas()` method.
 
 ### Supported Extensions
 
-To register supported extensions, use the `M::SUPPORTED_EXT` middleware. This takes middleware parameters that list the extensions supported. A static method `M::ext()` allows the middleware name to be easily composed. For example:
+To register supported extensions, use the `json-api-ext` middleware. This takes middleware parameters that list
+the extensions supported. For example:
 
 ``` php
 Route::group([
-    'middleware' => [M::JSON_API, M::ext('ext1', 'ext2')]
+    'middleware' => ['json-api', 'json-api-ext:ext1,ext2']
   ], function () {
     // JSON API routes here, all supporting the above extensions.
 });
 ```
 
-Middleware makes it easy to register multiple routes (or even an entire API) that support the same extensions. Alternatively, you can use the supported extension middleware as controller middleware if desired.
+Middleware makes it easy to register multiple routes (or even an entire API) that support the same extensions.
+Alternatively, you can use the supported extension middleware as controller middleware if desired.
 
 ### Controller
 
-JSON API support in controllers can be added by extending `CloudCreativity\JsonApi\Http\Controllers\JsonApiController`. This has a number of helper methods to assist in handling JSON API requests and sending responses.
+JSON API support in controllers can be added by extending `CloudCreativity\JsonApi\Http\Controllers\JsonApiController`.
+This has a number of helper methods to assist in handling JSON API requests and sending responses.
 
-Each of the following pieces of functionality are implemented using traits. So if you want to include any of the functionality in your own custom controllers, just include the relevant trait. The traits are in the same namespace as the `JsonApiController`.
+Each of the following pieces of functionality are implemented using traits. So if you want to include any of the
+functionality in your own custom controllers, just include the relevant trait. The traits are in the same namespace as
+the `JsonApiController`.
 
 #### Query Parameters
 
-The `JsonApiController` will automatically check the query parameters before your controller action method is invoked. To define what query parameters your controller allows, set the properties that are defined in the `QueryCheckerTrait`.
+The `JsonApiController` will automatically check the query parameters before your controller action method is invoked.
+To define what query parameters your controller allows, set the properties that are defined in the `QueryCheckerTrait`.
 
-This automatic checking means that by the time your controller action method is invoked, the request headers and query parameters have all been checked. Your action method can get the query parameters by calling `$this->getParameters()`.
+This automatic checking means that by the time your controller action method is invoked, the request headers and query
+parameters have all been checked. Your action method can get the query parameters by calling `$this->getParameters()`.
 
-If you want to disable automatic checking of query parameters before your controller methods are invoked, then set the `$autoCheckQueryParameters` property of your controller to `false`.
+If you want to disable automatic checking of query parameters before your controller methods are invoked, then set the
+`$autoCheckQueryParameters` property of your controller to `false`.
 
-Note that if you are adding the trait to your own custom controller, you will need to call `$this->checkParameters()` to trigger the checking of parameters.
+Note that if you are adding the trait to your own custom controller, you will need to call `$this->checkParameters()`
+to trigger the checking of parameters.
 
 #### HTTP Content Body
 
-To decode the request content body with the decoder that matched the request `Content-Type` header, then call `$this->getContentBody()`.
+To decode the request content body with the decoder that matched the request `Content-Type` header, then call
+`$this->getContentBody()`.
 
-If you want to use a `CloudCreativity\JsonApi\Contracts\Object\DocumentInterface` object to handle the request content in your controller action, use `$this->getDocumentObject()`. This method ensures the decoder has returned a `DocumentInterface` object, or if it has returned a `stdClass` object it will be cast to a `DocumentInterface` object.
-Shorthands are also provided if you are expecting the document to contain a resource object in its data member, or if the provided document represents a relationship. Use `$this->getResourceObject()` and `$this->getRelationshipObject()` respectively.
+If you want to use a `CloudCreativity\JsonApi\Contracts\Object\DocumentInterface` object to handle the request content
+in your controller action, use `$this->getDocumentObject()`. This method ensures the decoder has returned a
+`DocumentInterface` object, or if it has returned a `stdClass` object it will be cast to a `DocumentInterface` object.
+Shorthands are also provided if you are expecting the document to contain a resource object in its data member, or if
+the provided document represents a relationship. Use `$this->getResourceObject()` and `$this->getRelationshipObject()`
+respectively.
 
 These helper methods are implemented in the `DocumentDecoderTrait`.
 
 #### Content Body Validation
 
-If desired, you can validate the body content as it is decoded. All of the content body getter methods accept an optional validator that is applied when the document content is decoded. All of methods for getting the request body content take an optional validator argument.
+If desired, you can validate the body content as it is decoded. All of the content body getter methods accept an
+optional validator that is applied when the document content is decoded. All of methods for getting the request body
+content take an optional validator argument.
 
 If the received content is a resource object, you can use the `$this->getResourceObjectValidator()` method. For example:
 
@@ -200,9 +237,11 @@ class ArticlesController extends JsonApiController
 }
 ```
 
-The validator returned by `$this->getResourceObjectValidator()` provides helper methods for also defining relationship validation rules.
+The validator returned by `$this->getResourceObjectValidator()` provides helper methods for also defining relationship
+validation rules.
 
-For relationship endpoints, you can get a validator for the relationship provided using one of the following helper methods:
+For relationship endpoints, you can get a validator for the relationship provided using one of the following helper
+methods:
 
 ``` php
 class ArticlesController extends JsonApiController
@@ -229,9 +268,12 @@ These helper methods are provided by the `DocumentValidatorTrait`, which uses th
 
 #### Responses
 
-The class `CloudCreativity\JsonApi\Http\Responses\ResponsesHelper` provides a number of methods for constructing JSON API responses. This helper automatically uses request encoding parameters, the matched encoding media type plus any registered supported extensions.
+The class `CloudCreativity\JsonApi\Http\Responses\ResponsesHelper` provides a number of methods for constructing JSON
+API responses. This helper automatically uses request encoding parameters, the matched encoding media type plus any
+registered supported extensions.
 
-If you have extended the `JsonApiController`, you can use this helper by calling `$this->reply()` then the method for the type of response you want to send. For example, to send a content response:
+If you have extended the `JsonApiController`, you can use this helper by calling `$this->reply()` then the method for
+the type of response you want to send. For example, to send a content response:
 
 ``` php
 class ArticlesController extends JsonApiController
@@ -270,7 +312,8 @@ The reply method is added to the controller via the `ReplyTrait`.
 
 ### Exception Handling
 
-To add JSON API support to your application's Exception Handler, add the `Exceptions\HandlerTrait` to your `App\Exceptions\Handler` instance. Then, in your `render()` method you can do the following:
+To add JSON API support to your application's Exception Handler, add the `Exceptions\HandlerTrait` to your
+`App\Exceptions\Handler` instance. Then, in your `render()` method you can do the following:
 
 ``` php
 namespace App\Exceptions;
@@ -297,7 +340,10 @@ class Handler extends ExceptionHandler
 
 #### Configuring Exception Rendering
 
-You can configure the exception renderer in your `json-api` config file under the `C::EXCEPTIONS` key. This takes a default HTTP status (which is `500` if not provided) plus a map of exceptions. The map should be an array of Exception class names as keys, with their values either being an HTTP status code or an array representing the JSON API Error object to return. For example:
+You can configure the exception renderer in your `json-api` config file under the `C::EXCEPTIONS` key. This takes a
+default HTTP status (which is `500` if not provided) plus a map of exceptions. The map should be an array of Exception
+class names as keys, with their values either being an HTTP status code or an array representing the JSON API Error
+object to return. For example:
 
 ``` php
 
@@ -322,14 +368,19 @@ use CloudCreativity\JsonApi\Contracts\Error\ErrorObjectInterface as Error;
 ];
 ```
 
-If providing an array template, then remember to include an `Error::STATUS` code so that the HTTP status of the response is set correctly.
+If providing an array template, then remember to include an `Error::STATUS` code so that the HTTP status of the
+response is set correctly.
 
 #### Sending JSON API Error Responses
 
-If during the course of your application's logic you need to return a JSON API error object to the client, throw one of the following exceptions:
+If during the course of your application's logic you need to return a JSON API error object to the client, throw one of
+the following exceptions:
 
 * `CloudCreativity\JsonApi\Error\ThrowableError` - an exception that is an error object.
-* `CloudCreativity\JsonApi\Error\ErrorException` - an exception that takes a `Neormerx\JsonApi\Contracts\Document\ErrorInterface` object as its first argument, effectively allowing you to throw an error object.
-* `CloudCreativity\JsonApi\Error\MultiErrorException` - an exception that takes a `CloudCreativity\Jsonapi\Contracts\Error\ErrorCollectionInterface` object as its first object.
+* `CloudCreativity\JsonApi\Error\ErrorException` - an exception that takes a `Neormerx\JsonApi\Contracts\Document\ErrorInterface`
+object as its first argument, effectively allowing you to throw an error object.
+* `CloudCreativity\JsonApi\Error\MultiErrorException` - an exception that takes a
+`CloudCreativity\Jsonapi\Contracts\Error\ErrorCollectionInterface` object as its first object.
 
-None of the above classes need to be registered in your config file's exception map because the renderer automatically handles them.
+None of the above classes need to be registered in your config file's exception map because the renderer automatically
+handles them.
