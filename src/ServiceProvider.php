@@ -24,8 +24,6 @@ use Neomerx\JsonApi\Factories\Factory;
 use Neomerx\JsonApi\Responses\Responses;
 use Request;
 
-;
-
 /**
  * Class ServiceProvider
  * @package CloudCreativity\JsonApi
@@ -50,8 +48,8 @@ class ServiceProvider extends BaseServiceProvider
         ]);
 
         // Add Json Api middleware to the router.
-        $router->middleware(Integration\LaravelEnvironment::JSON_API, Http\Middleware\BootJsonApi::class);
-        $router->middleware(Integration\LaravelEnvironment::SUPPORTED_EXT, Http\Middleware\SupportedExt::class);
+        $router->middleware('json-api', Http\Middleware\BootJsonApi::class);
+        $router->middleware('json-api-ext', Http\Middleware\SupportedExt::class);
 
         // If the whole application is set to be a Json Api, push the init middleware into the kernel.
         $global = (bool) $this->getConfig(Config::IS_GLOBAL);
