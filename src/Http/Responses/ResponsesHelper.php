@@ -98,7 +98,7 @@ class ResponsesHelper
      * @param array $links
      * @param mixed|null $meta
      * @param array $headers
-     * @return mixed
+     * @return Response
      */
     public function created($resource, array $links = [], $meta = null, array $headers = [])
     {

@@ -34,7 +34,7 @@ class RulesValidator extends AbstractValidator
         ],
         self::ERROR_VALIDATION_FAILED => [
             ErrorObjectInterface::CODE => self::ERROR_VALIDATION_FAILED,
-            ErrorObjectInterface::STATUS => 400,
+            ErrorObjectInterface::STATUS => 422,
             ErrorObjectInterface::TITLE => 'Invalid Attributes',
             ErrorObjectInterface::DETAIL => 'The provided attributes are invalid.',
         ],
