@@ -19,10 +19,19 @@ For full information on the spec, plus examples, see http://jsonapi.org
 * A JSON API controller providers helpers to:
   - Automatically check request query parameters.
   - Decode request body content into objects with a standard, fluent, interface. Makes handling content easier.
-  - Validate request body content as it is being decoded, including using Laravel validates on resource object attributes.
+  - Validate request body content as it is being decoded, including using Laravel validators on resource object attributes.
   - Helpers for sending common JSON API responses, that automatically include requested encoding parameters, the encoded media type plus registered supported extensions.
 * Rendering of exceptions into JSON API error responses, plus easy sending of error responses via throwable JSON API error objects.
 * Configuration settings - including schemas, encoders, decoders and exception rendering - all defined in a configuration file in your Laravel application.
+
+## Status
+
+This repository is under development but is considered relatively stable. Tagged versions exist and we have live
+applications that are using the repository.
+
+## License
+
+Apache License (Version 2.0). Please see [License File](LICENSE) for more information.
 
 ## Installation
 
@@ -139,7 +148,7 @@ If the checks pass, then generated instances are registered. These can be access
 * `JsonApi::getEncoder()` returns the encoder for the current request.
 * `JsonApi::getParameters()` returns the parsed JSON API parameters for the current request.
 
-Other methods are also available - see the `CloudCreativity\JsonApi\Contract\Integration\EnvironmentInterface` for
+Other methods are also available - see the `CloudCreativity\JsonApi\Contracts\Integration\EnvironmentInterface` for
 available methods.
 
 Exceptions will be thrown if the checks do not pass. If at any point you need to check whether the middleware was run
@@ -303,7 +312,7 @@ The available helpers are:
 | `noContent` | Send a no content reply (204) |
 | `meta` | Send meta only |
 | `content` | Send content (resource object, null, or collection) |
-| `created` | Send a resource created response (encoded object, location header and 201 status |
+| `created` | Send a resource created response (encoded object, location header and 201 status) |
 | `relationship` | Send a relationship response (encoded identifier, null, or collection of identifiers) |
 
 See the class for the parameters that each helper method accepts.
@@ -378,9 +387,10 @@ the following exceptions:
 
 * `CloudCreativity\JsonApi\Error\ThrowableError` - an exception that is an error object.
 * `CloudCreativity\JsonApi\Error\ErrorException` - an exception that takes a `Neormerx\JsonApi\Contracts\Document\ErrorInterface`
-object as its first argument, effectively allowing you to throw an error object.
+object as its first argument, effectively allowing you to throw an error object. An error object implementation is
+available - use `CloudCreativity\JsonApi\Error\ErrorObject`.
 * `CloudCreativity\JsonApi\Error\MultiErrorException` - an exception that takes a
 `CloudCreativity\Jsonapi\Contracts\Error\ErrorCollectionInterface` object as its first object.
 
-None of the above classes need to be registered in your config file's exception map because the renderer automatically
-handles them.
+None of the above classes need to be registered in your config file's exception map because the renderer is
+automatically configured to handle them.
