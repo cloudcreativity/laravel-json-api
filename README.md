@@ -314,8 +314,15 @@ The available helpers are:
 | `content` | Send content (resource object, null, or collection) |
 | `created` | Send a resource created response (encoded object, location header and 201 status) |
 | `relationship` | Send a relationship response (encoded identifier, null, or collection of identifiers) |
+| `error` | Send a response with a single JSON API error object |
+| `errors` | Send a response with multiple JSON API error objects |
 
 See the class for the parameters that each helper method accepts.
+
+Note that sending error responses can also be achieved by throwing exceptions (see below). Throwing errors
+is preferable if you want to stop execution, and/or if you want your exception handler to decide if the exception
+should be logged. Using the reply helper's `error` and `errors` methods will not send an exception to your exception
+handler.
 
 The reply method is added to the controller via the `ReplyTrait`.
 

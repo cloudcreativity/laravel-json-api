@@ -18,9 +18,11 @@
 
 namespace CloudCreativity\JsonApi\Http\Responses;
 
+use CloudCreativity\JsonApi\Contracts\Error\ErrorCollectionInterface;
 use CloudCreativity\JsonApi\Contracts\Integration\EnvironmentInterface;
 use Illuminate\Http\Response;
 use Illuminate\Support\Collection;
+use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
 use Neomerx\JsonApi\Contracts\Encoder\EncoderInterface;
 use Neomerx\JsonApi\Contracts\Responses\ResponsesInterface;
 
@@ -180,6 +182,50 @@ class ResponsesHelper
     }
 
     /**
+     * Send a single JSON API error object as a response.
+     *
+     * The status code will be taken directly from the provided error object using the `ErrorInterface::getStatus()`
+     * method. If that method returns a falsey value, then the status code will default to 500.
+     *
+     * @param ErrorInterface $error
+     * @param array $headers
+     * @return Response
+     */
+    public function error(ErrorInterface $error, array $headers = [])
+    {
+        $statusCode = $error->getStatus() ?: Response::HTTP_INTERNAL_SERVER_ERROR;
+
+        $content = $this
+            ->getEncoder()
+            ->encodeError($error);
+
+        return $this->respond($statusCode, $content, $headers);
+    }
+
+    /**
+     * @param ErrorInterface[]|ErrorCollectionInterface $errors
+     * @param $statusCode
+     *      if not provided, defaults to 500 or the ErrorCollectionInterface status.
+     * @param array $headers
+     * @return Response
+     */
+    public function errors($errors, $statusCode = null, array $headers = [])
+    {
+        if ($errors instanceof ErrorCollectionInterface) {
+            $statusCode = is_null($statusCode) ? $errors->getStatus() : $statusCode;
+            $errors = $errors->getAll();
+        } elseif (is_null($statusCode)) {
+            $statusCode = Response::HTTP_INTERNAL_SERVER_ERROR;
+        }
+
+        $content = $this
+            ->getEncoder()
+            ->encodeErrors($errors);
+
+        return $this->respond($statusCode, $content, $headers);
+    }
+
+    /**
      * @param $statusCode
      * @param string|null $content
      * @param array $headers
@@ -201,7 +247,7 @@ class ResponsesHelper
     /**
      * @return EncoderInterface
      */
-    public function getEncoder()
+    private function getEncoder()
     {
         return $this->environment->getEncoder();
     }
@@ -209,7 +255,7 @@ class ResponsesHelper
     /**
      * @return \Neomerx\JsonApi\Contracts\Parameters\ParametersInterface
      */
-    public function getEncodingParameters()
+    private function getEncodingParameters()
     {
         return $this->environment->getParameters();
     }

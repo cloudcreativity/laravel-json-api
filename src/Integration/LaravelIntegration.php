@@ -95,7 +95,7 @@ class LaravelIntegration implements CurrentRequestInterface, NativeResponsesInte
      * @param int $statusCode
      * @param array $headers
      *
-     * @return mixed
+     * @return Response
      */
     public function createResponse($content, $statusCode, array $headers)
     {
