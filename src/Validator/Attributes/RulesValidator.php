@@ -19,6 +19,7 @@
 namespace CloudCreativity\JsonApi\Validator\Attributes;
 
 use CloudCreativity\JsonApi\Contracts\Error\ErrorObjectInterface;
+use CloudCreativity\JsonApi\Object\ObjectUtils;
 use CloudCreativity\JsonApi\Validator\AbstractValidator;
 use CloudCreativity\JsonApi\Validator\Helper\RequiredTrait;
 use Illuminate\Contracts\Support\MessageBag;
@@ -146,7 +147,7 @@ class RulesValidator extends AbstractValidator
             return;
         }
 
-        $validator = $this->make(get_object_vars($value));
+        $validator = $this->make(ObjectUtils::toArray($value));
 
         if ($validator->fails()) {
             $this->error(static::ERROR_VALIDATION_FAILED);
