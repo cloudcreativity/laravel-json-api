@@ -38,29 +38,11 @@ class ResourceRegistrar
     protected $router;
 
     /**
-     * @type array
-     */
-    protected $resourceDefaults;
-
-    /**
-     * @type array
-     */
-    protected $rootUrlMethods = ['index', 'create'];
-
-    /**
      * @param Registrar $router
      */
     public function __construct(Registrar $router)
     {
         $this->router = $router;
-
-        $this->resourceDefaults = [
-            'index'  => 'get',
-            'create' => 'post',
-            'read'   => 'get',
-            'update' => 'patch',
-            'delete' => 'delete',
-        ];
     }
 
     /**
@@ -76,7 +58,7 @@ class ResourceRegistrar
         $hasOne = isset($options[static::HAS_ONE]) ? (array) $options[static::HAS_ONE] : [];
         $hasMany = isset($options[static::HAS_MANY]) ? (array) $options[static::HAS_MANY] : [];
 
-        $this->registerResource($rootUrl, $objectUrl, $controller, $options)
+        $this->registerResource($rootUrl, $objectUrl, $controller)
             ->registerHasOne($objectUrl, $controller, $hasOne)
             ->registerHasMany($objectUrl, $controller, $hasMany);
     }
@@ -85,19 +67,15 @@ class ResourceRegistrar
      * @param $rootUrl
      * @param $objectUrl
      * @param $controller
-     * @param $options
      * @return $this
      */
-    private function registerResource($rootUrl, $objectUrl, $controller, $options)
+    private function registerResource($rootUrl, $objectUrl, $controller)
     {
-        foreach ($this->getResourceMethods($options) as $method) {
-            $url = in_array($method,
-                $this->rootUrlMethods) ? $rootUrl : $objectUrl;
-            call_user_func_array(
-                [$this->router, $this->resourceDefaults[$method],],
-                [$url, $controller . '@' . $method,]
-            );
-        }
+        $this->router->get($rootUrl, $controller . '@index');
+        $this->router->post($rootUrl, $controller . '@create');
+        $this->router->get($objectUrl, $controller . '@read');
+        $this->router->patch($objectUrl, $controller . '@update');
+        $this->router->delete($objectUrl, $controller . '@delete');
 
         return $this;
     }
@@ -143,22 +121,5 @@ class ResourceRegistrar
         }
 
         return $this;
-    }
-
-    /**
-     * Get the applicable resource methods.
-     *
-     * @param $options
-     * @return array
-     */
-    protected function getResourceMethods($options)
-    {
-        $defaults = array_keys($this->resourceDefaults);
-        if (isset($options['only'])) {
-            return array_intersect($defaults, (array) $options['only']);
-        } elseif (isset($options['except'])) {
-            return array_diff($defaults, (array) $options['except']);
-        }
-        return $defaults;
     }
 }
