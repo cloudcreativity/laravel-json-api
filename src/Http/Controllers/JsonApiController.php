@@ -18,7 +18,8 @@
 
 namespace CloudCreativity\JsonApi\Http\Controllers;
 
-use CloudCreativity\JsonApi\Error\ThrowableError;
+use CloudCreativity\JsonApi\Contracts\Error\ErrorObjectInterface;
+use CloudCreativity\JsonApi\Error\ErrorException;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 
@@ -57,32 +58,60 @@ class JsonApiController extends Controller
     /**
      * @param array $parameters
      * @return void
-     * @throws ThrowableError
+     * @throws ErrorException
      */
     public function missingMethod($parameters = [])
     {
-        throw new ThrowableError('Method Not Allowed', Response::HTTP_METHOD_NOT_ALLOWED);
+        $this->methodNotAllowed();
     }
 
     /**
      * @param string $method
      * @param array $parameters
      * @return void
-     * @throws ThrowableError
+     * @throws ErrorException
      */
     public function __call($method, $parameters)
     {
-        throw new ThrowableError('Not Implemented', Response::HTTP_NOT_IMPLEMENTED);
+        $this->notImplemented();
     }
 
     /**
      * Helper method to throw a not found exception.
      *
-     * @return void
-     * @throws ThrowableError
+     * @throws ErrorException
      */
     public function notFound()
     {
-        throw new ThrowableError('Not Found', Response::HTTP_NOT_FOUND);
+        throw new ErrorException([
+            ErrorObjectInterface::TITLE => 'Not Found',
+            ErrorObjectInterface::STATUS => Response::HTTP_NOT_FOUND,
+        ]);
+    }
+
+    /**
+     * Helper method to throw a not implemented exception.
+     *
+     * @throws ErrorException
+     */
+    public function notImplemented()
+    {
+        throw new ErrorException([
+            ErrorObjectInterface::TITLE => 'Not Implemented',
+            ErrorObjectInterface::STATUS => Response::HTTP_NOT_IMPLEMENTED,
+        ]);
+    }
+
+    /**
+     * Helper method to throw a method not allowed exception.
+     *
+     * @throws ErrorException
+     */
+    public function methodNotAllowed()
+    {
+        throw new ErrorException([
+            ErrorObjectInterface::TITLE => 'Method Not Allowed',
+            ErrorObjectInterface::STATUS => Response::HTTP_METHOD_NOT_ALLOWED,
+        ]);
     }
 }
