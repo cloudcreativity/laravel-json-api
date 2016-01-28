@@ -116,8 +116,8 @@ class ResourceRegistrar
 
             $this->router->get($related, sprintf('%s@read%s', $controller, $name));
             $this->router->get($identifier, sprintf('%s@read%sRelationship', $controller, $name));
-            $this->router->patch($identifier, sprintf('%s@read%sRelationship', $controller, $name));
-            $this->router->delete($identifier, sprintf('%s@read%sRelationship', $controller, $name));
+            $this->router->patch($identifier, sprintf('%s@update%sRelationship', $controller, $name));
+            $this->router->delete($identifier, sprintf('%s@delete%sRelationship', $controller, $name));
         }
 
         return $this;
