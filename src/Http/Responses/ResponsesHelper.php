@@ -20,6 +20,7 @@ namespace CloudCreativity\JsonApi\Http\Responses;
 
 use CloudCreativity\JsonApi\Contracts\Error\ErrorCollectionInterface;
 use CloudCreativity\JsonApi\Contracts\Integration\EnvironmentInterface;
+use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Http\Response;
 use Illuminate\Support\Collection;
 use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
@@ -98,7 +99,7 @@ class ResponsesHelper
     public function content($data, array $links = [], $meta = null, $statusCode = Response::HTTP_OK, array $headers = [])
     {
         /** Eloquent collections do not encode properly, so we'll get all just in case it's an Eloquent collection */
-        if ($data instanceof Collection) {
+        if ($data instanceof Collection || $data instanceof Paginator) {
             $data = $data->all();
         }
 
