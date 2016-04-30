@@ -27,8 +27,7 @@
         "illuminate/support": "^5.1",
         "illuminate/http": "^5.1",
         "illuminate/routing": "^5.1",
-        "neomerx/json-api": "^0.6.0",
-        "cloudcreativity/json-api": "^0.4.0"
+        "cloudcreativity/json-api": "dev-feature/jj-abrams"
     },
     "require-dev": {
         "phpunit/phpunit": "^4.7"
