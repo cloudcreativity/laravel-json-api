@@ -1,43 +1,51 @@
 <?php
 
-use CloudCreativity\JsonApi\Config as C;
-use CloudCreativity\JsonApi\Contracts\Repositories\CodecMatcherRepositoryInterface as Codec;
-use CloudCreativity\JsonApi\Contracts\Repositories\SchemasRepositoryInterface as Schemas;
-use CloudCreativity\JsonApi\Decoders\DocumentDecoder;
-
 return [
 
-    /**
-     * Whether every route in the application is a JSON API endpoint.
-     *
-     * If true, will install the 'json-api' middleware on the HTTP Kernel.
-     */
-    C::IS_GLOBAL => false,
-
-    /**
-     * Codec Matchers
-     */
-    C::CODEC_MATCHER => [
-        Codec::ENCODERS => [
+    /*
+    |--------------------------------------------------------------------------
+    | Codec Matcher Configuration
+    |--------------------------------------------------------------------------
+    |
+    | This is where you register how different media types are mapped to
+    | encoders and decoders. Encoders do the work of converting your records
+    | into Json-Api resources. Decoders are used to convert incoming request
+    | body content into objects.
+    |
+    | If there is not an encoder/decoder registered for a specific media-type,
+    | then an error will be sent to the client as per the Json-Api spec.
+    |
+    */
+    'codec-matcher' => [
+        'encoders' => [
             'application/vnd.api+json',
             'text/plain' => JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES,
         ],
-        Codec::DECODERS => [
-            'application/vnd.api+json' => DocumentDecoder::class,
+        'decoders' => [
+            'application/vnd.api+json',
         ],
     ],
 
-    /**
-     * Schemas
-     */
-    C::SCHEMAS => [
-        Schemas::DEFAULTS => [
-            Article::class => ArticlesSchema::class,
-            Comment::class => CommentsSchema::class,
+    /*
+    |--------------------------------------------------------------------------
+    | Schema Sets
+    |--------------------------------------------------------------------------
+    |
+    | Schemas are the objects that convert a record object into its Json-Api
+    | resource representation. This package supports having multiple sets of
+    | schemas, which is useful if you have different api end-points in your
+    | application (e.g. you might have 'v1' and 'v2' endpoints).
+    |
+    | Schema sets are a mapping of the record object class to the schema class
+    | that is responsible for encoding it. The 'default' set is used if no
+    | specific set is a middleware parameter. If using additional sets, the
+    | named additional set will be merged with the default set.
+    */
+    'schemas' => [
+        'defaults' => [
+            'ModelClass' => 'SchemaClass',
         ],
-        // merged with defaults if JSON API middleware uses the 'extra-schemas' name.
-        'extra-schemas' => [
-            'Person' => 'PersonSchema',
-        ],
+        'v1' => [],
+        'v2' => [],
     ],
 ];

@@ -16,21 +16,36 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\LaravelJsonApi\Http\Controllers;
-use CloudCreativity\LaravelJsonApi\Http\Responses\ResponseFactory;
+namespace CloudCreativity\LaravelJsonApi;
+
+use Illuminate\Container\Container;
+use PHPUnit_Framework_TestCase;
 
 /**
- * Class ReplyTrait
+ * Class TestCase
  * @package CloudCreativity\LaravelJsonApi
  */
-trait ReplyTrait
+class TestCase extends PHPUnit_Framework_TestCase
 {
 
     /**
-     * @return ResponseFactory
+     * @var Container
      */
-    public function reply()
+    protected $container;
+
+    /**
+     * @return void
+     */
+    protected function setUp()
     {
-        return response()->jsonApi();
+        Container::setInstance(new Container());
+    }
+
+    /**
+     * @return Container
+     */
+    protected function container()
+    {
+        return Container::getInstance();
     }
 }

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2015 Cloud Creativity Limited
+ * Copyright 2016 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,14 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\JsonApi;
+namespace CloudCreativity\LaravelJsonApi;
 
-use CloudCreativity\JsonApi\Services\JsonApiService;
+use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
 use Illuminate\Support\Facades\Facade as BaseFacade;
 
 /**
  * Class Facade
- * @package CloudCreativity\JsonApi\Laravel
+ * @package CloudCreativity\LaravelJsonApi
  */
 class Facade extends BaseFacade
 {

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2015 Cloud Creativity Limited
+ * Copyright 2016 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,102 +16,135 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\JsonApi\Http\Controllers;
+namespace CloudCreativity\LaravelJsonApi\Http\Controllers;
 
-use CloudCreativity\JsonApi\Contracts\Error\ErrorObjectInterface;
-use CloudCreativity\JsonApi\Error\ErrorException;
+use CloudCreativity\LaravelJsonApi\Http\Requests\JsonApiRequest;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 
 /**
  * Class JsonApiController
- * @package CloudCreativity\JsonApi\Laravel
+ * @package CloudCreativity\LaravelJsonApi
  */
 class JsonApiController extends Controller
 {
 
-    use QueryCheckerTrait,
-        DocumentValidatorTrait,
-        ReplyTrait;
+    use ReplyTrait;
 
     /**
-     * Whether query parameters should automatically be checked before the controller action method is invoked.
-     *
-     * @var bool
+     * @var JsonApiRequest
      */
-    protected $autoCheckQueryParameters = true;
+    protected $request;
 
     /**
-     * @param string $method
-     * @param array $parameters
-     * @return \Symfony\Component\HttpFoundation\Response
+     * JsonApiController constructor.
+     * @param JsonApiRequest $request
      */
-    public function callAction($method, $parameters)
+    public function __construct(JsonApiRequest $request)
     {
-        if (true === $this->autoCheckQueryParameters) {
-            $this->checkParameters();
-        }
-
-        return parent::callAction($method, $parameters);
+        $this->request = $request;
     }
 
     /**
-     * @param array $parameters
-     * @return void
-     * @throws ErrorException
+     * @return Response
      */
-    public function missingMethod($parameters = [])
+    public function index()
     {
-        $this->methodNotAllowed();
+        return $this->notImplemented();
     }
 
     /**
-     * @param string $method
-     * @param array $parameters
-     * @return void
-     * @throws ErrorException
+     * @return Response
      */
-    public function __call($method, $parameters)
+    public function create()
     {
-        $this->notImplemented();
+        return $this->notImplemented();
     }
 
     /**
-     * Helper method to throw a not found exception.
-     *
-     * @throws ErrorException
+     * @param $resourceId
+     * @return Response
      */
-    public function notFound()
+    public function read($resourceId)
     {
-        throw new ErrorException([
-            ErrorObjectInterface::TITLE => 'Not Found',
-            ErrorObjectInterface::STATUS => Response::HTTP_NOT_FOUND,
-        ]);
+        return $this->notImplemented();
     }
 
     /**
-     * Helper method to throw a not implemented exception.
-     *
-     * @throws ErrorException
+     * @param $resourceId
+     * @return Response
      */
-    public function notImplemented()
+    public function update($resourceId)
     {
-        throw new ErrorException([
-            ErrorObjectInterface::TITLE => 'Not Implemented',
-            ErrorObjectInterface::STATUS => Response::HTTP_NOT_IMPLEMENTED,
-        ]);
+        return $this->notImplemented();
     }
 
     /**
-     * Helper method to throw a method not allowed exception.
-     *
-     * @throws ErrorException
+     * @param $resourceId
+     * @return Response
      */
-    public function methodNotAllowed()
+    public function delete($resourceId)
     {
-        throw new ErrorException([
-            ErrorObjectInterface::TITLE => 'Method Not Allowed',
-            ErrorObjectInterface::STATUS => Response::HTTP_METHOD_NOT_ALLOWED,
-        ]);
+        return $this->notImplemented();
+    }
+
+    /**
+     * @param $resourceId
+     * @param $relationshipName
+     * @return Response
+     */
+    public function readRelatedResource($resourceId, $relationshipName)
+    {
+        return $this->notImplemented();
+    }
+
+    /**
+     * @param $resourceId
+     * @param $relationshipName
+     * @return Response
+     */
+    public function readRelationship($resourceId, $relationshipName)
+    {
+        return $this->notImplemented();
+    }
+
+    /**
+     * @param $resourceId
+     * @param $relationshipName
+     * @return Response
+     */
+    public function replaceRelationship($resourceId, $relationshipName)
+    {
+        return $this->notImplemented();
+    }
+
+    /**
+     * @param $resourceId
+     * @param $relationshipName
+     * @return Response
+     */
+    public function addToRelationship($resourceId, $relationshipName)
+    {
+        return $this->notImplemented();
+    }
+
+    /**
+     * @param $resourceId
+     * @param $relationshipName
+     * @return Response
+     */
+    public function removeFromRelationship($resourceId, $relationshipName)
+    {
+        return $this->notImplemented();
+    }
+
+    /**
+     * @return Response
+     */
+    protected function notImplemented()
+    {
+        return $this
+            ->reply()
+            ->statusCode(Response::HTTP_NOT_IMPLEMENTED);
     }
 }

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2015 Cloud Creativity Limited
+ * Copyright 2016 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,24 +16,15 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\JsonApi;
+namespace CloudCreativity\LaravelJsonApi\Exceptions;
+
+use RuntimeException;
 
 /**
- * Class Config
- * @package CloudCreativity\JsonApi\Laravel
+ * Class RequestException
+ * @package CloudCreativity\LaravelJsonApi
  */
-class Config
+class RequestException extends RuntimeException
 {
 
-    /** The config file name, and the name of the route middleware. */
-    const NAME = 'json-api';
-
-    /** If a true boolean, Json Api support will be initialised for the entire application. */
-    const IS_GLOBAL = 'is-global';
-
-    /** The key for codec matchers configuration */
-    const CODEC_MATCHER = 'codec-matcher';
-
-    /** The key for the schemas configuration */
-    const SCHEMAS = 'schemas';
 }

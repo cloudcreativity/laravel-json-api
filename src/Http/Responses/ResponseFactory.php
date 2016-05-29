@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2015 Cloud Creativity Limited
+ * Copyright 2016 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,9 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\JsonApi\Http\Responses;
+namespace CloudCreativity\LaravelJsonApi\Http\Responses;
 
-use CloudCreativity\JsonApi\Contracts\Error\ErrorCollectionInterface;
-use CloudCreativity\JsonApi\Error\ErrorCollection;
+use CloudCreativity\JsonApi\Document\Error;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Http\Response;
 use Illuminate\Support\Collection;
@@ -27,8 +26,8 @@ use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
 use Neomerx\JsonApi\Contracts\Http\ResponsesInterface;
 
 /**
- * Class ResponsesHelper
- * @package CloudCreativity\JsonApi\Laravel
+ * Class ResponseFactory
+ * @package CloudCreativity\LaravelJsonApi
  */
 class ResponseFactory
 {
@@ -55,11 +54,7 @@ class ResponseFactory
     public function statusCode($statusCode, array $headers = [])
     {
         /** @var Response $response */
-        $response = $this->responses->getCodeResponse($statusCode);
-
-        $this->pushHeaders($response, $headers);
-
-        return $response;
+        return $this->responses->getCodeResponse($statusCode, $headers);
     }
 
     /**
@@ -68,12 +63,7 @@ class ResponseFactory
      */
     public function noContent(array $headers = [])
     {
-        /** @var Response $response */
-        $response = $this->statusCode(Response::HTTP_NO_CONTENT);
-
-        $this->pushHeaders($response, $headers);
-
-        return $response;
+        return $this->statusCode(Response::HTTP_NO_CONTENT, $headers);
     }
 
     /**
@@ -84,12 +74,7 @@ class ResponseFactory
      */
     public function meta($meta, $statusCode = Response::HTTP_OK, array $headers = [])
     {
-        /** @var Response $response */
-        $response = $this->responses->getMetaResponse($meta, $statusCode);
-
-        $this->pushHeaders($response, $headers);
-
-        return $response;
+        return $this->responses->getMetaResponse($meta, $statusCode, $headers);
     }
 
     /**
@@ -100,18 +85,19 @@ class ResponseFactory
      * @param array $headers
      * @return Response
      */
-    public function content($data, array $links = [], $meta = null, $statusCode = Response::HTTP_OK, array $headers = [])
-    {
+    public function content(
+        $data,
+        array $links = [],
+        $meta = null,
+        $statusCode = Response::HTTP_OK,
+        array $headers = []
+    ) {
         /** Collections do not encode properly, so we'll get all just in case it's a collection */
         if ($data instanceof Collection || $data instanceof EloquentCollection) {
             $data = $data->all();
         }
 
-        $response = $this->responses->getContentResponse($data, $statusCode, $links, $meta);
-
-        $this->pushHeaders($response, $headers);
-
-        return $response;
+        return $this->responses->getContentResponse($data, $statusCode, $links, $meta, $headers);
     }
 
     /**
@@ -123,11 +109,7 @@ class ResponseFactory
      */
     public function created($resource, $links = [], $meta = null, array $headers = [])
     {
-        $response = $this->responses->getCreatedResponse($resource, $links, $meta);
-
-        $this->pushHeaders($response, $headers);
-
-        return $response;
+        return $this->responses->getCreatedResponse($resource, $links, $meta, $headers);
     }
 
     /**
@@ -155,49 +137,33 @@ class ResponseFactory
         $relatedLinkTreatAsHref = false,
         array $headers = []
     ) {
-        // @todo cannot do via the interface currently.
+        // @todo https://github.com/neomerx/json-api/issues/144
     }
 
     /**
-     * Send a single JSON API error object as a response.
-     *
-     * The status code will be taken directly from the provided error object using the `ErrorInterface::getStatus()`
-     * method. If that method returns a falsey value, then the status code will default to 500.
-     *
      * @param ErrorInterface $error
+     * @param null $statusCode
      * @param array $headers
      * @return Response
      */
-    public function error(ErrorInterface $error, array $headers = [])
+    public function error(ErrorInterface $error, $statusCode = null, array $headers = [])
     {
-        return $this->errors(new ErrorCollection([$error]), null, $headers);
+        return $this->errors($error, $statusCode, $headers);
     }
 
     /**
-     * @param ErrorInterface[]|ErrorCollectionInterface $errors
-     * @param $statusCode
-     *      if not provided, defaults to 500 or the ErrorCollectionInterface status.
+     * @param $errors
+     * @param null $statusCode
      * @param array $headers
      * @return Response
      */
     public function errors($errors, $statusCode = null, array $headers = [])
     {
-        if ($errors instanceof ErrorCollectionInterface) {
-            $statusCode = is_null($statusCode) ? $errors->getStatus() : $statusCode;
-            $errors = $errors->getAll();
-        } elseif (is_null($statusCode)) {
-            $statusCode = Response::HTTP_INTERNAL_SERVER_ERROR;
+        if (is_null($statusCode)) {
+            $statusCode = Error::getErrorStatus($errors);
         }
 
-        // @todo the problem here is neomerx has not defined an interface for errors.
+        return $this->responses->getErrorResponse($errors, $statusCode, $headers);
     }
 
-    /**
-     * @param Response $response
-     * @param array $headers
-     */
-    private function pushHeaders(Response $response, array $headers)
-    {
-        $response->headers->add($headers);
-    }
 }

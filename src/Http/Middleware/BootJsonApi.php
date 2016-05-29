@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2015 Cloud Creativity Limited
+ * Copyright 2016 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,20 +16,18 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\JsonApi\Http\Middleware;
+namespace CloudCreativity\LaravelJsonApi\Http\Middleware;
 
 use Closure;
 use CloudCreativity\JsonApi\Contracts\Repositories\CodecMatcherRepositoryInterface;
 use CloudCreativity\JsonApi\Contracts\Repositories\SchemasRepositoryInterface;
-use CloudCreativity\JsonApi\Services\JsonApiContainer;
+use CloudCreativity\LaravelJsonApi\Services\JsonApiContainer;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Http\Request;
-use Neomerx\JsonApi\Contracts\Codec\CodecMatcherInterface;
-use Neomerx\JsonApi\Contracts\Schema\ContainerInterface;
 
 /**
- * Class InitCodecMatcher
- * @package CloudCreativity\JsonApi\Laravel
+ * Class BootJsonApi
+ * @package CloudCreativity\LaravelJsonApi
  */
 class BootJsonApi
 {

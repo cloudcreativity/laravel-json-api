@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2015 Cloud Creativity Limited
+ * Copyright 2016 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,27 +16,32 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\JsonApi;
+namespace CloudCreativity\LaravelJsonApi;
 
 use CloudCreativity\JsonApi\Contracts\Repositories\CodecMatcherRepositoryInterface;
+use CloudCreativity\JsonApi\Contracts\Repositories\ErrorRepositoryInterface;
 use CloudCreativity\JsonApi\Contracts\Repositories\SchemasRepositoryInterface;
 use CloudCreativity\JsonApi\Contracts\Stdlib\ConfigurableInterface;
-use CloudCreativity\JsonApi\Http\Responses\ResponseFactory;
-use CloudCreativity\JsonApi\Http\Responses\Responses;
-use Illuminate\Contracts\Config\Repository;
-use Illuminate\Contracts\Http\Kernel;
+use CloudCreativity\JsonApi\Repositories\CodecMatcherRepository;
+use CloudCreativity\JsonApi\Repositories\ErrorRepository;
+use CloudCreativity\JsonApi\Repositories\SchemasRepository;
+use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorErrorFactoryInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorFactoryInterface;
+use CloudCreativity\LaravelJsonApi\Http\Middleware\BootJsonApi;
+use CloudCreativity\LaravelJsonApi\Http\Responses\ResponseFactory;
+use CloudCreativity\LaravelJsonApi\Http\Responses\Responses;
+use CloudCreativity\LaravelJsonApi\Validators\ValidatorFactory;
+use Illuminate\Contracts\Routing\ResponseFactory as ResponseFactoryContract;
 use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 use Neomerx\JsonApi\Contracts\Factories\FactoryInterface;
 use Neomerx\JsonApi\Contracts\Http\ResponsesInterface;
 use Neomerx\JsonApi\Contracts\Schema\SchemaFactoryInterface;
 use Neomerx\JsonApi\Factories\Factory;
-use Illuminate\Contracts\Routing\ResponseFactory as ResponseFactoryContract;
-use Illuminate\Routing\ResponseFactory as IlluminateResponseFactory;
 
 /**
  * Class ServiceProvider
- * @package CloudCreativity\JsonApi\Laravel
+ * @package CloudCreativity\LaravelJsonApi
  */
 class ServiceProvider extends BaseServiceProvider
 {
@@ -48,36 +53,15 @@ class ServiceProvider extends BaseServiceProvider
 
     /**
      * @param Router $router
-     * @param Kernel $kernel
      * @param ResponseFactoryContract $responses
      */
     public function boot(
         Router $router,
-        Kernel $kernel,
         ResponseFactoryContract $responses
     ) {
-        // Allow publishing of config file
-        $this->publishes([
-            __DIR__ . '/../config/json-api.php' => config_path('json-api.php'),
-        ]);
-
-        // Add Json Api middleware to the router.
-        $router->middleware('json-api', Http\Middleware\BootJsonApi::class);
-        //$router->middleware('json-api-ext', Http\Middleware\SupportedExt::class);
-
-        // If the whole application is set to be a Json Api, push the init middleware into the kernel.
-        $global = (bool) $this->getConfig(Config::IS_GLOBAL);
-
-        if (true === $global && method_exists($kernel, 'pushMiddleware')) {
-            $kernel->pushMiddleware(Http\Middleware\BootJsonApi::class);
-        }
-
-        // Set up a response macro
-        if (method_exists($responses, 'macro')) {
-            $responses->macro('jsonApi', function () {
-                return $this->app->make(ResponseFactory::class);
-            });
-        }
+        $this->bootPublishing();
+        $this->bootMiddleware($router);
+        $this->bootResponseMacro($responses);
     }
 
     /**
@@ -87,27 +71,129 @@ class ServiceProvider extends BaseServiceProvider
      */
     public function register()
     {
-        $container = $this->app;
+        $this->bindNeomerx();
+        $this->bindCodecMatcherRepository();
+        $this->bindSchemaRepository();
+        $this->bindErrorRepository();
+        $this->bindResponses();
+        $this->bindValidatorFactory();
+        $this->bindValidatorErrorFactory();
+    }
 
-        // Factory
-        $container->singleton(FactoryInterface::class, Factory::class);
-        $container->singleton(SchemaFactoryInterface::class, Factory::class);
-        //$container->singleton(ParametersFactoryInterface::class, Factory::class);
+    /**
+     * Register the configuration that this package publishes.
+     *
+     * @return void
+     */
+    protected function bootPublishing()
+    {
+        $this->publishes([
+            __DIR__ . '/../config/json-api.php' => config_path('json-api.php'),
+        ], 'config');
 
-        // Codec Matcher Repository
-        $container->singleton(CodecMatcherRepositoryInterface::class, Repositories\CodecMatcherRepository::class);
-        $container->resolving(CodecMatcherRepositoryInterface::class, function (ConfigurableInterface $repository) {
-            $repository->configure((array) $this->getConfig(Config::CODEC_MATCHER, []));
+        $this->publishes([
+            base_path('vendor/cloudcreativity/json-api/validation.php') => config_path('json-api-errors.php'),
+        ], 'validation');
+    }
+
+    /**
+     * Register package middleware.
+     *
+     * @param Router $router
+     */
+    protected function bootMiddleware(Router $router)
+    {
+        $router->middleware('json-api', BootJsonApi::class);
+    }
+
+    /**
+     * Register a response macro.
+     *
+     * @param ResponseFactoryContract $responses
+     */
+    protected function bootResponseMacro(ResponseFactoryContract $responses)
+    {
+        if (method_exists($responses, 'macro')) {
+            $responses->macro('jsonApi', function () {
+                return $this->app->make(ResponseFactory::class);
+            });
+        }
+    }
+
+    /**
+     * Bind parts of the neomerx/json-api dependency into the service container.
+     */
+    protected function bindNeomerx()
+    {
+        $this->app->singleton(FactoryInterface::class, Factory::class);
+        $this->app->singleton(SchemaFactoryInterface::class, Factory::class);
+    }
+
+    /**
+     * Bind the codec matcher repository into the service container.
+     */
+    protected function bindCodecMatcherRepository()
+    {
+        $this->app->singleton(CodecMatcherRepositoryInterface::class, CodecMatcherRepository::class);
+        $this->app->resolving(CodecMatcherRepositoryInterface::class, function (ConfigurableInterface $repository) {
+            $repository->configure((array) $this->getConfig('codec-matcher', []));
         });
+    }
 
-        // Schemas Repository
-        $container->singleton(SchemasRepositoryInterface::class, Repositories\SchemasRepository::class);
-        $container->resolving(SchemasRepositoryInterface::class, function (ConfigurableInterface $repository) {
-            $repository->configure((array) $this->getConfig(Config::SCHEMAS, []));
+    /**
+     * Bind the schema repository into the service container.
+     */
+    protected function bindSchemasRepository()
+    {
+        $this->app->singleton(SchemasRepositoryInterface::class, SchemasRepository::class);
+        $this->app->resolving(SchemasRepositoryInterface::class, function (ConfigurableInterface $repository) {
+            $repository->configure((array) $this->getConfig('schemas', []));
         });
+    }
 
-        // Responses
-        $container->singleton(ResponsesInterface::class, Responses::class);
+    /**
+     * Bind the schema repository into the service container.
+     */
+    protected function bindSchemaRepository()
+    {
+        $this->app->singleton(SchemasRepositoryInterface::class, SchemasRepository::class);
+        $this->app->resolving(SchemasRepositoryInterface::class, function (ConfigurableInterface $repository) {
+            $repository->configure((array) $this->getConfig('schemas', []));
+        });
+    }
+
+    /**
+     * Bind the responses instance into the service container.
+     */
+    protected function bindResponses()
+    {
+        $this->app->singleton(ResponsesInterface::class, Responses::class);
+    }
+
+    /**
+     * Bind the validator factory into the service container.
+     */
+    protected function bindValidatorFactory()
+    {
+        $this->app->singleton(ValidatorFactoryInterface::class, ValidatorFactory::class);
+    }
+
+    /**
+     * Bind the validator error factory into the service container.
+     */
+    protected function bindValidatorErrorFactory()
+    {
+        $this->app->singleton(ValidatorErrorFactoryInterface::class, ValidatorFactory::class);
+    }
+
+    /**
+     * Bind the error repository into the service container.
+     */
+    protected function bindErrorRepository()
+    {
+        $this->app->singleton(ErrorRepositoryInterface::class, function () {
+            return new ErrorRepository($this->getErrorConfig());
+        });
     }
 
     /**
@@ -117,11 +203,17 @@ class ServiceProvider extends BaseServiceProvider
      */
     protected function getConfig($key, $default = null)
     {
-        /** @var Repository $config */
-        $config = $this->app->make('config');
-        $key = sprintf('%s.%s', Config::NAME, $key);
+        $key = sprintf('%s.%s', 'json-api', $key);
 
-        return $config->get($key, $default);
+        return config($key, $default);
+    }
+
+    /**
+     * @return array
+     */
+    protected function getErrorConfig()
+    {
+        return (array) config('json-api-errors');
     }
 
 }
