@@ -22,9 +22,12 @@ use CloudCreativity\JsonApi\Contracts\Repositories\CodecMatcherRepositoryInterfa
 use CloudCreativity\JsonApi\Contracts\Repositories\ErrorRepositoryInterface;
 use CloudCreativity\JsonApi\Contracts\Repositories\SchemasRepositoryInterface;
 use CloudCreativity\JsonApi\Contracts\Stdlib\ConfigurableInterface;
+use CloudCreativity\JsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\JsonApi\Repositories\CodecMatcherRepository;
 use CloudCreativity\JsonApi\Repositories\ErrorRepository;
 use CloudCreativity\JsonApi\Repositories\SchemasRepository;
+use CloudCreativity\JsonApi\Store\Store;
+use CloudCreativity\LaravelJsonApi\Adapters\EloquentAdapter;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorErrorFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Http\Middleware\BootJsonApi;
@@ -78,6 +81,8 @@ class ServiceProvider extends BaseServiceProvider
         $this->bindResponses();
         $this->bindValidatorFactory();
         $this->bindValidatorErrorFactory();
+        $this->bindStore();
+        $this->bindEloquentAdapter();
     }
 
     /**
@@ -193,6 +198,33 @@ class ServiceProvider extends BaseServiceProvider
     {
         $this->app->singleton(ErrorRepositoryInterface::class, function () {
             return new ErrorRepository($this->getErrorConfig());
+        });
+    }
+
+    /**
+     * Bind the store into the service container.
+     */
+    protected function bindStore()
+    {
+        $this->app->singleton(StoreInterface::class, Store::class);
+    }
+
+    /**
+     * Bind the Eloquent adapter into the service container.
+     */
+    protected function bindEloquentAdapter()
+    {
+        $this->app->singleton(EloquentAdapter::class, function () {
+            $map = (array) $this->getConfig('eloquent-adapter.map');
+            $columns = (array) $this->getConfig('eloquent-adapter.columns');
+
+            return new EloquentAdapter($map, $columns);
+        });
+
+        $this->app->resolving(StoreInterface::class, function (StoreInterface $store) {
+            /** @var EloquentAdapter $adapter */
+            $adapter = $this->app->make(EloquentAdapter::class);
+            $store->register($adapter);
         });
     }
 

@@ -236,8 +236,10 @@ class JsonApiRequest implements ValidatesWhenResolved
         } /** Delete Resource */
         elseif ($this->isDeleteResource()) {
             return $this->authorizer->canDelete($this->record(), $parameters);
-        } /** Read Related Resource or Relationship Data */
-        elseif ($this->isReadRelatedResource() || $this->isReadRelationship()) {
+        } elseif ($this->isReadRelatedResource()) {
+            return $this->authorizer->canReadRelatedResource($this->relationshipName(), $this->record(), $parameters);
+        } /** Read Relationship Data */
+        elseif ($this->isReadRelationship()) {
             return $this->authorizer->canReadRelationship($this->relationshipName(), $this->record(), $parameters);
         } /** Replace Relationship Data */
         elseif ($this->isReplaceRelationship()) {

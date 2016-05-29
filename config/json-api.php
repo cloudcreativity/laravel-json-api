@@ -48,4 +48,27 @@ return [
         'v1' => [],
         'v2' => [],
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Eloquent Adapter
+    |--------------------------------------------------------------------------
+    |
+    | The Eloquent adapter is used to look up whether a record exists for a
+    | resource type and id, and for retrieving that record. The adapter takes
+    | two configuration arrays:
+    |
+    | `map` - a map of JSON API resource types to Eloquent Model classes.
+    |
+    | `columns` (optional) - a map of JSON API resource types to the column
+    | name that is used for the resource id. These are optional - if a
+    | column is not specified for a Model class in your `map` config,
+    | the adapter will use `Model::getQualifiedKeyName()` by default.
+    */
+    'eloquent-adapter' => [
+        'map' => [
+            'resource-type' => 'ModelClass',
+        ],
+        'columns' => [],
+    ],
 ];
