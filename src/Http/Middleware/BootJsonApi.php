@@ -19,12 +19,13 @@
 namespace CloudCreativity\JsonApi\Http\Middleware;
 
 use Closure;
-use CloudCreativity\JsonApi\Contracts\Integration\EnvironmentInterface;
 use CloudCreativity\JsonApi\Contracts\Repositories\CodecMatcherRepositoryInterface;
 use CloudCreativity\JsonApi\Contracts\Repositories\SchemasRepositoryInterface;
-use CloudCreativity\JsonApi\Integration\EnvironmentService;
+use CloudCreativity\JsonApi\Services\JsonApiContainer;
+use Illuminate\Contracts\Container\Container;
 use Illuminate\Http\Request;
-use RuntimeException;
+use Neomerx\JsonApi\Contracts\Codec\CodecMatcherInterface;
+use Neomerx\JsonApi\Contracts\Schema\ContainerInterface;
 
 /**
  * Class InitCodecMatcher
@@ -34,9 +35,9 @@ class BootJsonApi
 {
 
     /**
-     * @var EnvironmentService
+     * @var Container
      */
-    private $environment;
+    private $container;
 
     /**
      * @var CodecMatcherRepositoryInterface
@@ -49,20 +50,16 @@ class BootJsonApi
     private $schemasRepository;
 
     /**
-     * @param EnvironmentInterface $environment
+     * @param Container $container
      * @param CodecMatcherRepositoryInterface $codecMatcherRepository
      * @param SchemasRepositoryInterface $schemasRepository
      */
     public function __construct(
-        EnvironmentInterface $environment,
+        Container $container,
         CodecMatcherRepositoryInterface $codecMatcherRepository,
         SchemasRepositoryInterface $schemasRepository
     ) {
-        if (!$environment instanceof EnvironmentService) {
-            throw new RuntimeException(sprintf('%s is built to work with the %s instance of %s.', static::class, EnvironmentService::class, EnvironmentInterface::class));
-        }
-
-        $this->environment = $environment;
+        $this->container = $container;
         $this->codecMatcherRepository = $codecMatcherRepository;
         $this->schemasRepository = $schemasRepository;
     }
@@ -92,18 +89,23 @@ class BootJsonApi
      */
     private function register($schemasName, $urlPrefix)
     {
-        $schemas = $this->schemasRepository->getSchemas($schemasName);
+        $schemaContainer = $this
+            ->schemasRepository
+            ->getSchemas($schemasName);
 
         $codecMatcher = $this
             ->codecMatcherRepository
-            ->registerSchemas($schemas)
+            ->registerSchemas($schemaContainer)
             ->registerUrlPrefix($urlPrefix)
             ->getCodecMatcher();
 
-        $this->environment
-            ->registerSchemas($schemas)
-            ->registerUrlPrefix($urlPrefix)
-            ->registerCodecMatcher($codecMatcher);
+        $container = new JsonApiContainer(
+            $codecMatcher,
+            $schemaContainer,
+            $urlPrefix
+        );
+
+        $this->container->instance(JsonApiContainer::class, $container);
     }
 
     /**

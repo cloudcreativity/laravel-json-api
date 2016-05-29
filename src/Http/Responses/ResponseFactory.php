@@ -19,24 +19,19 @@
 namespace CloudCreativity\JsonApi\Http\Responses;
 
 use CloudCreativity\JsonApi\Contracts\Error\ErrorCollectionInterface;
-use CloudCreativity\JsonApi\Contracts\Integration\EnvironmentInterface;
+use CloudCreativity\JsonApi\Error\ErrorCollection;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Http\Response;
 use Illuminate\Support\Collection;
 use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
-use Neomerx\JsonApi\Contracts\Encoder\EncoderInterface;
-use Neomerx\JsonApi\Contracts\Responses\ResponsesInterface;
+use Neomerx\JsonApi\Contracts\Http\ResponsesInterface;
 
 /**
  * Class ResponsesHelper
  * @package CloudCreativity\JsonApi\Laravel
  */
-class ResponsesHelper
+class ResponseFactory
 {
-
-    /**
-     * @var EnvironmentInterface
-     */
-    private $environment;
 
     /**
      * @var ResponsesInterface
@@ -44,12 +39,11 @@ class ResponsesHelper
     private $responses;
 
     /**
-     * @param EnvironmentInterface $environment
+     * ResponseFactory constructor.
      * @param ResponsesInterface $responses
      */
-    public function __construct(EnvironmentInterface $environment, ResponsesInterface $responses)
+    public function __construct(ResponsesInterface $responses)
     {
-        $this->environment = $environment;
         $this->responses = $responses;
     }
 
@@ -60,7 +54,12 @@ class ResponsesHelper
      */
     public function statusCode($statusCode, array $headers = [])
     {
-        return $this->respond($statusCode, null, $headers);
+        /** @var Response $response */
+        $response = $this->responses->getCodeResponse($statusCode);
+
+        $this->pushHeaders($response, $headers);
+
+        return $response;
     }
 
     /**
@@ -69,7 +68,12 @@ class ResponsesHelper
      */
     public function noContent(array $headers = [])
     {
-        return $this->statusCode(Response::HTTP_NO_CONTENT, $headers);
+        /** @var Response $response */
+        $response = $this->statusCode(Response::HTTP_NO_CONTENT);
+
+        $this->pushHeaders($response, $headers);
+
+        return $response;
     }
 
     /**
@@ -80,11 +84,12 @@ class ResponsesHelper
      */
     public function meta($meta, $statusCode = Response::HTTP_OK, array $headers = [])
     {
-        $content = $this
-            ->getEncoder()
-            ->encodeMeta($meta);
+        /** @var Response $response */
+        $response = $this->responses->getMetaResponse($meta, $statusCode);
 
-        return $this->respond($statusCode, $content, $headers);
+        $this->pushHeaders($response, $headers);
+
+        return $response;
     }
 
     /**
@@ -97,52 +102,32 @@ class ResponsesHelper
      */
     public function content($data, array $links = [], $meta = null, $statusCode = Response::HTTP_OK, array $headers = [])
     {
-        /** Eloquent collections do not encode properly, so we'll get all just in case it's an Eloquent collection */
-        if ($data instanceof Collection) {
+        /** Collections do not encode properly, so we'll get all just in case it's a collection */
+        if ($data instanceof Collection || $data instanceof EloquentCollection) {
             $data = $data->all();
         }
 
-        $content = $this
-            ->getEncoder()
-            ->withLinks($links)
-            ->withMeta($meta)
-            ->encodeData($data, $this->environment->getParameters());
+        $response = $this->responses->getContentResponse($data, $statusCode, $links, $meta);
 
-        return $this->respond($statusCode, $content, $headers);
+        $this->pushHeaders($response, $headers);
+
+        return $response;
     }
 
     /**
      * @param object $resource
-     * @param array $links
+     * @param array|null $links
      * @param mixed|null $meta
      * @param array $headers
      * @return Response
      */
-    public function created($resource, array $links = [], $meta = null, array $headers = [])
+    public function created($resource, $links = [], $meta = null, array $headers = [])
     {
-        $encoder = $this->getEncoder();
+        $response = $this->responses->getCreatedResponse($resource, $links, $meta);
 
-        $content = $encoder
-            ->withLinks($links)
-            ->withMeta($meta)
-            ->encodeData($resource, $this->getEncodingParameters());
+        $this->pushHeaders($response, $headers);
 
-        $subHref = $this
-            ->environment
-            ->getSchemas()
-            ->getSchema($resource)
-            ->getSelfSubLink($resource)
-            ->getSubHref();
-
-        return $this
-            ->responses
-            ->getCreatedResponse(
-                $this->environment->getUrlPrefix() . $subHref,
-                $this->environment->getEncoderMediaType(),
-                $content,
-                $this->environment->getSupportedExtensions(),
-                $headers
-            );
+        return $response;
     }
 
     /**
@@ -170,15 +155,7 @@ class ResponsesHelper
         $relatedLinkTreatAsHref = false,
         array $headers = []
     ) {
-        $content = $this
-            ->getEncoder()
-            ->withLinks($links)
-            ->withMeta($meta)
-            ->withRelationshipSelfLink($resource, $relationshipName, $selfLinkMeta, $selfLinkTreatAsHref)
-            ->withRelationshipRelatedLink($resource, $relationshipName, $relatedLinkMeta, $relatedLinkTreatAsHref)
-            ->encodeIdentifiers($related, $this->getEncodingParameters());
-
-        return $this->respond(Response::HTTP_OK, $content, $headers);
+        // @todo cannot do via the interface currently.
     }
 
     /**
@@ -193,13 +170,7 @@ class ResponsesHelper
      */
     public function error(ErrorInterface $error, array $headers = [])
     {
-        $statusCode = $error->getStatus() ?: Response::HTTP_INTERNAL_SERVER_ERROR;
-
-        $content = $this
-            ->getEncoder()
-            ->encodeError($error);
-
-        return $this->respond($statusCode, $content, $headers);
+        return $this->errors(new ErrorCollection([$error]), null, $headers);
     }
 
     /**
@@ -218,45 +189,15 @@ class ResponsesHelper
             $statusCode = Response::HTTP_INTERNAL_SERVER_ERROR;
         }
 
-        $content = $this
-            ->getEncoder()
-            ->encodeErrors($errors);
-
-        return $this->respond($statusCode, $content, $headers);
+        // @todo the problem here is neomerx has not defined an interface for errors.
     }
 
     /**
-     * @param $statusCode
-     * @param string|null $content
+     * @param Response $response
      * @param array $headers
-     * @return Response
      */
-    public function respond($statusCode, $content = null, array $headers = [])
+    private function pushHeaders(Response $response, array $headers)
     {
-        return $this
-            ->responses
-            ->getResponse(
-                (int) $statusCode,
-                $this->environment->getEncoderMediaType(),
-                $content,
-                $this->environment->getSupportedExtensions(),
-                $headers
-            );
-    }
-
-    /**
-     * @return EncoderInterface
-     */
-    private function getEncoder()
-    {
-        return $this->environment->getEncoder();
-    }
-
-    /**
-     * @return \Neomerx\JsonApi\Contracts\Parameters\ParametersInterface
-     */
-    private function getEncodingParameters()
-    {
-        return $this->environment->getParameters();
+        $response->headers->add($headers);
     }
 }

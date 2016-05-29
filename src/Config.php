@@ -36,7 +36,4 @@ class Config
 
     /** The key for the schemas configuration */
     const SCHEMAS = 'schemas';
-
-    /** The key for Exception Renderer Container config */
-    const EXCEPTIONS = 'exceptions';
 }

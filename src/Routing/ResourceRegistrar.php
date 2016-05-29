@@ -28,9 +28,9 @@ class ResourceRegistrar
 {
 
     /** Options key for an array of has-one relation names */
-    const HAS_ONE = 'hasOne';
+    const HAS_ONE = 'has-one';
     /** Options key for an array of has-many relation names */
-    const HAS_MANY = 'hasMany';
+    const HAS_MANY = 'has-many';
 
     /**
      * @var Registrar
@@ -46,14 +46,14 @@ class ResourceRegistrar
     }
 
     /**
-     * @param $name
+     * @param $resourceType
      * @param $controller
      * @param array $options
      * @return void
      */
-    public function resource($name, $controller, array $options = [])
+    public function resource($resourceType, $controller, array $options = [])
     {
-        $rootUrl = sprintf('/%s', $name);
+        $rootUrl = sprintf('/%s', $resourceType);
         $objectUrl = sprintf('%s/{id}', $rootUrl);
         $hasOne = isset($options[static::HAS_ONE]) ? (array) $options[static::HAS_ONE] : [];
         $hasMany = isset($options[static::HAS_MANY]) ? (array) $options[static::HAS_MANY] : [];
