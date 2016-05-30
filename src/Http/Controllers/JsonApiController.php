@@ -18,6 +18,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Http\Controllers;
 
+use CloudCreativity\JsonApi\Contracts\Object\ResourceInterface;
 use CloudCreativity\LaravelJsonApi\Http\Requests\AbstractRequest;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
@@ -144,6 +145,26 @@ class JsonApiController extends Controller
     protected function request()
     {
         return $this->request;
+    }
+
+    /**
+     * Shorthand to get the record that the request relates to.
+     *
+     * @return object
+     */
+    protected function record()
+    {
+        return $this->request->record();
+    }
+
+    /**
+     * Shorthand to get the resource that the client has submitted.
+     * 
+     * @return ResourceInterface
+     */
+    protected function resource()
+    {
+        return $this->request->document()->resource();
     }
 
     /**

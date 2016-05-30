@@ -19,9 +19,7 @@
 namespace CloudCreativity\LaravelJsonApi\Http\Responses;
 
 use CloudCreativity\JsonApi\Document\Error;
-use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Http\Response;
-use Illuminate\Support\Collection;
 use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
 use Neomerx\JsonApi\Contracts\Http\ResponsesInterface;
 use Neomerx\JsonApi\Exceptions\ErrorCollection;
@@ -93,11 +91,6 @@ class ResponseFactory
         $statusCode = Response::HTTP_OK,
         array $headers = []
     ) {
-        /** Collections do not encode properly, so we'll get all just in case it's a collection */
-        if ($data instanceof Collection || $data instanceof EloquentCollection) {
-            $data = $data->all();
-        }
-
         return $this->responses->getContentResponse($data, $statusCode, $links, $meta, $headers);
     }
 
