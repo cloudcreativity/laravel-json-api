@@ -26,8 +26,11 @@ Route::group(['middleware' => 'json-api:/api/v1,v1'], function () {
 });
 ```
 
-If every route in your application is a JSON API endpoint, then you can set the `C::IS_GLOBAL` option to `true`. This
-will install the same piece of middleware on the HTTP Kernel, so that it is invoked for every request.
+If every route in your application is a JSON API route, you can install the middleware on your HTTP Kernel.
+
+> The `json-api` middleware cannot be used as controller middleware because it needs to do its work before
+a JSON API request object is created. Normally your controller will have the JSON API request object injected
+into its constructor. (Refer to the chapter on controllers.)
 
 ## Defining Endpoints
 
@@ -60,11 +63,11 @@ Per resource type, the following endpoints will be registered (using the `posts`
 | `POST /posts/{resource_id}/relationships/{relationship_name}` | `addToRelationship($resourceId, $relationshipName)` |
 | `DELETE /posts/{resource_id}/relationships/{relationship_name}` | `removeFromRelationship($resourceId, $relationshipName)` |
 
-> You do not need to implement all of these methods if you are extending your controller from
+You do not need to implement all of these methods if you are extending your controller from
 `CloudCreativity\LaravelJsonApi\Http\Controllers\JsonApiController`. That controller sends a `501 Not Implemented`
 response by default for all methods, so you just need to overload the methods that you want to implement.
 
-> The `relationship_name` parameter is validated via JSON-API request objects. See the chapter titled `Requests`
+> The `relationship_name` parameter is validated via JSON-API request objects. See the chapter titled on Requests
 for details.
 
 ## Middleware
@@ -116,8 +119,8 @@ For example:
 ],
 ```
 
-> Loading of encoders/decoders is provided from the `cloudcreativty/json-api` dependency and defined in the follwing
-interface:
+> Loading of encoders/decoders from configuration arrays is provided from the `cloudcreativty/json-api`
+dependency and defined in the following interface:
 `CloudCreativity\JsonApi\Contracts\Repositories\CodecMatcherRepositoryInterface`
 
 #### `codec-matcher.encoders`

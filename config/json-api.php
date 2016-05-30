@@ -62,8 +62,8 @@ return [
     |
     | `columns` (optional) - a map of JSON API resource types to the column
     | name that is used for the resource id. These are optional - if a
-    | column is not specified for a Model class in your `map` config,
-    | the adapter will use `Model::getQualifiedKeyName()` by default.
+    | column is not provided for a Model class, the adapter will use
+    | `Model::getQualifiedKeyName()` by default.
     */
     'eloquent-adapter' => [
         'map' => [
