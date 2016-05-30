@@ -97,7 +97,7 @@ class ServiceProvider extends BaseServiceProvider
         ], 'config');
 
         $this->publishes([
-            base_path('vendor/cloudcreativity/json-api/validation.php') => config_path('json-api-errors.php'),
+            base_path('vendor/cloudcreativity/json-api/config/validation.php') => config_path('json-api-errors.php'),
         ], 'validation');
     }
 
@@ -120,7 +120,7 @@ class ServiceProvider extends BaseServiceProvider
     {
         if (method_exists($responses, 'macro')) {
             $responses->macro('jsonApi', function () {
-                return $this->app->make(ResponseFactory::class);
+                return app(ResponseFactory::class);
             });
         }
     }
@@ -206,7 +206,7 @@ class ServiceProvider extends BaseServiceProvider
      */
     protected function bindStore()
     {
-        $this->app->singleton(StoreInterface::class, Store::class);
+        $this->app->singleton(['json-api.store' => StoreInterface::class], Store::class);
     }
 
     /**

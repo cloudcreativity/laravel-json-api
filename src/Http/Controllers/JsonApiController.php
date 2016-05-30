@@ -18,7 +18,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Http\Controllers;
 
-use CloudCreativity\LaravelJsonApi\Http\Requests\JsonApiRequest;
+use CloudCreativity\LaravelJsonApi\Http\Requests\AbstractRequest;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 
@@ -32,15 +32,15 @@ class JsonApiController extends Controller
     use ReplyTrait;
 
     /**
-     * @var JsonApiRequest
+     * @var AbstractRequest
      */
-    protected $request;
+    private $request;
 
     /**
      * JsonApiController constructor.
-     * @param JsonApiRequest $request
+     * @param AbstractRequest $request
      */
-    public function __construct(JsonApiRequest $request)
+    public function __construct(AbstractRequest $request)
     {
         $this->request = $request;
     }
@@ -136,6 +136,14 @@ class JsonApiController extends Controller
     public function removeFromRelationship($resourceId, $relationshipName)
     {
         return $this->notImplemented();
+    }
+
+    /**
+     * @return AbstractRequest
+     */
+    protected function request()
+    {
+        return $this->request;
     }
 
     /**

@@ -30,7 +30,7 @@ The `JsonApi` facade maps to the `CloudCreativity\LaravelJsonApi\Services\JsonAp
 Then publish the package config file:
 
 ``` bash
-$ php artisan vendor:publish --provider="CloudCreativity\JsonApi\ServiceProvider"
+$ php artisan vendor:publish --provider="CloudCreativity\LaravelJsonApi\ServiceProvider"
 ```
 
 ## Configuration
@@ -55,19 +55,26 @@ modify your `render()` method as follows:
 namespace App\Exceptions;
 
 use CloudCreativity\LaravelJsonApi\Exceptions\HandlesErrors;
+use Exception;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Neomerx\JsonApi\Exceptions\JsonApiException;
 
 class Handler extends ExceptionHandler
 {
 
 	use HandlesErrors;
 
+	protected $dontReport = [
+	  // ... other exception classes
+	  JsonApiException::class,
+	];
+
 	// ...
 
-    public function render($request, \Exception $e)
+    public function render($request, Exception $e)
     {
-    	if ($this->isJsonApi()) {
-        return $this->renderJsonApi(\Exception $e);
+      if ($this->isJsonApi()) {
+        return $this->renderJsonApi($request, Exception $e);
       }
 
       // do standard exception rendering here...

@@ -18,12 +18,13 @@
 
 namespace CloudCreativity\LaravelJsonApi\Exceptions;
 
+use CloudCreativity\LaravelJsonApi\Http\Responses\ResponseFactory;
 use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
 use Exception;
+use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Neomerx\JsonApi\Contracts\Http\ResponsesInterface;
+use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
 use Neomerx\JsonApi\Document\Error;
-use Neomerx\JsonApi\Exceptions\ErrorCollection;
 use Neomerx\JsonApi\Exceptions\JsonApiException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
@@ -47,31 +48,53 @@ trait HandlesErrors
     }
 
     /**
-     * @param Exception $ex
+     * @param Request $request
+     * @param Exception $e
      * @return Response
      */
-    public function renderJsonApi(Exception $ex)
+    public function renderJsonApi(Request $request, Exception $e)
     {
-        /** @var ResponsesInterface $responses */
-        $responses = response()->jsonApi();
-        $errors = $this->parseToJsonApi($ex);
+        /** @var JsonApiService $service */
+        $service = app(JsonApiService::class);
+        $errors = $this->parseToErrors($e);
 
-        return $responses->getErrorResponse($errors);
+        if (!$service->container()->hasEncoder()) {
+            return $this->renderWithoutEncoder($errors);
+        }
+
+        /** @var ResponseFactory $responses */
+        $responses = response()->jsonApi();
+
+        return $responses->errors($errors);
     }
 
     /**
-     * @param Exception $ex
-     * @return Error|ErrorCollection
+     * @param Exception $e
+     * @return ErrorInterface|ErrorInterface[]
      */
-    protected function parseToJsonApi(Exception $ex)
+    protected function parseToErrors(Exception $e)
     {
-        if ($ex instanceof JsonApiException) {
-            return $ex->getErrors();
+        if ($e instanceof JsonApiException) {
+            return $e->getErrors()->getArrayCopy();
         }
 
-        $statusCode = ($ex instanceof HttpExceptionInterface) ? $ex->getStatusCode() : null;
-        $detail = ($ex instanceof HttpException) ? $ex->getMessage() : null;
+        $statusCode = ($e instanceof HttpExceptionInterface) ?
+            $e->getStatusCode() :
+            Response::HTTP_INTERNAL_SERVER_ERROR;
+
+        $detail = ($e instanceof HttpException) ? $e->getMessage() : null;
 
         return new Error(null, null, $statusCode, null, null, $detail);
+    }
+
+    /**
+     * Send a response if no JSON API encoder is available.
+     *
+     * @param $errors
+     * @return Response
+     */
+    protected function renderWithoutEncoder($errors)
+    {
+        return response('', Response::HTTP_NOT_ACCEPTABLE);
     }
 }

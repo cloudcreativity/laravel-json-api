@@ -33,69 +33,69 @@ final class RequestTest extends TestCase
 
     public function testIsIndex()
     {
-        $request = new JsonApiRequest($this->httpRequest('/posts'));
+        $request = $this->request($this->httpRequest('/posts'));
         $this->assertRequestType($request, 'index');
     }
 
     public function testIsCreateResource()
     {
-        $request = new JsonApiRequest($this->httpRequest('/posts', null, null, 'POST'));
+        $request = $this->request($this->httpRequest('/posts', null, null, 'POST'));
         $this->assertRequestType($request, 'createResource');
     }
 
     public function testIsReadResource()
     {
-        $request = new JsonApiRequest($this->httpRequest('/posts/1', '1'));
+        $request = $this->request($this->httpRequest('/posts/1', '1'));
         $this->assertRequestType($request, 'readResource');
     }
 
     public function testIsUpdateResource()
     {
-        $request = new JsonApiRequest($this->httpRequest('/posts/1', '1', null, 'PATCH'));
+        $request = $this->request($this->httpRequest('/posts/1', '1', null, 'PATCH'));
         $this->assertRequestType($request, 'updateResource');
     }
 
     public function testIsDeleteResource()
     {
-        $request = new JsonApiRequest($this->httpRequest('/posts/1', '1', null, 'DELETE'));
+        $request = $this->request($this->httpRequest('/posts/1', '1', null, 'DELETE'));
         $this->assertRequestType($request, 'deleteResource');
     }
 
     public function testIsReadRelatedResource()
     {
-        $request = new JsonApiRequest($this->httpRequest('/posts/1/comments', '1', 'comments'));
+        $request = $this->request($this->httpRequest('/posts/1/comments', '1', 'comments'));
         $this->assertRequestType($request, 'readRelatedResource');
     }
 
     public function testIsReadRelationship()
     {
-        $request = new JsonApiRequest($this->httpRequest('/posts/1/relationships/comments', '1', 'comments'));
+        $request = $this->request($this->httpRequest('/posts/1/relationships/comments', '1', 'comments'));
         $this->assertRequestType($request, 'readRelationship');
     }
 
     public function testIsReplaceRelationship()
     {
-        $request = new JsonApiRequest($this->httpRequest('/posts/1/relationships/comments', '1', 'comments', 'PATCH'));
+        $request = $this->request($this->httpRequest('/posts/1/relationships/comments', '1', 'comments', 'PATCH'));
         $this->assertRequestType($request, 'replaceRelationship');
     }
 
     public function testIsAddToRelationship()
     {
-        $request = new JsonApiRequest($this->httpRequest('/posts/1/relationships/comments', '1', 'comments', 'POST'));
+        $request = $this->request($this->httpRequest('/posts/1/relationships/comments', '1', 'comments', 'POST'));
         $this->assertRequestType($request, 'addToRelationship');
     }
 
     public function testIsRemoveFromRelationship()
     {
-        $request = new JsonApiRequest($this->httpRequest('/posts/1/relationships/comments', '1', 'comments', 'DELETE'));
+        $request = $this->request($this->httpRequest('/posts/1/relationships/comments', '1', 'comments', 'DELETE'));
         $this->assertRequestType($request, 'removeFromRelationship');
     }
 
     /**
-     * @param JsonApiRequest $request
+     * @param AbstractRequest $request
      * @param $requestType
      */
-    private function assertRequestType(JsonApiRequest $request, $requestType)
+    private function assertRequestType(AbstractRequest $request, $requestType)
     {
         $checker = 'is' . ucfirst($requestType);
 
@@ -118,6 +118,18 @@ final class RequestTest extends TestCase
             $actual = call_user_func([$request, $method]);
             $this->assertSame($expected, $actual, $message);
         }
+    }
+
+    /**
+     * @param HttpRequest $httpRequest
+     * @return AbstractRequest
+     */
+    private function request(HttpRequest $httpRequest)
+    {
+        $mock = $this->getMockForAbstractClass(AbstractRequest::class, [$httpRequest]);
+        $mock->method('resourceType')->willReturn('posts');
+
+        return $mock;
     }
 
     /**

@@ -123,10 +123,20 @@ class JsonApiContainer
             ->getEncoder();
 
         if (!$encoder instanceof EncoderInterface) {
-            throw new RuntimeException('No Json-Api encoder matched. An error should have been sent to the client.');
+            throw new RuntimeException('No JSON API encoder matched. An error should have been sent to the client.');
         }
 
         return $encoder;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasEncoder()
+    {
+        $encoder = $this->getCodecMatcher()->getEncoder();
+
+        return $encoder instanceof EncoderInterface;
     }
 
     /**

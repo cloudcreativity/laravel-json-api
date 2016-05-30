@@ -24,6 +24,7 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Collection;
 use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
 use Neomerx\JsonApi\Contracts\Http\ResponsesInterface;
+use Neomerx\JsonApi\Exceptions\ErrorCollection;
 
 /**
  * Class ResponseFactory
@@ -142,7 +143,7 @@ class ResponseFactory
 
     /**
      * @param ErrorInterface $error
-     * @param null $statusCode
+     * @param int|string|null $statusCode
      * @param array $headers
      * @return Response
      */
@@ -152,8 +153,8 @@ class ResponseFactory
     }
 
     /**
-     * @param $errors
-     * @param null $statusCode
+     * @param ErrorInterface|ErrorInterface[]|ErrorCollection $errors
+     * @param int|string|null $statusCode
      * @param array $headers
      * @return Response
      */

@@ -24,6 +24,10 @@ use CloudCreativity\JsonApi\Contracts\Repositories\SchemasRepositoryInterface;
 use CloudCreativity\LaravelJsonApi\Services\JsonApiContainer;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Http\Request;
+use Neomerx\JsonApi\Contracts\Codec\CodecMatcherInterface;
+use Neomerx\JsonApi\Contracts\Factories\FactoryInterface;
+use Neomerx\JsonApi\Contracts\Schema\ContainerInterface;
+use Psr\Http\Message\ServerRequestInterface;
 
 /**
  * Class BootJsonApi
@@ -38,28 +42,11 @@ class BootJsonApi
     private $container;
 
     /**
-     * @var CodecMatcherRepositoryInterface
-     */
-    private $codecMatcherRepository;
-
-    /**
-     * @var SchemasRepositoryInterface
-     */
-    private $schemasRepository;
-
-    /**
      * @param Container $container
-     * @param CodecMatcherRepositoryInterface $codecMatcherRepository
-     * @param SchemasRepositoryInterface $schemasRepository
      */
-    public function __construct(
-        Container $container,
-        CodecMatcherRepositoryInterface $codecMatcherRepository,
-        SchemasRepositoryInterface $schemasRepository
-    ) {
+    public function __construct(Container $container)
+    {
         $this->container = $container;
-        $this->codecMatcherRepository = $codecMatcherRepository;
-        $this->schemasRepository = $schemasRepository;
     }
 
     /**
@@ -73,37 +60,14 @@ class BootJsonApi
      */
     public function handle($request, Closure $next, $urlNamespace = null, $schemasName = null)
     {
-        $schemasName = ($schemasName) ?: null;
         $urlPrefix = $this->urlPrefix($request, $urlNamespace);
+        $schemas = $this->resolveSchemas($schemasName);
+        $codecMatcher = $this->resolveCodecMatcher($schemas, $urlPrefix);
 
-        $this->register($schemasName, $urlPrefix);
+        $this->register($schemas, $codecMatcher, $urlPrefix);
+        $this->doContentNegotiation($codecMatcher);
 
         return $next($request);
-    }
-
-    /**
-     * @param $schemasName
-     * @param $urlPrefix
-     */
-    private function register($schemasName, $urlPrefix)
-    {
-        $schemaContainer = $this
-            ->schemasRepository
-            ->getSchemas($schemasName);
-
-        $codecMatcher = $this
-            ->codecMatcherRepository
-            ->registerSchemas($schemaContainer)
-            ->registerUrlPrefix($urlPrefix)
-            ->getCodecMatcher();
-
-        $container = new JsonApiContainer(
-            $codecMatcher,
-            $schemaContainer,
-            $urlPrefix
-        );
-
-        $this->container->instance(JsonApiContainer::class, $container);
     }
 
     /**
@@ -111,8 +75,70 @@ class BootJsonApi
      * @param $urlNamespace
      * @return string
      */
-    private function urlPrefix(Request $request, $urlNamespace)
+    protected function urlPrefix(Request $request, $urlNamespace)
     {
         return $request->getSchemeAndHttpHost() . $urlNamespace;
+    }
+
+    /**
+     * @param string|null $schemasName
+     * @return ContainerInterface
+     */
+    protected function resolveSchemas($schemasName)
+    {
+        /** @var SchemasRepositoryInterface $repository */
+        $repository = $this->container->make(SchemasRepositoryInterface::class);
+
+        return $repository->getSchemas($schemasName);
+    }
+
+    /**
+     * @param ContainerInterface $schemas
+     * @param $urlPrefix
+     * @return CodecMatcherInterface
+     */
+    protected function resolveCodecMatcher(ContainerInterface $schemas, $urlPrefix)
+    {
+        /** @var CodecMatcherRepositoryInterface $repository */
+        $repository = $this->container->make(CodecMatcherRepositoryInterface::class);
+
+        return $repository
+            ->registerSchemas($schemas)
+            ->registerUrlPrefix($urlPrefix)
+            ->getCodecMatcher();
+    }
+
+    /**
+     * Perform content negotiation as per the JSON API spec.
+     *
+     * @param CodecMatcherInterface $codecMatcher
+     * @see http://jsonapi.org/format/#content-negotiation
+     */
+    protected function doContentNegotiation(CodecMatcherInterface $codecMatcher)
+    {
+        /** @var FactoryInterface $factory */
+        $factory = $this->container->make(FactoryInterface::class);
+        /** @var ServerRequestInterface $request */
+        $request = $this->container->make(ServerRequestInterface::class);
+
+        $parser = $factory->createHeaderParametersParser();
+        $checker = $factory->createHeadersChecker($codecMatcher);
+
+        $checker->checkHeaders($parser->parse($request));
+    }
+
+    /**
+     * @param ContainerInterface $schemas
+     * @param CodecMatcherInterface $codecMatcher
+     * @param $urlPrefix
+     */
+    private function register(
+        ContainerInterface $schemas,
+        CodecMatcherInterface $codecMatcher,
+        $urlPrefix
+    ) {
+        $container = new JsonApiContainer($codecMatcher, $schemas, $urlPrefix);
+
+        $this->container->instance(JsonApiContainer::class, $container);
     }
 }

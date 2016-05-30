@@ -37,19 +37,12 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  * Class Request
  * @package CloudCreativity\LaravelJsonApi
  */
-class JsonApiRequest implements ValidatesWhenResolved
+abstract class AbstractRequest implements ValidatesWhenResolved
 {
 
     use InterpretsHttpRequests,
         DecodesDocuments,
         ParsesQueryParameters;
-
-    /**
-     * The resource type that this request relates to.
-     *
-     * @var string
-     */
-    protected $resourceType;
 
     /**
      * A list of has-one relationships that are expected as endpoints.
@@ -130,6 +123,13 @@ class JsonApiRequest implements ValidatesWhenResolved
      * @var object|null
      */
     private $record;
+
+    /**
+     * The resource type that this request handles.
+     *
+     * @return string
+     */
+    abstract public function resourceType();
 
     /**
      * AbstractRequest constructor.
@@ -277,7 +277,7 @@ class JsonApiRequest implements ValidatesWhenResolved
     {
         /** @var StoreInterface $store */
         $store = app(StoreInterface::class);
-        $identifier = ResourceIdentifier::create($this->resourceType, $this->resourceId());
+        $identifier = ResourceIdentifier::create($this->resourceType(), $this->resourceId());
 
         $record = $store->find($identifier);
 
