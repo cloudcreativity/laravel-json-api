@@ -18,6 +18,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Routing;
 
+use CloudCreativity\LaravelJsonApi\Document\GeneratesRouteNames;
 use Illuminate\Contracts\Routing\Registrar;
 
 /**
@@ -30,6 +31,8 @@ class ResourceRegistrar
     const KEYWORD_RELATIONSHIPS = 'relationships';
     const PARAM_RESOURCE_ID = 'resource_id';
     const PARAM_RELATIONSHIP_NAME = 'relationship_name';
+
+    use GeneratesRouteNames;
 
     /**
      * @var Registrar
@@ -65,8 +68,9 @@ class ResourceRegistrar
     protected function registerIndex($resourceType, $controller)
     {
         $uri = $this->indexUri($resourceType);
-        $this->route('get', $uri, $controller, 'index', $this->resourceAlias($resourceType, 'index'));
-        $this->route('post', $uri, $controller, 'create', $this->resourceAlias($resourceType, 'create'));
+        $name = $this->indexRouteName($resourceType);
+        $this->route('get', $uri, $controller, 'index', $name);
+        $this->route('post', $uri, $controller, 'create');
     }
 
     /**
@@ -76,9 +80,10 @@ class ResourceRegistrar
     protected function registerResource($resourceType, $controller)
     {
         $uri = $this->resourceUri($resourceType);
-        $this->route('get', $uri, $controller, 'read', $this->resourceAlias($resourceType, 'read'));
-        $this->route('patch', $uri, $controller, 'update', $this->resourceAlias($resourceType, 'update'));
-        $this->route('delete', $uri, $controller, 'delete', $this->resourceAlias($resourceType, 'delete'));
+        $name = $this->resourceRouteName($resourceType);
+        $this->route('get', $uri, $controller, 'read', $name);
+        $this->route('patch', $uri, $controller, 'update');
+        $this->route('delete', $uri, $controller, 'delete');
     }
 
     /**
@@ -88,7 +93,8 @@ class ResourceRegistrar
     protected function registerRelatedResource($resourceType, $controller)
     {
         $uri = $this->relatedResourceUri($resourceType);
-        $this->route('get', $uri, $controller, 'readRelatedResource', $this->resourceAlias($resourceType, 'related'));
+        $name = $this->relatedResourceRouteName($resourceType);
+        $this->route('get', $uri, $controller, 'readRelatedResource', $name);
     }
 
     /**
@@ -98,10 +104,11 @@ class ResourceRegistrar
     protected function registerRelationships($resourceType, $controller)
     {
         $uri = $this->relationshipUri($resourceType);
-        $this->route('get', $uri, $controller, 'readRelationship', $this->relationshipAlias($resourceType, 'read'));
-        $this->route('patch', $uri, $controller, 'replaceRelationship', $this->relationshipAlias($resourceType, 'replace'));
-        $this->route('post', $uri, $controller, 'addToRelationship', $this->relationshipAlias($resourceType, 'add'));
-        $this->route('delete', $uri, $controller, 'removeFromRelationship', $this->relationshipAlias($resourceType, 'remove'));
+        $name = $this->relationshipRouteName($resourceType);
+        $this->route('get', $uri, $controller, 'readRelationship', $name);
+        $this->route('patch', $uri, $controller, 'replaceRelationship');
+        $this->route('post', $uri, $controller, 'addToRelationship');
+        $this->route('delete', $uri, $controller, 'removeFromRelationship');
     }
 
     /**
@@ -118,10 +125,13 @@ class ResourceRegistrar
         $controllerMethod,
         $as = null
     ) {
-        $this->router->{$routerMethod}($uri, [
-            'uses' => sprintf('%s@%s', $controller, $controllerMethod),
-            'as' => $as,
-        ]);
+        $options = ['uses' => sprintf('%s@%s', $controller, $controllerMethod)];
+
+        if ($as) {
+            $options['as'] = $as;
+        }
+
+        $this->router->{$routerMethod}($uri, $options);
     }
 
     /**
@@ -171,23 +181,4 @@ class ResourceRegistrar
         );
     }
 
-    /**
-     * @param $resourceType
-     * @param $alias
-     * @return string
-     */
-    protected function resourceAlias($resourceType, $alias)
-    {
-        return sprintf('%s.%s', $resourceType, $alias);
-    }
-
-    /**
-     * @param $resourceType
-     * @param $alias
-     * @return string
-     */
-    protected function relationshipAlias($resourceType, $alias)
-    {
-        return sprintf('%s.relationship.%s', $resourceType, $alias);
-    }
 }

@@ -28,8 +28,10 @@ use CloudCreativity\JsonApi\Repositories\ErrorRepository;
 use CloudCreativity\JsonApi\Repositories\SchemasRepository;
 use CloudCreativity\JsonApi\Store\Store;
 use CloudCreativity\LaravelJsonApi\Adapters\EloquentAdapter;
+use CloudCreativity\LaravelJsonApi\Contracts\Document\LinkFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorErrorFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorFactoryInterface;
+use CloudCreativity\LaravelJsonApi\Document\LinkFactory;
 use CloudCreativity\LaravelJsonApi\Http\Middleware\BootJsonApi;
 use CloudCreativity\LaravelJsonApi\Http\Responses\ResponseFactory;
 use CloudCreativity\LaravelJsonApi\Http\Responses\Responses;
@@ -83,6 +85,7 @@ class ServiceProvider extends BaseServiceProvider
         $this->bindValidatorErrorFactory();
         $this->bindStore();
         $this->bindEloquentAdapter();
+        $this->bindLinkFactory();
     }
 
     /**
@@ -226,6 +229,14 @@ class ServiceProvider extends BaseServiceProvider
             $adapter = $this->app->make(EloquentAdapter::class);
             $store->register($adapter);
         });
+    }
+
+    /**
+     * Bind the link factory into the service container.
+     */
+    protected function bindLinkFactory()
+    {
+        $this->app->singleton(['json-api.links' => LinkFactoryInterface::class], LinkFactory::class);
     }
 
     /**

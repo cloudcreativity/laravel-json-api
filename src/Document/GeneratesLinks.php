@@ -16,24 +16,22 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\LaravelJsonApi\Hydrator;
+namespace CloudCreativity\LaravelJsonApi\Document;
 
-use CloudCreativity\JsonApi\Hydrator\AbstractHydrator as BaseHydrator;
+use CloudCreativity\LaravelJsonApi\Contracts\Document\LinkFactoryInterface;
 
 /**
- * Class AbstractHydrator
+ * Class GeneratesLinks
  * @package CloudCreativity\LaravelJsonApi
  */
-abstract class AbstractHydrator extends BaseHydrator
+trait GeneratesLinks
 {
 
     /**
-     * @param $key
-     * @return string
+     * @return LinkFactoryInterface
      */
-    protected function methodForRelationship($key)
+    protected function linkTo()
     {
-        return sprintf('hydrate%sRelationship', studly_case($key));
+        return app(LinkFactoryInterface::class);
     }
-
 }

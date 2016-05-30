@@ -48,6 +48,8 @@ Route::group(['middleware' => 'json-api'], function () {
 `CloudCreativity\LaravelJsonApi\Routing\ResourceRegistrar` from the service container. Call the `resource()` method
 with the same arguments as shown above.
 
+### URLs and Controller Methods
+
 Per resource type, the following endpoints will be registered (using the `posts` resource type in the example above):
 
 | URL | Controller Method |
@@ -69,6 +71,58 @@ response by default for all methods, so you just need to overload the methods th
 
 > The `relationship_name` parameter is validated via JSON-API request objects. See the chapter titled on Requests
 for details.
+
+### Route Names
+
+Per resource type, the following route names are registered (using the `posts` resource type as an example):
+
+| URL | Route Name |
+| :-- | :-- |
+| `/posts` | `posts.index` |
+| `/posts/{resource_id}` | `posts.resource` |
+| `/posts/{resource_id}/{relationship_name}` | `posts.related` |
+| `/posts/{resource_id}/relationships/{relationship_name}` | `posts.relationships` |
+
+Remember that if your route group has a name prefix, then the route names in the table above will be prefixed. For
+example:
+
+``` php
+Route::group([
+  'middleware' => 'json-api',
+  'as' => 'api::',
+], function () {
+    JsonApi::resource('posts', 'Api\PostsController');
+});
+```
+
+The `/posts` URL will have this route name: `api::posts.index`
+
+### Generating Links
+
+You can use these route names to generate [JSON API link](http://jsonapi.org/format/#document-links) by using our
+`CloudCreativity\LaravelJsonApi\Document\GeneratesLinks` trait, which adds the `linkTo()` helper to your class.
+
+``` php
+
+/** @var Neomerx\JsonApi\Contracts\Document\LinkInterface $link */
+$link = $this->linkTo()->index('api::posts');
+$link = $this->linkTo()->resource('api::posts', '1');
+$link = $this->linkTo()->relatedResource('api::posts', '1', 'author');
+$link = $this->linkTo()->relationship('api::posts', '1', 'author');
+```
+
+All these methods accept two optional arguments. The first is additional route/query parameters, and the second
+is `meta` to attach to the generated link object. For example:
+
+``` php
+$link = $this->linkTo()->index(
+  'api::posts',
+  // query parameters
+  ['page' => ['number' => 1]],
+  // meta
+  ['foo' => 'bar']
+);
+```
 
 ## Middleware
 

@@ -24,6 +24,10 @@ use CloudCreativity\JsonApi\Exceptions\StoreException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * Class EloquentAdapter
+ * @package CloudCreativity\LaravelJsonApi
+ */
 class EloquentAdapter implements AdapterInterface
 {
 

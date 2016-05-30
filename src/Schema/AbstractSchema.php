@@ -16,24 +16,18 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\LaravelJsonApi\Hydrator;
+namespace CloudCreativity\LaravelJsonApi\Schema;
 
-use CloudCreativity\JsonApi\Hydrator\AbstractHydrator as BaseHydrator;
+use CloudCreativity\LaravelJsonApi\Document\GeneratesLinks;
+use Neomerx\JsonApi\Schema\SchemaProvider;
 
 /**
- * Class AbstractHydrator
+ * Class AbstractSchema
  * @package CloudCreativity\LaravelJsonApi
  */
-abstract class AbstractHydrator extends BaseHydrator
+abstract class AbstractSchema extends SchemaProvider
 {
 
-    /**
-     * @param $key
-     * @return string
-     */
-    protected function methodForRelationship($key)
-    {
-        return sprintf('hydrate%sRelationship', studly_case($key));
-    }
+    use GeneratesLinks;
 
 }
