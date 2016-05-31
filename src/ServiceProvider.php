@@ -18,11 +18,13 @@
 
 namespace CloudCreativity\LaravelJsonApi;
 
+use CloudCreativity\JsonApi\Contracts\Http\ContentNegotiatorInterface;
 use CloudCreativity\JsonApi\Contracts\Repositories\CodecMatcherRepositoryInterface;
 use CloudCreativity\JsonApi\Contracts\Repositories\ErrorRepositoryInterface;
 use CloudCreativity\JsonApi\Contracts\Repositories\SchemasRepositoryInterface;
 use CloudCreativity\JsonApi\Contracts\Stdlib\ConfigurableInterface;
 use CloudCreativity\JsonApi\Contracts\Store\StoreInterface;
+use CloudCreativity\JsonApi\Http\ContentNegotiator;
 use CloudCreativity\JsonApi\Repositories\CodecMatcherRepository;
 use CloudCreativity\JsonApi\Repositories\ErrorRepository;
 use CloudCreativity\JsonApi\Repositories\SchemasRepository;
@@ -40,6 +42,7 @@ use Illuminate\Contracts\Routing\ResponseFactory as ResponseFactoryContract;
 use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 use Neomerx\JsonApi\Contracts\Factories\FactoryInterface;
+use Neomerx\JsonApi\Contracts\Http\HttpFactoryInterface;
 use Neomerx\JsonApi\Contracts\Http\ResponsesInterface;
 use Neomerx\JsonApi\Contracts\Schema\SchemaFactoryInterface;
 use Neomerx\JsonApi\Factories\Factory;
@@ -80,6 +83,7 @@ class ServiceProvider extends BaseServiceProvider
         $this->bindCodecMatcherRepository();
         $this->bindSchemaRepository();
         $this->bindErrorRepository();
+        $this->bindContentNegotiator();
         $this->bindResponses();
         $this->bindValidatorFactory();
         $this->bindValidatorErrorFactory();
@@ -134,7 +138,8 @@ class ServiceProvider extends BaseServiceProvider
     protected function bindNeomerx()
     {
         $this->app->singleton(FactoryInterface::class, Factory::class);
-        $this->app->singleton(SchemaFactoryInterface::class, Factory::class);
+        $this->app->singleton(SchemaFactoryInterface::class, FactoryInterface::class);
+        $this->app->singleton(HttpFactoryInterface::class, FactoryInterface::class);
     }
 
     /**
@@ -169,6 +174,15 @@ class ServiceProvider extends BaseServiceProvider
             $repository->configure((array) $this->getConfig('schemas', []));
         });
     }
+
+    /**
+     * Bind the content negotiator into the service container.
+     */
+    protected function bindContentNegotiator()
+    {
+        $this->app->singleton(ContentNegotiatorInterface::class, ContentNegotiator::class);
+    }
+
 
     /**
      * Bind the responses instance into the service container.

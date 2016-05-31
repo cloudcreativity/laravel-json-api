@@ -19,13 +19,13 @@
 namespace CloudCreativity\LaravelJsonApi\Http\Middleware;
 
 use Closure;
+use CloudCreativity\JsonApi\Contracts\Http\ContentNegotiatorInterface;
 use CloudCreativity\JsonApi\Contracts\Repositories\CodecMatcherRepositoryInterface;
 use CloudCreativity\JsonApi\Contracts\Repositories\SchemasRepositoryInterface;
 use CloudCreativity\LaravelJsonApi\Services\JsonApiContainer;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Http\Request;
 use Neomerx\JsonApi\Contracts\Codec\CodecMatcherInterface;
-use Neomerx\JsonApi\Contracts\Factories\FactoryInterface;
 use Neomerx\JsonApi\Contracts\Schema\ContainerInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -63,9 +63,13 @@ class BootJsonApi
         $urlPrefix = $this->urlPrefix($request, $urlNamespace);
         $schemas = $this->resolveSchemas($schemasName);
         $codecMatcher = $this->resolveCodecMatcher($schemas, $urlPrefix);
-
         $this->register($schemas, $codecMatcher, $urlPrefix);
-        $this->doContentNegotiation($codecMatcher);
+
+        /** @var ContentNegotiatorInterface $negotiator */
+        $negotiator = $this->container->make(ContentNegotiatorInterface::class);
+        /** @var ServerRequestInterface $request */
+        $serverRequest = $this->container->make(ServerRequestInterface::class);
+        $negotiator->doContentNegotiation($codecMatcher, $serverRequest);
 
         return $next($request);
     }
@@ -106,25 +110,6 @@ class BootJsonApi
             ->registerSchemas($schemas)
             ->registerUrlPrefix($urlPrefix)
             ->getCodecMatcher();
-    }
-
-    /**
-     * Perform content negotiation as per the JSON API spec.
-     *
-     * @param CodecMatcherInterface $codecMatcher
-     * @see http://jsonapi.org/format/#content-negotiation
-     */
-    protected function doContentNegotiation(CodecMatcherInterface $codecMatcher)
-    {
-        /** @var FactoryInterface $factory */
-        $factory = $this->container->make(FactoryInterface::class);
-        /** @var ServerRequestInterface $request */
-        $request = $this->container->make(ServerRequestInterface::class);
-
-        $parser = $factory->createHeaderParametersParser();
-        $checker = $factory->createHeadersChecker($codecMatcher);
-
-        $checker->checkHeaders($parser->parse($request));
     }
 
     /**
