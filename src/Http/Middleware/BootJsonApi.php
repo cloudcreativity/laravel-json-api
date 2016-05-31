@@ -19,15 +19,15 @@
 namespace CloudCreativity\LaravelJsonApi\Http\Middleware;
 
 use Closure;
+use CloudCreativity\JsonApi\Contracts\Http\ApiFactoryInterface;
+use CloudCreativity\JsonApi\Contracts\Http\ApiInterface;
 use CloudCreativity\JsonApi\Contracts\Http\ContentNegotiatorInterface;
-use CloudCreativity\JsonApi\Contracts\Repositories\CodecMatcherRepositoryInterface;
-use CloudCreativity\JsonApi\Contracts\Repositories\SchemasRepositoryInterface;
-use CloudCreativity\LaravelJsonApi\Services\JsonApiContainer;
+use CloudCreativity\JsonApi\Http\Api;
+use CloudCreativity\JsonApi\Http\ApiFactory;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Http\Request;
-use Neomerx\JsonApi\Contracts\Codec\CodecMatcherInterface;
-use Neomerx\JsonApi\Contracts\Schema\ContainerInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use RuntimeException;
 
 /**
  * Class BootJsonApi
@@ -50,80 +50,54 @@ class BootJsonApi
     }
 
     /**
+     * Start JSON API support.
+     *
+     * This middleware:
+     * - Loads the configuration for the named API that this request is being routed to.
+     * - Registers the API in the service container.
+     * - Triggers client/server content negotiation as per the JSON API spec.
+     *
      * @param Request $request
      * @param Closure $next
-     * @param $urlNamespace
-     *      the url namespace to add to the HTTP schema/host, e.g. '/api/v1'
-     * @param $schemasName
-     *      the name of the set of schemas to use, or empty to use the default set.
+     * @param $namespace
+     *      the API namespace, as per your JSON API configuration.
      * @return mixed
      */
-    public function handle($request, Closure $next, $urlNamespace = null, $schemasName = null)
+    public function handle($request, Closure $next, $namespace)
     {
-        $urlPrefix = $this->urlPrefix($request, $urlNamespace);
-        $schemas = $this->resolveSchemas($schemasName);
-        $codecMatcher = $this->resolveCodecMatcher($schemas, $urlPrefix);
-        $this->register($schemas, $codecMatcher, $urlPrefix);
+        $config = (array) config('json-api.namespaces');
+
+        if (!array_key_exists($namespace, $config)) {
+            throw new RuntimeException("Did not recognised JSON API namespace: $namespace");
+        }
+
+        /** @var ApiFactory $factory */
+        $factory = $this->container->make(ApiFactoryInterface::class);
+        $api = $factory->createApi($namespace, $this->appendSchemaAndHost($request, (array) $config[$namespace]));
+        $this->container->instance(ApiInterface::class, $api);
 
         /** @var ContentNegotiatorInterface $negotiator */
         $negotiator = $this->container->make(ContentNegotiatorInterface::class);
         /** @var ServerRequestInterface $request */
         $serverRequest = $this->container->make(ServerRequestInterface::class);
-        $negotiator->doContentNegotiation($codecMatcher, $serverRequest);
+        $negotiator->doContentNegotiation($api->codecMatcher(), $serverRequest);
 
         return $next($request);
     }
 
     /**
      * @param Request $request
-     * @param $urlNamespace
+     * @param array $config
      * @return string
      */
-    protected function urlPrefix(Request $request, $urlNamespace)
+    private function appendSchemaAndHost(Request $request, array $config)
     {
-        return $request->getSchemeAndHttpHost() . $urlNamespace;
+        if (array_key_exists(ApiFactory::CONFIG_URL_PREFIX, $config)) {
+            $config[ApiFactory::CONFIG_URL_PREFIX] =
+                $request->getSchemeAndHttpHost() . $config[ApiFactory::CONFIG_URL_PREFIX];
+        }
+
+        return $config;
     }
 
-    /**
-     * @param string|null $schemasName
-     * @return ContainerInterface
-     */
-    protected function resolveSchemas($schemasName)
-    {
-        /** @var SchemasRepositoryInterface $repository */
-        $repository = $this->container->make(SchemasRepositoryInterface::class);
-
-        return $repository->getSchemas($schemasName);
-    }
-
-    /**
-     * @param ContainerInterface $schemas
-     * @param $urlPrefix
-     * @return CodecMatcherInterface
-     */
-    protected function resolveCodecMatcher(ContainerInterface $schemas, $urlPrefix)
-    {
-        /** @var CodecMatcherRepositoryInterface $repository */
-        $repository = $this->container->make(CodecMatcherRepositoryInterface::class);
-
-        return $repository
-            ->registerSchemas($schemas)
-            ->registerUrlPrefix($urlPrefix)
-            ->getCodecMatcher();
-    }
-
-    /**
-     * @param ContainerInterface $schemas
-     * @param CodecMatcherInterface $codecMatcher
-     * @param $urlPrefix
-     */
-    private function register(
-        ContainerInterface $schemas,
-        CodecMatcherInterface $codecMatcher,
-        $urlPrefix
-    ) {
-        $container = new JsonApiContainer($codecMatcher, $schemas, $urlPrefix);
-
-        $this->container->instance(JsonApiContainer::class, $container);
-    }
 }

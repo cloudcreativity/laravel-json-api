@@ -18,12 +18,14 @@
 
 namespace CloudCreativity\LaravelJsonApi;
 
+use CloudCreativity\JsonApi\Contracts\Http\ApiFactoryInterface;
 use CloudCreativity\JsonApi\Contracts\Http\ContentNegotiatorInterface;
 use CloudCreativity\JsonApi\Contracts\Repositories\CodecMatcherRepositoryInterface;
 use CloudCreativity\JsonApi\Contracts\Repositories\ErrorRepositoryInterface;
 use CloudCreativity\JsonApi\Contracts\Repositories\SchemasRepositoryInterface;
 use CloudCreativity\JsonApi\Contracts\Stdlib\ConfigurableInterface;
 use CloudCreativity\JsonApi\Contracts\Store\StoreInterface;
+use CloudCreativity\JsonApi\Http\ApiFactory;
 use CloudCreativity\JsonApi\Http\ContentNegotiator;
 use CloudCreativity\JsonApi\Repositories\CodecMatcherRepository;
 use CloudCreativity\JsonApi\Repositories\ErrorRepository;
@@ -80,6 +82,7 @@ class ServiceProvider extends BaseServiceProvider
     public function register()
     {
         $this->bindNeomerx();
+        $this->bindApiFactory();
         $this->bindCodecMatcherRepository();
         $this->bindSchemaRepository();
         $this->bindErrorRepository();
@@ -140,6 +143,14 @@ class ServiceProvider extends BaseServiceProvider
         $this->app->singleton(FactoryInterface::class, Factory::class);
         $this->app->singleton(SchemaFactoryInterface::class, FactoryInterface::class);
         $this->app->singleton(HttpFactoryInterface::class, FactoryInterface::class);
+    }
+
+    /**
+     * Bind the API factory into the service container.
+     */
+    protected function bindApiFactory()
+    {
+        $this->app->singleton(ApiFactoryInterface::class, ApiFactory::class);
     }
 
     /**

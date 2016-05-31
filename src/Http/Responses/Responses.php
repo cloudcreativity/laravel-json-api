@@ -18,7 +18,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Http\Responses;
 
-use CloudCreativity\LaravelJsonApi\Services\JsonApiContainer;
+use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
 use Illuminate\Http\Response;
 use Neomerx\JsonApi\Contracts\Encoder\EncoderInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
@@ -36,17 +36,17 @@ class Responses extends AbstractResponses
 {
 
     /**
-     * @var JsonApiContainer
+     * @var JsonApiService
      */
-    private $container;
+    private $service;
 
     /**
      * Responses constructor.
-     * @param JsonApiContainer $container
+     * @param JsonApiService $service
      */
-    public function __construct(JsonApiContainer $container)
+    public function __construct(JsonApiService $service)
     {
-        $this->container = $container;
+        $this->service = $service;
     }
 
     /**
@@ -65,7 +65,7 @@ class Responses extends AbstractResponses
      */
     protected function getEncoder()
     {
-        return $this->container->getEncoder();
+        return $this->service->api()->encoder();
     }
 
     /**
@@ -73,7 +73,7 @@ class Responses extends AbstractResponses
      */
     protected function getUrlPrefix()
     {
-        return $this->container->getUrlPrefix();
+        return $this->service->api()->urlPrefix();
     }
 
 
@@ -82,7 +82,7 @@ class Responses extends AbstractResponses
      */
     protected function getEncodingParameters()
     {
-        return $this->container->getEncodingParameters();
+        return $this->service->request()->parameters();
     }
 
     /**
@@ -90,7 +90,7 @@ class Responses extends AbstractResponses
      */
     protected function getSchemaContainer()
     {
-        return $this->container->getSchemaContainer();
+        return $this->service->api()->schemas();
     }
 
     /**
@@ -98,7 +98,7 @@ class Responses extends AbstractResponses
      */
     protected function getSupportedExtensions()
     {
-        return $this->container->getSupportExtensions();
+        return $this->service->api()->supportedExts();
     }
 
     /**
@@ -107,12 +107,13 @@ class Responses extends AbstractResponses
     protected function getMediaType()
     {
         $type = $this
-            ->container
-            ->getCodecMatcher()
+            ->service
+            ->api()
+            ->codecMatcher()
             ->getEncoderRegisteredMatchedType();
 
         if (!$type instanceof MediaTypeInterface) {
-            throw new RuntimeException('No matching media type for encoded Json-Api response.');
+            throw new RuntimeException('No matching media type for encoded JSON-API response.');
         }
 
         return $type;

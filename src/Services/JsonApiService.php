@@ -18,8 +18,10 @@
 
 namespace CloudCreativity\LaravelJsonApi\Services;
 
+use CloudCreativity\JsonApi\Contracts\Http\ApiInterface;
+use CloudCreativity\LaravelJsonApi\Http\Requests\AbstractRequest;
 use CloudCreativity\LaravelJsonApi\Routing\ResourceRegistrar;
-use Illuminate\Contracts\Container\Container;
+use RuntimeException;
 
 /**
  * Class JsonApiService
@@ -29,23 +31,16 @@ class JsonApiService
 {
 
     /**
-     * @var Container
-     */
-    private $container;
-
-    /**
      * @var ResourceRegistrar
      */
     private $registrar;
 
     /**
      * JsonApiService constructor.
-     * @param Container $container
      * @param ResourceRegistrar $registrar
      */
-    public function __construct(Container $container, ResourceRegistrar $registrar)
+    public function __construct(ResourceRegistrar $registrar)
     {
-        $this->container = $container;
         $this->registrar = $registrar;
     }
 
@@ -60,18 +55,45 @@ class JsonApiService
     }
 
     /**
-     * @return JsonApiContainer
+     * Get the active API.
+     *
+     * An active API will be available once the JSON API middleware has been run.
+     *
+     * @return ApiInterface
      */
-    public function container()
+    public function api()
     {
-        return $this->container->make(JsonApiContainer::class);
+        if (!$this->isActive()) {
+            throw new RuntimeException('No active API. The JSON API middleware has not been run.');
+        }
+
+        return app(ApiInterface::class);
     }
 
     /**
+     * Get the parsed JSON API request for the current HTTP Request.
+     *
+     * A request will be registered if a request has completed validation upon resolution from
+     * the service container.
+     *
+     * @return AbstractRequest
+     */
+    public function request()
+    {
+        if (!app()->bound(AbstractRequest::class)) {
+            throw new RuntimeException('No active JSON API request.');
+        }
+
+        return app(AbstractRequest::class);
+    }
+
+    /**
+     * Has JSON API support been started?
+     *
      * @return bool
      */
-    public function isJsonApi()
+    public function isActive()
     {
-        return $this->container->bound(JsonApiContainer::class);
+        return app()->bound(ApiInterface::class);
     }
 }

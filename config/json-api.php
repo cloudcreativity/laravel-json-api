@@ -4,6 +4,29 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | JSON API Namespaces
+    |--------------------------------------------------------------------------
+    |
+    | The aliases of the different APIs within your application that are
+    | using the JSON API spec. For example, you may have a `v1` and `v2` API.
+    | Generally these are going to match your route groups.
+    |
+    | Each namespace has the following configuration:
+    |
+    | - `url-prefix`: the URL prefix to be used when encoding resources.
+    | - `supported-ext`: the supported extensions that apply to the whole
+    | namespace.
+    |
+    */
+    'namespaces' => [
+        'v1' => [
+            'url-prefix' => '/api/v1',
+            'supported-ext' => null,
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Codec Matcher Configuration
     |--------------------------------------------------------------------------
     |
@@ -13,7 +36,7 @@ return [
     | body content into objects.
     |
     | If there is not an encoder/decoder registered for a specific media-type,
-    | then an error will be sent to the client as per the Json-Api spec.
+    | then an error will be sent to the client as per the JSON-API spec.
     |
     */
     'codec-matcher' => [
@@ -31,22 +54,20 @@ return [
     | Schema Sets
     |--------------------------------------------------------------------------
     |
-    | Schemas are the objects that convert a record object into its Json-Api
+    | Schemas are the objects that convert a record object into its JSON-API
     | resource representation. This package supports having multiple sets of
-    | schemas, which is useful if you have different api end-points in your
-    | application (e.g. you might have 'v1' and 'v2' endpoints).
+    | schemas, using your JSON API namespaces as configured above. The
+    | 'defaults' set is used for all namespaces, and the config for a
+    | specific namespace is merged over the top of the 'defaults' set.
     |
     | Schema sets are a mapping of the record object class to the schema class
-    | that is responsible for encoding it. The 'default' set is used if no
-    | specific set is a middleware parameter. If using additional sets, the
-    | named additional set will be merged with the default set.
+    | that is responsible for encoding it.
     */
     'schemas' => [
         'defaults' => [
-            'ModelClass' => 'SchemaClass',
+            'App\Person' => 'App\JsonApi\Schemas\PeopleSchema',
         ],
         'v1' => [],
-        'v2' => [],
     ],
 
     /*
@@ -67,7 +88,7 @@ return [
     */
     'eloquent-adapter' => [
         'map' => [
-            'resource-type' => 'ModelClass',
+            'people' => 'App\Person',
         ],
         'columns' => [],
     ],

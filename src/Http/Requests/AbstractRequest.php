@@ -173,6 +173,9 @@ abstract class AbstractRequest implements ValidatesWhenResolved
         if (!$this->authorizeAfterValidation()) {
             throw new JsonApiException($this->authorizer->error());
         }
+
+        /** Register the current request in the container. */
+        app()->singleton(AbstractRequest::class, static::class);
     }
 
     /**
