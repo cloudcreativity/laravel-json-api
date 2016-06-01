@@ -80,7 +80,7 @@ class BootJsonApi
         $negotiator = $this->container->make(ContentNegotiatorInterface::class);
         /** @var ServerRequestInterface $request */
         $serverRequest = $this->container->make(ServerRequestInterface::class);
-        $negotiator->doContentNegotiation($api->codecMatcher(), $serverRequest);
+        $negotiator->doContentNegotiation($api->getCodecMatcher(), $serverRequest);
 
         return $next($request);
     }

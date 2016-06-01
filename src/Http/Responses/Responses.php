@@ -65,7 +65,7 @@ class Responses extends AbstractResponses
      */
     protected function getEncoder()
     {
-        return $this->service->api()->encoder();
+        return $this->service->api()->getEncoder();
     }
 
     /**
@@ -73,7 +73,7 @@ class Responses extends AbstractResponses
      */
     protected function getUrlPrefix()
     {
-        return $this->service->api()->urlPrefix();
+        return $this->service->api()->getUrlPrefix();
     }
 
 
@@ -90,7 +90,7 @@ class Responses extends AbstractResponses
      */
     protected function getSchemaContainer()
     {
-        return $this->service->api()->schemas();
+        return $this->service->api()->getSchemas();
     }
 
     /**
@@ -98,7 +98,7 @@ class Responses extends AbstractResponses
      */
     protected function getSupportedExtensions()
     {
-        return $this->service->api()->supportedExts();
+        return $this->service->api()->getSupportedExts();
     }
 
     /**
@@ -109,7 +109,7 @@ class Responses extends AbstractResponses
         $type = $this
             ->service
             ->api()
-            ->codecMatcher()
+            ->getCodecMatcher()
             ->getEncoderRegisteredMatchedType();
 
         if (!$type instanceof MediaTypeInterface) {
