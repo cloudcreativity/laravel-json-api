@@ -19,7 +19,7 @@
 namespace CloudCreativity\LaravelJsonApi\Http\Controllers;
 
 use CloudCreativity\JsonApi\Contracts\Object\ResourceInterface;
-use CloudCreativity\LaravelJsonApi\Http\Requests\AbstractRequest;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestHandlerInterface;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 
@@ -33,15 +33,15 @@ class JsonApiController extends Controller
     use ReplyTrait;
 
     /**
-     * @var AbstractRequest
+     * @var RequestHandlerInterface
      */
     private $request;
 
     /**
      * JsonApiController constructor.
-     * @param AbstractRequest $request
+     * @param RequestHandlerInterface $request
      */
-    public function __construct(AbstractRequest $request)
+    public function __construct(RequestHandlerInterface $request)
     {
         $this->request = $request;
     }
@@ -140,9 +140,9 @@ class JsonApiController extends Controller
     }
 
     /**
-     * @return AbstractRequest
+     * @return RequestHandlerInterface
      */
-    protected function request()
+    protected function getRequestHandler()
     {
         return $this->request;
     }
@@ -152,19 +152,19 @@ class JsonApiController extends Controller
      *
      * @return object
      */
-    protected function record()
+    protected function getRecord()
     {
-        return $this->request->record();
+        return $this->request->getRecord();
     }
 
     /**
      * Shorthand to get the resource that the client has submitted.
-     * 
+     *
      * @return ResourceInterface
      */
-    protected function resource()
+    protected function getResource()
     {
-        return $this->request->document()->resource();
+        return $this->request->getDocument()->resource();
     }
 
     /**

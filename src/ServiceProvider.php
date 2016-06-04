@@ -39,6 +39,7 @@ use CloudCreativity\LaravelJsonApi\Document\LinkFactory;
 use CloudCreativity\LaravelJsonApi\Http\Middleware\BootJsonApi;
 use CloudCreativity\LaravelJsonApi\Http\Responses\ResponseFactory;
 use CloudCreativity\LaravelJsonApi\Http\Responses\Responses;
+use CloudCreativity\LaravelJsonApi\Validators\ValidatorErrorFactory;
 use CloudCreativity\LaravelJsonApi\Validators\ValidatorFactory;
 use Illuminate\Contracts\Routing\ResponseFactory as ResponseFactoryContract;
 use Illuminate\Routing\Router;
@@ -216,7 +217,7 @@ class ServiceProvider extends BaseServiceProvider
      */
     protected function bindValidatorErrorFactory()
     {
-        $this->app->singleton(ValidatorErrorFactoryInterface::class, ValidatorFactory::class);
+        $this->app->singleton(ValidatorErrorFactoryInterface::class, ValidatorErrorFactory::class);
     }
 
     /**

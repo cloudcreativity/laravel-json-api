@@ -22,7 +22,7 @@ use CloudCreativity\JsonApi\Contracts\Object\ResourceInterface;
 use CloudCreativity\JsonApi\Contracts\Validators\AttributesValidatorInterface;
 use CloudCreativity\JsonApi\Validators\AbstractValidator;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorErrorFactoryInterface;
-use Illuminate\Contracts\Validation\Factory as ValidatorFactory;
+use Illuminate\Contracts\Validation\Factory;
 use Illuminate\Contracts\Validation\Validator;
 
 /**
@@ -33,7 +33,7 @@ class AttributesValidator extends AbstractValidator implements AttributesValidat
 {
 
     /**
-     * @var ValidatorFactory
+     * @var Factory
      */
     protected $validatorFactory;
 
@@ -60,7 +60,7 @@ class AttributesValidator extends AbstractValidator implements AttributesValidat
     /**
      * AttributesValidator constructor.
      * @param ValidatorErrorFactoryInterface $validatorErrorFactory
-     * @param ValidatorFactory $validatorFactory
+     * @param Factory $validatorFactory
      * @param array $rules
      * @param array $messages
      * @param array $customAttributes
@@ -69,7 +69,7 @@ class AttributesValidator extends AbstractValidator implements AttributesValidat
      */
     public function __construct(
         ValidatorErrorFactoryInterface $validatorErrorFactory,
-        ValidatorFactory $validatorFactory,
+        Factory $validatorFactory,
         array $rules,
         array $messages = [],
         array $customAttributes = [],
@@ -92,13 +92,9 @@ class AttributesValidator extends AbstractValidator implements AttributesValidat
     public function isValid(ResourceInterface $resource)
     {
         $validator = $this->make($resource->attributes()->toArray());
-        /** @var ValidatorErrorFactoryInterface $errorFactory */
-        $errorFactory = $this->messages;
 
         if ($validator->fails()) {
-            $this->addErrors($errorFactory
-                ->resourceInvalidAttributesMessages($validator
-                    ->getMessageBag()));
+            $this->addValidatorErrors($validator);
             return false;
         }
 
@@ -125,6 +121,18 @@ class AttributesValidator extends AbstractValidator implements AttributesValidat
         }
 
         return $validator;
+    }
+
+    /**
+     * @param Validator $validator
+     */
+    protected function addValidatorErrors(Validator $validator)
+    {
+        /** @var ValidatorErrorFactoryInterface $factory */
+        $factory = $this->errorFactory;
+        $messages = $validator->getMessageBag();
+
+        $this->addErrors($factory->resourceInvalidAttributesMessages($messages));
     }
 
 }

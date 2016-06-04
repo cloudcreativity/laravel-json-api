@@ -25,8 +25,8 @@ use CloudCreativity\JsonApi\Contracts\Validators\DocumentValidatorInterface;
 use CloudCreativity\JsonApi\Contracts\Validators\ValidatorProviderInterface;
 use CloudCreativity\JsonApi\Object\Document;
 use CloudCreativity\JsonApi\Object\ResourceIdentifier;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestHandlerInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\RequestException;
-use Illuminate\Contracts\Validation\ValidatesWhenResolved;
 use Illuminate\Http\Request as HttpRequest;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use Neomerx\JsonApi\Exceptions\JsonApiException;
@@ -37,7 +37,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  * Class Request
  * @package CloudCreativity\LaravelJsonApi
  */
-abstract class AbstractRequest implements ValidatesWhenResolved
+abstract class AbstractRequest implements RequestHandlerInterface
 {
 
     use InterpretsHttpRequests,
@@ -125,11 +125,11 @@ abstract class AbstractRequest implements ValidatesWhenResolved
     private $record;
 
     /**
-     * The resource type that this request handles.
+     * Get the JSON API or HTTP exception that should be used if the request is denied.
      *
-     * @return string
+     * @return JsonApiException|HttpException
      */
-    abstract public function resourceType();
+    abstract protected function denied();
 
     /**
      * AbstractRequest constructor.
@@ -156,32 +156,45 @@ abstract class AbstractRequest implements ValidatesWhenResolved
      */
     public function validate()
     {
-        $this->record = !empty($this->resourceId()) ? $this->findRecord() : null;
+        /** Check the URI is valid */
+        $this->record = !empty($this->getResourceId()) ? $this->findRecord() : null;
         $this->validateRelationshipUrl();
 
+        /** Check request parameters are acceptable. */
         $this->encodingParameters = $this->validateParameters();
 
+        /** Do any pre-document authorization */
         if (!$this->authorizeBeforeValidation()) {
-            throw new JsonApiException($this->authorizer->error());
+            throw $this->denied();
         }
 
+        /** If a document is expected from the client, validate it. */
         if ($this->isExpectingDocument()) {
-            $this->document = $this->decodeDocument($this->request);
+            $this->document = $this->decodeDocument($this->getHttpRequest());
             $this->validateDocument();
         }
 
+        /** Do any post-document authorization. */
         if (!$this->authorizeAfterValidation()) {
-            throw new JsonApiException($this->authorizer->error());
+            throw $this->denied();
         }
 
         /** Register the current request in the container. */
-        app()->singleton(AbstractRequest::class, static::class);
+        app()->instance(RequestHandlerInterface::class, $this);
+    }
+
+    /**
+     * @return HttpRequest
+     */
+    public function getHttpRequest()
+    {
+        return $this->request;
     }
 
     /**
      * @return object
      */
-    public function record()
+    public function getRecord()
     {
         if (!is_object($this->record)) {
             throw new RequestException('This request does not relate to a record.');
@@ -193,7 +206,7 @@ abstract class AbstractRequest implements ValidatesWhenResolved
     /**
      * @return DocumentInterface
      */
-    public function document()
+    public function getDocument()
     {
         return $this->document ?: new Document();
     }
@@ -201,19 +214,9 @@ abstract class AbstractRequest implements ValidatesWhenResolved
     /**
      * @return EncodingParametersInterface
      */
-    public function parameters()
+    public function getEncodingParameters()
     {
         return $this->encodingParameters;
-    }
-
-    /**
-     * Get the HTTP request object.
-     *
-     * @return HttpRequest
-     */
-    public function request()
-    {
-        return $this->request;
     }
 
     /**
@@ -225,34 +228,34 @@ abstract class AbstractRequest implements ValidatesWhenResolved
             return true;
         }
 
-        $parameters = $this->parameters();
+        $parameters = $this->getEncodingParameters();
 
         /** Index */
         if ($this->isIndex()) {
             return $this->authorizer->canReadMany($parameters);
         } /** Read Resource */
         elseif ($this->isReadResource()) {
-            return $this->authorizer->canRead($this->record(), $parameters);
+            return $this->authorizer->canRead($this->getRecord(), $parameters);
         } /** Update Resource */
         elseif ($this->isUpdateResource()) {
-            return $this->authorizer->canUpdate($this->record(), $parameters);
+            return $this->authorizer->canUpdate($this->getRecord(), $parameters);
         } /** Delete Resource */
         elseif ($this->isDeleteResource()) {
-            return $this->authorizer->canDelete($this->record(), $parameters);
+            return $this->authorizer->canDelete($this->getRecord(), $parameters);
         } elseif ($this->isReadRelatedResource()) {
-            return $this->authorizer->canReadRelatedResource($this->relationshipName(), $this->record(), $parameters);
+            return $this->authorizer->canReadRelatedResource($this->getRelationshipName(), $this->getRecord(), $parameters);
         } /** Read Relationship Data */
         elseif ($this->isReadRelationship()) {
-            return $this->authorizer->canReadRelationship($this->relationshipName(), $this->record(), $parameters);
+            return $this->authorizer->canReadRelationship($this->getRelationshipName(), $this->getRecord(), $parameters);
         } /** Replace Relationship Data */
         elseif ($this->isReplaceRelationship()) {
-            return $this->authorizer->canReplaceRelationship($this->relationshipName(), $this->record(), $parameters);
+            return $this->authorizer->canReplaceRelationship($this->getRelationshipName(), $this->getRecord(), $parameters);
         } /** Add To Relationship Data */
         elseif ($this->isAddToRelationship()) {
-            return $this->authorizer->canAddToRelationship($this->relationshipName(), $this->record(), $parameters);
+            return $this->authorizer->canAddToRelationship($this->getRelationshipName(), $this->getRecord(), $parameters);
         } /** Remove from Relationship Data */
         elseif ($this->isRemoveFromRelationship()) {
-            return $this->authorizer->canRemoveFromRelationship($this->relationshipName(), $this->record(), $parameters);
+            return $this->authorizer->canRemoveFromRelationship($this->getRelationshipName(), $this->getRecord(), $parameters);
         }
 
         return true;
@@ -266,7 +269,7 @@ abstract class AbstractRequest implements ValidatesWhenResolved
     protected function authorizeAfterValidation()
     {
         if ($this->authorizer && $this->isCreateResource()) {
-            return $this->authorizer->canCreate($this->document()->resource(), $this->parameters());
+            return $this->authorizer->canCreate($this->getDocument()->resource(), $this->getEncodingParameters());
         }
 
         return true;
@@ -280,7 +283,7 @@ abstract class AbstractRequest implements ValidatesWhenResolved
     {
         /** @var StoreInterface $store */
         $store = app(StoreInterface::class);
-        $identifier = ResourceIdentifier::create($this->resourceType(), $this->resourceId());
+        $identifier = ResourceIdentifier::create($this->getResourceType(), $this->getResourceId());
 
         $record = $store->find($identifier);
 
@@ -301,7 +304,7 @@ abstract class AbstractRequest implements ValidatesWhenResolved
             return;
         }
 
-        $name = $this->relationshipName();
+        $name = $this->getRelationshipName();
 
         if (!in_array($name, $this->hasOne) && !in_array($name, $this->hasMany)) {
             throw new NotFoundHttpException();
@@ -333,16 +336,16 @@ abstract class AbstractRequest implements ValidatesWhenResolved
             return $this->validators->createResource();
         } /** Update Resource */
         elseif ($this->isUpdateResource()) {
-            return $this->validators->updateResource($this->record(), $this->resourceId());
+            return $this->validators->updateResource($this->getRecord(), $this->getResourceId());
         } /** Replace Relationship */
         elseif ($this->isReplaceRelationship()) {
-            return $this->validators->replaceRelationship($this->relationshipName(), $this->record());
+            return $this->validators->replaceRelationship($this->getRelationshipName(), $this->getRecord());
         } /** Add To Relationship */
         elseif ($this->isAddToRelationship()) {
-            return $this->validators->addToRelationship($this->relationshipName(), $this->record());
+            return $this->validators->addToRelationship($this->getRelationshipName(), $this->getRecord());
         } /** Remove From Relationship */
         elseif ($this->isRemoveFromRelationship()) {
-            return $this->validators->removeFromRelationship($this->relationshipName(), $this->record());
+            return $this->validators->removeFromRelationship($this->getRelationshipName(), $this->getRecord());
         }
 
         return null;
@@ -356,7 +359,7 @@ abstract class AbstractRequest implements ValidatesWhenResolved
     {
         $validator = $this->validator();
 
-        if ($validator && !$validator->isValid($this->document())) {
+        if ($validator && !$validator->isValid($this->getDocument())) {
             throw new JsonApiException($validator->errors());
         }
     }

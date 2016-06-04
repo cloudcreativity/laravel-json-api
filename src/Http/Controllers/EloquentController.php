@@ -20,7 +20,7 @@ namespace CloudCreativity\LaravelJsonApi\Http\Controllers;
 
 use CloudCreativity\JsonApi\Contracts\Hydrator\HydratorInterface;
 use CloudCreativity\JsonApi\Contracts\Object\ResourceInterface;
-use CloudCreativity\LaravelJsonApi\Http\Requests\AbstractRequest;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestHandlerInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Response;
 use RuntimeException;
@@ -45,10 +45,10 @@ class EloquentController extends JsonApiController
     /**
      * EloquentController constructor.
      * @param Model $model
-     * @param AbstractRequest $request
+     * @param RequestHandlerInterface $request
      * @param HydratorInterface $hydrator
      */
-    public function __construct(Model $model, AbstractRequest $request, HydratorInterface $hydrator)
+    public function __construct(Model $model, RequestHandlerInterface $request, HydratorInterface $hydrator)
     {
         parent::__construct($request);
         $this->model = $model;
@@ -72,7 +72,7 @@ class EloquentController extends JsonApiController
      */
     public function create()
     {
-        $model = $this->hydrate($this->resource(), $this->model);
+        $model = $this->hydrate($this->getResource(), $this->model);
 
         if (!$this->commit($model)) {
             return $this->internalServerError();
@@ -91,7 +91,7 @@ class EloquentController extends JsonApiController
     {
         return $this
             ->reply()
-            ->content($this->record());
+            ->content($this->getRecord());
     }
 
     /**
@@ -100,7 +100,7 @@ class EloquentController extends JsonApiController
      */
     public function update($resourceId)
     {
-        $model = $this->hydrate($this->resource(), $this->record());
+        $model = $this->hydrate($this->getResource(), $this->getRecord());
 
         if (!$this->commit($model)) {
             return $this->internalServerError();
@@ -117,7 +117,7 @@ class EloquentController extends JsonApiController
      */
     public function delete($resourceId)
     {
-        $model = $this->record();
+        $model = $this->getRecord();
 
         if (!$model->delete()) {
             return $this->internalServerError();
@@ -176,9 +176,9 @@ class EloquentController extends JsonApiController
     /**
      * @return Model
      */
-    protected function record()
+    protected function getRecord()
     {
-        $record = parent::record();
+        $record = parent::getRecord();
 
         if (!$record instanceof Model) {
             throw new RuntimeException(sprintf('%s expects to be used with a %s record.', static::class, Model::class));

@@ -19,7 +19,7 @@
 namespace CloudCreativity\LaravelJsonApi\Services;
 
 use CloudCreativity\JsonApi\Contracts\Http\ApiInterface;
-use CloudCreativity\LaravelJsonApi\Http\Requests\AbstractRequest;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestHandlerInterface;
 use CloudCreativity\LaravelJsonApi\Routing\ResourceRegistrar;
 use RuntimeException;
 
@@ -71,20 +71,20 @@ class JsonApiService
     }
 
     /**
-     * Get the parsed JSON API request for the current HTTP Request.
+     * Get the handler for the current HTTP Request.
      *
-     * A request will be registered if a request has completed validation upon resolution from
-     * the service container.
+     * A request handler will be registered if a request has completed validation
+     * upon resolution from the service container.
      *
-     * @return AbstractRequest
+     * @return RequestHandlerInterface
      */
     public function request()
     {
-        if (!app()->bound(AbstractRequest::class)) {
+        if (!app()->bound(RequestHandlerInterface::class)) {
             throw new RuntimeException('No active JSON API request.');
         }
 
-        return app(AbstractRequest::class);
+        return app(RequestHandlerInterface::class);
     }
 
     /**

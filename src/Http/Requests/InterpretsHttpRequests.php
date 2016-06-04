@@ -31,16 +31,16 @@ trait InterpretsHttpRequests
     /**
      * @return HttpRequest
      */
-    abstract public function request();
+    abstract public function getHttpRequest();
 
     /**
      * What resource id was sent by the client?
      *
      * @return string|null
      */
-    public function resourceId()
+    public function getResourceId()
     {
-        return $this->request()->route(ResourceRegistrar::PARAM_RESOURCE_ID);
+        return $this->getHttpRequest()->route(ResourceRegistrar::PARAM_RESOURCE_ID);
     }
 
     /**
@@ -48,9 +48,9 @@ trait InterpretsHttpRequests
      *
      * @return string|null
      */
-    public function relationshipName()
+    public function getRelationshipName()
     {
-        return $this->request()->route(ResourceRegistrar::PARAM_RELATIONSHIP_NAME);
+        return $this->getHttpRequest()->route(ResourceRegistrar::PARAM_RELATIONSHIP_NAME);
     }
 
     /**
@@ -62,7 +62,7 @@ trait InterpretsHttpRequests
      */
     public function isIndex()
     {
-        return $this->request()->isMethod('get') && !$this->isResource();
+        return $this->getHttpRequest()->isMethod('get') && !$this->isResource();
     }
 
     /**
@@ -74,7 +74,7 @@ trait InterpretsHttpRequests
      */
     public function isCreateResource()
     {
-        return $this->request()->isMethod('post') && !$this->isResource();
+        return $this->getHttpRequest()->isMethod('post') && !$this->isResource();
     }
 
     /**
@@ -86,7 +86,7 @@ trait InterpretsHttpRequests
      */
     public function isReadResource()
     {
-        return $this->request()->isMethod('get') && $this->isResource() && !$this->isRelationship();
+        return $this->getHttpRequest()->isMethod('get') && $this->isResource() && !$this->isRelationship();
     }
 
     /**
@@ -98,7 +98,7 @@ trait InterpretsHttpRequests
      */
     public function isUpdateResource()
     {
-        return $this->request()->isMethod('patch') && $this->isResource() && !$this->isRelationship();
+        return $this->getHttpRequest()->isMethod('patch') && $this->isResource() && !$this->isRelationship();
     }
 
     /**
@@ -110,7 +110,7 @@ trait InterpretsHttpRequests
      */
     public function isDeleteResource()
     {
-        return $this->request()->isMethod('delete') && $this->isResource() && !$this->isRelationship();
+        return $this->getHttpRequest()->isMethod('delete') && $this->isResource() && !$this->isRelationship();
     }
 
     /**
@@ -134,7 +134,7 @@ trait InterpretsHttpRequests
      */
     public function isReadRelationship()
     {
-        return $this->request()->isMethod('get') && $this->isRelationshipData();
+        return $this->getHttpRequest()->isMethod('get') && $this->isRelationshipData();
     }
 
     /**
@@ -144,7 +144,7 @@ trait InterpretsHttpRequests
      */
     public function isReplaceRelationship()
     {
-        return $this->request()->isMethod('patch') && $this->isRelationshipData();
+        return $this->getHttpRequest()->isMethod('patch') && $this->isRelationshipData();
     }
 
     /**
@@ -156,7 +156,7 @@ trait InterpretsHttpRequests
      */
     public function isAddToRelationship()
     {
-        return $this->request()->isMethod('post') && $this->isRelationshipData();
+        return $this->getHttpRequest()->isMethod('post') && $this->isRelationshipData();
     }
 
     /**
@@ -168,7 +168,7 @@ trait InterpretsHttpRequests
      */
     public function isRemoveFromRelationship()
     {
-        return $this->request()->isMethod('delete') && $this->isRelationshipData();
+        return $this->getHttpRequest()->isMethod('delete') && $this->isRelationshipData();
     }
 
     /**
@@ -176,7 +176,7 @@ trait InterpretsHttpRequests
      */
     public function isResource()
     {
-        return !empty($this->resourceId());
+        return !empty($this->getResourceId());
     }
 
     /**
@@ -186,7 +186,7 @@ trait InterpretsHttpRequests
      */
     public function isRelationship()
     {
-        return !empty($this->relationshipName());
+        return !empty($this->getRelationshipName());
     }
 
     /**
@@ -199,7 +199,7 @@ trait InterpretsHttpRequests
      */
     public function isRelationshipData()
     {
-        return $this->isRelationship() && $this->request()->is('*/relationships/*');
+        return $this->isRelationship() && $this->getHttpRequest()->is('*/relationships/*');
     }
 
     /**

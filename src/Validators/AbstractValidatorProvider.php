@@ -59,6 +59,16 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
     abstract protected function attributeRules($record = null);
 
     /**
+     * Define the validation rules for the resource relationships.
+     *
+     * @param RelationshipsValidatorInterface $relationships
+     * @param object|null $record
+     *      the record being updated, or null if it is a create request.
+     * @return void
+     */
+    abstract protected function relationshipRules(RelationshipsValidatorInterface $relationships, $record = null);
+
+    /**
      * @return DocumentValidatorInterface
      */
     public function createResource()
@@ -127,10 +137,11 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
      * on the attributes validator.
      *
      * @param Validator $validator
+     *      the Laravel validator instance that will validate the attributes.
      * @param object|null $record
      *      the record being updated, or null if it is a create request.
      */
-    protected function configure(Validator $validator, $record = null)
+    protected function conditionalAttributes(Validator $validator, $record = null)
     {
 
     }
@@ -167,7 +178,7 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
             $this->messages,
             $this->customAttributes,
             function (Validator $validator) use ($record) {
-                return $this->configure($validator, $record);
+                return $this->conditionalAttributes($validator, $record);
             }
         );
     }
@@ -181,7 +192,10 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
      */
     protected function resourceRelationships($record = null)
     {
-        return $this->factory()->relationships();
+        $validator = $this->factory()->relationships();
+        $this->relationshipRules($validator, $record);
+
+        return $validator;
     }
 
 

@@ -70,7 +70,7 @@ trait MakesJsonApiRequests
         $statusCode = Response::HTTP_OK,
         $contentType = MediaTypeInterface::JSON_API_MEDIA_TYPE
     ) {
-        $this->assertResponseStatus($statusCode)
+        $this->seeStatusCode($statusCode)
             ->seeHeader('Content-Type', $contentType);
 
         return $this;
@@ -169,6 +169,25 @@ trait MakesJsonApiRequests
         } else {
             $this->assertJsonApiResponse($statusCode, $contentType);
         }
+
+        return $this;
+    }
+
+    /**
+     * @param $expected
+     * @return $this
+     */
+    protected function seeStatusCode($expected)
+    {
+        $actual = $this->response->getStatusCode();
+        $message = "Expected status code {$expected}, got {$actual}";
+        $content = (array) json_decode((string) $this->response->getContent(), true);
+
+        if (isset($content[Keys::KEYWORD_ERRORS])) {
+            $message .= " with errors:\n" . json_encode($content, JSON_PRETTY_PRINT);
+        }
+
+        PHPUnit::assertEquals($expected, $actual, $message);
 
         return $this;
     }
