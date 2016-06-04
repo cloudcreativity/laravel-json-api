@@ -72,7 +72,7 @@ class EloquentAdapter implements AdapterInterface
     public function exists(ResourceIdentifierInterface $identifier)
     {
         $model = $this->resolve($identifier->type());
-        $key = $this->resolveKeyName($model, $identifier->type());
+        $key = $this->resolveQualifiedKeyName($model, $identifier->type());
 
         return $this->newQuery($model)->exists($key, $identifier->id());
     }
@@ -85,9 +85,23 @@ class EloquentAdapter implements AdapterInterface
     public function find(ResourceIdentifierInterface $identifier)
     {
         $model = $this->resolve($identifier->type());
-        $key = $this->resolveKeyName($model, $identifier->type());
+        $key = $this->resolveQualifiedKeyName($model, $identifier->type());
 
         return $this->newQuery($model)->where($key, $identifier->id())->first();
+    }
+
+    /**
+     * @param $resourceType
+     * @param $id
+     * @return object
+     */
+    public function createIdentity($resourceType, $id)
+    {
+        $model = $this->resolve($resourceType);
+        $key = $this->resolveKeyName($model, $resourceType);
+        $model->{$key} = $id;
+
+        return $model;
     }
 
     /**
@@ -135,6 +149,17 @@ class EloquentAdapter implements AdapterInterface
     }
 
     /**
+     * @param Model $model
+     * @param $resourceType
+     * @return string
+     */
+    protected function resolveKeyName(Model $model, $resourceType)
+    {
+        return isset($this->keyNames[$resourceType]) ?
+            $this->keyNames[$resourceType] : $model->getKeyName();
+    }
+
+    /**
      * Get the key name to use when querying for records.
      *
      * If no key name has been specified for the model, `Model::getQualifiedKeyName()` will be used as the
@@ -144,7 +169,7 @@ class EloquentAdapter implements AdapterInterface
      * @param $resourceType
      * @return string
      */
-    protected function resolveKeyName(Model $model, $resourceType)
+    protected function resolveQualifiedKeyName(Model $model, $resourceType)
     {
         return isset($this->keyNames[$resourceType]) ?
             sprintf('%s.%s', $model->getTable(), $this->keyNames[$resourceType]) :

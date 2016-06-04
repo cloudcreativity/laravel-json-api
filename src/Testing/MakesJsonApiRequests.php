@@ -96,19 +96,18 @@ trait MakesJsonApiRequests
     /**
      * Assert response is a JSON API resource created response.
      *
-     * @param $resourceType
-     * @param array $attributes
+     * @param array $expected
+     *      array representation of the expected attributes of the resource.
      * @param string $contentType
      * @return string
      *      the id of the created resource.
      */
     protected function assertCreateResponse(
-        $resourceType,
-        array $attributes = [],
+        array $expected,
         $contentType = MediaTypeInterface::JSON_API_MEDIA_TYPE
     ) {
         $this->assertJsonApiResponse(Response::HTTP_CREATED, $contentType)
-            ->seeDataResource($resourceType, null, $attributes);
+            ->seeDataResource($expected);
 
         $data = $this->decodeResponseJson()[Keys::KEYWORD_DATA];
         $id = $data[Keys::KEYWORD_ID];
@@ -120,20 +119,17 @@ trait MakesJsonApiRequests
     /**
      * Assert response is a JSON API read resource response.
      *
-     * @param $resourceType
-     * @param $id
-     * @param array $attributes
+     * @param array $expected
+     *      array representation of the expected attributes of the resource.
      * @param string $contentType
      * @return $this
      */
     protected function assertReadResponse(
-        $resourceType,
-        $id,
-        array $attributes = [],
+        array $expected,
         $contentType = MediaTypeInterface::JSON_API_MEDIA_TYPE
     ) {
         $this->assertJsonApiResponse(Response::HTTP_OK, $contentType)
-            ->seeDataResource($resourceType, $id, $attributes);
+            ->seeDataResource($expected);
 
         return $this;
     }
@@ -141,20 +137,17 @@ trait MakesJsonApiRequests
     /**
      * Assert response is a JSON API resource updated response.
      *
-     * @param $resourceType
-     * @param $id
-     * @param array $attributes
+     * @param array $expected
+     *      array representation of the expected attributes of the resource.
      * @param string $contentType
      * @return $this
      */
     protected function assertUpdateResponse(
-        $resourceType,
-        $id,
-        array $attributes = [],
+        array $expected,
         $contentType = MediaTypeInterface::JSON_API_MEDIA_TYPE
     ) {
         $this->assertJsonApiResponse(Response::HTTP_OK, $contentType)
-            ->seeDataResource($resourceType, $id, $attributes);
+            ->seeDataResource($expected);
 
         return $this;
     }
@@ -212,34 +205,75 @@ trait MakesJsonApiRequests
     /**
      * See that there is a resource object as primary data.
      *
-     * @param $resourceType
-     * @param $id
-     *      the expected id, or null if not known.
-     * @param $attributes
-     *      the expected attributes, or a subset of the expected attributes
+     * @param array $expected
+     *      the expected array representation of the resource.
      * @return $this
      */
-    protected function seeDataResource(
-        $resourceType,
-        $id = null,
-        array $attributes = []
-    ) {
+    protected function seeDataResource(array $expected)
+    {
+        if (!isset($expected[Keys::KEYWORD_TYPE])) {
+            PHPUnit::fail(sprintf('Expected resource must have a "%s" key.', Keys::KEYWORD_TYPE));
+        }
+
+        $attributes = isset($expected[Keys::KEYWORD_ATTRIBUTES]) ?
+            $expected[Keys::KEYWORD_ATTRIBUTES] : [];
+
+        $relationships = isset($expected[Keys::KEYWORD_RELATIONSHIPS]) ?
+            $this->normalizeResourceRelationships($expected[Keys::KEYWORD_RELATIONSHIPS]) : [];
+
+        /** Check the structure is as expected. */
+        $structure = [
+            Keys::KEYWORD_TYPE,
+            Keys::KEYWORD_ID,
+        ];
+
+        if (!empty($attributes)) {
+            $structure[Keys::KEYWORD_ATTRIBUTES] = array_keys($attributes);
+        }
+
+        if (!empty($relationships)) {
+            $structure[Keys::KEYWORD_RELATIONSHIPS] = array_keys($relationships);
+        }
+
         $this->seeJsonStructure([
-            Keys::KEYWORD_DATA => [
-                Keys::KEYWORD_TYPE,
-                Keys::KEYWORD_ID,
-                Keys::KEYWORD_ATTRIBUTES => array_keys($attributes)
-            ],
+            Keys::KEYWORD_DATA => $structure,
         ]);
 
         $data = $this->decodeResponseJson()[Keys::KEYWORD_DATA];
-        PHPUnit::assertEquals($resourceType, $data[Keys::KEYWORD_TYPE], 'Unexpected resource type');
 
-        if ($id) {
-            PHPUnit::assertEquals($id, $data[Keys::KEYWORD_ID], 'Unexpected resource id');
+        /** Have we got the correct resource type? */
+        PHPUnit::assertEquals($expected[Keys::KEYWORD_TYPE], $data[Keys::KEYWORD_TYPE], 'Unexpected resource type');
+
+        /** Have we got the correct resource id? */
+        if (isset($expected[Keys::KEYWORD_ID])) {
+            PHPUnit::assertEquals($expected[Keys::KEYWORD_ID], $data[Keys::KEYWORD_ID], 'Unexpected resource id');
         }
 
+        /** Have we got the correct attributes? */
         PHPUnit::assertArraySubset($attributes, $data[Keys::KEYWORD_ATTRIBUTES], false, 'Unexpected resource attributes');
+        /** Have we got the correct relationships? */
+        PHPUnit::assertArraySubset($relationships, $data[Keys::KEYWORD_RELATIONSHIPS], false, 'Unexpected resource relationships');
+    }
+
+    /**
+     * @param array $relationships
+     * @return array
+     */
+    private function normalizeResourceRelationships(array $relationships)
+    {
+        $normalized = [];
+
+        foreach ($relationships as $key => $value) {
+
+            if (is_numeric($key)) {
+                $key = $value;
+                $value = [];
+            }
+
+            $normalized[$key] = $value;
+        }
+
+        return $normalized;
     }
 
 }

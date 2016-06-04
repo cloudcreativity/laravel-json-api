@@ -18,6 +18,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Schema;
 
+use CloudCreativity\JsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\LaravelJsonApi\Document\GeneratesLinks;
 use Neomerx\JsonApi\Schema\SchemaProvider;
 
@@ -30,4 +31,20 @@ abstract class AbstractSchema extends SchemaProvider
 
     use GeneratesLinks;
 
+    /**
+     * @param $resourceType
+     * @param $id
+     * @return object|null
+     */
+    protected function createIdentity($resourceType, $id)
+    {
+        if (is_null($id)) {
+            return null;
+        }
+
+        /** @var StoreInterface $store */
+        $store = app(StoreInterface::class);
+
+        return $store->createIdentity($resourceType, $id);
+    }
 }

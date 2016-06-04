@@ -84,7 +84,7 @@ trait HandlesErrors
 
         $detail = ($e instanceof HttpException) ? $e->getMessage() : null;
 
-        return new Error(null, null, $statusCode, null, null, $detail);
+        return new Error(null, null, $statusCode, null, null, $detail ?: null);
     }
 
     /**
