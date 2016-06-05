@@ -138,6 +138,18 @@ trait InterpretsHttpRequests
     }
 
     /**
+     * Is this a request to modify the data of a relationship?
+     *
+     * @return bool
+     */
+    public function isModifyRelationship()
+    {
+        return $this->isReplaceRelationship() ||
+            $this->isAddToRelationship() ||
+            $this->isRemoveFromRelationship();
+    }
+
+    /**
      * Is this a request to replace the data of a relationship?
      *
      * E.g. `PATCH /posts/1/relationships/author` or `PATCH /posts/1/relationships/comments`

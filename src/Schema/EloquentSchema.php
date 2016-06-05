@@ -22,8 +22,6 @@ use Carbon\Carbon;
 use CloudCreativity\JsonApi\Exceptions\SchemaException;
 use DateTime;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Neomerx\JsonApi\Contracts\Document\LinkInterface;
 
 /**
  * Class EloquentSchema
@@ -195,109 +193,6 @@ abstract class EloquentSchema extends AbstractSchema
         }
 
         return $value;
-    }
-
-    /**
-     * Serialize an Eloquent belongs-to relationship.
-     *
-     * This is a more efficient serialization, because if the related model is not going
-     * to be included in the JSON API response, we can use the key from the relationship.
-     * This helper method takes care of that logic for you.
-     *
-     * @param Model $model
-     * @param $modelKey
-     *      the key on the model for getting the related model/relationship object.
-     * @param $isIncluded
-     *      whether the client has asked for the relationship to be included.
-     * @param string|null $inverseResourceType
-     *      the inverse resource type, defaults to the pluralized version of the model key.
-     * @param mixed $meta
-     *      meta to include in the relationship object.
-     * @param LinkInterface[]|null $additionalLinks
-     *      additional links to add to the relationship.
-     * @param bool $showSelf
-     *      whether the relationship self link should be included.
-     * @param bool $showRelated
-     *      whether the relationship related link should be included.
-     * @return array
-     */
-    protected function serializeBelongsTo(
-        Model $model,
-        $modelKey,
-        $isIncluded,
-        $inverseResourceType = null,
-        $meta = null,
-        array $additionalLinks = null,
-        $showSelf = true,
-        $showRelated = true
-    ) {
-        $inverseResourceType = $inverseResourceType ?: str_plural($modelKey);
-
-        $data = $isIncluded ?
-            $model->{$modelKey} :
-            $this->createIdentity($inverseResourceType, $model->{$this->keyForBelongsToId($model, $modelKey)});
-
-        return [
-            self::SHOW_SELF => $showSelf,
-            self::SHOW_RELATED => $showRelated,
-            self::DATA => $data,
-            self::META => $meta,
-            self::LINKS => $additionalLinks,
-        ];
-    }
-
-    /**
-     * Serialize an Eloquent relationship, including the related model(s) as data.
-     *
-     * @param Model $model
-     * @param string $modelKey
-     * @param mixed $meta
-     *      meta to include in the relationship object.
-     * @param LinkInterface[]|null $additionalLinks
-     *      additional links to add to the relationship.
-     * @param bool $showSelf
-     *      whether the relationship self link should be included.
-     * @param bool $showRelated
-     *      whether the relationship related link should be included.
-     * @return array
-     */
-    protected function serializeRelationship(
-        Model $model,
-        $modelKey,
-        $meta = null,
-        array $additionalLinks = null,
-        $showSelf = true,
-        $showRelated = true
-    ) {
-        return [
-            self::SHOW_SELF => $showSelf,
-            self::SHOW_RELATED => $showRelated,
-            self::DATA => function () use ($model, $modelKey) {
-                return $model->{$modelKey};
-            },
-            self::META => $meta,
-            self::LINKS => $additionalLinks,
-        ];
-    }
-
-    /**
-     * @param Model $model
-     * @param $modelKey
-     * @return string
-     */
-    protected function keyForBelongsToId(Model $model, $modelKey)
-    {
-        $relation = $model->{$modelKey}();
-
-        if (!$relation instanceof BelongsTo) {
-            throw new SchemaException(sprintf(
-                'Expecting %s on %s to be a belongs-to relationship.',
-                $modelKey,
-                get_class($model)
-            ));
-        }
-
-        return $relation->getForeignKey();
     }
 
     /**

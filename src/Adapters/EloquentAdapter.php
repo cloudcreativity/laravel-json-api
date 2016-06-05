@@ -91,20 +91,6 @@ class EloquentAdapter implements AdapterInterface
     }
 
     /**
-     * @param $resourceType
-     * @param $id
-     * @return object
-     */
-    public function createIdentity($resourceType, $id)
-    {
-        $model = $this->resolve($resourceType);
-        $key = $this->resolveKeyName($model, $resourceType);
-        $model->{$key} = $id;
-
-        return $model;
-    }
-
-    /**
      * @param Model $model
      * @return Builder
      */

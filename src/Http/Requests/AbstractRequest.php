@@ -248,14 +248,8 @@ abstract class AbstractRequest implements RequestHandlerInterface
         elseif ($this->isReadRelationship()) {
             return $this->authorizer->canReadRelationship($this->getRelationshipName(), $this->getRecord(), $parameters);
         } /** Replace Relationship Data */
-        elseif ($this->isReplaceRelationship()) {
-            return $this->authorizer->canReplaceRelationship($this->getRelationshipName(), $this->getRecord(), $parameters);
-        } /** Add To Relationship Data */
-        elseif ($this->isAddToRelationship()) {
-            return $this->authorizer->canAddToRelationship($this->getRelationshipName(), $this->getRecord(), $parameters);
-        } /** Remove from Relationship Data */
-        elseif ($this->isRemoveFromRelationship()) {
-            return $this->authorizer->canRemoveFromRelationship($this->getRelationshipName(), $this->getRecord(), $parameters);
+        elseif ($this->isModifyRelationship()) {
+            return $this->authorizer->canModifyRelationship($this->getRelationshipName(), $this->getRecord(), $parameters);
         }
 
         return true;
@@ -338,14 +332,8 @@ abstract class AbstractRequest implements RequestHandlerInterface
         elseif ($this->isUpdateResource()) {
             return $this->validators->updateResource($this->getRecord(), $this->getResourceId());
         } /** Replace Relationship */
-        elseif ($this->isReplaceRelationship()) {
-            return $this->validators->replaceRelationship($this->getRelationshipName(), $this->getRecord());
-        } /** Add To Relationship */
-        elseif ($this->isAddToRelationship()) {
-            return $this->validators->addToRelationship($this->getRelationshipName(), $this->getRecord());
-        } /** Remove From Relationship */
-        elseif ($this->isRemoveFromRelationship()) {
-            return $this->validators->removeFromRelationship($this->getRelationshipName(), $this->getRecord());
+        elseif ($this->isModifyRelationship()) {
+            return $this->validators->modifyRelationship($this->getRelationshipName(), $this->getRecord());
         }
 
         return null;

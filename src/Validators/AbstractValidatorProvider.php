@@ -99,7 +99,7 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
      * @param $record
      * @return DocumentValidatorInterface
      */
-    public function replaceRelationship($relationshipKey, $record)
+    public function modifyRelationship($relationshipKey, $record)
     {
         $validator = $this
             ->resourceRelationships($record)
@@ -108,26 +108,6 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
         return $this
             ->factory()
             ->relationshipDocument($validator);
-    }
-
-    /**
-     * @param string $relationshipKey
-     * @param $record
-     * @return DocumentValidatorInterface
-     */
-    public function addToRelationship($relationshipKey, $record)
-    {
-        return $this->replaceRelationship($relationshipKey, $record);
-    }
-
-    /**
-     * @param string $relationshipKey
-     * @param $record
-     * @return DocumentValidatorInterface
-     */
-    public function removeFromRelationship($relationshipKey, $record)
-    {
-        return $this->replaceRelationship($relationshipKey, $record);
     }
 
     /**
