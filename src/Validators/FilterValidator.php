@@ -18,27 +18,24 @@
 
 namespace CloudCreativity\LaravelJsonApi\Validators;
 
-use CloudCreativity\JsonApi\Contracts\Object\ResourceInterface;
-use CloudCreativity\JsonApi\Contracts\Validators\AttributesValidatorInterface;
+use CloudCreativity\JsonApi\Contracts\Validators\FilterValidatorInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorErrorFactoryInterface;
 use Illuminate\Contracts\Validation\Validator;
 
 /**
- * Class AttributesValidator
+ * Class FilterValidator
  * @package CloudCreativity\LaravelJsonApi
  */
-class AttributesValidator extends AbstractValidator implements AttributesValidatorInterface
+class FilterValidator extends AbstractValidator implements FilterValidatorInterface
 {
 
     /**
-     * Are the attributes on the supplied resource valid?
-     *
-     * @param ResourceInterface $resource
+     * @param array $filters
      * @return bool
      */
-    public function isValid(ResourceInterface $resource)
+    public function isValid(array $filters)
     {
-        $validator = $this->make($resource->attributes()->toArray());
+        $validator = $this->make($filters);
 
         if ($validator->fails()) {
             $this->addValidatorErrors($validator);
@@ -57,7 +54,7 @@ class AttributesValidator extends AbstractValidator implements AttributesValidat
         $factory = $this->errorFactory;
         $messages = $validator->getMessageBag();
 
-        $this->addErrors($factory->resourceInvalidAttributesMessages($messages));
+        $this->addErrors($factory->filterParametersMessages($messages));
     }
 
 }

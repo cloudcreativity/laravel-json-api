@@ -19,6 +19,7 @@
 namespace CloudCreativity\LaravelJsonApi\Contracts\Validators;
 
 use CloudCreativity\JsonApi\Contracts\Validators\AttributesValidatorInterface;
+use CloudCreativity\JsonApi\Contracts\Validators\FilterValidatorInterface;
 use CloudCreativity\JsonApi\Contracts\Validators\ValidatorFactoryInterface as BaseInterface;
 
 /**
@@ -29,6 +30,8 @@ interface ValidatorFactoryInterface extends BaseInterface
 {
 
     /**
+     * Get a resource attributes validator.
+     *
      * @param array $rules
      * @param array $messages
      * @param array $customAttributes
@@ -37,6 +40,22 @@ interface ValidatorFactoryInterface extends BaseInterface
      * @return AttributesValidatorInterface
      */
     public function attributes(
+        array $rules,
+        array $messages = [],
+        array $customAttributes = [],
+        callable $callback = null
+    );
+
+    /**
+     * Get a filter parameters validator.
+     * 
+     * @param array $rules
+     * @param array $messages
+     * @param array $customAttributes
+     * @param callable|null $callback
+     * @return FilterValidatorInterface
+     */
+    public function filterParams(
         array $rules,
         array $messages = [],
         array $customAttributes = [],

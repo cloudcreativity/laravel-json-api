@@ -20,6 +20,7 @@ namespace CloudCreativity\LaravelJsonApi\Validators;
 
 use CloudCreativity\JsonApi\Contracts\Validators\AttributesValidatorInterface;
 use CloudCreativity\JsonApi\Contracts\Validators\DocumentValidatorInterface;
+use CloudCreativity\JsonApi\Contracts\Validators\FilterValidatorInterface;
 use CloudCreativity\JsonApi\Contracts\Validators\RelationshipsValidatorInterface;
 use CloudCreativity\JsonApi\Contracts\Validators\ResourceValidatorInterface;
 use CloudCreativity\JsonApi\Contracts\Validators\ValidatorProviderInterface;
@@ -40,14 +41,32 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
     protected $resourceType;
 
     /**
+     * Custom messages for the attributes validator.
+     *
      * @var array
      */
     protected $messages = [];
 
     /**
+     * Custom attributes for the attributes validator.
+     *
      * @var array
      */
     protected $customAttributes = [];
+
+    /**
+     * Custom messages for the filter validator.
+     *
+     * @var array
+     */
+    protected $filterMessages = [];
+
+    /**
+     * Custom attributes for the filter validator.
+     *
+     * @var array
+     */
+    protected $filterCustomAttributes = [];
 
     /**
      * Get the validation rules for the resource attributes.
@@ -67,6 +86,13 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
      * @return void
      */
     abstract protected function relationshipRules(RelationshipsValidatorInterface $relationships, $record = null);
+
+    /**
+     * Get the validation rules for the filter query parameter.
+     *
+     * @return array
+     */
+    abstract protected function filterRules();
 
     /**
      * @return DocumentValidatorInterface
@@ -111,6 +137,14 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
     }
 
     /**
+     * @return FilterValidatorInterface
+     */
+    public function filterResources()
+    {
+        return $this->filterValidator();
+    }
+
+    /**
      * Callback to configure an attributes validator.
      *
      * Child classes can override this method if they need to do custom configuration
@@ -122,6 +156,20 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
      *      the record being updated, or null if it is a create request.
      */
     protected function conditionalAttributes(Validator $validator, $record = null)
+    {
+
+    }
+
+    /**
+     * Callback to configure a filter validator.
+     *
+     * Child classes can override this method if they need to do custom
+     * configuration on the filter validator.
+     *
+     * @param Validator $validator
+     *      the Laravel validator instance that will validate the filters.
+     */
+    protected function conditionalFilters(Validator $validator)
     {
 
     }
@@ -178,6 +226,22 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
         return $validator;
     }
 
+    /**
+     * Get a validator for the filter query parameters.
+     *
+     * @return FilterValidatorInterface
+     */
+    protected function filterValidator()
+    {
+        return $this->factory()->filterParams(
+            $this->filterRules(),
+            $this->filterMessages,
+            $this->filterCustomAttributes,
+            function (Validator $validator) {
+                return $this->conditionalFilters($validator);
+            }
+        );
+    }
 
     /**
      * @return ValidatorFactoryInterface

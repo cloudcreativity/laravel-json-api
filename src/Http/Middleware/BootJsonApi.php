@@ -24,8 +24,10 @@ use CloudCreativity\JsonApi\Contracts\Http\ApiInterface;
 use CloudCreativity\JsonApi\Contracts\Http\ContentNegotiatorInterface;
 use CloudCreativity\JsonApi\Http\Api;
 use CloudCreativity\JsonApi\Http\ApiFactory;
+use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PageParameterHandlerInterface;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\AbstractPaginator;
 use Psr\Http\Message\ServerRequestInterface;
 use RuntimeException;
 
@@ -81,6 +83,13 @@ class BootJsonApi
         /** @var ServerRequestInterface $request */
         $serverRequest = $this->container->make(ServerRequestInterface::class);
         $negotiator->doContentNegotiation($api->getCodecMatcher(), $serverRequest);
+
+        /** Override the current page resolution */
+        AbstractPaginator::currentPageResolver(function () {
+            /** @var PageParameterHandlerInterface $param */
+            $param = app(PageParameterHandlerInterface::class);
+            return $param->getCurrentPage();
+        });
 
         return $next($request);
     }

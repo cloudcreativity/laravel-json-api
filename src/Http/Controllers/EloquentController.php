@@ -21,6 +21,10 @@ namespace CloudCreativity\LaravelJsonApi\Http\Controllers;
 use CloudCreativity\JsonApi\Contracts\Hydrator\HydratorInterface;
 use CloudCreativity\JsonApi\Contracts\Object\ResourceInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestHandlerInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Search\SearchInterface;
+use CloudCreativity\LaravelJsonApi\Search\SearchAll;
+use Illuminate\Contracts\Pagination\Paginator;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Response;
 use RuntimeException;
@@ -43,16 +47,27 @@ class EloquentController extends JsonApiController
     private $hydrator;
 
     /**
+     * @var SearchInterface
+     */
+    private $search;
+
+    /**
      * EloquentController constructor.
      * @param Model $model
      * @param RequestHandlerInterface $request
      * @param HydratorInterface $hydrator
+     * @param SearchInterface|null $search
      */
-    public function __construct(Model $model, RequestHandlerInterface $request, HydratorInterface $hydrator)
-    {
+    public function __construct(
+        Model $model,
+        RequestHandlerInterface $request,
+        HydratorInterface $hydrator,
+        SearchInterface $search = null
+    ) {
         parent::__construct($request);
         $this->model = $model;
         $this->hydrator = $hydrator;
+        $this->search = $search ?: new SearchAll();
     }
 
     /**
@@ -60,7 +75,7 @@ class EloquentController extends JsonApiController
      */
     public function index()
     {
-        $models = $this->model->all();
+        $models = $this->search();
 
         return $this
             ->reply()
@@ -126,6 +141,17 @@ class EloquentController extends JsonApiController
         return $this
             ->reply()
             ->noContent();
+    }
+
+    /**
+     * @return Paginator|Collection
+     */
+    protected function search()
+    {
+        $builder = $this->model->newQuery();
+        $parameters = $this->getRequestHandler()->getEncodingParameters();
+
+        return $this->search->search($builder, $parameters);
     }
 
     /**

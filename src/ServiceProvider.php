@@ -33,12 +33,16 @@ use CloudCreativity\JsonApi\Repositories\SchemasRepository;
 use CloudCreativity\JsonApi\Store\Store;
 use CloudCreativity\LaravelJsonApi\Adapters\EloquentAdapter;
 use CloudCreativity\LaravelJsonApi\Contracts\Document\LinkFactoryInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PageParameterHandlerInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PaginatorInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorErrorFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Document\LinkFactory;
 use CloudCreativity\LaravelJsonApi\Http\Middleware\BootJsonApi;
 use CloudCreativity\LaravelJsonApi\Http\Responses\ResponseFactory;
 use CloudCreativity\LaravelJsonApi\Http\Responses\Responses;
+use CloudCreativity\LaravelJsonApi\Pagination\PageParameterHandler;
+use CloudCreativity\LaravelJsonApi\Pagination\Paginator;
 use CloudCreativity\LaravelJsonApi\Validators\ValidatorErrorFactory;
 use CloudCreativity\LaravelJsonApi\Validators\ValidatorFactory;
 use Illuminate\Contracts\Routing\ResponseFactory as ResponseFactoryContract;
@@ -94,6 +98,8 @@ class ServiceProvider extends BaseServiceProvider
         $this->bindStore();
         $this->bindEloquentAdapter();
         $this->bindLinkFactory();
+        $this->bindPageParameterHandler();
+        $this->bindPaginator();
     }
 
     /**
@@ -263,6 +269,22 @@ class ServiceProvider extends BaseServiceProvider
     protected function bindLinkFactory()
     {
         $this->app->singleton(['json-api.links' => LinkFactoryInterface::class], LinkFactory::class);
+    }
+
+    /**
+     * Bind the page parameter handler into the service container.
+     */
+    protected function bindPageParameterHandler()
+    {
+        $this->app->singleton(['json-api.page' => PageParameterHandlerInterface::class], PageParameterHandler::class);
+    }
+
+    /**
+     * Bind the paginator into the service container.
+     */
+    protected function bindPaginator()
+    {
+        $this->app->singleton(['json-api.paginator' => PaginatorInterface::class], Paginator::class);
     }
 
     /**

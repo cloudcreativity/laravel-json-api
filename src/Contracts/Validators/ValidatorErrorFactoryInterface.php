@@ -41,4 +41,10 @@ interface ValidatorErrorFactoryInterface extends BaseInterface
         MessageBag $messageBag,
         $statusCode = self::STATUS_INVALID_ATTRIBUTES
     );
+
+    /**
+     * @param MessageBag $messageBag
+     * @return ErrorInterface[]
+     */
+    public function filterParametersMessages(MessageBag $messageBag);
 }

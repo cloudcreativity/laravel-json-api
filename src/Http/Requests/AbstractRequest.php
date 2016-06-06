@@ -26,6 +26,7 @@ use CloudCreativity\JsonApi\Contracts\Validators\ValidatorProviderInterface;
 use CloudCreativity\JsonApi\Object\Document;
 use CloudCreativity\JsonApi\Object\ResourceIdentifier;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestHandlerInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PageParameterHandlerInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\RequestException;
 use Illuminate\Http\Request as HttpRequest;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
@@ -75,12 +76,6 @@ abstract class AbstractRequest implements RequestHandlerInterface
      * @see ParsesQueryParameters::allowedSortParameters()
      */
     protected $allowedSortParameters = [];
-
-    /**
-     * @var string[]|null
-     * @see ParsesQueryParameters::allowedPagingParameters()
-     */
-    protected $allowedPagingParameters = [];
 
     /**
      * @var string[]|null
@@ -313,6 +308,14 @@ abstract class AbstractRequest implements RequestHandlerInterface
         $parameters = $this->parseQueryParameters();
         $this->checkQueryParameters($parameters);
 
+        /** If we are on an index route, we also validate the filter parameters. */
+        $validator = ($this->isIndex() && $this->validators) ?
+            $this->validators->filterResources() : null;
+
+        if ($validator && !$validator->isValid((array) $parameters->getFilteringParameters())) {
+            throw new JsonApiException($validator->errors());
+        }
+
         return $parameters;
     }
 
@@ -387,17 +390,20 @@ abstract class AbstractRequest implements RequestHandlerInterface
     /**
      * @return string[]|null
      */
-    protected function allowedPagingParameters()
+    protected function allowedFilteringParameters()
     {
-        return $this->allowedPagingParameters;
+        return $this->allowedFilteringParameters;
     }
 
     /**
      * @return string[]|null
      */
-    protected function allowedFilteringParameters()
+    protected function allowedPagingParameters()
     {
-        return $this->allowedFilteringParameters;
+        /** @var PageParameterHandlerInterface $param */
+        $param = app(PageParameterHandlerInterface::class);
+
+        return $param->getAllowedPagingParameters();
     }
 
 }

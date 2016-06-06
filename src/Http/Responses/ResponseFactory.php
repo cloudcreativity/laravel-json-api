@@ -19,6 +19,8 @@
 namespace CloudCreativity\LaravelJsonApi\Http\Responses;
 
 use CloudCreativity\JsonApi\Document\Error;
+use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PaginatorInterface;
+use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Http\Response;
 use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
 use Neomerx\JsonApi\Contracts\Http\ResponsesInterface;
@@ -37,12 +39,19 @@ class ResponseFactory
     private $responses;
 
     /**
+     * @var PaginatorInterface
+     */
+    private $paginator;
+
+    /**
      * ResponseFactory constructor.
      * @param ResponsesInterface $responses
+     * @param PaginatorInterface $paginator
      */
-    public function __construct(ResponsesInterface $responses)
+    public function __construct(ResponsesInterface $responses, PaginatorInterface $paginator)
     {
         $this->responses = $responses;
+        $this->paginator = $paginator;
     }
 
     /**
@@ -91,6 +100,11 @@ class ResponseFactory
         $statusCode = Response::HTTP_OK,
         array $headers = []
     ) {
+        if ($data instanceof Paginator) {
+            $meta = $this->paginator->getMeta($data, $meta);
+            $links = array_merge($this->paginator->getLinks($data), $links);
+        }
+
         return $this->responses->getContentResponse($data, $statusCode, $links, $meta, $headers);
     }
 

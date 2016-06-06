@@ -20,6 +20,7 @@ namespace CloudCreativity\LaravelJsonApi\Validators;
 
 use CloudCreativity\JsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\JsonApi\Contracts\Validators\AttributesValidatorInterface;
+use CloudCreativity\JsonApi\Contracts\Validators\FilterValidatorInterface;
 use CloudCreativity\JsonApi\Validators\ValidatorFactory as BaseFactory;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorErrorFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorFactoryInterface;
@@ -57,14 +58,41 @@ class ValidatorFactory extends BaseFactory implements ValidatorFactoryInterface
         array $messages = [],
         array $customAttributes = [],
         callable $callback = null
-    )
-    {
+    ) {
         /** @var Factory $factory */
         $factory = app(Factory::class);
         /** @var ValidatorErrorFactoryInterface $validationErrors */
         $validationErrors = $this->validationErrors;
 
         return new AttributesValidator(
+            $validationErrors,
+            $factory,
+            $rules,
+            $messages,
+            $customAttributes,
+            $callback
+        );
+    }
+
+    /**
+     * @param array $rules
+     * @param array $messages
+     * @param array $customAttributes
+     * @param callable|null $callback
+     * @return FilterValidatorInterface
+     */
+    public function filterParams(
+        array $rules,
+        array $messages = [],
+        array $customAttributes = [],
+        callable $callback = null
+    ) {
+        /** @var Factory $factory */
+        $factory = app(Factory::class);
+        /** @var ValidatorErrorFactoryInterface $validationErrors */
+        $validationErrors = $this->validationErrors;
+
+        return new FilterValidator(
             $validationErrors,
             $factory,
             $rules,
