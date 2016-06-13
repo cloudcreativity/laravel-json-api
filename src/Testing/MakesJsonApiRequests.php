@@ -271,7 +271,8 @@ trait MakesJsonApiRequests
         /** Have we got the correct attributes? */
         PHPUnit::assertArraySubset($attributes, $data[Keys::KEYWORD_ATTRIBUTES], false, 'Unexpected resource attributes');
         /** Have we got the correct relationships? */
-        PHPUnit::assertArraySubset($relationships, $data[Keys::KEYWORD_RELATIONSHIPS], false, 'Unexpected resource relationships');
+        $actualRelationships = isset($data[Keys::KEYWORD_RELATIONSHIPS]) ? $data[Keys::KEYWORD_RELATIONSHIPS] : [];
+        PHPUnit::assertArraySubset($relationships, $actualRelationships, false, 'Unexpected resource relationships');
     }
 
     /**
