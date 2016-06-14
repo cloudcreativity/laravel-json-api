@@ -19,7 +19,6 @@
 namespace CloudCreativity\LaravelJsonApi\Testing;
 
 use CloudCreativity\LaravelJsonApi\Document\GeneratesLinks;
-use Illuminate\Foundation\Testing\Concerns\MakesHttpRequests;
 use Illuminate\Http\Response;
 use Neomerx\JsonApi\Contracts\Document\DocumentInterface as Keys;
 use Neomerx\JsonApi\Contracts\Document\LinkInterface;
@@ -29,12 +28,14 @@ use PHPUnit_Framework_Assert as PHPUnit;
 /**
  * Class MakesJsonApiRequests
  * @package CloudCreativity\LaravelJsonApi\Testing
+ *
+ * This trait MUST be used on a class that uses this trait:
+ * Illuminate\Foundation\Testing\Concerns\MakesHttpRequests
  */
 trait MakesJsonApiRequests
 {
 
-    use MakesHttpRequests,
-        GeneratesLinks;
+    use GeneratesLinks;
 
     /**
      * Visit the given URI with a JSON API request.

@@ -19,16 +19,17 @@
 namespace CloudCreativity\LaravelJsonApi\Testing;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Foundation\Testing\Concerns\InteractsWithDatabase;
+use PHPUnit_Framework_Assert as PHPUnit;
 
 /**
  * Class InteractsWithModels
  * @package CloudCreativity\LaravelJsonApi\Testing
+ *
+ * This trait MUST be used on a class that also uses this trait:
+ * Illuminate\Foundation\Testing\Concerns\InteractsWithDatabase
  */
 trait InteractsWithModels
 {
-
-    use InteractsWithDatabase;
 
     /**
      * Assert that a model has been created.
@@ -93,5 +94,16 @@ trait InteractsWithModels
         $this->notSeeInDatabase($model->getTable(), [
             $model->getKeyName() => $model->getKey()
         ], $model->getConnectionName());
+    }
+
+    /**
+     * Assert that a model was soft deleted.
+     *
+     * @param Model $model
+     */
+    public function assertModelTrashed(Model $model)
+    {
+        PHPUnit::assertNull($model->fresh(), 'Model is not trashed.');
+        $this->seeInDatabase($model->getTable(), [$model->getKeyName() => $model->getKey()], $model->getConnectionName());
     }
 }

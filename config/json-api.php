@@ -27,12 +27,12 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Codec Matcher Configuration
+    | Content Negotiation
     |--------------------------------------------------------------------------
     |
     | This is where you register how different media types are mapped to
     | encoders and decoders. Encoders do the work of converting your records
-    | into Json-Api resources. Decoders are used to convert incoming request
+    | into JSON API resources. Decoders are used to convert incoming request
     | body content into objects.
     |
     | If there is not an encoder/decoder registered for a specific media-type,
@@ -51,10 +51,10 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Schema Sets
+    | Schemas
     |--------------------------------------------------------------------------
     |
-    | Schemas are the objects that convert a record object into its JSON-API
+    | Schemas are the objects that convert a record object into its JSON API
     | resource representation. This package supports having multiple sets of
     | schemas, using your JSON API namespaces as configured above. The
     | 'defaults' set is used for all namespaces, and the config for a
@@ -83,8 +83,8 @@ return [
     |
     | `columns` (optional) - a map of JSON API resource types to the column
     | name that is used for the resource id. These are optional - if a
-    | column is not provided for a Model class, the adapter will use
-    | `Model::getQualifiedKeyName()` by default.
+    | column is not specified, the adapter will use `Model::getQualifiedKeyName()`
+    | by default.
     */
     'eloquent-adapter' => [
         'map' => [

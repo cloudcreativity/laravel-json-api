@@ -43,6 +43,7 @@ use CloudCreativity\LaravelJsonApi\Http\Responses\ResponseFactory;
 use CloudCreativity\LaravelJsonApi\Http\Responses\Responses;
 use CloudCreativity\LaravelJsonApi\Pagination\PageParameterHandler;
 use CloudCreativity\LaravelJsonApi\Pagination\Paginator;
+use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
 use CloudCreativity\LaravelJsonApi\Validators\ValidatorErrorFactory;
 use CloudCreativity\LaravelJsonApi\Validators\ValidatorFactory;
 use Illuminate\Contracts\Routing\ResponseFactory as ResponseFactoryContract;
@@ -87,6 +88,7 @@ class ServiceProvider extends BaseServiceProvider
     public function register()
     {
         $this->bindNeomerx();
+        $this->bindService();
         $this->bindApiFactory();
         $this->bindCodecMatcherRepository();
         $this->bindSchemaRepository();
@@ -150,6 +152,14 @@ class ServiceProvider extends BaseServiceProvider
         $this->app->singleton(FactoryInterface::class, Factory::class);
         $this->app->singleton(SchemaFactoryInterface::class, FactoryInterface::class);
         $this->app->singleton(HttpFactoryInterface::class, FactoryInterface::class);
+    }
+
+    /**
+     * Bind an alias for the JSON API service.
+     */
+    protected function bindService()
+    {
+        $this->app->alias(JsonApiService::class, 'json-api.service');
     }
 
     /**

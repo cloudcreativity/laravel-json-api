@@ -75,7 +75,8 @@ trait HandlesErrors
     protected function parseToErrors(Exception $e)
     {
         if ($e instanceof JsonApiException) {
-            return $e->getErrors()->getArrayCopy();
+            $errs = $e->getErrors()->getArrayCopy();
+            return $errs ?: new Error(null, null, $e->getHttpCode());
         }
 
         $statusCode = ($e instanceof HttpExceptionInterface) ?

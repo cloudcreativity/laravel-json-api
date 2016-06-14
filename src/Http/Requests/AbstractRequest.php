@@ -28,10 +28,10 @@ use CloudCreativity\JsonApi\Object\ResourceIdentifier;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestHandlerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PageParameterHandlerInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\RequestException;
+use Exception;
 use Illuminate\Http\Request as HttpRequest;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use Neomerx\JsonApi\Exceptions\JsonApiException;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -120,24 +120,14 @@ abstract class AbstractRequest implements RequestHandlerInterface
     private $record;
 
     /**
-     * Get the JSON API or HTTP exception that should be used if the request is denied.
-     *
-     * @return JsonApiException|HttpException
-     */
-    abstract protected function denied();
-
-    /**
      * AbstractRequest constructor.
-     * @param HttpRequest $request
      * @param ValidatorProviderInterface $validators
      * @param AuthorizerInterface|null $authorizer
      */
     public function __construct(
-        HttpRequest $request,
         ValidatorProviderInterface $validators = null,
         AuthorizerInterface $authorizer = null
     ) {
-        $this->request = $request;
         $this->validators = $validators;
         $this->authorizer = $authorizer;
     }
@@ -146,8 +136,7 @@ abstract class AbstractRequest implements RequestHandlerInterface
      * Validate the given class instance.
      *
      * @return void
-     * @throws JsonApiException
-     * @throws HttpException
+     * @throws Exception
      */
     public function validate()
     {
@@ -160,7 +149,7 @@ abstract class AbstractRequest implements RequestHandlerInterface
 
         /** Do any pre-document authorization */
         if (!$this->authorizeBeforeValidation()) {
-            throw $this->denied();
+            throw $this->authorizer->denied();
         }
 
         /** If a document is expected from the client, validate it. */
@@ -171,7 +160,7 @@ abstract class AbstractRequest implements RequestHandlerInterface
 
         /** Do any post-document authorization. */
         if (!$this->authorizeAfterValidation()) {
-            throw $this->denied();
+            throw $this->authorizer->denied();
         }
 
         /** Register the current request in the container. */
@@ -183,6 +172,10 @@ abstract class AbstractRequest implements RequestHandlerInterface
      */
     public function getHttpRequest()
     {
+        if (!$this->request) {
+            $this->request = app(HttpRequest::class);
+        }
+
         return $this->request;
     }
 
