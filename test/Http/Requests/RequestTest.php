@@ -126,8 +126,9 @@ final class RequestTest extends TestCase
      */
     private function request(HttpRequest $httpRequest)
     {
-        $mock = $this->getMockForAbstractClass(AbstractRequest::class, [$httpRequest]);
+        $mock = $this->getMockForAbstractClass(AbstractRequest::class);
         $mock->method('resourceType')->willReturn('posts');
+        app()->instance(HttpRequest::class, $httpRequest);
 
         return $mock;
     }

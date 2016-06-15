@@ -17,6 +17,7 @@
  */
 
 namespace CloudCreativity\LaravelJsonApi\Http\Controllers;
+
 use CloudCreativity\LaravelJsonApi\Http\Responses\ResponseFactory;
 
 /**
