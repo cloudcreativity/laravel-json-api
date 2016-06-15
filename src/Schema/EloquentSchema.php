@@ -152,14 +152,21 @@ abstract class EloquentSchema extends AbstractSchema
     {
         $attributes = [];
 
-        foreach ($this->attributes as $key) {
-            $attributes[$this->keyForAttribute($key)] = $this->extractAttribute($model, $key);
+        foreach ($this->attributes as $modelKey => $attributeKey) {
+            if (is_numeric($modelKey)) {
+                $modelKey = $attributeKey;
+                $attributeKey = $this->keyForAttribute($attributeKey);
+            }
+
+            $attributes[$attributeKey] = $this->extractAttribute($model, $modelKey);
         }
 
         return $attributes;
     }
 
     /**
+     * Convert a model key into a resource attribute key.
+     * 
      * @param $modelKey
      * @return string
      */

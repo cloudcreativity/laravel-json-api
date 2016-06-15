@@ -37,19 +37,19 @@ class EloquentController extends JsonApiController
 {
 
     /**
-     * @var Model
-     */
-    private $model;
-
-    /**
      * @var HydratorInterface
      */
-    private $hydrator;
+    protected $hydrator;
 
     /**
      * @var SearchInterface
      */
-    private $search;
+    protected $search;
+
+    /**
+     * @var Model
+     */
+    private $model;
 
     /**
      * EloquentController constructor.
@@ -88,8 +88,11 @@ class EloquentController extends JsonApiController
     public function create()
     {
         $model = $this->hydrate($this->getResource(), $this->model);
+        $result = $this->commit($model);
 
-        if (!$this->commit($model)) {
+        if ($result instanceof Response) {
+            return $result;
+        } elseif (!$result) {
             return $this->internalServerError();
         }
 
@@ -116,8 +119,11 @@ class EloquentController extends JsonApiController
     public function update($resourceId)
     {
         $model = $this->hydrate($this->getResource(), $this->getRecord());
+        $result = $this->commit($model);
 
-        if (!$this->commit($model)) {
+        if ($result instanceof Response) {
+            return $result;
+        } elseif (!$result) {
             return $this->internalServerError();
         }
 
@@ -133,8 +139,11 @@ class EloquentController extends JsonApiController
     public function delete($resourceId)
     {
         $model = $this->getRecord();
+        $result = $this->destroy($model);
 
-        if (!$model->delete()) {
+        if ($result instanceof Response) {
+            return $result;
+        } elseif (!$result) {
             return $this->internalServerError();
         }
 
@@ -144,7 +153,7 @@ class EloquentController extends JsonApiController
     }
 
     /**
-     * @return Paginator|Collection
+     * @return Paginator|Collection|Model|null
      */
     protected function search()
     {
@@ -178,7 +187,7 @@ class EloquentController extends JsonApiController
      * post-save.
      *
      * @param Model $model
-     * @return bool
+     * @return bool|Response
      */
     protected function commit(Model $model)
     {
@@ -192,7 +201,7 @@ class EloquentController extends JsonApiController
      * post-delete.
      *
      * @param Model $model
-     * @return bool
+     * @return bool|Response
      */
     protected function destroy(Model $model)
     {

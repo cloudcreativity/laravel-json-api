@@ -80,7 +80,7 @@ trait MakesJsonApiRequests
     /**
      * Assert response is a JSON API resource index response.
      *
-     * @param $resourceType
+     * @param string|string[] $resourceType
      * @param string $contentType
      * @return $this
      */
@@ -196,15 +196,13 @@ trait MakesJsonApiRequests
     /**
      * See that there is a collection of resources as primary data.
      *
-     * @param $resourceType
+     * @param string|string[] $resourceType
      * @param bool $allowEmpty
      */
     protected function seeDataCollection($resourceType, $allowEmpty = true)
     {
         $this->seeJsonStructure([
-            Keys::KEYWORD_DATA => [
-                '*' => [Keys::KEYWORD_TYPE],
-            ],
+            Keys::KEYWORD_DATA,
         ]);
 
         $collection = $this->decodeResponseJson()[Keys::KEYWORD_DATA];
@@ -213,13 +211,24 @@ trait MakesJsonApiRequests
             PHPUnit::assertNotEmpty($collection, 'Data collection is empty');
         }
 
+        $expected = array_combine((array) $resourceType, (array) $resourceType);
+        $actual = [];
+
         /** @var array $resource */
         foreach ($collection as $resource) {
+
+            if (!isset($resource[Keys::KEYWORD_TYPE])) {
+                PHPUnit::fail('Encountered a resource without a type key.');
+            }
+
             $type = $resource[Keys::KEYWORD_TYPE];
-            if ($resourceType !== $type) {
-                PHPUnit::fail('Unexpected resource type in collection: ' . $type);
+
+            if (!isset($actual[$type])) {
+                $actual[$type] = $type;
             }
         }
+
+        $this->assertEquals($expected, $actual, 'Unexpected resource types in data collection.');
     }
 
     /**
@@ -270,10 +279,21 @@ trait MakesJsonApiRequests
         }
 
         /** Have we got the correct attributes? */
-        PHPUnit::assertArraySubset($attributes, $data[Keys::KEYWORD_ATTRIBUTES], false, 'Unexpected resource attributes');
+        PHPUnit::assertArraySubset(
+            $attributes,
+            $data[Keys::KEYWORD_ATTRIBUTES],
+            false,
+            "Unexpected resource attributes\n" . json_encode($data[Keys::KEYWORD_ATTRIBUTES])
+        );
+
         /** Have we got the correct relationships? */
         $actualRelationships = isset($data[Keys::KEYWORD_RELATIONSHIPS]) ? $data[Keys::KEYWORD_RELATIONSHIPS] : [];
-        PHPUnit::assertArraySubset($relationships, $actualRelationships, false, 'Unexpected resource relationships');
+        PHPUnit::assertArraySubset(
+            $relationships,
+            $actualRelationships,
+            false,
+            "Unexpected resource relationships\n" . json_encode($actualRelationships)
+        );
     }
 
     /**

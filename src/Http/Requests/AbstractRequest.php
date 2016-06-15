@@ -30,8 +30,11 @@ use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PageParameterHandlerInte
 use CloudCreativity\LaravelJsonApi\Exceptions\RequestException;
 use Exception;
 use Illuminate\Http\Request as HttpRequest;
+use Illuminate\Http\Response;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
+use Neomerx\JsonApi\Document\Error;
 use Neomerx\JsonApi\Exceptions\JsonApiException;
+use RuntimeException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -44,6 +47,13 @@ abstract class AbstractRequest implements RequestHandlerInterface
     use InterpretsHttpRequests,
         DecodesDocuments,
         ParsesQueryParameters;
+
+    /**
+     * The resource type that this request handles.
+     *
+     * @var string
+     */
+    protected $resourceType;
 
     /**
      * A list of has-one relationships that are expected as endpoints.
@@ -133,6 +143,18 @@ abstract class AbstractRequest implements RequestHandlerInterface
     }
 
     /**
+     * @return string
+     */
+    public function getResourceType()
+    {
+        if (empty($this->resourceType)) {
+            throw new RuntimeException('The resourceType property must be set on: ' . static::class);
+        }
+
+        return $this->resourceType;
+    }
+
+    /**
      * Validate the given class instance.
      *
      * @return void
@@ -149,7 +171,7 @@ abstract class AbstractRequest implements RequestHandlerInterface
 
         /** Do any pre-document authorization */
         if (!$this->authorizeBeforeValidation()) {
-            throw $this->authorizer->denied();
+            throw $this->denied();
         }
 
         /** If a document is expected from the client, validate it. */
@@ -160,7 +182,7 @@ abstract class AbstractRequest implements RequestHandlerInterface
 
         /** Do any post-document authorization. */
         if (!$this->authorizeAfterValidation()) {
-            throw $this->authorizer->denied();
+            throw $this->denied();
         }
 
         /** Register the current request in the container. */
@@ -399,4 +421,14 @@ abstract class AbstractRequest implements RequestHandlerInterface
         return $param->getAllowedPagingParameters();
     }
 
+    /**
+     * @return JsonApiException
+     */
+    protected function denied()
+    {
+        $error = $this->authorizer ?
+            $this->authorizer->denied() : new Error(null, null, Response::HTTP_FORBIDDEN);
+
+        return new JsonApiException($error, $error->getStatus());
+    }
 }
