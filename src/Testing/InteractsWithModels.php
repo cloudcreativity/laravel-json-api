@@ -38,27 +38,30 @@ trait InteractsWithModels
      *      a representation of the model that should have been created.
      * @param $expectedId
      *      the expected id of the model.
-     * @param string|string[] $attributeKeys
-     *      the keys of the model attributes that should be checked.
+     * @param string|string[]|null $attributeKeys
+     *      the keys of the model attributes that should be checked, or null to check all.
      * @param string|null $keyName
      *      the key name to use for the id - defaults to `Model::getKeyName()`
      */
     public function assertModelCreated(
         Model $model,
         $expectedId,
-        $attributeKeys = [],
+        $attributeKeys = null,
         $keyName = null
     ) {
         if (!$keyName) {
             $keyName = $model->getKeyName();
         }
 
-        $expected = [$keyName => $expectedId];
+        if (is_null($attributeKeys)) {
+            $attributeKeys = array_keys($model->getAttributes());
+        }
 
         foreach ((array) $attributeKeys as $attr) {
             $expected[$attr] = $model->{$attr};
         }
 
+        $expected = [$keyName => $expectedId];
         $this->seeInDatabase($model->getTable(), $expected, $model->getConnectionName());
     }
 
