@@ -47,6 +47,18 @@ class EloquentController extends JsonApiController
     protected $search;
 
     /**
+     * Map of URI relationship names to model relationship keys.
+     *
+     * By default the URI relationship name will be camel-cased to get the model
+     * relationship name. You can override this default for a particular relationship
+     * by entering a mapping in this array as a key/value pair - URI relationship
+     * name as the key, model relationship name as the value.
+     *
+     * @var array
+     */
+    protected $relationships = [];
+
+    /**
      * @var Model
      */
     private $model;
@@ -55,13 +67,13 @@ class EloquentController extends JsonApiController
      * EloquentController constructor.
      * @param Model $model
      * @param RequestHandlerInterface $request
-     * @param HydratorInterface $hydrator
+     * @param HydratorInterface|null $hydrator
      * @param SearchInterface|null $search
      */
     public function __construct(
         Model $model,
         RequestHandlerInterface $request,
-        HydratorInterface $hydrator,
+        HydratorInterface $hydrator = null,
         SearchInterface $search = null
     ) {
         parent::__construct($request);
@@ -75,11 +87,11 @@ class EloquentController extends JsonApiController
      */
     public function index()
     {
-        $models = $this->search();
+        $result = $this->search();
 
         return $this
             ->reply()
-            ->content($models);
+            ->content($result);
     }
 
     /**
@@ -88,7 +100,7 @@ class EloquentController extends JsonApiController
     public function create()
     {
         $model = $this->hydrate($this->getResource(), $this->model);
-        $result = $this->commit($model);
+        $result = ($model instanceof Response) ? $model : $this->commit($model);
 
         if ($result instanceof Response) {
             return $result;
@@ -119,7 +131,7 @@ class EloquentController extends JsonApiController
     public function update($resourceId)
     {
         $model = $this->hydrate($this->getResource(), $this->getRecord());
-        $result = $this->commit($model);
+        $result = ($model instanceof Response ) ? $model : $this->commit($model);
 
         if ($result instanceof Response) {
             return $result;
@@ -153,10 +165,44 @@ class EloquentController extends JsonApiController
     }
 
     /**
+     * @param $resourceId
+     * @param $relationshipName
+     * @return Response
+     */
+    public function readRelatedResource($resourceId, $relationshipName)
+    {
+        $model = $this->getRecord();
+        $key = $this->keyForRelationship($relationshipName);
+
+        return $this
+            ->reply()
+            ->content($model->{$key});
+    }
+
+    /**
+     * @param $resourceId
+     * @param $relationshipName
+     * @return Response
+     */
+    public function readRelationship($resourceId, $relationshipName)
+    {
+        $model = $this->getRecord();
+        $key = $this->keyForRelationship($relationshipName);
+
+        return $this
+            ->reply()
+            ->relationship($model->{$key});
+    }
+
+    /**
      * @return Paginator|Collection|Model|null
      */
     protected function search()
     {
+        if (!$this->search) {
+            return $this->model->all();
+        }
+
         $builder = $this->model->newQuery();
         $parameters = $this->getRequestHandler()->getEncodingParameters();
 
@@ -171,10 +217,15 @@ class EloquentController extends JsonApiController
      *
      * @param ResourceInterface $resource
      * @param Model $model
-     * @return Model
+     * @return Response|Model
      */
     protected function hydrate(ResourceInterface $resource, Model $model)
     {
+        /** If there is no hydrator, the method cannot be allowed. */
+        if (!$this->hydrator) {
+            return $this->methodNotAllowed();
+        }
+
         $this->hydrator->hydrate($resource, $model);
 
         return $model;
@@ -209,6 +260,20 @@ class EloquentController extends JsonApiController
     }
 
     /**
+     * Convert a relationship name into the attribute name to get the relationship from the model.
+     *
+     * @param $relationshipName
+     *      the relationship name as it appears in the uri.
+     * @return string
+     *      the key to use on the model.
+     */
+    protected function keyForRelationship($relationshipName)
+    {
+        return isset($this->relationships[$relationshipName]) ?
+            $this->relationships[$relationshipName] : camel_case($relationshipName);
+    }
+
+    /**
      * @return Model
      */
     protected function getRecord()
@@ -228,5 +293,13 @@ class EloquentController extends JsonApiController
     protected function internalServerError()
     {
         return $this->reply()->statusCode(Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
+
+    /**
+     * @return Response
+     */
+    protected function methodNotAllowed()
+    {
+        return $this->reply()->statusCode(Response::HTTP_METHOD_NOT_ALLOWED);
     }
 }

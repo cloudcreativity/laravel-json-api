@@ -64,12 +64,23 @@ abstract class AbstractSortedSearch extends AbstractSearch
      */
     protected function getQualifiedSortColumn(Builder $builder, $field)
     {
-        $key = isset($sortColumns[$field]) ? $sortColumns[$field] : $field;
+        $key = $this->columnForField($field);
 
         if (!str_contains('.', $key)) {
             $key = sprintf('%s.%s', $builder->getModel()->getTable(), $key);
         }
 
         return $key;
+    }
+
+    /**
+     * Get the table column to use for the specified search field.
+     *
+     * @param string $field
+     * @return string
+     */
+    protected function columnForField($field)
+    {
+        return isset($this->sortColumns[$field]) ? $this->sortColumns[$field] : $field;
     }
 }

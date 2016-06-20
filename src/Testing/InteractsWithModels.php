@@ -53,12 +53,14 @@ trait InteractsWithModels
             $keyName = $model->getKeyName();
         }
 
+        $attributes = $model->getAttributes();
+
         if (is_null($attributeKeys)) {
-            $attributeKeys = array_keys($model->getAttributes());
+            $attributeKeys = array_keys($attributes);
         }
 
         foreach ((array) $attributeKeys as $attr) {
-            $expected[$attr] = $model->{$attr};
+            $expected[$attr] = isset($attributes[$attr]) ? $attributes[$attr] : null;
         }
 
         $expected = [$keyName => $expectedId];
@@ -77,10 +79,12 @@ trait InteractsWithModels
      */
     public function assertModelPatched(Model $model, array $changedAttributes, $unchangedKeys = [])
     {
-        $expected = $changedAttributes;
+        /** We need to ensure values are cast to database values */
+        $expected = $model->newInstance($changedAttributes)->getAttributes();
+        $attributes = $model->getAttributes();
 
         foreach ((array) $unchangedKeys as $attr) {
-            $expected[$attr] = $model->{$attr};
+            $expected[$attr] = isset($attributes[$attr]) ? $attributes[$attr] : null;
         }
 
         $expected[$model->getKeyName()] = $model->getKey();

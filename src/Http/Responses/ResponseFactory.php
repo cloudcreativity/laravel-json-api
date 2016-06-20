@@ -110,42 +110,37 @@ class ResponseFactory
 
     /**
      * @param object $resource
-     * @param array|null $links
+     * @param array $links
      * @param mixed|null $meta
      * @param array $headers
      * @return Response
      */
-    public function created($resource, $links = [], $meta = null, array $headers = [])
+    public function created($resource, array $links = [], $meta = null, array $headers = [])
     {
         return $this->responses->getCreatedResponse($resource, $links, $meta, $headers);
     }
 
     /**
-     * @param object $resource
-     * @param string $relationshipName
-     * @param object $related
+     * @param $data
      * @param array $links
      * @param mixed|null $meta
-     * @param mixed|null $selfLinkMeta
-     * @param bool $selfLinkTreatAsHref
-     * @param mixed|null $relatedLinkMeta
-     * @param bool $relatedLinkTreatAsHref
+     * @param int $statusCode
      * @param array $headers
      * @return Response
      */
     public function relationship(
-        $resource,
-        $relationshipName,
-        $related,
+        $data,
         array $links = [],
         $meta = null,
-        $selfLinkMeta = null,
-        $selfLinkTreatAsHref = false,
-        $relatedLinkMeta = null,
-        $relatedLinkTreatAsHref = false,
+        $statusCode = Response::HTTP_OK,
         array $headers = []
     ) {
-        // @todo https://github.com/neomerx/json-api/issues/144
+        if ($data instanceof Paginator) {
+            $meta = $this->paginator->getMeta($data, $meta);
+            $links = array_merge($this->paginator->getLinks($data), $links);
+        }
+
+        return $this->responses->getIdentifiersResponse($data, $statusCode, $links, $meta, $headers);
     }
 
     /**

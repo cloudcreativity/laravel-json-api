@@ -81,15 +81,26 @@ trait MakesJsonApiRequests
      * Assert response is a JSON API resource index response.
      *
      * @param string|string[] $resourceType
+     * @param string|int|null $resourceId
+     *      if a singular resource is expected, the id of the singular resource.
      * @param string $contentType
      * @return $this
      */
     protected function assertIndexResponse(
         $resourceType,
+        $resourceId = null,
         $contentType = MediaTypeInterface::JSON_API_MEDIA_TYPE
     ) {
-        $this->assertJsonApiResponse(Response::HTTP_OK, $contentType)
-            ->seeDataCollection($resourceType);
+        $this->assertJsonApiResponse(Response::HTTP_OK, $contentType);
+
+        if (!$resourceId) {
+            $this->seeDataCollection($resourceType);
+        } else {
+            $this->seeDataResource([
+                Keys::KEYWORD_TYPE => $resourceType,
+                Keys::KEYWORD_ID => $resourceId,
+            ]);
+        }
 
         return $this;
     }
@@ -175,6 +186,42 @@ trait MakesJsonApiRequests
     }
 
     /**
+     * Assert response is a JSON API read resource response.
+     *
+     * @param array $expected
+     *      array representation of the expected attributes of the resource.
+     * @param string $contentType
+     * @return $this
+     */
+    protected function assertRelatedResourceResponse(
+        array $expected,
+        $contentType = MediaTypeInterface::JSON_API_MEDIA_TYPE
+    ) {
+        $this->assertJsonApiResponse(Response::HTTP_OK, $contentType)
+            ->seeDataResource($expected);
+
+        return $this;
+    }
+
+    /**
+     * @param string|string[] $resourceType
+     * @param mixed $id
+     *      the id, or null if no identifier is expected in the response.
+     * @param string $contentType
+     * @return $this
+     */
+    protected function assertHasOneRelationshipResponse(
+        $resourceType,
+        $id = null,
+        $contentType = MediaTypeInterface::JSON_API_MEDIA_TYPE
+    ) {
+        $this->assertJsonApiResponse(Response::HTTP_OK, $contentType)
+            ->seeDataResourceIdentifier($resourceType, $id);
+
+        return $this;
+    }
+
+    /**
      * @param $expected
      * @return $this
      */
@@ -198,6 +245,7 @@ trait MakesJsonApiRequests
      *
      * @param string|string[] $resourceType
      * @param bool $allowEmpty
+     * @return $this
      */
     protected function seeDataCollection($resourceType, $allowEmpty = true)
     {
@@ -209,6 +257,8 @@ trait MakesJsonApiRequests
 
         if (!$allowEmpty) {
             PHPUnit::assertNotEmpty($collection, 'Data collection is empty');
+        } elseif (empty($collection)){
+            return $this;
         }
 
         $expected = array_combine((array) $resourceType, (array) $resourceType);
@@ -228,7 +278,9 @@ trait MakesJsonApiRequests
             }
         }
 
-        $this->assertEquals($expected, $actual, 'Unexpected resource types in data collection.');
+        PHPUnit::assertEquals($expected, $actual, 'Unexpected resource types in data collection.');
+
+        return $this;
     }
 
     /**
@@ -294,6 +346,36 @@ trait MakesJsonApiRequests
             false,
             "Unexpected resource relationships\n" . json_encode($actualRelationships)
         );
+
+        return $this;
+    }
+
+    /**
+     * @param string|string[] $resourceType
+     * @param mixed $id
+     *      the expected id in the identifier, or null if no identifier is expected.
+     * @return $this
+     */
+    protected function seeDataResourceIdentifier($resourceType, $id = null)
+    {
+        $this->seeJsonStructure([
+            Keys::KEYWORD_DATA,
+        ]);
+
+        $data = (array) $this->decodeResponseJson()[Keys::KEYWORD_DATA];
+
+        if (is_null($id)) {
+            PHPUnit::assertNull($data, 'Expecting data to be null (no identifier present).');
+            return $this;
+        }
+
+        $actualType = isset($data[Keys::KEYWORD_TYPE]) ? $data[Keys::KEYWORD_TYPE] : null;
+        $actualId = isset($data[Keys::KEYWORD_ID]) ? $data[Keys::KEYWORD_ID] : null;
+
+        PHPUnit::assertContains($actualType, (array) $resourceType, 'Unexpected resource type in identifier.');
+        PHPUnit::assertEquals($id, $actualId, 'Unexpected resource id.');
+
+        return $this;
     }
 
     /**
