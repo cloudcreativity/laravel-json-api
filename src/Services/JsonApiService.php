@@ -18,9 +18,13 @@
 
 namespace CloudCreativity\LaravelJsonApi\Services;
 
+use CloudCreativity\JsonApi\Contracts\Http\ApiFactoryInterface;
 use CloudCreativity\JsonApi\Contracts\Http\ApiInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestHandlerInterface;
 use CloudCreativity\LaravelJsonApi\Routing\ResourceRegistrar;
+use Neomerx\JsonApi\Contracts\Http\Headers\MediaTypeInterface;
+use Neomerx\JsonApi\Http\Headers\AcceptHeader;
+use Neomerx\JsonApi\Http\Headers\Header;
 use RuntimeException;
 
 /**
@@ -95,5 +99,43 @@ class JsonApiService
     public function isActive()
     {
         return app()->bound(ApiInterface::class);
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasRequest()
+    {
+        return app()->bound(RequestHandlerInterface::class);
+    }
+
+    /**
+     * Manually boot JSON API support.
+     *
+     * @param $namespace
+     * @param string $accept
+     * @param string $contentType
+     */
+    public function boot(
+        $namespace,
+        $accept = MediaTypeInterface::JSON_API_MEDIA_TYPE,
+        $contentType = MediaTypeInterface::JSON_API_MEDIA_TYPE
+    ) {
+        $config = (array) config('json-api.namespaces');
+        $accept = AcceptHeader::parse($accept);
+        $contentType = Header::parse($contentType, Header::HEADER_CONTENT_TYPE);
+
+        if (!array_key_exists($namespace, $config)) {
+            throw new RuntimeException("Did not recognised JSON API namespace: $namespace");
+        }
+
+        /** @var ApiFactoryInterface $factory */
+        $factory = app(ApiFactoryInterface::class);
+        $api = $factory->createApi($namespace, $config[$namespace]);
+        app()->instance(ApiInterface::class, $api);
+
+        $codecMatcher = $api->getCodecMatcher();
+        $codecMatcher->matchEncoder($accept);
+        $codecMatcher->matchDecoder($contentType);
     }
 }
