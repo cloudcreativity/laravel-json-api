@@ -175,8 +175,8 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
     }
 
     /**
-     * @param null $record
-     * @param null $resourceId
+     * @param object|null $record
+     * @param string|int|null $resourceId
      * @return ResourceValidatorInterface
      */
     protected function resourceValidator($record = null, $resourceId = null)
@@ -189,7 +189,8 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
             $this->resourceType,
             $resourceId,
             $this->resourceAttributes($record),
-            $this->resourceRelationships($record)
+            $this->resourceRelationships($record),
+            $this->resourceContext($record)
         );
     }
 
@@ -224,6 +225,24 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
         $this->relationshipRules($validator, $record);
 
         return $validator;
+    }
+
+    /**
+     * Get a context validator for the resource.
+     *
+     * The context validator validates the whole resource, once all its constituent
+     * parts have passed validation - i.e. the type, id, attributes and relationships
+     * will all be valid.
+     *
+     * Child classes can override this method to return their own validator if
+     * needed.
+     *
+     * @param object|null $record
+     * @return ResourceValidatorInterface|null
+     */
+    protected function resourceContext($record = null)
+    {
+        return null;
     }
 
     /**

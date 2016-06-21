@@ -40,15 +40,18 @@ class ValidatorErrorFactory extends BaseFactory implements ValidatorErrorFactory
     /**
      * @param MessageBag $messageBag
      * @param int $statusCode
+     * @param string|null $pointerPrefix
      * @return ErrorInterface[]
      */
     public function resourceInvalidAttributesMessages(
         MessageBag $messageBag,
-        $statusCode = self::STATUS_INVALID_ATTRIBUTES
+        $statusCode = self::STATUS_INVALID_ATTRIBUTES,
+        $pointerPrefix = null
     ) {
         $errors = [];
 
         foreach ($messageBag->toArray() as $key => $messages) {
+            $key = $pointerPrefix ? sprintf('%s/%s', $pointerPrefix, $key) : $key;
             $pointer = $this->getPathToAttribute($key);
 
             foreach ($messages as $detail) {
