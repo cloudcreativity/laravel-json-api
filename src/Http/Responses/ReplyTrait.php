@@ -16,9 +16,7 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\LaravelJsonApi\Http\Controllers;
-
-use CloudCreativity\LaravelJsonApi\Http\Responses\ResponseFactory;
+namespace CloudCreativity\LaravelJsonApi\Http\Responses;
 
 /**
  * Class ReplyTrait

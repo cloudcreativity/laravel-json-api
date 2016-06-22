@@ -21,6 +21,7 @@ namespace CloudCreativity\LaravelJsonApi\Http\Controllers;
 use CloudCreativity\JsonApi\Contracts\Object\ResourceInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestHandlerInterface;
 use CloudCreativity\LaravelJsonApi\Document\GeneratesLinks;
+use CloudCreativity\LaravelJsonApi\Http\Responses\ReplyTrait;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 
