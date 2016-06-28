@@ -18,13 +18,13 @@
 
 namespace CloudCreativity\LaravelJsonApi\Exceptions;
 
+use CloudCreativity\JsonApi\Document\Error;
 use CloudCreativity\LaravelJsonApi\Http\Responses\ResponseFactory;
 use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
-use Neomerx\JsonApi\Document\Error;
 use Neomerx\JsonApi\Exceptions\JsonApiException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
@@ -56,16 +56,24 @@ trait HandlesErrors
     {
         /** @var JsonApiService $service */
         $service = app(JsonApiService::class);
-        $errors = $this->parseToErrors($e);
 
         if (!$service->api()->hasEncoder()) {
-            return $this->renderWithoutEncoder($errors);
+            return $this->renderWithoutEncoder($e);
+        }
+
+        $statusCode = null;
+
+        if ($e instanceof JsonApiException) {
+            $statusCode = $e->getHttpCode();
+            $errors = $e->getErrors()->getArrayCopy() ?: new Error(null, null, $statusCode);
+        } else {
+            $errors = $this->parseToErrors($e);
         }
 
         /** @var ResponseFactory $responses */
         $responses = response()->jsonApi();
 
-        return $responses->errors($errors);
+        return $responses->errors($errors, $statusCode);
     }
 
     /**
@@ -74,11 +82,6 @@ trait HandlesErrors
      */
     protected function parseToErrors(Exception $e)
     {
-        if ($e instanceof JsonApiException) {
-            $errs = $e->getErrors()->getArrayCopy();
-            return $errs ?: new Error(null, null, $e->getHttpCode());
-        }
-
         $statusCode = ($e instanceof HttpExceptionInterface) ?
             $e->getStatusCode() :
             Response::HTTP_INTERNAL_SERVER_ERROR;
@@ -91,10 +94,10 @@ trait HandlesErrors
     /**
      * Send a response if no JSON API encoder is available.
      *
-     * @param $errors
+     * @param Exception $e
      * @return Response
      */
-    protected function renderWithoutEncoder($errors)
+    protected function renderWithoutEncoder(Exception $e)
     {
         return response('', Response::HTTP_NOT_ACCEPTABLE);
     }

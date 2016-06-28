@@ -23,6 +23,7 @@ use CloudCreativity\JsonApi\Contracts\Object\DocumentInterface;
 use CloudCreativity\JsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\JsonApi\Contracts\Validators\DocumentValidatorInterface;
 use CloudCreativity\JsonApi\Contracts\Validators\ValidatorProviderInterface;
+use CloudCreativity\JsonApi\Document\Error;
 use CloudCreativity\JsonApi\Object\Document;
 use CloudCreativity\JsonApi\Object\ResourceIdentifier;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestHandlerInterface;
@@ -32,7 +33,6 @@ use Exception;
 use Illuminate\Http\Request as HttpRequest;
 use Illuminate\Http\Response;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
-use Neomerx\JsonApi\Document\Error;
 use Neomerx\JsonApi\Exceptions\JsonApiException;
 use RuntimeException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -328,7 +328,8 @@ abstract class AbstractRequest implements RequestHandlerInterface
             $this->validators->filterResources() : null;
 
         if ($validator && !$validator->isValid((array) $parameters->getFilteringParameters())) {
-            throw new JsonApiException($validator->errors());
+            $errors = $validator->errors();
+            throw new JsonApiException($errors, Error::getErrorStatus($errors));
         }
 
         return $parameters;
@@ -366,7 +367,8 @@ abstract class AbstractRequest implements RequestHandlerInterface
         $validator = $this->validator();
 
         if ($validator && !$validator->isValid($this->getDocument())) {
-            throw new JsonApiException($validator->errors());
+            $errors = $validator->errors();
+            throw new JsonApiException($errors, Error::getErrorStatus($errors));
         }
     }
 
