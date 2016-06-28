@@ -71,4 +71,11 @@ interface RequestHandlerInterface extends ValidatesWhenResolved
      */
     public function getHttpRequest();
 
+    /**
+     * Did validation complete successfully?
+     *
+     * @return bool
+     */
+    public function isValid();
+
 }

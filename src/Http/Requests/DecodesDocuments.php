@@ -41,7 +41,7 @@ trait DecodesDocuments
         $service = app(JsonApiService::class);
 
         $object = $service
-            ->api()
+            ->getApi()
             ->getCodecMatcher()
             ->getDecoder()
             ->decode($request->getContent());

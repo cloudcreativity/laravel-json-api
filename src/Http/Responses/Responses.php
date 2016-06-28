@@ -65,7 +65,7 @@ class Responses extends AbstractResponses
      */
     protected function getEncoder()
     {
-        return $this->service->api()->getEncoder();
+        return $this->service->getApi()->getEncoder();
     }
 
     /**
@@ -73,7 +73,7 @@ class Responses extends AbstractResponses
      */
     protected function getUrlPrefix()
     {
-        return $this->service->api()->getUrlPrefix();
+        return $this->service->getApi()->getUrlPrefix();
     }
 
 
@@ -86,7 +86,7 @@ class Responses extends AbstractResponses
             return null;
         }
 
-        return $this->service->request()->getEncodingParameters();
+        return $this->service->getRequest()->getEncodingParameters();
     }
 
     /**
@@ -94,7 +94,7 @@ class Responses extends AbstractResponses
      */
     protected function getSchemaContainer()
     {
-        return $this->service->api()->getSchemas();
+        return $this->service->getApi()->getSchemas();
     }
 
     /**
@@ -102,7 +102,7 @@ class Responses extends AbstractResponses
      */
     protected function getSupportedExtensions()
     {
-        return $this->service->api()->getSupportedExts();
+        return $this->service->getApi()->getSupportedExts();
     }
 
     /**
@@ -112,7 +112,7 @@ class Responses extends AbstractResponses
     {
         $type = $this
             ->service
-            ->api()
+            ->getApi()
             ->getCodecMatcher()
             ->getEncoderRegisteredMatchedType();
 

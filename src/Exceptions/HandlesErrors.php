@@ -57,7 +57,7 @@ trait HandlesErrors
         /** @var JsonApiService $service */
         $service = app(JsonApiService::class);
 
-        if (!$service->api()->hasEncoder()) {
+        if (!$service->getApi()->hasEncoder()) {
             return $this->renderWithoutEncoder($e);
         }
 

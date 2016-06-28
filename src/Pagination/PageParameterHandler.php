@@ -137,7 +137,7 @@ class PageParameterHandler implements PageParameterHandlerInterface
     {
         return (array) $this
             ->service
-            ->request()
+            ->getRequest()
             ->getEncodingParameters()
             ->getPaginationParameters();
     }

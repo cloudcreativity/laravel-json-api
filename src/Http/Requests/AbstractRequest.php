@@ -23,18 +23,15 @@ use CloudCreativity\JsonApi\Contracts\Object\DocumentInterface;
 use CloudCreativity\JsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\JsonApi\Contracts\Validators\DocumentValidatorInterface;
 use CloudCreativity\JsonApi\Contracts\Validators\ValidatorProviderInterface;
-use CloudCreativity\JsonApi\Document\Error;
+use CloudCreativity\JsonApi\Exceptions\AuthorizationException;
+use CloudCreativity\JsonApi\Exceptions\ValidationException;
 use CloudCreativity\JsonApi\Object\Document;
 use CloudCreativity\JsonApi\Object\ResourceIdentifier;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestHandlerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PageParameterHandlerInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\RequestException;
-use Exception;
 use Illuminate\Http\Request as HttpRequest;
-use Illuminate\Http\Response;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
-use Neomerx\JsonApi\Exceptions\JsonApiException;
-use RuntimeException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -130,6 +127,11 @@ abstract class AbstractRequest implements RequestHandlerInterface
     private $record;
 
     /**
+     * @var bool|null
+     */
+    private $validated;
+
+    /**
      * AbstractRequest constructor.
      * @param ValidatorProviderInterface $validators
      * @param AuthorizerInterface|null $authorizer
@@ -148,7 +150,7 @@ abstract class AbstractRequest implements RequestHandlerInterface
     public function getResourceType()
     {
         if (empty($this->resourceType)) {
-            throw new RuntimeException('The resourceType property must be set on: ' . static::class);
+            throw new RequestException('The resourceType property must be set on: ' . static::class);
         }
 
         return $this->resourceType;
@@ -158,10 +160,13 @@ abstract class AbstractRequest implements RequestHandlerInterface
      * Validate the given class instance.
      *
      * @return void
-     * @throws Exception
+     * @throws NotFoundHttpException|ValidationException|AuthorizationException
      */
     public function validate()
     {
+        /** Register the current request in the container. */
+        app()->instance(RequestHandlerInterface::class, $this);
+
         /** Check the URI is valid */
         $this->record = !empty($this->getResourceId()) ? $this->findRecord() : null;
         $this->validateRelationshipUrl();
@@ -185,8 +190,7 @@ abstract class AbstractRequest implements RequestHandlerInterface
             throw $this->denied();
         }
 
-        /** Register the current request in the container. */
-        app()->instance(RequestHandlerInterface::class, $this);
+        $this->validated = true;
     }
 
     /**
@@ -227,6 +231,14 @@ abstract class AbstractRequest implements RequestHandlerInterface
     public function getEncodingParameters()
     {
         return $this->encodingParameters;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isValid()
+    {
+        return (bool) $this->validated;
     }
 
     /**
@@ -317,6 +329,7 @@ abstract class AbstractRequest implements RequestHandlerInterface
 
     /**
      * @return EncodingParametersInterface
+     * @throws ValidationException
      */
     protected function validateParameters()
     {
@@ -328,8 +341,7 @@ abstract class AbstractRequest implements RequestHandlerInterface
             $this->validators->filterResources() : null;
 
         if ($validator && !$validator->isValid((array) $parameters->getFilteringParameters())) {
-            $errors = $validator->errors();
-            throw new JsonApiException($errors, Error::getErrorStatus($errors));
+            throw new ValidationException($validator->errors());
         }
 
         return $parameters;
@@ -360,15 +372,14 @@ abstract class AbstractRequest implements RequestHandlerInterface
 
     /**
      * @return void
-     * @throws JsonApiException
+     * @throws ValidationException
      */
     protected function validateDocument()
     {
         $validator = $this->validator();
 
         if ($validator && !$validator->isValid($this->getDocument())) {
-            $errors = $validator->errors();
-            throw new JsonApiException($errors, Error::getErrorStatus($errors));
+            throw new ValidationException($validator->errors());
         }
     }
 
@@ -424,13 +435,12 @@ abstract class AbstractRequest implements RequestHandlerInterface
     }
 
     /**
-     * @return JsonApiException
+     * @return AuthorizationException
      */
     protected function denied()
     {
-        $error = $this->authorizer ?
-            $this->authorizer->denied() : new Error(null, null, Response::HTTP_FORBIDDEN);
+        $error = $this->authorizer ? $this->authorizer->denied() : [];
 
-        return new JsonApiException($error, $error->getStatus());
+        return new AuthorizationException($error);
     }
 }

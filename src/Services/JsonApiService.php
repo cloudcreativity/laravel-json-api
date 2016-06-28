@@ -49,46 +49,15 @@ class JsonApiService
     }
 
     /**
-     * @param $resourceType
-     * @param $controller
+     * Register a resource type with the router.
+     *
+     * @param string $resourceType
+     * @param string $controller
      * @param array $options
      */
     public function resource($resourceType, $controller, array $options = [])
     {
         $this->registrar->resource($resourceType, $controller, $options);
-    }
-
-    /**
-     * Get the active API.
-     *
-     * An active API will be available once the JSON API middleware has been run.
-     *
-     * @return ApiInterface
-     */
-    public function api()
-    {
-        if (!$this->isActive()) {
-            throw new RuntimeException('No active API. The JSON API middleware has not been run.');
-        }
-
-        return app(ApiInterface::class);
-    }
-
-    /**
-     * Get the handler for the current HTTP Request.
-     *
-     * A request handler will be registered if a request has completed validation
-     * upon resolution from the service container.
-     *
-     * @return RequestHandlerInterface
-     */
-    public function request()
-    {
-        if (!app()->bound(RequestHandlerInterface::class)) {
-            throw new RuntimeException('No active JSON API request.');
-        }
-
-        return app(RequestHandlerInterface::class);
     }
 
     /**
@@ -102,6 +71,41 @@ class JsonApiService
     }
 
     /**
+     * Get the active API.
+     *
+     * An active API will be available once the JSON API middleware has been run.
+     *
+     * @return ApiInterface
+     */
+    public function getApi()
+    {
+        if (!$this->isActive()) {
+            throw new RuntimeException('No active API. The JSON API middleware has not been run.');
+        }
+
+        return app(ApiInterface::class);
+    }
+
+    /**
+     * Get the handler for the current HTTP Request.
+     *
+     * A request handler will be registered if a request object has been created via the
+     * service container (which starts validation).
+     *
+     * @return RequestHandlerInterface
+     */
+    public function getRequest()
+    {
+        if (!app()->bound(RequestHandlerInterface::class)) {
+            throw new RuntimeException('No active JSON API request.');
+        }
+
+        return app(RequestHandlerInterface::class);
+    }
+
+    /**
+     * Has a request handler been registered?
+     *
      * @return bool
      */
     public function hasRequest()
