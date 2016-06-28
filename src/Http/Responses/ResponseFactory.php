@@ -163,7 +163,7 @@ class ResponseFactory
     public function errors($errors, $statusCode = null, array $headers = [])
     {
         if (is_null($statusCode)) {
-            $statusCode = Error::getErrorStatus($errors);
+            $statusCode = Error::resolveHttpStatus($errors);
         }
 
         return $this->responses->getErrorResponse($errors, $statusCode, $headers);
