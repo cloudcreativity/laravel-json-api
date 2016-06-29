@@ -101,8 +101,8 @@ class ResponseFactory
         array $headers = []
     ) {
         if ($data instanceof Paginator) {
-            $meta = $this->paginator->getMeta($data, $meta);
-            $links = array_merge($this->paginator->getLinks($data), $links);
+            $meta = $this->paginator->addMeta($data, $meta);
+            $links = $this->paginator->addLinks($data, $links);
         }
 
         return $this->responses->getContentResponse($data, $statusCode, $links, $meta, $headers);
@@ -136,8 +136,8 @@ class ResponseFactory
         array $headers = []
     ) {
         if ($data instanceof Paginator) {
-            $meta = $this->paginator->getMeta($data, $meta);
-            $links = array_merge($this->paginator->getLinks($data), $links);
+            $meta = $this->paginator->addMeta($data, $meta);
+            $links = $this->paginator->addLinks($data, $links);
         }
 
         return $this->responses->getIdentifiersResponse($data, $statusCode, $links, $meta, $headers);

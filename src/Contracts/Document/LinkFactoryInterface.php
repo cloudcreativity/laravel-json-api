@@ -33,6 +33,16 @@ interface LinkFactoryInterface
     const ROUTE_NAME_RELATIONSHIPS = '%s.relationships';
 
     /**
+     * Get a link to the current URL.
+     *
+     * @param array $queryParams
+     * @param array|object|null $meta
+     *      meta to attach to the link object.
+     * @return LinkInterface
+     */
+    public function current(array $queryParams = [], $meta = null);
+
+    /**
      * Get a link to the index of a resource type.
      *
      * @param $resourceType

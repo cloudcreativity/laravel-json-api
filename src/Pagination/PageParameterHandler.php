@@ -29,21 +29,25 @@ use Illuminate\Support\Arr;
 class PageParameterHandler implements PageParameterHandlerInterface
 {
 
-    const DEFAULT_PAGE_KEY = 'number';
-    const DEFAULT_PER_PAGE_KEY = 'size';
-
     /**
      * @var JsonApiService
      */
     private $service;
 
     /**
+     * @var PaginatorConfiguration
+     */
+    private $config;
+
+    /**
      * PageParameter constructor.
      * @param JsonApiService $service
+     * @param PaginatorConfiguration $config
      */
-    public function __construct(JsonApiService $service)
+    public function __construct(JsonApiService $service, PaginatorConfiguration $config)
     {
         $this->service = $service;
+        $this->config = $config;
     }
 
     /**
@@ -57,8 +61,10 @@ class PageParameterHandler implements PageParameterHandlerInterface
     public function isPaginated()
     {
         $params = $this->getParams();
+        $pageKey = $this->config->getParamPage();
+        $perPageKey = $this->config->getParamPerPage();
 
-        return Arr::has($params, $this->getPageKey()) || Arr::has($params, $this->getPerPageKey());
+        return Arr::has($params, $pageKey) || Arr::has($params, $perPageKey);
     }
 
     /**
@@ -70,7 +76,8 @@ class PageParameterHandler implements PageParameterHandlerInterface
      */
     public function getCurrentPage()
     {
-        $page = (int) $this->getParam($this->getPageKey(), 1);
+        $key = $this->config->getParamPage();
+        $page = (int) $this->getParam($key, 1);
 
         return (0 < $page) ? $page : 1;
     }
@@ -86,7 +93,8 @@ class PageParameterHandler implements PageParameterHandlerInterface
      */
     public function getPerPage($default = 15, $max = null)
     {
-        $perPage = (int) $this->getParam($this->getPerPageKey(), $default);
+        $key = $this->config->getParamPerPage();
+        $perPage = (int) $this->getParam($key, $default);
 
         if (is_int($max) && $perPage > $max) {
             $perPage = $max;
@@ -105,29 +113,9 @@ class PageParameterHandler implements PageParameterHandlerInterface
     public function getAllowedPagingParameters()
     {
         return [
-            $this->getPageKey(),
-            $this->getPerPageKey(),
+            $this->config->getParamPage(),
+            $this->config->getParamPerPage(),
         ];
-    }
-
-    /**
-     * @return string
-     */
-    protected function getPageKey()
-    {
-        $key = config('json-api.pagination.params.page');
-
-        return is_string($key) && !empty($key) ? $key : self::DEFAULT_PAGE_KEY;
-    }
-
-    /**
-     * @return string
-     */
-    protected function getPerPageKey()
-    {
-        $key = config('json-api.pagination.params.per-page');
-
-        return is_string($key) && !empty($key) ? $key : self::DEFAULT_PER_PAGE_KEY;
     }
 
     /**

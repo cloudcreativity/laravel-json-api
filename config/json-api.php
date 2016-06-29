@@ -92,4 +92,41 @@ return [
         ],
         'columns' => [],
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Pagination
+    |--------------------------------------------------------------------------
+    |
+    | Here you can customise how pagination is handled. If any values are
+    | set as `null` then default values will be used.
+    |
+    | The `params` config sets the keys that the client uses for the page number
+    | and the amount per-page in the request. The JSON API spec defines the
+    | `page` parameter as where these will appear. So if the `params.page`
+    | setting is `number`, the client will need to submit `page[number]=2` to
+    | get the second page.
+    |
+    | The `meta` config sets the keys to use for pagination meta in responses.
+    | Pagination meta will be added to your response meta under the key defined
+    | in the `meta.key` setting. The other settings define the keys to use
+    | within the pagination meta for the values returned by the Laravel
+    | Paginator/LengthAwarePaginator contracts.
+    |
+    */
+    'pagination' => [
+        'params' => [
+            'page' => null,
+            'per-page' => null,
+        ],
+        'meta' => [
+            'key' => null,
+            'current-page' => null,
+            'per-page' => null,
+            'first-item' => null,
+            'last-item' => null,
+            'total' => null,
+            'last-page' => null,
+        ],
+    ],
 ];

@@ -48,6 +48,22 @@ class LinkFactory implements LinkFactoryInterface
     }
 
     /**
+     * @param array $queryParams
+     * @param array|object|null $meta
+     * @return Link
+     */
+    public function current(array $queryParams = [], $meta = null)
+    {
+        $url = $this->generator->current();
+
+        if ($queryParams) {
+            $url .= '?' . http_build_query($queryParams);
+        }
+
+        return new Link($url, $meta, true);
+    }
+
+    /**
      * Get a link to the index of a resource type.
      *
      * @param $resourceType

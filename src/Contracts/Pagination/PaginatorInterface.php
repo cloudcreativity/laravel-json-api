@@ -35,16 +35,22 @@ interface PaginatorInterface
     const LINK_NEXT = DocumentInterface::KEYWORD_NEXT;
 
     /**
+     * Add pagination meta to the supplied meta.
+     *
      * @param Paginator $results
      * @param array|object|null $meta
      *      the meta to merge the pagination meta with.
      * @return array|object
      */
-    public function getMeta(Paginator $results, $meta = null);
+    public function addMeta(Paginator $results, $meta = null);
 
     /**
+     * Add pagination links to the supplied links.
+     *
      * @param Paginator $results
-     * @return LinkInterface[]
+     * @param array $links
+     *      the links to add the pagination links to.
+     * @return array
      */
-    public function getLinks(Paginator $results);
+    public function addLinks(Paginator $results, array $links = []);
 }
