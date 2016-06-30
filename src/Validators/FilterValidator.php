@@ -19,7 +19,6 @@
 namespace CloudCreativity\LaravelJsonApi\Validators;
 
 use CloudCreativity\JsonApi\Contracts\Validators\FilterValidatorInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorErrorFactoryInterface;
 use Illuminate\Contracts\Validation\Validator;
 
 /**
@@ -50,11 +49,8 @@ class FilterValidator extends AbstractValidator implements FilterValidatorInterf
      */
     protected function addValidatorErrors(Validator $validator)
     {
-        /** @var ValidatorErrorFactoryInterface $factory */
-        $factory = $this->errorFactory;
         $messages = $validator->getMessageBag();
-
-        $this->addErrors($factory->filterParametersMessages($messages));
+        $this->addErrors($this->errorFactory->filterParametersMessages($messages));
     }
 
 }

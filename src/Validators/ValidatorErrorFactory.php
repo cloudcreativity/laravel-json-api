@@ -21,10 +21,8 @@ namespace CloudCreativity\LaravelJsonApi\Validators;
 use CloudCreativity\JsonApi\Document\Error;
 use CloudCreativity\JsonApi\Validators\ValidatorErrorFactory as BaseFactory;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorErrorFactoryInterface;
+use CloudCreativity\LaravelJsonApi\Utils\ErrorBag;
 use Illuminate\Contracts\Support\MessageBag;
-use Illuminate\Http\Response;
-use Neomerx\JsonApi\Contracts\Document\DocumentInterface;
-use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
 use Neomerx\JsonApi\Contracts\Http\Query\QueryParametersParserInterface;
 
 /**
@@ -38,59 +36,32 @@ class ValidatorErrorFactory extends BaseFactory implements ValidatorErrorFactory
     const FILTER_PARAMETERS_MESSAGES = 'validation:filter-parameters-messages';
 
     /**
-     * @param MessageBag $messageBag
-     * @param int $statusCode
-     * @param string|null $pointerPrefix
-     * @return ErrorInterface[]
+     * @inheritdoc
      */
     public function resourceInvalidAttributesMessages(
         MessageBag $messageBag,
         $statusCode = self::STATUS_INVALID_ATTRIBUTES,
-        $pointerPrefix = null
+        $attributePrefix = null
     ) {
-        $errors = [];
+        $prototype = $this->repository->error(self::RESOURCE_INVALID_ATTRIBUTES_MESSAGES);
+        $prototype = Error::cast($prototype)->setStatus($statusCode);
+        $prefix = $attributePrefix ? $this->getPathToAttribute($attributePrefix) : $this->getPathToAttributes();
+        $errors = new ErrorBag($messageBag, $prototype, $prefix);
 
-        foreach ($messageBag->toArray() as $key => $messages) {
-            $key = $pointerPrefix ? sprintf('%s/%s', $pointerPrefix, $key) : $key;
-            $pointer = $this->getPathToAttribute($key);
-
-            foreach ($messages as $detail) {
-                $errors[] = $this->repository->errorWithPointer(
-                    self::RESOURCE_INVALID_ATTRIBUTES_MESSAGES,
-                    $pointer,
-                    $statusCode,
-                    [],
-                    [Error::DETAIL => $detail]
-                );
-            }
-        }
-
-        return $errors;
+        return $errors->toArray();
     }
 
     /**
-     * @param MessageBag $messageBag
-     * @return ErrorInterface[]
+     * @inheritdoc
      */
-    public function filterParametersMessages(MessageBag $messageBag)
+    public function filterParametersMessages(MessageBag $messages, $statusCode = self::STATUS_INVALID_FILTERS)
     {
-        $errors = [];
+        $prototype = $this->repository->error(self::FILTER_PARAMETERS_MESSAGES);
+        $prototype = Error::cast($prototype)->setStatus($statusCode);
+        $prefix = QueryParametersParserInterface::PARAM_FILTER;
+        $errors = new ErrorBag($messages, $prototype, $prefix, true);
 
-        foreach ($messageBag->toArray() as $key => $messages) {
-            $parameter = sprintf('%s.%s', QueryParametersParserInterface::PARAM_FILTER, $key);
-
-            foreach ($messages as $detail) {
-                $errors[] = $this->repository->errorWithParameter(
-                    self::FILTER_PARAMETERS_MESSAGES,
-                    $parameter,
-                    Response::HTTP_BAD_REQUEST,
-                    [],
-                    [Error::DETAIL => $detail]
-                );
-            }
-        }
-
-        return $errors;
+        return $errors->toArray();
     }
 
 }

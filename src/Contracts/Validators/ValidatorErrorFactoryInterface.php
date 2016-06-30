@@ -31,22 +31,25 @@ interface ValidatorErrorFactoryInterface extends BaseInterface
 {
 
     const STATUS_INVALID_ATTRIBUTES = Response::HTTP_UNPROCESSABLE_ENTITY;
+    const STATUS_INVALID_FILTERS = Response::HTTP_BAD_REQUEST;
 
     /**
      * @param MessageBag $messageBag
      * @param int $statusCode
-     * @param string|null $pointerPrefix
+     * @param string|null $attributePrefix
+     *      a prefix if the validator relates to a nested prefix.
      * @return ErrorInterface[]
      */
     public function resourceInvalidAttributesMessages(
         MessageBag $messageBag,
         $statusCode = self::STATUS_INVALID_ATTRIBUTES,
-        $pointerPrefix = null
+        $attributePrefix = null
     );
 
     /**
-     * @param MessageBag $messageBag
+     * @param MessageBag $messages
+     * @param int $statusCode
      * @return ErrorInterface[]
      */
-    public function filterParametersMessages(MessageBag $messageBag);
+    public function filterParametersMessages(MessageBag $messages, $statusCode = self::STATUS_INVALID_FILTERS);
 }

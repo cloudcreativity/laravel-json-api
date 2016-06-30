@@ -20,7 +20,6 @@ namespace CloudCreativity\LaravelJsonApi\Validators;
 
 use CloudCreativity\JsonApi\Contracts\Object\ResourceInterface;
 use CloudCreativity\JsonApi\Contracts\Validators\AttributesValidatorInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorErrorFactoryInterface;
 use Illuminate\Contracts\Validation\Validator;
 
 /**
@@ -53,11 +52,8 @@ class AttributesValidator extends AbstractValidator implements AttributesValidat
      */
     protected function addValidatorErrors(Validator $validator)
     {
-        /** @var ValidatorErrorFactoryInterface $factory */
-        $factory = $this->errorFactory;
         $messages = $validator->getMessageBag();
-
-        $this->addErrors($factory->resourceInvalidAttributesMessages($messages));
+        $this->addErrors($this->errorFactory->resourceInvalidAttributesMessages($messages));
     }
 
 }

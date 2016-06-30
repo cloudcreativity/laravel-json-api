@@ -23,14 +23,16 @@ use CloudCreativity\JsonApi\Contracts\Http\ContentNegotiatorInterface;
 use CloudCreativity\JsonApi\Contracts\Repositories\CodecMatcherRepositoryInterface;
 use CloudCreativity\JsonApi\Contracts\Repositories\ErrorRepositoryInterface;
 use CloudCreativity\JsonApi\Contracts\Repositories\SchemasRepositoryInterface;
-use CloudCreativity\JsonApi\Contracts\Stdlib\ConfigurableInterface;
 use CloudCreativity\JsonApi\Contracts\Store\StoreInterface;
+use CloudCreativity\JsonApi\Contracts\Utils\ConfigurableInterface;
+use CloudCreativity\JsonApi\Contracts\Utils\ReplacerInterface;
 use CloudCreativity\JsonApi\Http\ApiFactory;
 use CloudCreativity\JsonApi\Http\ContentNegotiator;
 use CloudCreativity\JsonApi\Repositories\CodecMatcherRepository;
 use CloudCreativity\JsonApi\Repositories\ErrorRepository;
 use CloudCreativity\JsonApi\Repositories\SchemasRepository;
 use CloudCreativity\JsonApi\Store\Store;
+use CloudCreativity\JsonApi\Utils\Replacer;
 use CloudCreativity\LaravelJsonApi\Adapters\EloquentAdapter;
 use CloudCreativity\LaravelJsonApi\Contracts\Document\LinkFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PageParameterHandlerInterface;
@@ -116,8 +118,8 @@ class ServiceProvider extends BaseServiceProvider
         ], 'config');
 
         $this->publishes([
-            base_path('vendor/cloudcreativity/json-api/config/validation.php') => config_path('json-api-errors.php'),
-        ], 'validation');
+            __DIR__ . '/../config/json-api-errors.php' => config_path('json-api-errors.php'),
+        ], 'errors');
     }
 
     /**
@@ -241,8 +243,14 @@ class ServiceProvider extends BaseServiceProvider
      */
     protected function bindErrorRepository()
     {
-        $this->app->singleton(ErrorRepositoryInterface::class, function () {
-            return new ErrorRepository($this->getErrorConfig());
+        $this->app->singleton(ReplacerInterface::class, Replacer::class);
+
+        $this->app->singleton(['json-api.errors' => ErrorRepositoryInterface::class], function () {
+            /** @var ReplacerInterface $replacer */
+            $replacer = $this->app->make(ReplacerInterface::class);
+            $repository = new ErrorRepository($replacer);
+            $repository->configure($this->getErrorConfig());
+            return $repository;
         });
     }
 

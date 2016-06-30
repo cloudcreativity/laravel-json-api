@@ -18,7 +18,8 @@
 
 namespace CloudCreativity\LaravelJsonApi\Validators;
 
-use CloudCreativity\JsonApi\Validators\AbstractValidator as BaseValidator;
+use CloudCreativity\JsonApi\Utils\ErrorsAwareTrait;
+use CloudCreativity\JsonApi\Validators\Helpers\CreatesPointersTrait;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorErrorFactoryInterface;
 use Illuminate\Contracts\Validation\Factory;
 use Illuminate\Contracts\Validation\Validator;
@@ -27,8 +28,16 @@ use Illuminate\Contracts\Validation\Validator;
  * Class AbstractValidator
  * @package CloudCreativity\LaravelJsonApi
  */
-abstract class AbstractValidator extends BaseValidator
+abstract class AbstractValidator
 {
+
+    use ErrorsAwareTrait,
+        CreatesPointersTrait;
+
+    /**
+     * @var ValidatorErrorFactoryInterface
+     */
+    protected $errorFactory;
 
     /**
      * @var Factory
@@ -58,7 +67,7 @@ abstract class AbstractValidator extends BaseValidator
 
     /**
      * AttributesValidator constructor.
-     * @param ValidatorErrorFactoryInterface $validatorErrorFactory
+     * @param ValidatorErrorFactoryInterface $errorFactory
      * @param Factory $validatorFactory
      * @param array $rules
      * @param array $messages
@@ -67,14 +76,14 @@ abstract class AbstractValidator extends BaseValidator
      *      a callback that will be passed the Laravel validator instance when it is made.
      */
     public function __construct(
-        ValidatorErrorFactoryInterface $validatorErrorFactory,
+        ValidatorErrorFactoryInterface $errorFactory,
         Factory $validatorFactory,
         array $rules,
         array $messages = [],
         array $customAttributes = [],
         callable $callback = null
     ) {
-        parent::__construct($validatorErrorFactory);
+        $this->errorFactory = $errorFactory;
         $this->validatorFactory = $validatorFactory;
         $this->rules = $rules;
         $this->messages = $messages;

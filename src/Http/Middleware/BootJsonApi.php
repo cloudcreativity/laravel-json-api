@@ -22,7 +22,6 @@ use Closure;
 use CloudCreativity\JsonApi\Contracts\Http\ApiFactoryInterface;
 use CloudCreativity\JsonApi\Contracts\Http\ApiInterface;
 use CloudCreativity\JsonApi\Contracts\Http\ContentNegotiatorInterface;
-use CloudCreativity\JsonApi\Http\Api;
 use CloudCreativity\JsonApi\Http\ApiFactory;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PageParameterHandlerInterface;
 use Illuminate\Contracts\Container\Container;
