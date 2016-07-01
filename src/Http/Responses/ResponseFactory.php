@@ -18,7 +18,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Http\Responses;
 
-use CloudCreativity\JsonApi\Document\Error;
+use CloudCreativity\JsonApi\Exceptions\ErrorCollection as Errors;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PaginatorInterface;
 use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Http\Response;
@@ -163,7 +163,7 @@ class ResponseFactory
     public function errors($errors, $statusCode = null, array $headers = [])
     {
         if (is_null($statusCode)) {
-            $statusCode = Error::resolveHttpStatus($errors);
+            $statusCode = Errors::cast($errors)->getHttpStatus();
         }
 
         return $this->responses->getErrorResponse($errors, $statusCode, $headers);
