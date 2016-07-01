@@ -40,8 +40,8 @@ class ValidatorErrorFactory extends BaseFactory implements ValidatorErrorFactory
      */
     public function resourceInvalidAttributesMessages(
         MessageBag $messageBag,
-        $statusCode = self::STATUS_INVALID_ATTRIBUTES,
-        $attributePrefix = null
+        $attributePrefix = null,
+        $statusCode = self::STATUS_INVALID_ATTRIBUTES
     ) {
         $prototype = $this->repository->error(self::RESOURCE_INVALID_ATTRIBUTES_MESSAGES);
         $prototype = Error::cast($prototype)->setStatus($statusCode);

@@ -19,6 +19,8 @@
 namespace CloudCreativity\LaravelJsonApi\Validators;
 
 use CloudCreativity\JsonApi\Contracts\Validators\FilterValidatorInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorErrorFactoryInterface;
+use Illuminate\Contracts\Validation\Factory;
 use Illuminate\Contracts\Validation\Validator;
 
 /**
@@ -27,6 +29,56 @@ use Illuminate\Contracts\Validation\Validator;
  */
 class FilterValidator extends AbstractValidator implements FilterValidatorInterface
 {
+
+    /**
+     * @var ValidatorErrorFactoryInterface
+     */
+    private $errorFactory;
+
+    /**
+     * @var array
+     */
+    private $rules;
+
+    /**
+     * @var array
+     */
+    private $messages;
+
+    /**
+     * @var array
+     */
+    private $attributes;
+
+    /**
+     * @var callable|null
+     */
+    private $callback;
+
+    /**
+     * AttributesValidator constructor.
+     * @param Factory $validatorFactory
+     * @param ValidatorErrorFactoryInterface $errorFactory
+     * @param array $rules
+     * @param array $messages
+     * @param array $attributes
+     * @param callable|null $callback
+     */
+    public function __construct(
+        Factory $validatorFactory,
+        ValidatorErrorFactoryInterface $errorFactory,
+        array $rules,
+        array $messages = [],
+        array $attributes = [],
+        callable $callback = null
+    ) {
+        parent::__construct($validatorFactory);
+        $this->errorFactory = $errorFactory;
+        $this->rules = $rules;
+        $this->messages = $messages;
+        $this->attributes = $attributes;
+        $this->callback = $callback;
+    }
 
     /**
      * @param array $filters
@@ -42,6 +94,43 @@ class FilterValidator extends AbstractValidator implements FilterValidatorInterf
         }
 
         return true;
+    }
+
+    /**
+     * @return array
+     */
+    protected function getRules()
+    {
+        return $this->rules;
+    }
+
+    /**
+     * @return array
+     */
+    protected function getMessages()
+    {
+        return $this->messages;
+    }
+
+    /**
+     * @return array
+     */
+    protected function getAttributes()
+    {
+        return $this->attributes;
+    }
+
+    /**
+     * @param Validator $validator
+     * @return void
+     */
+    protected function configureValidator(Validator $validator)
+    {
+        $callback = $this->callback;
+
+        if ($callback) {
+            $callback($validator);
+        }
     }
 
     /**

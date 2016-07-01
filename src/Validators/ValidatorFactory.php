@@ -34,15 +34,23 @@ class ValidatorFactory extends BaseFactory implements ValidatorFactoryInterface
 {
 
     /**
+     * @var Factory
+     */
+    private $validatorFactory;
+
+    /**
      * ValidatorFactory constructor.
      * @param ValidatorErrorFactoryInterface $validationErrors
      * @param StoreInterface $store
+     * @param Factory $validatorFactory
      */
     public function __construct(
         ValidatorErrorFactoryInterface $validationErrors,
-        StoreInterface $store
+        StoreInterface $store,
+        Factory $validatorFactory
     ) {
         parent::__construct($validationErrors, $store);
+        $this->validatorFactory = $validatorFactory;
     }
 
     /**
@@ -59,14 +67,12 @@ class ValidatorFactory extends BaseFactory implements ValidatorFactoryInterface
         array $customAttributes = [],
         callable $callback = null
     ) {
-        /** @var Factory $factory */
-        $factory = app(Factory::class);
         /** @var ValidatorErrorFactoryInterface $validationErrors */
         $validationErrors = $this->validationErrors;
 
         return new AttributesValidator(
+            $this->validatorFactory,
             $validationErrors,
-            $factory,
             $rules,
             $messages,
             $customAttributes,
@@ -87,14 +93,12 @@ class ValidatorFactory extends BaseFactory implements ValidatorFactoryInterface
         array $customAttributes = [],
         callable $callback = null
     ) {
-        /** @var Factory $factory */
-        $factory = app(Factory::class);
         /** @var ValidatorErrorFactoryInterface $validationErrors */
         $validationErrors = $this->validationErrors;
 
         return new FilterValidator(
+            $this->validatorFactory,
             $validationErrors,
-            $factory,
             $rules,
             $messages,
             $customAttributes,

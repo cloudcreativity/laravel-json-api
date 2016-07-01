@@ -35,15 +35,15 @@ interface ValidatorErrorFactoryInterface extends BaseInterface
 
     /**
      * @param MessageBag $messageBag
-     * @param int $statusCode
      * @param string|null $attributePrefix
-     *      a prefix if the validator relates to a nested prefix.
+     *      a prefix if the validator relates to a nested attribute.
+     * @param int $statusCode
      * @return ErrorInterface[]
      */
     public function resourceInvalidAttributesMessages(
         MessageBag $messageBag,
-        $statusCode = self::STATUS_INVALID_ATTRIBUTES,
-        $attributePrefix = null
+        $attributePrefix = null,
+        $statusCode = self::STATUS_INVALID_ATTRIBUTES
     );
 
     /**

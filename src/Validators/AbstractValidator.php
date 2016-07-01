@@ -20,7 +20,6 @@ namespace CloudCreativity\LaravelJsonApi\Validators;
 
 use CloudCreativity\JsonApi\Utils\ErrorsAwareTrait;
 use CloudCreativity\JsonApi\Validators\Helpers\CreatesPointersTrait;
-use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorErrorFactoryInterface;
 use Illuminate\Contracts\Validation\Factory;
 use Illuminate\Contracts\Validation\Validator;
 
@@ -35,80 +34,64 @@ abstract class AbstractValidator
         CreatesPointersTrait;
 
     /**
-     * @var ValidatorErrorFactoryInterface
-     */
-    protected $errorFactory;
-
-    /**
      * @var Factory
      */
-    protected $validatorFactory;
+    private $validatorFactory;
 
     /**
-     * @var array
+     * Get validation rules.
+     *
+     * @return array
      */
-    protected $rules;
+    abstract protected function getRules();
 
     /**
-     * @var array
+     * Get custom messages for validator errors.
+     *
+     * @return array
      */
-    protected $messages;
+    abstract protected function getMessages();
 
     /**
-     * @var array
+     * Get custom attributes for validator errors.
+     *
+     * @return array
      */
-    protected $customAttributes;
+    abstract protected function getAttributes();
 
     /**
-     * @var callable|null
+     * @param Validator $validator
+     * @return void
      */
-    protected $callback;
+    abstract protected function configureValidator(Validator $validator);
 
 
     /**
      * AttributesValidator constructor.
-     * @param ValidatorErrorFactoryInterface $errorFactory
      * @param Factory $validatorFactory
-     * @param array $rules
-     * @param array $messages
-     * @param array $customAttributes
-     * @param callable|null $callback
-     *      a callback that will be passed the Laravel validator instance when it is made.
      */
-    public function __construct(
-        ValidatorErrorFactoryInterface $errorFactory,
-        Factory $validatorFactory,
-        array $rules,
-        array $messages = [],
-        array $customAttributes = [],
-        callable $callback = null
-    ) {
-        $this->errorFactory = $errorFactory;
+    public function __construct(Factory $validatorFactory)
+    {
         $this->validatorFactory = $validatorFactory;
-        $this->rules = $rules;
-        $this->messages = $messages;
-        $this->customAttributes = $customAttributes;
-        $this->callback = $callback;
     }
 
     /**
+     * Create a validator instance to validate the supplied data.
+     *
      * @param array $data
+     *      the data to validate.
      * @return Validator
      */
     protected function make(array $data)
     {
         $validator = $this->validatorFactory->make(
             $data,
-            $this->rules,
-            $this->messages,
-            $this->customAttributes
+            $this->getRules(),
+            $this->getMessages(),
+            $this->getAttributes()
         );
 
-        $callback = $this->callback;
-
-        if ($callback) {
-            $callback($validator);
-        }
+        $this->configureValidator($validator);
 
         return $validator;
     }
