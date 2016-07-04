@@ -19,6 +19,7 @@
 namespace CloudCreativity\LaravelJsonApi\Validators;
 
 use CloudCreativity\JsonApi\Document\Error;
+use CloudCreativity\JsonApi\Utils\Pointer as P;
 use CloudCreativity\JsonApi\Validators\ValidatorErrorFactory as BaseFactory;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorErrorFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Utils\ErrorBag;
@@ -45,7 +46,7 @@ class ValidatorErrorFactory extends BaseFactory implements ValidatorErrorFactory
     ) {
         $prototype = $this->repository->error(self::RESOURCE_INVALID_ATTRIBUTES_MESSAGES);
         $prototype = Error::cast($prototype)->setStatus($statusCode);
-        $prefix = $attributePrefix ? $this->getPathToAttribute($attributePrefix) : $this->getPathToAttributes();
+        $prefix = $attributePrefix ? P::attribute($attributePrefix) : P::attributes();
         $errors = new ErrorBag($messageBag, $prototype, $prefix);
 
         return $errors->toArray();

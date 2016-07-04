@@ -37,18 +37,21 @@ interface ValidatorFactoryInterface extends BaseInterface
      * @param array $customAttributes
      * @param callable $callback
      *      a callback that will be called with the Laravel validator instance when it is made.
+     * @param callable $extractor
+     *      a callback to customise the extraction of attributes for validation.
      * @return AttributesValidatorInterface
      */
     public function attributes(
         array $rules,
         array $messages = [],
         array $customAttributes = [],
-        callable $callback = null
+        callable $callback = null,
+        callable $extractor = null
     );
 
     /**
      * Get a filter parameters validator.
-     * 
+     *
      * @param array $rules
      * @param array $messages
      * @param array $customAttributes

@@ -24,6 +24,7 @@ use CloudCreativity\JsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\JsonApi\Contracts\Validators\DocumentValidatorInterface;
 use CloudCreativity\JsonApi\Contracts\Validators\ValidatorProviderInterface;
 use CloudCreativity\JsonApi\Exceptions\AuthorizationException;
+use CloudCreativity\JsonApi\Exceptions\ErrorCollection;
 use CloudCreativity\JsonApi\Exceptions\ValidationException;
 use CloudCreativity\JsonApi\Object\Document;
 use CloudCreativity\JsonApi\Object\ResourceIdentifier;
@@ -175,8 +176,8 @@ abstract class AbstractRequest implements RequestHandlerInterface
         $this->encodingParameters = $this->validateParameters();
 
         /** Do any pre-document authorization */
-        if (!$this->authorizeBeforeValidation()) {
-            throw $this->denied();
+        if (!$this->authorizeBeforeValidation($errors = new ErrorCollection())) {
+            throw new AuthorizationException($errors);
         }
 
         /** If a document is expected from the client, validate it. */
@@ -186,8 +187,8 @@ abstract class AbstractRequest implements RequestHandlerInterface
         }
 
         /** Do any post-document authorization. */
-        if (!$this->authorizeAfterValidation()) {
-            throw $this->denied();
+        if (!$this->authorizeAfterValidation($errors = new ErrorCollection())) {
+            throw new AuthorizationException($errors);
         }
 
         $this->validated = true;
@@ -242,9 +243,10 @@ abstract class AbstractRequest implements RequestHandlerInterface
     }
 
     /**
+     * @param ErrorCollection $errors
      * @return bool
      */
-    protected function authorizeBeforeValidation()
+    protected function authorizeBeforeValidation(ErrorCollection $errors)
     {
         if (!$this->authorizer) {
             return true;
@@ -254,38 +256,57 @@ abstract class AbstractRequest implements RequestHandlerInterface
 
         /** Index */
         if ($this->isIndex()) {
-            return $this->authorizer->canReadMany($parameters);
+            return $this->authorizer->canReadMany($parameters, $errors);
         } /** Read Resource */
         elseif ($this->isReadResource()) {
-            return $this->authorizer->canRead($this->getRecord(), $parameters);
+            return $this->authorizer->canRead($this->getRecord(), $parameters, $errors);
         } /** Update Resource */
         elseif ($this->isUpdateResource()) {
-            return $this->authorizer->canUpdate($this->getRecord(), $parameters);
+            return $this->authorizer->canUpdate($this->getRecord(), $parameters, $errors);
         } /** Delete Resource */
         elseif ($this->isDeleteResource()) {
-            return $this->authorizer->canDelete($this->getRecord(), $parameters);
-        } elseif ($this->isReadRelatedResource()) {
-            return $this->authorizer->canReadRelatedResource($this->getRelationshipName(), $this->getRecord(), $parameters);
+            return $this->authorizer->canDelete($this->getRecord(), $parameters, $errors);
+        } /** Read Related Resource */
+        elseif ($this->isReadRelatedResource()) {
+            return $this->authorizer->canReadRelatedResource(
+                $this->getRelationshipName(),
+                $this->getRecord(),
+                $parameters,
+                $errors
+            );
         } /** Read Relationship Data */
         elseif ($this->isReadRelationship()) {
-            return $this->authorizer->canReadRelationship($this->getRelationshipName(), $this->getRecord(), $parameters);
-        } /** Replace Relationship Data */
+            return $this->authorizer->canReadRelationship(
+                $this->getRelationshipName(),
+                $this->getRecord(),
+                $parameters,
+                $errors
+            );
+        } /** Modify Relationship Data */
         elseif ($this->isModifyRelationship()) {
-            return $this->authorizer->canModifyRelationship($this->getRelationshipName(), $this->getRecord(), $parameters);
+            return $this->authorizer->canModifyRelationship(
+                $this->getRelationshipName(),
+                $this->getRecord(),
+                $parameters,
+                $errors
+            );
         }
 
         return true;
     }
 
     /**
-     * Is the request authorized?
-     *
+     * @param ErrorCollection $errors
      * @return bool
      */
-    protected function authorizeAfterValidation()
+    protected function authorizeAfterValidation(ErrorCollection $errors)
     {
         if ($this->authorizer && $this->isCreateResource()) {
-            return $this->authorizer->canCreate($this->getDocument()->resource(), $this->getEncodingParameters());
+            return $this->authorizer->canCreate(
+                $this->getDocument()->resource(),
+                $this->getEncodingParameters(),
+                $errors
+            );
         }
 
         return true;
@@ -341,7 +362,7 @@ abstract class AbstractRequest implements RequestHandlerInterface
             $this->validators->filterResources() : null;
 
         if ($validator && !$validator->isValid((array) $parameters->getFilteringParameters())) {
-            throw new ValidationException($validator->errors());
+            throw new ValidationException($validator->getErrors());
         }
 
         return $parameters;
@@ -378,8 +399,8 @@ abstract class AbstractRequest implements RequestHandlerInterface
     {
         $validator = $this->validator();
 
-        if ($validator && !$validator->isValid($this->getDocument())) {
-            throw new ValidationException($validator->errors());
+        if ($validator && !$validator->isValid($this->getDocument(), $this->record)) {
+            throw new ValidationException($validator->getErrors());
         }
     }
 
@@ -432,15 +453,5 @@ abstract class AbstractRequest implements RequestHandlerInterface
         $param = app(PageParameterHandlerInterface::class);
 
         return $param->getAllowedPagingParameters();
-    }
-
-    /**
-     * @return AuthorizationException
-     */
-    protected function denied()
-    {
-        $error = $this->authorizer ? $this->authorizer->denied() : [];
-
-        return new AuthorizationException($error);
     }
 }

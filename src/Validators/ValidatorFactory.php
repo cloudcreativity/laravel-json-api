@@ -54,18 +54,14 @@ class ValidatorFactory extends BaseFactory implements ValidatorFactoryInterface
     }
 
     /**
-     * @param array $rules
-     * @param array $messages
-     * @param array $customAttributes
-     * @param callable $callback
-     *      a callback that will be called with the Laravel validator instance when it is made.
-     * @return AttributesValidatorInterface
+     * @inheritdoc
      */
     public function attributes(
         array $rules,
         array $messages = [],
         array $customAttributes = [],
-        callable $callback = null
+        callable $callback = null,
+        callable $extractor = null
     ) {
         /** @var ValidatorErrorFactoryInterface $validationErrors */
         $validationErrors = $this->validationErrors;
@@ -76,16 +72,13 @@ class ValidatorFactory extends BaseFactory implements ValidatorFactoryInterface
             $rules,
             $messages,
             $customAttributes,
-            $callback
+            $callback,
+            $extractor
         );
     }
 
     /**
-     * @param array $rules
-     * @param array $messages
-     * @param array $customAttributes
-     * @param callable|null $callback
-     * @return FilterValidatorInterface
+     * @inheritdoc
      */
     public function filterParams(
         array $rules,

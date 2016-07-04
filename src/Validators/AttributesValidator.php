@@ -57,6 +57,11 @@ class AttributesValidator extends AbstractValidator implements AttributesValidat
     private $callback;
 
     /**
+     * @var callable|null
+     */
+    private $extractor;
+
+    /**
      * AttributesValidator constructor.
      * @param Factory $validatorFactory
      * @param ValidatorErrorFactoryInterface $errorFactory
@@ -64,6 +69,7 @@ class AttributesValidator extends AbstractValidator implements AttributesValidat
      * @param array $messages
      * @param array $attributes
      * @param callable|null $callback
+     * @param callable|null $extractor
      */
     public function __construct(
         Factory $validatorFactory,
@@ -71,7 +77,8 @@ class AttributesValidator extends AbstractValidator implements AttributesValidat
         array $rules,
         array $messages = [],
         array $attributes = [],
-        callable $callback = null
+        callable $callback = null,
+        callable $extractor = null
     ) {
         parent::__construct($validatorFactory);
         $this->errorFactory = $errorFactory;
@@ -79,17 +86,16 @@ class AttributesValidator extends AbstractValidator implements AttributesValidat
         $this->messages = $messages;
         $this->attributes = $attributes;
         $this->callback = $callback;
+        $this->extractor = $extractor;
     }
 
     /**
-     * Are the attributes on the supplied resource valid?
-     *
-     * @param ResourceInterface $resource
-     * @return bool
+     * @inheritdoc
      */
-    public function isValid(ResourceInterface $resource)
+    public function isValid(ResourceInterface $resource, $record = null)
     {
-        $validator = $this->make($resource->attributes()->toArray());
+        $attributes = $this->extractAttributes($resource, $record);
+        $validator = $this->make($attributes);
 
         if ($validator->fails()) {
             $this->addValidatorErrors($validator);
@@ -134,6 +140,19 @@ class AttributesValidator extends AbstractValidator implements AttributesValidat
         if ($callback) {
             $callback($validator);
         }
+    }
+
+    /**
+     * @param ResourceInterface $resource
+     * @param object|null $record
+     * @return array
+     */
+    protected function extractAttributes(ResourceInterface $resource, $record = null)
+    {
+        $extractor = $this->extractor;
+        $attributes = ($extractor) ? $extractor($resource, $record) : null;
+
+        return is_array($attributes) ? $attributes : $resource->attributes()->toArray();
     }
 
     /**

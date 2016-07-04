@@ -19,7 +19,6 @@
 namespace CloudCreativity\LaravelJsonApi\Validators;
 
 use CloudCreativity\JsonApi\Utils\ErrorsAwareTrait;
-use CloudCreativity\JsonApi\Validators\Helpers\CreatesPointersTrait;
 use Illuminate\Contracts\Validation\Factory;
 use Illuminate\Contracts\Validation\Validator;
 
@@ -30,8 +29,7 @@ use Illuminate\Contracts\Validation\Validator;
 abstract class AbstractValidator
 {
 
-    use ErrorsAwareTrait,
-        CreatesPointersTrait;
+    use ErrorsAwareTrait;
 
     /**
      * @var Factory
@@ -64,7 +62,6 @@ abstract class AbstractValidator
      * @return void
      */
     abstract protected function configureValidator(Validator $validator);
-
 
     /**
      * AttributesValidator constructor.
