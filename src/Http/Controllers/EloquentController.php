@@ -18,11 +18,13 @@
 
 namespace CloudCreativity\LaravelJsonApi\Http\Controllers;
 
+use Closure;
 use CloudCreativity\JsonApi\Contracts\Hydrator\HydratorInterface;
 use CloudCreativity\JsonApi\Contracts\Object\ResourceInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestHandlerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Search\SearchInterface;
 use CloudCreativity\LaravelJsonApi\Search\SearchAll;
+use Exception;
 use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -242,7 +244,9 @@ class EloquentController extends JsonApiController
      */
     protected function commit(Model $model)
     {
-        return $model->save();
+        return $this->transaction(function () use ($model) {
+            return $model->save();
+        });
     }
 
     /**
@@ -256,7 +260,29 @@ class EloquentController extends JsonApiController
      */
     protected function destroy(Model $model)
     {
-        return (bool) $model->delete();
+        return $this->transaction(function () use ($model) {
+            return (bool) $model->delete();
+        });
+    }
+
+    /**
+     * @param Closure $closure
+     * @return mixed
+     * @throws Exception
+     */
+    protected function transaction(Closure $closure)
+    {
+        $connection = $this->model->getConnection();
+        $connection->beginTransaction();
+
+        try {
+            $result = $closure();
+            $connection->commit();
+            return $result;
+        } catch (Exception $e) {
+            $connection->rollBack();
+            throw $e;
+        }
     }
 
     /**
