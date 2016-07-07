@@ -18,7 +18,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Http\Responses;
 
-use CloudCreativity\JsonApi\Exceptions\ErrorCollection as Errors;
+use CloudCreativity\JsonApi\Exceptions\MutableErrorCollection as Errors;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PaginatorInterface;
 use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Http\Response;

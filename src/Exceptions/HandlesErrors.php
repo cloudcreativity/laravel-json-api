@@ -18,16 +18,12 @@
 
 namespace CloudCreativity\LaravelJsonApi\Exceptions;
 
-use CloudCreativity\JsonApi\Document\Error;
+use CloudCreativity\JsonApi\Contracts\Exceptions\ExceptionParserInterface;
 use CloudCreativity\LaravelJsonApi\Http\Responses\ResponseFactory;
 use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
-use Neomerx\JsonApi\Exceptions\JsonApiException;
-use Symfony\Component\HttpKernel\Exception\HttpException;
-use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 /**
  * Class HandlerTrait
@@ -61,34 +57,19 @@ trait HandlesErrors
             return $this->renderWithoutEncoder($e);
         }
 
-        $statusCode = null;
-
-        if ($e instanceof JsonApiException) {
-            $statusCode = $e->getHttpCode();
-            $errors = $e->getErrors()->getArrayCopy() ?: new Error(null, null, $statusCode);
-        } else {
-            $errors = $this->parseToErrors($e);
-        }
-
+        /** @var ExceptionParserInterface $handler */
+        $handler = app(ExceptionParserInterface::class);
         /** @var ResponseFactory $responses */
         $responses = response()->jsonApi();
 
-        return $responses->errors($errors, $statusCode);
-    }
+        $response = $handler->parse($e);
+        $service->report($response, $e);
 
-    /**
-     * @param Exception $e
-     * @return ErrorInterface|ErrorInterface[]
-     */
-    protected function parseToErrors(Exception $e)
-    {
-        $statusCode = ($e instanceof HttpExceptionInterface) ?
-            $e->getStatusCode() :
-            Response::HTTP_INTERNAL_SERVER_ERROR;
-
-        $detail = ($e instanceof HttpException) ? $e->getMessage() : null;
-
-        return new Error(null, null, $statusCode, null, null, $detail ?: null);
+        return $responses->errors(
+            $response->getErrors(),
+            $response->getHttpCode(),
+            $response->getHeaders()
+        );
     }
 
     /**

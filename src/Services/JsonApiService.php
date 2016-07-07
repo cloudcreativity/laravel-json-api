@@ -20,8 +20,11 @@ namespace CloudCreativity\LaravelJsonApi\Services;
 
 use CloudCreativity\JsonApi\Contracts\Http\ApiFactoryInterface;
 use CloudCreativity\JsonApi\Contracts\Http\ApiInterface;
+use CloudCreativity\JsonApi\Contracts\Http\ErrorResponseInterface;
+use CloudCreativity\JsonApi\Contracts\Utils\ErrorReporterInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestHandlerInterface;
 use CloudCreativity\LaravelJsonApi\Routing\ResourceRegistrar;
+use Exception;
 use Neomerx\JsonApi\Contracts\Http\Headers\MediaTypeInterface;
 use Neomerx\JsonApi\Http\Headers\AcceptHeader;
 use Neomerx\JsonApi\Http\Headers\Header;
@@ -31,7 +34,7 @@ use RuntimeException;
  * Class JsonApiService
  * @package CloudCreativity\LaravelJsonApi
  */
-class JsonApiService
+class JsonApiService implements ErrorReporterInterface
 {
 
     /**
@@ -58,6 +61,20 @@ class JsonApiService
     public function resource($resourceType, $controller, array $options = [])
     {
         $this->registrar->resource($resourceType, $controller, $options);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function report(ErrorResponseInterface $response, Exception $e = null)
+    {
+        if (!app()->bound(ErrorReporterInterface::class)) {
+            return;
+        }
+
+        /** @var ErrorReporterInterface $reporter */
+        $reporter = app(ErrorReporterInterface::class);
+        $reporter->report($response, $e);
     }
 
     /**
@@ -130,7 +147,7 @@ class JsonApiService
         $contentType = Header::parse($contentType, Header::HEADER_CONTENT_TYPE);
 
         if (!array_key_exists($namespace, $config)) {
-            throw new RuntimeException("Did not recognised JSON API namespace: $namespace");
+            throw new RuntimeException("Did not recognise JSON API namespace: $namespace");
         }
 
         /** @var ApiFactoryInterface $factory */

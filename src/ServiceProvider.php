@@ -18,6 +18,7 @@
 
 namespace CloudCreativity\LaravelJsonApi;
 
+use CloudCreativity\JsonApi\Contracts\Exceptions\ExceptionParserInterface;
 use CloudCreativity\JsonApi\Contracts\Http\ApiFactoryInterface;
 use CloudCreativity\JsonApi\Contracts\Http\ContentNegotiatorInterface;
 use CloudCreativity\JsonApi\Contracts\Repositories\CodecMatcherRepositoryInterface;
@@ -40,6 +41,7 @@ use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PaginatorInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorErrorFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Document\LinkFactory;
+use CloudCreativity\LaravelJsonApi\Exceptions\ExceptionParser;
 use CloudCreativity\LaravelJsonApi\Http\Middleware\BootJsonApi;
 use CloudCreativity\LaravelJsonApi\Http\Responses\ResponseFactory;
 use CloudCreativity\LaravelJsonApi\Http\Responses\Responses;
@@ -95,6 +97,7 @@ class ServiceProvider extends BaseServiceProvider
         $this->bindCodecMatcherRepository();
         $this->bindSchemaRepository();
         $this->bindErrorRepository();
+        $this->bindExceptionParser();
         $this->bindContentNegotiator();
         $this->bindResponses();
         $this->bindValidatorFactory();
@@ -252,6 +255,14 @@ class ServiceProvider extends BaseServiceProvider
             $repository->configure($this->getErrorConfig());
             return $repository;
         });
+    }
+
+    /**
+     * Bind the exception parser into the service container.
+     */
+    protected function bindExceptionParser()
+    {
+        $this->app->singleton(['json-api.exceptions' => ExceptionParserInterface::class], ExceptionParser::class);
     }
 
     /**
