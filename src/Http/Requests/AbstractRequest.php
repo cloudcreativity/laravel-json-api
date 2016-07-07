@@ -24,7 +24,6 @@ use CloudCreativity\JsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\JsonApi\Contracts\Validators\DocumentValidatorInterface;
 use CloudCreativity\JsonApi\Contracts\Validators\ValidatorProviderInterface;
 use CloudCreativity\JsonApi\Exceptions\AuthorizationException;
-use CloudCreativity\JsonApi\Exceptions\ErrorCollection;
 use CloudCreativity\JsonApi\Exceptions\ValidationException;
 use CloudCreativity\JsonApi\Object\Document;
 use CloudCreativity\JsonApi\Object\ResourceIdentifier;
@@ -175,10 +174,8 @@ abstract class AbstractRequest implements RequestHandlerInterface
         /** Check request parameters are acceptable. */
         $this->encodingParameters = $this->validateParameters();
 
-        /** Do any pre-document authorization */
-        if (!$this->authorizeBeforeValidation($errors = new ErrorCollection())) {
-            throw new AuthorizationException($errors);
-        }
+        /** Do any authorization that can occur before the document is validated. */
+        $this->authorizeBeforeValidation();
 
         /** If a document is expected from the client, validate it. */
         if ($this->isExpectingDocument()) {
@@ -186,10 +183,8 @@ abstract class AbstractRequest implements RequestHandlerInterface
             $this->validateDocument();
         }
 
-        /** Do any post-document authorization. */
-        if (!$this->authorizeAfterValidation($errors = new ErrorCollection())) {
-            throw new AuthorizationException($errors);
-        }
+        /** Do any authorization that occurs after the document is validated. */
+        $this->authorizeAfterValidation();
 
         $this->validated = true;
     }
@@ -243,73 +238,80 @@ abstract class AbstractRequest implements RequestHandlerInterface
     }
 
     /**
-     * @param ErrorCollection $errors
-     * @return bool
+     * @return void
+     * @throws AuthorizationException
      */
-    protected function authorizeBeforeValidation(ErrorCollection $errors)
+    protected function authorizeBeforeValidation()
     {
         if (!$this->authorizer) {
-            return true;
+            return;
         }
 
         $parameters = $this->getEncodingParameters();
+        $authorized = true;
 
         /** Index */
         if ($this->isIndex()) {
-            return $this->authorizer->canReadMany($parameters, $errors);
+            $authorized = $this->authorizer->canReadMany($parameters);
         } /** Read Resource */
         elseif ($this->isReadResource()) {
-            return $this->authorizer->canRead($this->getRecord(), $parameters, $errors);
+            $authorized = $this->authorizer->canRead($this->getRecord(), $parameters);
         } /** Update Resource */
         elseif ($this->isUpdateResource()) {
-            return $this->authorizer->canUpdate($this->getRecord(), $parameters, $errors);
+            $authorized = $this->authorizer->canUpdate($this->getRecord(), $parameters);
         } /** Delete Resource */
         elseif ($this->isDeleteResource()) {
-            return $this->authorizer->canDelete($this->getRecord(), $parameters, $errors);
+            $authorized = $this->authorizer->canDelete($this->getRecord(), $parameters);
         } /** Read Related Resource */
         elseif ($this->isReadRelatedResource()) {
-            return $this->authorizer->canReadRelatedResource(
+            $authorized = $this->authorizer->canReadRelatedResource(
                 $this->getRelationshipName(),
                 $this->getRecord(),
-                $parameters,
-                $errors
+                $parameters
             );
         } /** Read Relationship Data */
         elseif ($this->isReadRelationship()) {
-            return $this->authorizer->canReadRelationship(
+            $authorized = $this->authorizer->canReadRelationship(
                 $this->getRelationshipName(),
                 $this->getRecord(),
-                $parameters,
-                $errors
+                $parameters
             );
         } /** Modify Relationship Data */
         elseif ($this->isModifyRelationship()) {
-            return $this->authorizer->canModifyRelationship(
+            $authorized = $this->authorizer->canModifyRelationship(
                 $this->getRelationshipName(),
                 $this->getRecord(),
-                $parameters,
-                $errors
+                $parameters
             );
         }
 
-        return true;
+        if (!$authorized) {
+            throw new AuthorizationException($this->authorizer->getErrors());
+        }
     }
 
     /**
-     * @param ErrorCollection $errors
-     * @return bool
+     * @return void
+     * @throws AuthorizationException
      */
-    protected function authorizeAfterValidation(ErrorCollection $errors)
+    protected function authorizeAfterValidation()
     {
-        if ($this->authorizer && $this->isCreateResource()) {
-            return $this->authorizer->canCreate(
+        if (!$this->authorizer) {
+            return;
+        }
+
+        $authorized = true;
+
+        if ($this->isCreateResource()) {
+            $authorized = $this->authorizer->canCreate(
                 $this->getDocument()->resource(),
-                $this->getEncodingParameters(),
-                $errors
+                $this->getEncodingParameters()
             );
         }
 
-        return true;
+        if (!$authorized) {
+            throw new AuthorizationException($this->authorizer->getErrors());
+        }
     }
 
     /**

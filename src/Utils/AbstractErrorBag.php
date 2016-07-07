@@ -18,7 +18,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Utils;
 
-use CloudCreativity\JsonApi\Exceptions\ErrorCollection;
+use CloudCreativity\JsonApi\Exceptions\MutableErrorCollection as Errors;
 use Countable;
 use Generator;
 use Illuminate\Contracts\Support\Arrayable;
@@ -41,7 +41,7 @@ abstract class AbstractErrorBag implements Countable, IteratorAggregate, Message
 
     /**
      * Create a JSON API error for the supplied message key and detail.
-     * 
+     *
      * @param string $key
      * @param string $detail
      * @return ErrorInterface
@@ -94,11 +94,11 @@ abstract class AbstractErrorBag implements Countable, IteratorAggregate, Message
     }
 
     /**
-     * @return ErrorCollection
+     * @return Errors
      */
     public function getErrors()
     {
-        return new ErrorCollection($this->toArray());
+        return new Errors($this->toArray());
     }
 
     /**
