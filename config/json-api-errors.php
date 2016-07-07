@@ -139,4 +139,16 @@ return [
     V::FILTER_PARAMETERS_MESSAGES => [
         Error::TITLE => 'Invalid Filter',
     ],
+
+    /**
+     * Exceptions
+     *
+     * To register errors for specific exceptions, use the fully qualified exception class as the
+     * key. The default exception parser will use the error below for the generic `Exception` class if
+     * there is no error registered for an exception class that it is parsing.
+     */
+    Exception::class => [
+        Error::TITLE => 'Internal Server Error',
+        Error::STATUS => 500,
+    ],
 ];
