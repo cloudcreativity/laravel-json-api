@@ -414,6 +414,35 @@ trait MakesJsonApiRequests
     }
 
     /**
+     * @param string|string[] $code
+     * @return $this
+     */
+    protected function seeErrorCode($code)
+    {
+        $this->seeJsonStructure([Keys::KEYWORD_ERRORS]);
+        $errors = (array) $this->decodeResponseJson()[Keys::KEYWORD_ERRORS];
+
+        if (empty($errors)) {
+            $this->fail('No errors in response.');
+        }
+
+        $actual = [];
+
+        foreach ($errors as $error) {
+            $actual[] = isset($error[Keys::KEYWORD_ERRORS_CODE]) ?
+                $error[Keys::KEYWORD_ERRORS_CODE] : null;
+        }
+
+        foreach ((array) $code as $expected) {
+            PHPUnit::assertContains($expected, $actual, sprintf(
+                'Error code %s not found in codes: %s', $expected, implode(',', $actual)
+            ));
+        }
+
+        return $this;
+    }
+
+    /**
      * @param array $relationships
      * @return array
      */
