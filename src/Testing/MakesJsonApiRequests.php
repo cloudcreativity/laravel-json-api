@@ -18,10 +18,10 @@
 
 namespace CloudCreativity\LaravelJsonApi\Testing;
 
+use CloudCreativity\JsonApi\Testing\ErrorsTester;
 use CloudCreativity\LaravelJsonApi\Document\GeneratesLinks;
 use Illuminate\Http\Response;
 use Neomerx\JsonApi\Contracts\Document\DocumentInterface as Keys;
-use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
 use Neomerx\JsonApi\Contracts\Document\LinkInterface;
 use Neomerx\JsonApi\Contracts\Http\Headers\MediaTypeInterface;
 use PHPUnit_Framework_Assert as PHPUnit;
@@ -380,66 +380,15 @@ trait MakesJsonApiRequests
     }
 
     /**
-     * @param string|string[] $pointer
-     * @return $this
+     * @return ErrorsTester
      */
-    protected function seeErrorAt($pointer)
+    protected function seeErrors()
     {
         $this->seeJsonStructure([Keys::KEYWORD_ERRORS]);
-        $errors = (array) $this->decodeResponseJson()[Keys::KEYWORD_ERRORS];
+        $errors = new ErrorsTester((array) $this->decodeResponseJson()[Keys::KEYWORD_ERRORS]);
+        $errors->assertNotEmpty('No errors in response.');
 
-        if (empty($errors)) {
-            $this->fail('No errors in response.');
-        }
-
-        $actual = [];
-
-        foreach ($errors as $error) {
-            $source = isset($error[Keys::KEYWORD_ERRORS_SOURCE]) ?
-                (array) $error[Keys::KEYWORD_ERRORS_SOURCE] : [];
-
-            $sourcePointer = isset($source[ErrorInterface::SOURCE_POINTER]) ?
-                $source[ErrorInterface::SOURCE_POINTER] : null;
-
-            $actual[] = $sourcePointer;
-        }
-
-        foreach ((array) $pointer as $expected) {
-            PHPUnit::assertContains($expected, $actual, sprintf(
-                'Error pointer %s not found in pointers: %s', $expected, implode(',', $actual)
-            ));
-        }
-
-        return $this;
-    }
-
-    /**
-     * @param string|string[] $code
-     * @return $this
-     */
-    protected function seeErrorCode($code)
-    {
-        $this->seeJsonStructure([Keys::KEYWORD_ERRORS]);
-        $errors = (array) $this->decodeResponseJson()[Keys::KEYWORD_ERRORS];
-
-        if (empty($errors)) {
-            $this->fail('No errors in response.');
-        }
-
-        $actual = [];
-
-        foreach ($errors as $error) {
-            $actual[] = isset($error[Keys::KEYWORD_ERRORS_CODE]) ?
-                $error[Keys::KEYWORD_ERRORS_CODE] : null;
-        }
-
-        foreach ((array) $code as $expected) {
-            PHPUnit::assertContains($expected, $actual, sprintf(
-                'Error code %s not found in codes: %s', $expected, implode(',', $actual)
-            ));
-        }
-
-        return $this;
+        return $errors;
     }
 
     /**
