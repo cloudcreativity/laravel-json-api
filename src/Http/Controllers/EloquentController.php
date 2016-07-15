@@ -102,7 +102,7 @@ class EloquentController extends JsonApiController
     public function create()
     {
         $model = $this->hydrate($this->getResource(), $this->model);
-        $result = ($model instanceof Response) ? $model : $this->commit($model);
+        $result = ($model instanceof Response) ? $model : $this->doCommit($model);
 
         if ($result instanceof Response) {
             return $result;
@@ -133,7 +133,7 @@ class EloquentController extends JsonApiController
     public function update($resourceId)
     {
         $model = $this->hydrate($this->getResource(), $this->getRecord());
-        $result = ($model instanceof Response ) ? $model : $this->commit($model);
+        $result = ($model instanceof Response ) ? $model : $this->doCommit($model);
 
         if ($result instanceof Response) {
             return $result;
@@ -153,7 +153,7 @@ class EloquentController extends JsonApiController
     public function delete($resourceId)
     {
         $model = $this->getRecord();
-        $result = $this->destroy($model);
+        $result = $this->doDestroy($model);
 
         if ($result instanceof Response) {
             return $result;
@@ -244,9 +244,7 @@ class EloquentController extends JsonApiController
      */
     protected function commit(Model $model)
     {
-        return $this->transaction(function () use ($model) {
-            return $model->save();
-        });
+        return $model->save();
     }
 
     /**
@@ -260,9 +258,7 @@ class EloquentController extends JsonApiController
      */
     protected function destroy(Model $model)
     {
-        return $this->transaction(function () use ($model) {
-            return (bool) $model->delete();
-        });
+        return (bool) $model->delete();
     }
 
     /**
@@ -327,5 +323,31 @@ class EloquentController extends JsonApiController
     protected function methodNotAllowed()
     {
         return $this->reply()->statusCode(Response::HTTP_METHOD_NOT_ALLOWED);
+    }
+
+    /**
+     * Perform the commit task within a transaction.
+     *
+     * @param Model $model
+     * @return bool|Response
+     */
+    private function doCommit(Model $model)
+    {
+        return $this->transaction(function () use ($model) {
+            return $this->commit($model);
+        });
+    }
+
+    /**
+     * Perform a destroy task within a transaction.
+     *
+     * @param Model $model
+     * @return bool|Response
+     */
+    private function doDestroy(Model $model)
+    {
+        return $this->transaction(function () use ($model) {
+            return $this->destroy($model);
+        });
     }
 }

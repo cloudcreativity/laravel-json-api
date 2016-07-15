@@ -167,7 +167,7 @@ class JsonApiController extends Controller
      */
     protected function getResource()
     {
-        return $this->request->getDocument()->resource();
+        return $this->request->getDocument()->getResource();
     }
 
     /**
