@@ -18,10 +18,12 @@
 
 namespace CloudCreativity\LaravelJsonApi\Http\Responses;
 
+use CloudCreativity\JsonApi\Contracts\Repositories\ErrorRepositoryInterface;
 use CloudCreativity\JsonApi\Exceptions\MutableErrorCollection as Errors;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PaginatorInterface;
 use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Http\Response;
+use InvalidArgumentException;
 use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
 use Neomerx\JsonApi\Contracts\Http\ResponsesInterface;
 use Neomerx\JsonApi\Exceptions\ErrorCollection;
@@ -44,14 +46,24 @@ class ResponseFactory
     private $paginator;
 
     /**
+     * @var ErrorRepositoryInterface
+     */
+    private $errors;
+
+    /**
      * ResponseFactory constructor.
      * @param ResponsesInterface $responses
      * @param PaginatorInterface $paginator
+     * @param ErrorRepositoryInterface $errors
      */
-    public function __construct(ResponsesInterface $responses, PaginatorInterface $paginator)
-    {
+    public function __construct(
+        ResponsesInterface $responses,
+        PaginatorInterface $paginator,
+        ErrorRepositoryInterface $errors
+    ) {
         $this->responses = $responses;
         $this->paginator = $paginator;
+        $this->errors = $errors;
     }
 
     /**
@@ -144,13 +156,22 @@ class ResponseFactory
     }
 
     /**
-     * @param ErrorInterface $error
+     * @param ErrorInterface|string $error
+     *      the error object or a string error key to get the error from the repository.
      * @param int|string|null $statusCode
      * @param array $headers
      * @return Response
      */
-    public function error(ErrorInterface $error, $statusCode = null, array $headers = [])
+    public function error($error, $statusCode = null, array $headers = [])
     {
+        if (is_string($error) && !empty($error)) {
+            $error = $this->errors->error($error);
+        }
+
+        if (!$error instanceof ErrorInterface) {
+            throw new InvalidArgumentException('Expecting an error object or a string error key.');
+        }
+
         return $this->errors($error, $statusCode, $headers);
     }
 
