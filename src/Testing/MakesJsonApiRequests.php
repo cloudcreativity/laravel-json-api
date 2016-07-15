@@ -18,6 +18,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Testing;
 
+use CloudCreativity\JsonApi\Testing\DocumentTester;
 use CloudCreativity\JsonApi\Testing\ErrorsTester;
 use CloudCreativity\LaravelJsonApi\Document\GeneratesLinks;
 use Illuminate\Http\Response;
@@ -384,11 +385,17 @@ trait MakesJsonApiRequests
      */
     protected function seeErrors()
     {
-        $this->seeJsonStructure([Keys::KEYWORD_ERRORS]);
-        $errors = new ErrorsTester((array) $this->decodeResponseJson()[Keys::KEYWORD_ERRORS]);
-        $errors->assertNotEmpty('No errors in response.');
+        return $this
+            ->seeDocument()
+            ->assertErrors();
+    }
 
-        return $errors;
+    /**
+     * @return DocumentTester
+     */
+    protected function seeDocument()
+    {
+        return DocumentTester::create($this->response->getContent());
     }
 
     /**

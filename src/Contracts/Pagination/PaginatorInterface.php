@@ -20,7 +20,6 @@ namespace CloudCreativity\LaravelJsonApi\Contracts\Pagination;
 
 use Illuminate\Contracts\Pagination\Paginator;
 use Neomerx\JsonApi\Contracts\Document\DocumentInterface;
-use Neomerx\JsonApi\Contracts\Document\LinkInterface;
 
 /**
  * Interface PaginatorInterface

@@ -152,7 +152,7 @@ class AttributesValidator extends AbstractValidator implements AttributesValidat
         $extractor = $this->extractor;
         $attributes = ($extractor) ? $extractor($resource, $record) : null;
 
-        return is_array($attributes) ? $attributes : $resource->attributes()->toArray();
+        return is_array($attributes) ? $attributes : $resource->getAttributes()->toArray();
     }
 
     /**

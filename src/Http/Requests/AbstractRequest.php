@@ -304,7 +304,7 @@ abstract class AbstractRequest implements RequestHandlerInterface
 
         if ($this->isCreateResource()) {
             $authorized = $this->authorizer->canCreate(
-                $this->getDocument()->resource(),
+                $this->getDocument()->getResource(),
                 $this->getEncodingParameters()
             );
         }

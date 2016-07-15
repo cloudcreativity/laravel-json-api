@@ -71,10 +71,10 @@ class EloquentAdapter implements AdapterInterface
      */
     public function exists(ResourceIdentifierInterface $identifier)
     {
-        $model = $this->resolve($identifier->type());
-        $key = $this->resolveQualifiedKeyName($model, $identifier->type());
+        $model = $this->resolve($identifier->getType());
+        $key = $this->resolveQualifiedKeyName($model, $identifier->getType());
 
-        return $this->newQuery($model)->exists($key, $identifier->id());
+        return $this->newQuery($model)->exists($key, $identifier->getId());
     }
 
     /**
@@ -84,10 +84,10 @@ class EloquentAdapter implements AdapterInterface
      */
     public function find(ResourceIdentifierInterface $identifier)
     {
-        $model = $this->resolve($identifier->type());
-        $key = $this->resolveQualifiedKeyName($model, $identifier->type());
+        $model = $this->resolve($identifier->getType());
+        $key = $this->resolveQualifiedKeyName($model, $identifier->getType());
 
-        return $this->newQuery($model)->where($key, $identifier->id())->first();
+        return $this->newQuery($model)->where($key, $identifier->getId())->first();
     }
 
     /**
