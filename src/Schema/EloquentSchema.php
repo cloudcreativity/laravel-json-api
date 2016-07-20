@@ -166,7 +166,7 @@ abstract class EloquentSchema extends AbstractSchema
 
     /**
      * Convert a model key into a resource attribute key.
-     * 
+     *
      * @param $modelKey
      * @return string
      */

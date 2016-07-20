@@ -259,7 +259,7 @@ trait MakesJsonApiRequests
 
         if (!$allowEmpty) {
             PHPUnit::assertNotEmpty($collection, 'Data collection is empty');
-        } elseif (empty($collection)){
+        } elseif (empty($collection)) {
             return $this;
         }
 

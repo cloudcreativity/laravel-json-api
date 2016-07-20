@@ -99,9 +99,9 @@ final class ResourceRegistrarTest extends TestCase
         }
 
         $this->mock
-           ->expects($this->at($this->index))
-           ->method(strtolower($httpMethod))
-           ->with($uri, $options);
+            ->expects($this->at($this->index))
+            ->method(strtolower($httpMethod))
+            ->with($uri, $options);
 
         $this->index++;
     }
