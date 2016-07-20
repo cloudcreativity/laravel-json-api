@@ -133,7 +133,7 @@ class EloquentController extends JsonApiController
     public function update($resourceId)
     {
         $model = $this->hydrate($this->getResource(), $this->getRecord());
-        $result = ($model instanceof Response ) ? $model : $this->doCommit($model);
+        $result = ($model instanceof Response) ? $model : $this->doCommit($model);
 
         if ($result instanceof Response) {
             return $result;
