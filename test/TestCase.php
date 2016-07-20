@@ -18,21 +18,34 @@
 
 namespace CloudCreativity\LaravelJsonApi;
 
-use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
-use Illuminate\Support\Facades\Facade as BaseFacade;
+use Illuminate\Container\Container;
+use PHPUnit_Framework_TestCase;
 
 /**
- * Class Facade
+ * Class TestCase
  * @package CloudCreativity\LaravelJsonApi
  */
-class Facade extends BaseFacade
+class TestCase extends PHPUnit_Framework_TestCase
 {
 
     /**
-     * @return string
+     * @var Container
      */
-    protected static function getFacadeAccessor()
+    protected $container;
+
+    /**
+     * @return void
+     */
+    protected function setUp()
     {
-        return JsonApiService::class;
+        Container::setInstance(new Container());
+    }
+
+    /**
+     * @return Container
+     */
+    protected function container()
+    {
+        return Container::getInstance();
     }
 }

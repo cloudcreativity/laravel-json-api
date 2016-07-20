@@ -16,23 +16,22 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\LaravelJsonApi;
+namespace CloudCreativity\LaravelJsonApi\Document;
 
-use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
-use Illuminate\Support\Facades\Facade as BaseFacade;
+use CloudCreativity\LaravelJsonApi\Contracts\Document\LinkFactoryInterface;
 
 /**
- * Class Facade
+ * Class GeneratesLinks
  * @package CloudCreativity\LaravelJsonApi
  */
-class Facade extends BaseFacade
+trait GeneratesLinks
 {
 
     /**
-     * @return string
+     * @return LinkFactoryInterface
      */
-    protected static function getFacadeAccessor()
+    protected function linkTo()
     {
-        return JsonApiService::class;
+        return app(LinkFactoryInterface::class);
     }
 }

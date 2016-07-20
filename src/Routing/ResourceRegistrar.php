@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2015 Cloud Creativity Limited
+ * Copyright 2016 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,21 +16,23 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\JsonApi\Routing;
+namespace CloudCreativity\LaravelJsonApi\Routing;
 
+use CloudCreativity\LaravelJsonApi\Document\GeneratesRouteNames;
 use Illuminate\Contracts\Routing\Registrar;
 
 /**
  * Class ResourceRegistrar
- * @package CloudCreativity\JsonApi\Laravel
+ * @package CloudCreativity\LaravelJsonApi
  */
 class ResourceRegistrar
 {
 
-    /** Options key for an array of has-one relation names */
-    const HAS_ONE = 'hasOne';
-    /** Options key for an array of has-many relation names */
-    const HAS_MANY = 'hasMany';
+    const KEYWORD_RELATIONSHIPS = 'relationships';
+    const PARAM_RESOURCE_ID = 'resource_id';
+    const PARAM_RELATIONSHIP_NAME = 'relationship_name';
+
+    use GeneratesRouteNames;
 
     /**
      * @var Registrar
@@ -46,80 +48,137 @@ class ResourceRegistrar
     }
 
     /**
-     * @param $name
+     * @param $resourceType
      * @param $controller
      * @param array $options
      * @return void
      */
-    public function resource($name, $controller, array $options = [])
+    public function resource($resourceType, $controller, array $options = [])
     {
-        $rootUrl = sprintf('/%s', $name);
-        $objectUrl = sprintf('%s/{id}', $rootUrl);
-        $hasOne = isset($options[static::HAS_ONE]) ? (array) $options[static::HAS_ONE] : [];
-        $hasMany = isset($options[static::HAS_MANY]) ? (array) $options[static::HAS_MANY] : [];
-
-        $this->registerResource($rootUrl, $objectUrl, $controller)
-            ->registerHasOne($objectUrl, $controller, $hasOne)
-            ->registerHasMany($objectUrl, $controller, $hasMany);
+        $this->registerIndex($resourceType, $controller);
+        $this->registerResource($resourceType, $controller);
+        $this->registerRelatedResource($resourceType, $controller);
+        $this->registerRelationships($resourceType, $controller);
     }
 
     /**
-     * @param $rootUrl
-     * @param $objectUrl
+     * @param $resourceType
      * @param $controller
-     * @return $this
      */
-    private function registerResource($rootUrl, $objectUrl, $controller)
+    protected function registerIndex($resourceType, $controller)
     {
-        $this->router->get($rootUrl, $controller . '@index');
-        $this->router->post($rootUrl, $controller . '@create');
-        $this->router->get($objectUrl, $controller . '@read');
-        $this->router->patch($objectUrl, $controller . '@update');
-        $this->router->delete($objectUrl, $controller . '@delete');
-
-        return $this;
+        $uri = $this->indexUri($resourceType);
+        $name = $this->indexRouteName($resourceType);
+        $this->route('get', $uri, $controller, 'index', $name);
+        $this->route('post', $uri, $controller, 'create');
     }
 
     /**
-     * @param $objectUrl
+     * @param $resourceType
      * @param $controller
-     * @param array $relations
-     * @return $this
      */
-    private function registerHasOne($objectUrl, $controller, array $relations)
+    protected function registerResource($resourceType, $controller)
     {
-        foreach ($relations as $relation) {
-            $related = sprintf('%s/%s', $objectUrl, $relation);
-            $identifier = sprintf('%s/relationships/%s', $objectUrl, $relation);
-            $name = ucfirst(camel_case($relation));
+        $uri = $this->resourceUri($resourceType);
+        $name = $this->resourceRouteName($resourceType);
+        $this->route('get', $uri, $controller, 'read', $name);
+        $this->route('patch', $uri, $controller, 'update');
+        $this->route('delete', $uri, $controller, 'delete');
+    }
 
-            $this->router->get($related, sprintf('%s@read%s', $controller, $name));
-            $this->router->get($identifier, sprintf('%s@read%sRelationship', $controller, $name));
-            $this->router->patch($identifier, sprintf('%s@update%sRelationship', $controller, $name));
+    /**
+     * @param $resourceType
+     * @param $controller
+     */
+    protected function registerRelatedResource($resourceType, $controller)
+    {
+        $uri = $this->relatedResourceUri($resourceType);
+        $name = $this->relatedResourceRouteName($resourceType);
+        $this->route('get', $uri, $controller, 'readRelatedResource', $name);
+    }
+
+    /**
+     * @param $resourceType
+     * @param $controller
+     */
+    protected function registerRelationships($resourceType, $controller)
+    {
+        $uri = $this->relationshipUri($resourceType);
+        $name = $this->relationshipRouteName($resourceType);
+        $this->route('get', $uri, $controller, 'readRelationship', $name);
+        $this->route('patch', $uri, $controller, 'replaceRelationship');
+        $this->route('post', $uri, $controller, 'addToRelationship');
+        $this->route('delete', $uri, $controller, 'removeFromRelationship');
+    }
+
+    /**
+     * @param $routerMethod
+     * @param $uri
+     * @param $controller
+     * @param $controllerMethod
+     * @param $as
+     */
+    protected function route(
+        $routerMethod,
+        $uri,
+        $controller,
+        $controllerMethod,
+        $as = null
+    ) {
+        $options = ['uses' => sprintf('%s@%s', $controller, $controllerMethod)];
+
+        if ($as) {
+            $options['as'] = $as;
         }
 
-        return $this;
+        $this->router->{$routerMethod}($uri, $options);
     }
 
     /**
-     * @param $objectUrl
-     * @param $controller
-     * @param array $relations
-     * @return $this
+     * @param $resourceType
+     * @return string
      */
-    private function registerHasMany($objectUrl, $controller, array $relations)
+    protected function indexUri($resourceType)
     {
-        foreach ($relations as $relation) {
-            $related = sprintf('%s/%s', $objectUrl, $relation);
-            $identifier = sprintf('%s/relationships/%s', $objectUrl, $relation);
-            $name = ucfirst(camel_case($relation));
-
-            $this->router->get($related, sprintf('%s@read%s', $controller, $name));
-            $this->router->get($identifier, sprintf('%s@read%sRelationship', $controller, $name));
-            $this->router->patch($identifier, sprintf('%s@update%sRelationship', $controller, $name));
-            $this->router->delete($identifier, sprintf('%s@delete%sRelationship', $controller, $name));
-        }
-
-        return $this;
+        return sprintf('/%s', $resourceType);
     }
+
+    /**
+     * @param $resourceType
+     * @return string
+     */
+    protected function resourceUri($resourceType)
+    {
+        return sprintf('%s/{%s}', $this->indexUri($resourceType), self::PARAM_RESOURCE_ID);
+    }
+
+    /**
+     * @param $resourceType
+     * @return string
+     */
+    protected function relatedResourceUri($resourceType)
+    {
+        return sprintf(
+            '%s/{%s}/{%s}',
+            $this->indexUri($resourceType),
+            self::PARAM_RESOURCE_ID,
+            self::PARAM_RELATIONSHIP_NAME
+        );
+    }
+
+    /**
+     * @param $resourceType
+     * @return string
+     */
+    protected function relationshipUri($resourceType)
+    {
+        return sprintf(
+            '%s/{%s}/%s/{%s}',
+            $this->indexUri($resourceType),
+            self::PARAM_RESOURCE_ID,
+            self::KEYWORD_RELATIONSHIPS,
+            self::PARAM_RELATIONSHIP_NAME
+        );
+    }
+
 }

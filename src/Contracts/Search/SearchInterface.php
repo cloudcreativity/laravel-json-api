@@ -16,23 +16,25 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\LaravelJsonApi;
+namespace CloudCreativity\LaravelJsonApi\Contracts\Search;
 
-use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
-use Illuminate\Support\Facades\Facade as BaseFacade;
+use Illuminate\Contracts\Pagination\Paginator;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
+use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 /**
- * Class Facade
+ * Interface EloquentFilterInterface
  * @package CloudCreativity\LaravelJsonApi
  */
-class Facade extends BaseFacade
+interface SearchInterface
 {
 
     /**
-     * @return string
+     * @param Builder $builder
+     * @param EncodingParametersInterface $parameters
+     * @return Collection|Paginator|Model|null
      */
-    protected static function getFacadeAccessor()
-    {
-        return JsonApiService::class;
-    }
+    public function search(Builder $builder, EncodingParametersInterface $parameters);
 }

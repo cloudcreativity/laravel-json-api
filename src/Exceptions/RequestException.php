@@ -16,23 +16,15 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\LaravelJsonApi;
+namespace CloudCreativity\LaravelJsonApi\Exceptions;
 
-use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
-use Illuminate\Support\Facades\Facade as BaseFacade;
+use RuntimeException;
 
 /**
- * Class Facade
+ * Class RequestException
  * @package CloudCreativity\LaravelJsonApi
  */
-class Facade extends BaseFacade
+class RequestException extends RuntimeException
 {
 
-    /**
-     * @return string
-     */
-    protected static function getFacadeAccessor()
-    {
-        return JsonApiService::class;
-    }
 }

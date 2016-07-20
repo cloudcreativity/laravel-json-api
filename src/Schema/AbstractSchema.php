@@ -16,23 +16,19 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\LaravelJsonApi;
+namespace CloudCreativity\LaravelJsonApi\Schema;
 
-use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
-use Illuminate\Support\Facades\Facade as BaseFacade;
+use CloudCreativity\LaravelJsonApi\Document\GeneratesLinks;
+use Neomerx\JsonApi\Schema\SchemaProvider;
 
 /**
- * Class Facade
+ * Class AbstractSchema
  * @package CloudCreativity\LaravelJsonApi
  */
-class Facade extends BaseFacade
+abstract class AbstractSchema extends SchemaProvider
 {
 
-    /**
-     * @return string
-     */
-    protected static function getFacadeAccessor()
-    {
-        return JsonApiService::class;
-    }
+    use GeneratesLinks,
+        CreatesEloquentIdentities;
+
 }

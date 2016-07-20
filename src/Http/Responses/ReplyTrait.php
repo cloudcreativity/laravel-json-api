@@ -16,23 +16,20 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\LaravelJsonApi;
-
-use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
-use Illuminate\Support\Facades\Facade as BaseFacade;
+namespace CloudCreativity\LaravelJsonApi\Http\Responses;
 
 /**
- * Class Facade
+ * Class ReplyTrait
  * @package CloudCreativity\LaravelJsonApi
  */
-class Facade extends BaseFacade
+trait ReplyTrait
 {
 
     /**
-     * @return string
+     * @return ResponseFactory
      */
-    protected static function getFacadeAccessor()
+    public function reply()
     {
-        return JsonApiService::class;
+        return response()->jsonApi();
     }
 }

@@ -16,23 +16,24 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\LaravelJsonApi;
+namespace CloudCreativity\LaravelJsonApi\Hydrator;
 
-use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
-use Illuminate\Support\Facades\Facade as BaseFacade;
+use CloudCreativity\JsonApi\Hydrator\AbstractHydrator as BaseHydrator;
 
 /**
- * Class Facade
+ * Class AbstractHydrator
  * @package CloudCreativity\LaravelJsonApi
  */
-class Facade extends BaseFacade
+abstract class AbstractHydrator extends BaseHydrator
 {
 
     /**
+     * @param $key
      * @return string
      */
-    protected static function getFacadeAccessor()
+    protected function methodForRelationship($key)
     {
-        return JsonApiService::class;
+        return sprintf('hydrate%sRelationship', studly_case($key));
     }
+
 }

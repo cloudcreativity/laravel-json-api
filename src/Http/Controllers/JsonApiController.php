@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2015 Cloud Creativity Limited
+ * Copyright 2016 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,102 +16,167 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\JsonApi\Http\Controllers;
+namespace CloudCreativity\LaravelJsonApi\Http\Controllers;
 
-use CloudCreativity\JsonApi\Contracts\Error\ErrorObjectInterface;
-use CloudCreativity\JsonApi\Error\ErrorException;
+use CloudCreativity\JsonApi\Contracts\Object\ResourceInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestHandlerInterface;
+use CloudCreativity\LaravelJsonApi\Document\GeneratesLinks;
+use CloudCreativity\LaravelJsonApi\Http\Responses\ReplyTrait;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 
 /**
  * Class JsonApiController
- * @package CloudCreativity\JsonApi\Laravel
+ * @package CloudCreativity\LaravelJsonApi
  */
 class JsonApiController extends Controller
 {
 
-    use QueryCheckerTrait,
-        DocumentValidatorTrait,
-        ReplyTrait;
+    use ReplyTrait,
+        GeneratesLinks;
 
     /**
-     * Whether query parameters should automatically be checked before the controller action method is invoked.
+     * @var RequestHandlerInterface
+     */
+    private $request;
+
+    /**
+     * JsonApiController constructor.
+     * @param RequestHandlerInterface $request
+     */
+    public function __construct(RequestHandlerInterface $request)
+    {
+        $this->request = $request;
+    }
+
+    /**
+     * @return Response
+     */
+    public function index()
+    {
+        return $this->notImplemented();
+    }
+
+    /**
+     * @return Response
+     */
+    public function create()
+    {
+        return $this->notImplemented();
+    }
+
+    /**
+     * @param $resourceId
+     * @return Response
+     */
+    public function read($resourceId)
+    {
+        return $this->notImplemented();
+    }
+
+    /**
+     * @param $resourceId
+     * @return Response
+     */
+    public function update($resourceId)
+    {
+        return $this->notImplemented();
+    }
+
+    /**
+     * @param $resourceId
+     * @return Response
+     */
+    public function delete($resourceId)
+    {
+        return $this->notImplemented();
+    }
+
+    /**
+     * @param $resourceId
+     * @param $relationshipName
+     * @return Response
+     */
+    public function readRelatedResource($resourceId, $relationshipName)
+    {
+        return $this->notImplemented();
+    }
+
+    /**
+     * @param $resourceId
+     * @param $relationshipName
+     * @return Response
+     */
+    public function readRelationship($resourceId, $relationshipName)
+    {
+        return $this->notImplemented();
+    }
+
+    /**
+     * @param $resourceId
+     * @param $relationshipName
+     * @return Response
+     */
+    public function replaceRelationship($resourceId, $relationshipName)
+    {
+        return $this->notImplemented();
+    }
+
+    /**
+     * @param $resourceId
+     * @param $relationshipName
+     * @return Response
+     */
+    public function addToRelationship($resourceId, $relationshipName)
+    {
+        return $this->notImplemented();
+    }
+
+    /**
+     * @param $resourceId
+     * @param $relationshipName
+     * @return Response
+     */
+    public function removeFromRelationship($resourceId, $relationshipName)
+    {
+        return $this->notImplemented();
+    }
+
+    /**
+     * @return RequestHandlerInterface
+     */
+    protected function getRequestHandler()
+    {
+        return $this->request;
+    }
+
+    /**
+     * Shorthand to get the record that the request relates to.
      *
-     * @var bool
+     * @return object
      */
-    protected $autoCheckQueryParameters = true;
-
-    /**
-     * @param string $method
-     * @param array $parameters
-     * @return \Symfony\Component\HttpFoundation\Response
-     */
-    public function callAction($method, $parameters)
+    protected function getRecord()
     {
-        if (true === $this->autoCheckQueryParameters) {
-            $this->checkParameters();
-        }
-
-        return parent::callAction($method, $parameters);
+        return $this->request->getRecord();
     }
 
     /**
-     * @param array $parameters
-     * @return void
-     * @throws ErrorException
-     */
-    public function missingMethod($parameters = [])
-    {
-        $this->methodNotAllowed();
-    }
-
-    /**
-     * @param string $method
-     * @param array $parameters
-     * @return void
-     * @throws ErrorException
-     */
-    public function __call($method, $parameters)
-    {
-        $this->notImplemented();
-    }
-
-    /**
-     * Helper method to throw a not found exception.
+     * Shorthand to get the resource that the client has submitted.
      *
-     * @throws ErrorException
+     * @return ResourceInterface
      */
-    public function notFound()
+    protected function getResource()
     {
-        throw new ErrorException([
-            ErrorObjectInterface::TITLE => 'Not Found',
-            ErrorObjectInterface::STATUS => Response::HTTP_NOT_FOUND,
-        ]);
+        return $this->request->getDocument()->getResource();
     }
 
     /**
-     * Helper method to throw a not implemented exception.
-     *
-     * @throws ErrorException
+     * @return Response
      */
-    public function notImplemented()
+    protected function notImplemented()
     {
-        throw new ErrorException([
-            ErrorObjectInterface::TITLE => 'Not Implemented',
-            ErrorObjectInterface::STATUS => Response::HTTP_NOT_IMPLEMENTED,
-        ]);
-    }
-
-    /**
-     * Helper method to throw a method not allowed exception.
-     *
-     * @throws ErrorException
-     */
-    public function methodNotAllowed()
-    {
-        throw new ErrorException([
-            ErrorObjectInterface::TITLE => 'Method Not Allowed',
-            ErrorObjectInterface::STATUS => Response::HTTP_METHOD_NOT_ALLOWED,
-        ]);
+        return $this
+            ->reply()
+            ->statusCode(Response::HTTP_NOT_IMPLEMENTED);
     }
 }
