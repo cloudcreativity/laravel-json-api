@@ -4,7 +4,12 @@ All notable changes to this project will be documented in this file. This projec
 
 ## [Unreleased]
 
-Fixed
+### Changed
+
+- Removed dependency between model test helper and Laravel's database test helper, as there was no need for
+this dependency to exist.
+
+### Fixed
 
 - Asserting that a model has been created now correctly checks expected attributes.
 
