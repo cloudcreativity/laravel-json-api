@@ -59,11 +59,13 @@ trait InteractsWithModels
             $attributeKeys = array_keys($attributes);
         }
 
+        $expected = [];
+
         foreach ((array) $attributeKeys as $attr) {
             $expected[$attr] = isset($attributes[$attr]) ? $attributes[$attr] : null;
         }
 
-        $expected = [$keyName => $expectedId];
+        $expected[$keyName] = $expectedId;
         $this->seeInDatabase($model->getTable(), $expected, $model->getConnectionName());
     }
 

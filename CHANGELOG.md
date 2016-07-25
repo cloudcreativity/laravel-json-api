@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## [Unreleased]
+
+Fixed
+
+- Asserting that a model has been created now correctly checks expected attributes.
+
 ## [0.4.0] - 2016-07-20
 
 This is a substantial refactoring, based on using this package in production environments. We also updated 
