@@ -25,6 +25,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
+use Neomerx\JsonApi\Contracts\Document\DocumentInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\SortParameterInterface;
 
@@ -62,6 +63,13 @@ abstract class AbstractSearch implements SearchInterface
     protected $simplePagination = false;
 
     /**
+     * The filter param for a find-many request.
+     *
+     * @var string
+     */
+    protected $findManyFilter = DocumentInterface::KEYWORD_ID;
+
+    /**
      * Apply the supplied filters to the builder instance.
      *
      * @param Builder $builder
@@ -86,13 +94,16 @@ abstract class AbstractSearch implements SearchInterface
     abstract protected function isSearchOne(Collection $filters);
 
     /**
-     * @param Builder $builder
-     * @param EncodingParametersInterface $parameters
-     * @return Paginator|EloquentCollection
+     * @inheritdoc
      */
     public function search(Builder $builder, EncodingParametersInterface $parameters)
     {
         $filters = new Collection((array) $parameters->getFilteringParameters());
+
+        if ($this->isFindMany($filters)) {
+            return $this->findMany($builder, $filters);
+        }
+
         $this->filter($builder, $filters);
         $this->sort($builder, (array) $parameters->getSortParameters());
 
@@ -101,6 +112,23 @@ abstract class AbstractSearch implements SearchInterface
         }
 
         return $this->isPaginated() ? $this->paginate($builder) : $this->all($builder);
+    }
+
+    /**
+     * @param Collection $filters
+     * @return bool
+     */
+    protected function isFindMany(Collection $filters)
+    {
+        return $filters->has($this->getFindManyKey());
+    }
+
+    /**
+     * @return string
+     */
+    protected function getFindManyKey()
+    {
+        return $this->findManyFilter;
     }
 
     /**
@@ -148,6 +176,27 @@ abstract class AbstractSearch implements SearchInterface
     protected function first(Builder $builder)
     {
         return $builder->first();
+    }
+
+    /**
+     * @param Builder $builder
+     * @param Collection $filters
+     * @return EloquentCollection
+     */
+    protected function findMany(Builder $builder, Collection $filters)
+    {
+        $ids = $filters->get($this->getFindManyKey());
+
+        return $builder->findMany($this->normalizeIds($ids));
+    }
+
+    /**
+     * @param $ids
+     * @return array
+     */
+    protected function normalizeIds($ids)
+    {
+        return is_array($ids) ? $ids : explode(',', (string) $ids);
     }
 
     /**

@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. This projec
 
 ## [Unreleased]
 
+### Added
+
+- Support for find-many requests in the default Eloquent model search implementation.
+
 ### Changed
 
 - Removed dependency between model test helper and Laravel's database test helper, as there was no need for
