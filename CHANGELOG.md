@@ -2,11 +2,13 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
-## [Unreleased]
+## [0.4.1] - 2016-07-27
 
 ### Added
 
 - Support for find-many requests in the default Eloquent model search implementation.
+- Hooks in `EloquentController` for `creating`, `created`, `updating` and `updated` events. This makes it
+easier for child classes to implement customer logic, e.g. dispatching events, jobs, etc.
 
 ### Changed
 
