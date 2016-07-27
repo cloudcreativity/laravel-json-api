@@ -24,9 +24,6 @@ use PHPUnit_Framework_Assert as PHPUnit;
 /**
  * Class InteractsWithModels
  * @package CloudCreativity\LaravelJsonApi\Testing
- *
- * This trait MUST be used on a class that also uses this trait:
- * Illuminate\Foundation\Testing\Concerns\InteractsWithDatabase
  */
 trait InteractsWithModels
 {
@@ -36,35 +33,37 @@ trait InteractsWithModels
      *
      * @param Model $model
      *      a representation of the model that should have been created.
-     * @param $expectedId
-     *      the expected id of the model.
+     * @param $expectedResourceId
+     *      the expected resource id of the model.
      * @param string|string[]|null $attributeKeys
      *      the keys of the model attributes that should be checked, or null to check all.
      * @param string|null $keyName
-     *      the key name to use for the id - defaults to `Model::getKeyName()`
+     *      the key name to use for the resource id - defaults to `Model::getKeyName()`
+     * @return $this
      */
-    public function assertModelCreated(
+    protected function assertModelCreated(
         Model $model,
-        $expectedId,
+        $expectedResourceId,
         $attributeKeys = null,
         $keyName = null
     ) {
-        if (!$keyName) {
-            $keyName = $model->getKeyName();
-        }
-
+        $keyName = $keyName ?: $model->getKeyName();
         $attributes = $model->getAttributes();
+        $expected = [$keyName => $expectedResourceId];
 
         if (is_null($attributeKeys)) {
             $attributeKeys = array_keys($attributes);
         }
 
         foreach ((array) $attributeKeys as $attr) {
+            if ($keyName === $attr) {
+                continue;
+            }
+
             $expected[$attr] = isset($attributes[$attr]) ? $attributes[$attr] : null;
         }
 
-        $expected = [$keyName => $expectedId];
-        $this->seeInDatabase($model->getTable(), $expected, $model->getConnectionName());
+        return $this->seeModelInDatabase($model, $expected);
     }
 
     /**
@@ -76,8 +75,9 @@ trait InteractsWithModels
      *      the expected changed attributes - key to value pairs.
      * @param string|string[] $unchangedKeys
      *      the keys of the attributes that should not have changed.
+     * @return $this
      */
-    public function assertModelPatched(Model $model, array $changedAttributes, $unchangedKeys = [])
+    protected function assertModelPatched(Model $model, array $changedAttributes, $unchangedKeys = [])
     {
         /** We need to ensure values are cast to database values */
         $expected = $model->newInstance($changedAttributes)->getAttributes();
@@ -88,29 +88,80 @@ trait InteractsWithModels
         }
 
         $expected[$model->getKeyName()] = $model->getKey();
-        $this->seeInDatabase($model->getTable(), $expected, $model->getConnectionName());
+
+        return $this->seeModelInDatabase($model, $expected);
     }
 
     /**
      * Assert that a model was deleted.
      *
      * @param Model $model
+     * @return $this
      */
-    public function assertModelDeleted(Model $model)
+    protected function assertModelDeleted(Model $model)
     {
-        $this->notSeeInDatabase($model->getTable(), [
-            $model->getKeyName() => $model->getKey()
-        ], $model->getConnectionName());
+        return $this->notSeeModelInDatabase($model, [$model->getKeyName() => $model->getKey()]);
     }
 
     /**
      * Assert that a model was soft deleted.
      *
      * @param Model $model
+     * @return $this
      */
-    public function assertModelTrashed(Model $model)
+    protected function assertModelTrashed(Model $model)
     {
         PHPUnit::assertNull($model->fresh(), 'Model is not trashed.');
-        $this->seeInDatabase($model->getTable(), [$model->getKeyName() => $model->getKey()], $model->getConnectionName());
+        return $this->seeModelInDatabase($model, [$model->getKeyName() => $model->getKey()]);
+    }
+
+    /**
+     * @param Model $model
+     * @param array $expected
+     * @return $this
+     */
+    protected function seeModelInDatabase(Model $model, array $expected)
+    {
+        $message = sprintf(
+            'Unable to find model in database table [%s] that matched attributes [%s].',
+            $model->getTable(),
+            json_encode($expected)
+        );
+
+        PHPUnit::assertGreaterThan(0, $this->countModels($model, $expected), $message);
+
+        return $this;
+    }
+
+    /**
+     * @param Model $model
+     * @param array $expected
+     * @return $this
+     */
+    protected function notSeeModelInDatabase(Model $model, array $expected)
+    {
+        $message = sprintf(
+            'Found model in database table [%s] that matched attributes [%s].',
+            $model->getTable(),
+            json_encode($expected)
+        );
+
+        PHPUnit::assertEquals(0, $this->countModels($model, $expected), $message);
+
+        return $this;
+    }
+
+    /**
+     * @param Model $model
+     * @param array $expected
+     * @return int
+     */
+    private function countModels(Model $model, array $expected)
+    {
+        return $model
+            ->getConnection()
+            ->table($model->getTable())
+            ->where($expected)
+            ->count();
     }
 }
