@@ -244,7 +244,47 @@ class EloquentController extends JsonApiController
      */
     protected function commit(Model $model)
     {
-        return $model->save();
+        $isUpdating = $model->exists;
+
+        $this->beforeCommit($model, $isUpdating);
+
+        $result = $model->save();
+
+        if ($result) {
+            $this->afterCommit($model, $isUpdating);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Determines which callback to use before creating or updating a model.
+     *
+     * @param Model $model
+     * @param bool $isUpdating
+     */
+    protected function beforeCommit(Model $model, $isUpdating)
+    {
+        if ($isUpdating) {
+            $this->updating($model);
+        } else {
+            $this->creating($model);
+        }
+    }
+
+    /**
+     * Determines which callback to use after a model is updated or created.
+     *
+     * @param Model $model
+     * @param bool $isUpdating
+     */
+    protected function afterCommit(Model $model, $isUpdating)
+    {
+        if ($isUpdating) {
+            $this->updated($model);
+        } else {
+            $this->created($model);
+        }
     }
 
     /**
@@ -349,5 +389,49 @@ class EloquentController extends JsonApiController
         return $this->transaction(function () use ($model) {
             return $this->destroy($model);
         });
+    }
+
+    /**
+     * Called before the model is created.
+     *
+     * Child classes can overload this method if they need to do any logic pre-creation.
+     *
+     * @param Model $model
+     */
+    protected function creating(Model $model)
+    {
+    }
+
+    /**
+     * Called after the model has been created.
+     *
+     * Child classes can overload this method if they need to do any logic post-creation.
+     *
+     * @param Model $model
+     */
+    protected function created(Model $model)
+    {
+    }
+
+    /**
+     * Called before the model is updated.
+     *
+     * Child classes can overload this method if they need to do any logic pre-updating.
+     *
+     * @param Model $model
+     */
+    protected function updating(Model $model)
+    {
+    }
+
+    /**
+     * Called after the model has been updated.
+     *
+     * Child classes can overload this method if they need to do any logic post-updating.
+     *
+     * @param Model $model
+     */
+    protected function updated(Model $model)
+    {
     }
 }
