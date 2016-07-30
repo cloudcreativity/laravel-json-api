@@ -2,6 +2,14 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## [Unreleased]
+
+### Added
+
+- Can now register a resource type with the resource registrar without providing a controller name. The controller
+will default to the studley case of the resource type with `Controller` appended - e.g. `posts` becomes 
+`PostsController`.
+
 ## [0.4.1] - 2016-07-27
 
 ### Added

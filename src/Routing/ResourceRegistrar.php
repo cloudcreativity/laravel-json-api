@@ -20,6 +20,7 @@ namespace CloudCreativity\LaravelJsonApi\Routing;
 
 use CloudCreativity\LaravelJsonApi\Document\GeneratesRouteNames;
 use Illuminate\Contracts\Routing\Registrar;
+use Illuminate\Support\Str;
 
 /**
  * Class ResourceRegistrar
@@ -48,13 +49,17 @@ class ResourceRegistrar
     }
 
     /**
-     * @param $resourceType
-     * @param $controller
+     * Register routes for the supplied resource type
+     *
+     * @param string $resourceType
+     * @param string|null $controller
      * @param array $options
      * @return void
      */
-    public function resource($resourceType, $controller, array $options = [])
+    public function resource($resourceType, $controller = null, array $options = [])
     {
+        $controller = $controller ?: $this->controllerFor($resourceType);
+
         $this->registerIndex($resourceType, $controller);
         $this->registerResource($resourceType, $controller);
         $this->registerRelatedResource($resourceType, $controller);
@@ -181,4 +186,12 @@ class ResourceRegistrar
         );
     }
 
+    /**
+     * @param $resourceType
+     * @return string
+     */
+    protected function controllerFor($resourceType)
+    {
+        return Str::studly($resourceType) . 'Controller';
+    }
 }
