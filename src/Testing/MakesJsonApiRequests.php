@@ -229,6 +229,10 @@ trait MakesJsonApiRequests
      */
     protected function seeStatusCode($expected)
     {
+        if (!$this->response) {
+            PHPUnit::fail('No response - have you made a call to the application?');
+        }
+
         $actual = $this->response->getStatusCode();
         $message = "Expected status code {$expected}, got {$actual}";
         $content = (array) json_decode((string) $this->response->getContent(), true);
