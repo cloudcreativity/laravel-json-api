@@ -18,6 +18,11 @@
 
 namespace CloudCreativity\LaravelJsonApi\Testing;
 
+use CloudCreativity\JsonApi\Testing\ResourcesTester;
+use CloudCreativity\JsonApi\Testing\ResourceTester;
+use Illuminate\Contracts\Routing\UrlRoutable;
+use Illuminate\Http\Response;
+use Illuminate\Support\Collection;
 use InvalidArgumentException;
 use Neomerx\JsonApi\Contracts\Document\DocumentInterface as Keys;
 use Neomerx\JsonApi\Contracts\Http\Headers\MediaTypeInterface;
@@ -33,9 +38,7 @@ use Neomerx\JsonApi\Contracts\Http\Query\QueryParametersParserInterface as Param
 trait InteractsWithResources
 {
 
-    use MakesJsonApiRequests {
-        assertIndexResponse as assertIndex;
-    }
+    use MakesJsonApiRequests;
 
     /**
      * Get the resource type that this test case is testing.
@@ -74,7 +77,8 @@ trait InteractsWithResources
     }
 
     /**
-     * @param string|string[] $ids
+     * @param array|Collection $ids
+     *      the ids - may contain UrlRoutable objects (includes Models)
      * @param array $params
      * @param array $headers
      * @return $this
@@ -85,7 +89,7 @@ trait InteractsWithResources
             $params[Params::PARAM_FILTER] = [];
         }
 
-        $params[Params::PARAM_FILTER][Keys::KEYWORD_ID] = $this->normalizeIds((array) $ids);
+        $params[Params::PARAM_FILTER][Keys::KEYWORD_ID] = $this->normalizeIds($ids);
 
         return $this->doSearch($params, $headers);
     }
@@ -106,7 +110,7 @@ trait InteractsWithResources
     }
 
     /**
-     * @param $resourceId
+     * @param mixed $resourceId
      * @param array $params
      * @param array $headers
      * @return $this
@@ -157,13 +161,61 @@ trait InteractsWithResources
     }
 
     /**
-     * @param string|int|null $resourceId
+     * Assert that a search response is a collection only containing the expected resource type.
+     *
      * @param string $contentType
-     * @return $this
+     * @return ResourcesTester
      */
-    protected function assertIndexResponse($resourceId = null, $contentType = MediaTypeInterface::JSON_API_MEDIA_TYPE)
+    protected function assertSearchResponse($contentType = MediaTypeInterface::JSON_API_MEDIA_TYPE)
     {
-        return $this->assertIndex($this->getResourceType(), $resourceId, $contentType);
+        $this->assertJsonApiResponse(Response::HTTP_OK, $contentType);
+
+        return $this
+            ->seeDocument()
+            ->assertResourceCollection()
+            ->assertTypes($this->getResourceType());
+    }
+
+    /**
+     * Assert that a search response contains a singleton resource with the expected id.
+     *
+     * @param string|int|UrlRoutable $expectedId
+     * @param string $contentType
+     * @return ResourceTester
+     * @todo needs to support `null` responses
+     */
+    protected function assertSearchOneResponse($expectedId, $contentType = MediaTypeInterface::JSON_API_MEDIA_TYPE)
+    {
+        if ($expectedId instanceof UrlRoutable) {
+            $expectedId = $expectedId->getRouteKey();
+        }
+
+        $this->assertJsonApiResponse(Response::HTTP_OK, $contentType);
+
+        return $this
+            ->seeDocument()
+            ->assertResource()
+            ->assertIs($this->getResourceType(), $expectedId);
+    }
+
+    /**
+     * Assert that the response to a search by id(s) request contains the expected ids.
+     *
+     * @param array|Collection $expectedIds
+     *      the ids - may contain UrlRoutable objects (e.g. Models)
+     * @param string $contentType
+     * @return ResourcesTester
+     */
+    protected function assertSearchByIdResponse($expectedIds, $contentType = MediaTypeInterface::JSON_API_MEDIA_TYPE)
+    {
+        $this->assertJsonApiResponse(Response::HTTP_OK, $contentType);
+
+        return $this
+            ->seeDocument()
+            ->assertResourceCollection()
+            ->assertContainsOnly([
+                $this->getResourceType() => $this->normalizeIds($expectedIds),
+            ]);
     }
 
     /**
@@ -191,11 +243,15 @@ trait InteractsWithResources
     /**
      * Normalize ids for a find many request
      *
-     * @param array $ids
+     * @param array|Collection $ids
      * @return array
      */
-    protected function normalizeIds(array $ids)
+    protected function normalizeIds($ids)
     {
-        return $ids;
+        $ids = new Collection($ids);
+
+        return $ids->map(function ($id) {
+            return ($id instanceof UrlRoutable) ? $id->getRouteKey() : $id;
+        })->all();
     }
 }

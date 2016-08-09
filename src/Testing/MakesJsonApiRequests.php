@@ -21,6 +21,7 @@ namespace CloudCreativity\LaravelJsonApi\Testing;
 use CloudCreativity\JsonApi\Testing\DocumentTester;
 use CloudCreativity\JsonApi\Testing\ErrorsTester;
 use CloudCreativity\LaravelJsonApi\Document\GeneratesLinks;
+use Illuminate\Contracts\Routing\UrlRoutable;
 use Illuminate\Http\Response;
 use Neomerx\JsonApi\Contracts\Document\DocumentInterface as Keys;
 use Neomerx\JsonApi\Contracts\Document\LinkInterface;
@@ -83,7 +84,7 @@ trait MakesJsonApiRequests
      * Assert response is a JSON API resource index response.
      *
      * @param string|string[] $resourceType
-     * @param string|int|null $resourceId
+     * @param string|int|UrlRoutable|null $resourceId
      *      if a singular resource is expected, the id of the singular resource.
      * @param string $contentType
      * @return $this
@@ -93,6 +94,10 @@ trait MakesJsonApiRequests
         $resourceId = null,
         $contentType = MediaTypeInterface::JSON_API_MEDIA_TYPE
     ) {
+        if ($resourceId instanceof UrlRoutable) {
+            $resourceId = $resourceId->getRouteKey();
+        }
+
         $this->assertJsonApiResponse(Response::HTTP_OK, $contentType);
 
         if (!$resourceId) {
