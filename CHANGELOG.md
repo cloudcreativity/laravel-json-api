@@ -2,6 +2,16 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## [0.4.2] - 2016-08-11
+
+### Added
+
+- Can now register a resource type with the resource registrar without providing a controller name. The controller
+will default to the studley case of the resource type with `Controller` appended - e.g. `posts` becomes 
+`PostsController`.
+- New `InteractsWithResources` test helper. This extends `MakesJsonApiRequests` and adds in helpers for using
+when a test case is testing a single resource type.
+
 ## [0.4.1] - 2016-07-27
 
 ### Added

@@ -77,7 +77,43 @@ final class ResourceRegistrarTest extends TestCase
         $this->willSee('POST', '/posts/{resource_id}/relationships/{relationship_name}', 'addToRelationship');
         $this->willSee('DELETE', '/posts/{resource_id}/relationships/{relationship_name}', 'removeFromRelationship');
 
-        $this->registrar->resource('posts', 'PostsController');
+        $this->registrar->resource('posts');
+    }
+
+    public function testRegistrationWithController()
+    {
+        $controller = 'MyNamespace/PostsController';
+        $index = sprintf(LinkFactoryInterface::ROUTE_NAME_INDEX, 'posts');
+        $resource = sprintf(LinkFactoryInterface::ROUTE_NAME_RESOURCE, 'posts');
+        $relatedResource = sprintf(LinkFactoryInterface::ROUTE_NAME_RELATED_RESOURCE, 'posts');
+        $relationship = sprintf(LinkFactoryInterface::ROUTE_NAME_RELATIONSHIPS, 'posts');
+
+        $this->willSee('GET', '/posts', 'index', $index, $controller);
+        $this->willSee('POST', '/posts', 'create', null, $controller);
+        $this->willSee('GET', '/posts/{resource_id}', 'read', $resource, $controller);
+        $this->willSee('PATCH', '/posts/{resource_id}', 'update', null, $controller);
+        $this->willSee('DELETE', '/posts/{resource_id}', 'delete', null, $controller);
+        $this->willSee('GET', '/posts/{resource_id}/{relationship_name}', 'readRelatedResource', $relatedResource, $controller);
+        $this->willSee('GET', '/posts/{resource_id}/relationships/{relationship_name}', 'readRelationship', $relationship, $controller);
+        $this->willSee('PATCH', '/posts/{resource_id}/relationships/{relationship_name}', 'replaceRelationship', null, $controller);
+        $this->willSee('POST', '/posts/{resource_id}/relationships/{relationship_name}', 'addToRelationship', null, $controller);
+        $this->willSee('DELETE', '/posts/{resource_id}/relationships/{relationship_name}', 'removeFromRelationship', null, $controller);
+
+        $this->registrar->resource('posts', $controller);
+    }
+
+    public function testRegistrationWithSlugResourceType()
+    {
+        $index = sprintf(LinkFactoryInterface::ROUTE_NAME_INDEX, 'user-accounts');
+        $this->willSee('GET', '/user-accounts', 'index', $index, 'UserAccountsController');
+        $this->registrar->resource('user-accounts');
+    }
+
+    public function testRegistrationWithSnakeResourceType()
+    {
+        $index = sprintf(LinkFactoryInterface::ROUTE_NAME_INDEX, 'user_accounts');
+        $this->willSee('GET', '/user_accounts', 'index', $index, 'UserAccountsController');
+        $this->registrar->resource('user_accounts');
     }
 
     /**
@@ -85,14 +121,16 @@ final class ResourceRegistrarTest extends TestCase
      * @param $httpMethod
      * @param $controllerMethod
      * @param $as
+     * @param string $controller
      */
     private function willSee(
         $httpMethod,
         $uri,
         $controllerMethod,
-        $as = null
+        $as = null,
+        $controller = 'PostsController'
     ) {
-        $options = ['uses' => 'PostsController@' . $controllerMethod];
+        $options = ['uses' => $controller . '@' . $controllerMethod];
 
         if ($as) {
             $options['as'] = $as;

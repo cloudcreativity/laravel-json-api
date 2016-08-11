@@ -55,10 +55,10 @@ class JsonApiService implements ErrorReporterInterface
      * Register a resource type with the router.
      *
      * @param string $resourceType
-     * @param string $controller
+     * @param string|null $controller
      * @param array $options
      */
-    public function resource($resourceType, $controller, array $options = [])
+    public function resource($resourceType, $controller = null, array $options = [])
     {
         $this->registrar->resource($resourceType, $controller, $options);
     }
