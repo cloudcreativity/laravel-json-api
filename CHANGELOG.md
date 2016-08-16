@@ -2,6 +2,14 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## [0.4.3] - 2016-08-16
+
+### Added
+
+- `AbstractSortedSearch` now has a `defaultSort` method that is invoked if the client has not sent any sort
+parameters. Child classes can override this method to implement a default search order if desired.
+- Added `saving`, `saved`, `deleting` and `deleted` hooks to the `EloquentController`.
+
 ## [0.4.2] - 2016-08-11
 
 ### Added

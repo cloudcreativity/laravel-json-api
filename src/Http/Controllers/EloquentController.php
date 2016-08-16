@@ -236,9 +236,6 @@ class EloquentController extends JsonApiController
     /**
      * Commit the model to the database.
      *
-     * Child classes can overload this method if they need to do any logic pre- or
-     * post-save.
-     *
      * @param Model $model
      * @return bool|Response
      */
@@ -265,6 +262,8 @@ class EloquentController extends JsonApiController
      */
     protected function beforeCommit(Model $model, $isUpdating)
     {
+        $this->saving($model);
+
         if ($isUpdating) {
             $this->updating($model);
         } else {
@@ -285,20 +284,27 @@ class EloquentController extends JsonApiController
         } else {
             $this->created($model);
         }
+
+        $this->saved($model);
     }
 
     /**
      * Remove the model from the database.
-     *
-     * Child classes can overload this method if they need to do any logic pre- or
-     * post-delete.
      *
      * @param Model $model
      * @return bool|Response
      */
     protected function destroy(Model $model)
     {
-        return (bool) $model->delete();
+        $this->deleting($model);
+
+        $result = (bool) $model->delete();
+
+        if ($result) {
+            $this->deleted($model);
+        }
+
+        return $result;
     }
 
     /**
@@ -392,6 +398,28 @@ class EloquentController extends JsonApiController
     }
 
     /**
+     * Called before the model is saved (either creating or updating an existing model).
+     *
+     * Child classes can overload this method if they need to do any logic pre-save.
+     *
+     * @param Model $model
+     */
+    protected function saving(Model $model)
+    {
+    }
+
+    /**
+     * Called after the model has been saved (when a model has been created or updated)
+     *
+     * Child classes can overload this method if they need to do any logic post-save.
+     *
+     * @param Model $model
+     */
+    protected function saved(Model $model)
+    {
+    }
+
+    /**
      * Called before the model is created.
      *
      * Child classes can overload this method if they need to do any logic pre-creation.
@@ -432,6 +460,28 @@ class EloquentController extends JsonApiController
      * @param Model $model
      */
     protected function updated(Model $model)
+    {
+    }
+
+    /**
+     * Called before the model is destroyed.
+     *
+     * Child classes can overload this method if they need to do any logic pre-delete.
+     *
+     * @param Model $model
+     */
+    protected function deleting(Model $model)
+    {
+    }
+
+    /**
+     * Called after the model has been destroyed.
+     *
+     * Child classes can overload this method if they need to do any logic post-delete.
+     *
+     * @param Model $model
+     */
+    protected function deleted(Model $model)
     {
     }
 }

@@ -35,10 +35,16 @@ abstract class AbstractSortedSearch extends AbstractSearch
 
     /**
      * @param Builder $builder
-     * @param array $sortBy
+     * @param SortParameterInterface[] $sortBy
+     * @return void
      */
     protected function sort(Builder $builder, array $sortBy)
     {
+        if (empty($sortBy)) {
+            $this->defaultSort($builder);
+            return;
+        }
+
         /** @var SortParameterInterface $param */
         foreach ($sortBy as $param) {
             $this->sortBy($builder, $param);
@@ -82,5 +88,18 @@ abstract class AbstractSortedSearch extends AbstractSearch
     protected function columnForField($field)
     {
         return isset($this->sortColumns[$field]) ? $this->sortColumns[$field] : $field;
+    }
+
+    /**
+     * Apply a default sort order if the client has not requested any sort order.
+     *
+     * Child classes can override this method if they want to implement their
+     * own default sort order.
+     *
+     * @param Builder $builder
+     * @return void
+     */
+    protected function defaultSort(Builder $builder)
+    {
     }
 }
