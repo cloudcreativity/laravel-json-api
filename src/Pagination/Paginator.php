@@ -24,6 +24,7 @@ use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Contracts\Pagination\Paginator as IlluminatePaginator;
 use Neomerx\JsonApi\Contracts\Document\LinkInterface;
+use Neomerx\JsonApi\Contracts\Encoder\Parameters\SortParameterInterface;
 use Neomerx\JsonApi\Contracts\Http\Query\QueryParametersParserInterface;
 
 /**
@@ -141,9 +142,12 @@ class Paginator implements PaginatorInterface
             ->getRequest()
             ->getEncodingParameters();
 
-        return [
-            QueryParametersParserInterface::PARAM_FILTER => $encodingParameters->getFilteringParameters(),
-        ];
+        return array_filter([
+            QueryParametersParserInterface::PARAM_FILTER =>
+                $encodingParameters->getFilteringParameters(),
+            QueryParametersParserInterface::PARAM_SORT =>
+                $this->buildSortParams((array) $encodingParameters->getSortParameters())
+        ]);
     }
 
     /**
@@ -165,5 +169,21 @@ class Paginator implements PaginatorInterface
                 $this->config->getParamPerPage() => $perPage,
             ],
         ]), $meta);
+    }
+
+    /**
+     * @param SortParameterInterface[] $parameters
+     * @return string
+     */
+    private function buildSortParams(array $parameters)
+    {
+        $sort = [];
+
+        /** @var SortParameterInterface $param */
+        foreach ($parameters as $param) {
+            $sort[] = $param->isAscending() ? $param->getField() : '-' . $param->getField();
+        }
+
+        return !empty($sort) ? implode(',', $sort) : null;
     }
 }

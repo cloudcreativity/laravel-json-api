@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## [Unreleased]
+
+### Fixed
+- Paginator now includes sort order in paging links. This is required because otherwise the paging does not maintain
+its order when using the links.
+
 ## [0.4.3] - 2016-08-16
 
 ### Added
