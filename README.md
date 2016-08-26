@@ -25,6 +25,12 @@ applications that are using the repository.
 we use - `neomerx/json-api` - is not yet on at 1.*. As they could in theory make breaking changes to their package,
 we can't yet tag this package as 1.0.
 
+### Laravel 5.3 Support
+
+This package currently **does not work with Laravel 5.3**. We're working on this and hope to release an update soon.
+In the meantime, subscribe to [this issue](https://github.com/cloudcreativity/laravel-json-api/issues/13) if you
+want updates on this issue.
+
 ## License
 
 Apache License (Version 2.0). Please see [License File](LICENSE) for more information.
