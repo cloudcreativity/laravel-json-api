@@ -2,6 +2,13 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## [0.4.5] - 2016-08-26
+
+### Change
+- Tied the package to Laravel `5.1.*|5.2.*`. This is non-breaking because the package currently only works with these
+two versions (it was previously tied to `^5.1`). A breaking change in Laravel `5.3` means that this package does not
+currently work with `5.3`.
+
 ## [0.4.4] - 2016-08-26
 
 ### Fixed
