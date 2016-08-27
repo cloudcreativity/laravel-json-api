@@ -16,32 +16,46 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\LaravelJsonApi\Contracts\Http\Requests;
+namespace CloudCreativity\LaravelJsonApi\Http\Requests;
 
 use CloudCreativity\JsonApi\Contracts\Http\RequestInterpreterInterface;
-use CloudCreativity\LaravelJsonApi\Http\Requests\JsonApiRequest;
 use Neomerx\JsonApi\Exceptions\JsonApiException;
 
 /**
- * Interface RequestHandlerInterface
+ * Class ChecksUrlParameters
  * @package CloudCreativity\LaravelJsonApi
  */
-interface RequestHandlerInterface
+trait ChecksUrlParameters
 {
+
+    /**
+     * Get the allowed has-one relationships
+     *
+     * @return string[]
+     */
+    abstract protected function allowedRelationships();
 
     /**
      * @param RequestInterpreterInterface $interpreter
      * @param JsonApiRequest $request
-     * @return void
-     * @throws JsonApiException
      */
-    public function handle(RequestInterpreterInterface $interpreter, JsonApiRequest $request);
+    protected function checkResourceId(RequestInterpreterInterface $interpreter, JsonApiRequest $request)
+    {
+        if ($interpreter->getResourceId() && !$request->getRecord()) {
+            throw new JsonApiException([], 404);
+        }
+    }
 
     /**
-     * Get the resource type that the handler validates
-     *
-     * @return string
+     * @param JsonApiRequest $request
+     * @throws JsonApiException
      */
-    public function getResourceType();
+    protected function checkRelationshipName(JsonApiRequest $request)
+    {
+        $name = $request->getRelationshipName();
 
+        if (!in_array($name, $this->allowedRelationships(), true)) {
+            throw new JsonApiException([], 404);
+        }
+    }
 }

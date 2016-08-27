@@ -20,7 +20,7 @@ namespace CloudCreativity\LaravelJsonApi;
 
 use CloudCreativity\JsonApi\Contracts\Exceptions\ExceptionParserInterface;
 use CloudCreativity\JsonApi\Contracts\Http\ApiFactoryInterface;
-use CloudCreativity\JsonApi\Contracts\Http\ContentNegotiatorInterface;
+use CloudCreativity\JsonApi\Contracts\Http\RequestInterpreterInterface;
 use CloudCreativity\JsonApi\Contracts\Repositories\CodecMatcherRepositoryInterface;
 use CloudCreativity\JsonApi\Contracts\Repositories\ErrorRepositoryInterface;
 use CloudCreativity\JsonApi\Contracts\Repositories\SchemasRepositoryInterface;
@@ -28,7 +28,6 @@ use CloudCreativity\JsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\JsonApi\Contracts\Utils\ConfigurableInterface;
 use CloudCreativity\JsonApi\Contracts\Utils\ReplacerInterface;
 use CloudCreativity\JsonApi\Http\ApiFactory;
-use CloudCreativity\JsonApi\Http\ContentNegotiator;
 use CloudCreativity\JsonApi\Repositories\CodecMatcherRepository;
 use CloudCreativity\JsonApi\Repositories\ErrorRepository;
 use CloudCreativity\JsonApi\Repositories\SchemasRepository;
@@ -43,6 +42,8 @@ use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorFactoryInterfac
 use CloudCreativity\LaravelJsonApi\Document\LinkFactory;
 use CloudCreativity\LaravelJsonApi\Exceptions\ExceptionParser;
 use CloudCreativity\LaravelJsonApi\Http\Middleware\BootJsonApi;
+use CloudCreativity\LaravelJsonApi\Http\Middleware\CreateRequest;
+use CloudCreativity\LaravelJsonApi\Http\Requests\RequestInterpreter;
 use CloudCreativity\LaravelJsonApi\Http\Responses\ResponseFactory;
 use CloudCreativity\LaravelJsonApi\Http\Responses\Responses;
 use CloudCreativity\LaravelJsonApi\Pagination\PageParameterHandler;
@@ -98,7 +99,7 @@ class ServiceProvider extends BaseServiceProvider
         $this->bindSchemaRepository();
         $this->bindErrorRepository();
         $this->bindExceptionParser();
-        $this->bindContentNegotiator();
+        $this->bindRequestInterpreter();
         $this->bindResponses();
         $this->bindValidatorFactory();
         $this->bindValidatorErrorFactory();
@@ -133,6 +134,7 @@ class ServiceProvider extends BaseServiceProvider
     protected function bootMiddleware(Router $router)
     {
         $router->middleware('json-api', BootJsonApi::class);
+        $router->middleware('json-api-request', CreateRequest::class);
     }
 
     /**
@@ -209,13 +211,12 @@ class ServiceProvider extends BaseServiceProvider
     }
 
     /**
-     * Bind the content negotiator into the service container.
+     * Bind the request interpreter into the service container.
      */
-    protected function bindContentNegotiator()
+    protected function bindRequestInterpreter()
     {
-        $this->app->singleton(ContentNegotiatorInterface::class, ContentNegotiator::class);
+        $this->app->singleton(RequestInterpreterInterface::class, RequestInterpreter::class);
     }
-
 
     /**
      * Bind the responses instance into the service container.

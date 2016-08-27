@@ -18,9 +18,8 @@
 
 namespace CloudCreativity\LaravelJsonApi\Http\Controllers;
 
-use CloudCreativity\JsonApi\Contracts\Object\ResourceInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestHandlerInterface;
 use CloudCreativity\LaravelJsonApi\Document\GeneratesLinks;
+use CloudCreativity\LaravelJsonApi\Http\Requests\JsonApiRequest;
 use CloudCreativity\LaravelJsonApi\Http\Responses\ReplyTrait;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
@@ -29,145 +28,121 @@ use Illuminate\Routing\Controller;
  * Class JsonApiController
  * @package CloudCreativity\LaravelJsonApi
  */
-class JsonApiController extends Controller
+abstract class JsonApiController extends Controller
 {
 
     use ReplyTrait,
         GeneratesLinks;
 
     /**
-     * @var RequestHandlerInterface
+     * @var array
      */
-    private $request;
+    protected $requestHandlerOptions = [];
+
+    /**
+     * Get the fully qualified name of the request handler to use for this controller.
+     *
+     * @return string
+     */
+    abstract protected function getRequestHandler();
 
     /**
      * JsonApiController constructor.
-     * @param RequestHandlerInterface $request
      */
-    public function __construct(RequestHandlerInterface $request)
+    public function __construct()
     {
-        $this->request = $request;
+        $middleware = sprintf('json-api-request:%s', $this->getRequestHandler());
+        $this->middleware($middleware, $this->requestHandlerOptions);
     }
 
     /**
+     * @param JsonApiRequest $request
      * @return Response
      */
-    public function index()
+    public function index(JsonApiRequest $request)
     {
         return $this->notImplemented();
     }
 
     /**
+     * @param JsonApiRequest $request
      * @return Response
      */
-    public function create()
+    public function create(JsonApiRequest $request)
     {
         return $this->notImplemented();
     }
 
     /**
-     * @param $resourceId
+     * @param JsonApiRequest $request
      * @return Response
      */
-    public function read($resourceId)
+    public function read(JsonApiRequest $request)
     {
         return $this->notImplemented();
     }
 
     /**
-     * @param $resourceId
+     * @param JsonApiRequest $request
      * @return Response
      */
-    public function update($resourceId)
+    public function update(JsonApiRequest $request)
     {
         return $this->notImplemented();
     }
 
     /**
-     * @param $resourceId
+     * @param JsonApiRequest $request
      * @return Response
      */
-    public function delete($resourceId)
+    public function delete(JsonApiRequest $request)
     {
         return $this->notImplemented();
     }
 
     /**
-     * @param $resourceId
-     * @param $relationshipName
+     * @param JsonApiRequest $request
      * @return Response
      */
-    public function readRelatedResource($resourceId, $relationshipName)
+    public function readRelatedResource(JsonApiRequest $request)
     {
         return $this->notImplemented();
     }
 
     /**
-     * @param $resourceId
-     * @param $relationshipName
+     * @param JsonApiRequest $request
      * @return Response
      */
-    public function readRelationship($resourceId, $relationshipName)
+    public function readRelationship(JsonApiRequest $request)
     {
         return $this->notImplemented();
     }
 
     /**
-     * @param $resourceId
-     * @param $relationshipName
+     * @param JsonApiRequest $request
      * @return Response
      */
-    public function replaceRelationship($resourceId, $relationshipName)
+    public function replaceRelationship(JsonApiRequest $request)
     {
         return $this->notImplemented();
     }
 
     /**
-     * @param $resourceId
-     * @param $relationshipName
+     * @param JsonApiRequest $request
      * @return Response
      */
-    public function addToRelationship($resourceId, $relationshipName)
+    public function addToRelationship(JsonApiRequest $request)
     {
         return $this->notImplemented();
     }
 
     /**
-     * @param $resourceId
-     * @param $relationshipName
+     * @param JsonApiRequest $request
      * @return Response
      */
-    public function removeFromRelationship($resourceId, $relationshipName)
+    public function removeFromRelationship(JsonApiRequest $request)
     {
         return $this->notImplemented();
-    }
-
-    /**
-     * @return RequestHandlerInterface
-     */
-    protected function getRequestHandler()
-    {
-        return $this->request;
-    }
-
-    /**
-     * Shorthand to get the record that the request relates to.
-     *
-     * @return object
-     */
-    protected function getRecord()
-    {
-        return $this->request->getRecord();
-    }
-
-    /**
-     * Shorthand to get the resource that the client has submitted.
-     *
-     * @return ResourceInterface
-     */
-    protected function getResource()
-    {
-        return $this->request->getDocument()->getResource();
     }
 
     /**
@@ -179,4 +154,5 @@ class JsonApiController extends Controller
             ->reply()
             ->statusCode(Response::HTTP_NOT_IMPLEMENTED);
     }
+
 }

@@ -18,17 +18,17 @@
 
 namespace CloudCreativity\LaravelJsonApi\Http\Requests;
 
+use CloudCreativity\JsonApi\Contracts\Validators\FilterValidatorInterface;
+use CloudCreativity\JsonApi\Exceptions\ValidationException;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
-use Neomerx\JsonApi\Contracts\Factories\FactoryInterface;
-use Neomerx\JsonApi\Contracts\Http\Query\QueryParametersParserInterface;
+use Neomerx\JsonApi\Contracts\Http\HttpFactoryInterface;
 use Neomerx\JsonApi\Exceptions\JsonApiException;
-use Psr\Http\Message\ServerRequestInterface;
 
 /**
- * Class ParsesQueryParameters
+ * Class ChecksQueryParameters
  * @package CloudCreativity\LaravelJsonApi
  */
-trait ParsesQueryParameters
+trait ChecksQueryParameters
 {
 
     /**
@@ -92,25 +92,30 @@ trait ParsesQueryParameters
     abstract protected function allowedFilteringParameters();
 
     /**
-     * @return EncodingParametersInterface
+     * @param HttpFactoryInterface $factory
+     * @param JsonApiRequest $request
+     * @param FilterValidatorInterface|null $filterValidator
      */
-    protected function parseQueryParameters()
-    {
-        /** @var ServerRequestInterface $request */
-        $request = app(ServerRequestInterface::class);
+    protected function checkQueryParameters(
+        HttpFactoryInterface $factory,
+        JsonApiRequest $request,
+        FilterValidatorInterface $filterValidator = null
+    ) {
+        $parameters = $request->getParameters();
+        $this->checkEncodingParameters($factory, $parameters);
 
-        return $this->queryParametersParser()->parse($request);
+        if ($filterValidator) {
+            $this->checkFilterParameters($filterValidator, $parameters);
+        }
     }
 
     /**
+     * @param HttpFactoryInterface $factory
      * @param EncodingParametersInterface $parameters
      * @throws JsonApiException
      */
-    protected function checkQueryParameters(EncodingParametersInterface $parameters)
+    private function checkEncodingParameters(HttpFactoryInterface $factory, EncodingParametersInterface $parameters)
     {
-        /** @var FactoryInterface $factory */
-        $factory = app(FactoryInterface::class);
-
         $checker = $factory->createQueryChecker(
             $this->allowUnrecognizedParameters(),
             $this->allowedIncludePaths(),
@@ -124,14 +129,15 @@ trait ParsesQueryParameters
     }
 
     /**
-     * @return QueryParametersParserInterface
+     * @param FilterValidatorInterface $validator
+     * @param EncodingParametersInterface $parameters
+     * @throws JsonApiException
      */
-    protected function queryParametersParser()
+    private function checkFilterParameters(FilterValidatorInterface $validator, EncodingParametersInterface $parameters)
     {
-        /** @var FactoryInterface $factory */
-        $factory = app(FactoryInterface::class);
-
-        return $factory->createQueryParametersParser();
+        if (!$validator->isValid((array) $parameters->getFilteringParameters())) {
+            throw new ValidationException($validator->getErrors());
+        }
     }
 
 }

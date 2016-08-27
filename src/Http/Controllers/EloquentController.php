@@ -23,6 +23,7 @@ use CloudCreativity\JsonApi\Contracts\Hydrator\HydratorInterface;
 use CloudCreativity\JsonApi\Contracts\Object\ResourceInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestHandlerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Search\SearchInterface;
+use CloudCreativity\LaravelJsonApi\Http\Requests\JsonApiRequest;
 use CloudCreativity\LaravelJsonApi\Search\SearchAll;
 use Exception;
 use Illuminate\Contracts\Pagination\Paginator;
@@ -35,7 +36,7 @@ use RuntimeException;
  * Class EloquentController
  * @package CloudCreativity\LaravelJsonApi
  */
-class EloquentController extends JsonApiController
+abstract class EloquentController extends JsonApiController
 {
 
     /**
@@ -68,28 +69,27 @@ class EloquentController extends JsonApiController
     /**
      * EloquentController constructor.
      * @param Model $model
-     * @param RequestHandlerInterface $request
      * @param HydratorInterface|null $hydrator
      * @param SearchInterface|null $search
      */
     public function __construct(
         Model $model,
-        RequestHandlerInterface $request,
         HydratorInterface $hydrator = null,
         SearchInterface $search = null
     ) {
-        parent::__construct($request);
+        parent::__construct();
         $this->model = $model;
         $this->hydrator = $hydrator;
         $this->search = $search ?: new SearchAll();
     }
 
     /**
+     * @param JsonApiRequest $request
      * @return Response
      */
-    public function index()
+    public function index(JsonApiRequest $request)
     {
-        $result = $this->search();
+        $result = $this->search($request);
 
         return $this
             ->reply()
@@ -97,11 +97,12 @@ class EloquentController extends JsonApiController
     }
 
     /**
+     * @param JsonApiRequest $request
      * @return Response
      */
-    public function create()
+    public function create(JsonApiRequest $request)
     {
-        $model = $this->hydrate($this->getResource(), $this->model);
+        $model = $this->hydrate($request->getDocument()->getResource(), $this->model);
         $result = ($model instanceof Response) ? $model : $this->doCommit($model);
 
         if ($result instanceof Response) {
@@ -116,23 +117,23 @@ class EloquentController extends JsonApiController
     }
 
     /**
-     * @param $resourceId
+     * @param JsonApiRequest $request
      * @return Response
      */
-    public function read($resourceId)
+    public function read(JsonApiRequest $request)
     {
         return $this
             ->reply()
-            ->content($this->getRecord());
+            ->content($this->getRecord($request));
     }
 
     /**
-     * @param $resourceId
+     * @param JsonApiRequest $request
      * @return Response
      */
-    public function update($resourceId)
+    public function update(JsonApiRequest $request)
     {
-        $model = $this->hydrate($this->getResource(), $this->getRecord());
+        $model = $this->hydrate($request->getDocument()->getResource(), $this->getRecord($request));
         $result = ($model instanceof Response) ? $model : $this->doCommit($model);
 
         if ($result instanceof Response) {
@@ -147,12 +148,12 @@ class EloquentController extends JsonApiController
     }
 
     /**
-     * @param $resourceId
+     * @param JsonApiRequest $request
      * @return Response
      */
-    public function delete($resourceId)
+    public function delete(JsonApiRequest $request)
     {
-        $model = $this->getRecord();
+        $model = $this->getRecord($request);
         $result = $this->doDestroy($model);
 
         if ($result instanceof Response) {
@@ -167,14 +168,13 @@ class EloquentController extends JsonApiController
     }
 
     /**
-     * @param $resourceId
-     * @param $relationshipName
+     * @param JsonApiRequest $request
      * @return Response
      */
-    public function readRelatedResource($resourceId, $relationshipName)
+    public function readRelatedResource(JsonApiRequest $request)
     {
-        $model = $this->getRecord();
-        $key = $this->keyForRelationship($relationshipName);
+        $model = $this->getRecord($request);
+        $key = $this->keyForRelationship($request->getRelationshipName());
 
         return $this
             ->reply()
@@ -182,14 +182,13 @@ class EloquentController extends JsonApiController
     }
 
     /**
-     * @param $resourceId
-     * @param $relationshipName
+     * @param JsonApiRequest $request
      * @return Response
      */
-    public function readRelationship($resourceId, $relationshipName)
+    public function readRelationship(JsonApiRequest $request)
     {
-        $model = $this->getRecord();
-        $key = $this->keyForRelationship($relationshipName);
+        $model = $this->getRecord($request);
+        $key = $this->keyForRelationship($request->getRelationshipName());
 
         return $this
             ->reply()
@@ -197,18 +196,14 @@ class EloquentController extends JsonApiController
     }
 
     /**
+     * @param JsonApiRequest $request
      * @return Paginator|Collection|Model|null
      */
-    protected function search()
+    protected function search(JsonApiRequest $request)
     {
-        if (!$this->search) {
-            return $this->model->all();
-        }
-
         $builder = $this->model->newQuery();
-        $parameters = $this->getRequestHandler()->getEncodingParameters();
 
-        return $this->search->search($builder, $parameters);
+        return $this->search->search($builder, $request->getParameters());
     }
 
     /**
@@ -342,11 +337,12 @@ class EloquentController extends JsonApiController
     }
 
     /**
+     * @param JsonApiRequest $request
      * @return Model
      */
-    protected function getRecord()
+    protected function getRecord(JsonApiRequest $request)
     {
-        $record = parent::getRecord();
+        $record = $request->getRecord();
 
         if (!$record instanceof Model) {
             throw new RuntimeException(sprintf('%s expects to be used with a %s record.', static::class, Model::class));

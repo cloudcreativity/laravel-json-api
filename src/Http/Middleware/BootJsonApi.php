@@ -21,12 +21,14 @@ namespace CloudCreativity\LaravelJsonApi\Http\Middleware;
 use Closure;
 use CloudCreativity\JsonApi\Contracts\Http\ApiFactoryInterface;
 use CloudCreativity\JsonApi\Contracts\Http\ApiInterface;
-use CloudCreativity\JsonApi\Contracts\Http\ContentNegotiatorInterface;
 use CloudCreativity\JsonApi\Http\ApiFactory;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PageParameterHandlerInterface;
+use CloudCreativity\LaravelJsonApi\Http\Requests\RequestDocument;
+use CloudCreativity\LaravelJsonApi\Http\Requests\RequestInitiator;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\AbstractPaginator;
+use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use RuntimeException;
 
@@ -77,16 +79,27 @@ class BootJsonApi
         $api = $factory->createApi($namespace, $this->appendSchemaAndHost($request, (array) $config[$namespace]));
         $this->container->instance(ApiInterface::class, $api);
 
-        /** @var ContentNegotiatorInterface $negotiator */
-        $negotiator = $this->container->make(ContentNegotiatorInterface::class);
+        /** @var RequestInitiator $initiator */
+        $initiator = $this->container->make(RequestInitiator::class);
         /** @var ServerRequestInterface $request */
         $serverRequest = $this->container->make(ServerRequestInterface::class);
-        $negotiator->doContentNegotiation($api->getCodecMatcher(), $serverRequest);
+
+        /** Parse headers */
+        $initiator->doContentNegotiation($api->getCodecMatcher(), $serverRequest);
+
+        /** Set the encoding parameters into the container */
+        $parameters = $initiator->parseParameters($serverRequest);
+        $this->container->instance(EncodingParametersInterface::class, $parameters);
+
+        /** Set the document content into the container */
+        if ($document = $initiator->parseDocument($api, $serverRequest)) {
+            $this->container->instance(RequestDocument::class, $document);
+        }
 
         /** Override the current page resolution */
         AbstractPaginator::currentPageResolver(function () {
             /** @var PageParameterHandlerInterface $param */
-            $param = app(PageParameterHandlerInterface::class);
+            $param = $this->container->make(PageParameterHandlerInterface::class);
             return $param->getCurrentPage();
         });
 
@@ -107,5 +120,4 @@ class BootJsonApi
 
         return $config;
     }
-
 }
