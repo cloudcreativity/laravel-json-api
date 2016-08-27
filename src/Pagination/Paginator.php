@@ -173,16 +173,13 @@ class Paginator implements PaginatorInterface
 
     /**
      * @param SortParameterInterface[] $parameters
-     * @return string
+     * @return string|null
      */
     private function buildSortParams(array $parameters)
     {
-        $sort = [];
-
-        /** @var SortParameterInterface $param */
-        foreach ($parameters as $param) {
-            $sort[] = $param->isAscending() ? $param->getField() : '-' . $param->getField();
-        }
+        $sort = array_map(function (SortParameterInterface $param) {
+            return (string) $param;
+        }, $parameters);
 
         return !empty($sort) ? implode(',', $sort) : null;
     }

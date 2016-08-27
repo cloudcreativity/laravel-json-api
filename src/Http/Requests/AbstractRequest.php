@@ -258,7 +258,7 @@ abstract class AbstractRequest implements RequestHandlerInterface
             $authorized = $this->authorizer->canRead($this->getRecord(), $parameters);
         } /** Update Resource */
         elseif ($this->isUpdateResource()) {
-            $authorized = $this->authorizer->canUpdate($this->getRecord(), $parameters);
+            $authorized = $this->authorizer->canUpdate($this->getRecord(), $this->getDocument()->getResource(), $parameters);
         } /** Delete Resource */
         elseif ($this->isDeleteResource()) {
             $authorized = $this->authorizer->canDelete($this->getRecord(), $parameters);
@@ -281,6 +281,7 @@ abstract class AbstractRequest implements RequestHandlerInterface
             $authorized = $this->authorizer->canModifyRelationship(
                 $this->getRelationshipName(),
                 $this->getRecord(),
+                $this->getDocument()->getRelationship(),
                 $parameters
             );
         }
@@ -361,7 +362,7 @@ abstract class AbstractRequest implements RequestHandlerInterface
 
         /** If we are on an index route, we also validate the filter parameters. */
         $validator = ($this->isIndex() && $this->validators) ?
-            $this->validators->filterResources() : null;
+            $this->validators->filterResources($this->getResourceType()) : null;
 
         if ($validator && !$validator->isValid((array) $parameters->getFilteringParameters())) {
             throw new ValidationException($validator->getErrors());
@@ -381,13 +382,13 @@ abstract class AbstractRequest implements RequestHandlerInterface
 
         /** Create Resource */
         if ($this->isCreateResource()) {
-            return $this->validators->createResource();
+            return $this->validators->createResource($this->getResourceType());
         } /** Update Resource */
         elseif ($this->isUpdateResource()) {
-            return $this->validators->updateResource($this->getRecord(), $this->getResourceId());
+            return $this->validators->updateResource($this->getResourceType(), $this->getResourceId(), $this->getRecord());
         } /** Replace Relationship */
         elseif ($this->isModifyRelationship()) {
-            return $this->validators->modifyRelationship($this->getRelationshipName(), $this->getRecord());
+            return $this->validators->modifyRelationship($this->getResourceType(), $this->getResourceId(), $this->getRelationshipName(), $this->getRecord());
         }
 
         return null;
