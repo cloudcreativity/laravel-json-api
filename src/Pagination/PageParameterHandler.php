@@ -19,8 +19,8 @@
 namespace CloudCreativity\LaravelJsonApi\Pagination;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PageParameterHandlerInterface;
-use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
 use Illuminate\Support\Arr;
+use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 /**
  * Class PageParameterHandler
@@ -29,10 +29,7 @@ use Illuminate\Support\Arr;
 class PageParameterHandler implements PageParameterHandlerInterface
 {
 
-    /**
-     * @var JsonApiService
-     */
-    private $service;
+    private $parameters;
 
     /**
      * @var PaginatorConfiguration
@@ -41,12 +38,12 @@ class PageParameterHandler implements PageParameterHandlerInterface
 
     /**
      * PageParameter constructor.
-     * @param JsonApiService $service
+     * @param EncodingParametersInterface $parameters
      * @param PaginatorConfiguration $config
      */
-    public function __construct(JsonApiService $service, PaginatorConfiguration $config)
+    public function __construct(EncodingParametersInterface $parameters, PaginatorConfiguration $config)
     {
-        $this->service = $service;
+        $this->parameters = $parameters;
         $this->config = $config;
     }
 
@@ -124,9 +121,7 @@ class PageParameterHandler implements PageParameterHandlerInterface
     protected function getParams()
     {
         return (array) $this
-            ->service
-            ->getRequest()
-            ->getEncodingParameters()
+            ->parameters
             ->getPaginationParameters();
     }
 

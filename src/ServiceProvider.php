@@ -27,6 +27,7 @@ use CloudCreativity\JsonApi\Contracts\Repositories\SchemasRepositoryInterface;
 use CloudCreativity\JsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\JsonApi\Contracts\Utils\ConfigurableInterface;
 use CloudCreativity\JsonApi\Contracts\Utils\ReplacerInterface;
+use CloudCreativity\JsonApi\Contracts\Validators\ValidatorFactoryInterface as BaseValidatorFactoryInterface;
 use CloudCreativity\JsonApi\Http\ApiFactory;
 use CloudCreativity\JsonApi\Repositories\CodecMatcherRepository;
 use CloudCreativity\JsonApi\Repositories\ErrorRepository;
@@ -232,6 +233,7 @@ class ServiceProvider extends BaseServiceProvider
     protected function bindValidatorFactory()
     {
         $this->app->singleton(ValidatorFactoryInterface::class, ValidatorFactory::class);
+        $this->app->alias(ValidatorFactoryInterface::class, BaseValidatorFactoryInterface::class);
     }
 
     /**

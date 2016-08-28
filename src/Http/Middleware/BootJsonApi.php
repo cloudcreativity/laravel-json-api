@@ -85,7 +85,7 @@ class BootJsonApi
         $serverRequest = $this->container->make(ServerRequestInterface::class);
 
         /** Parse headers */
-        $initiator->doContentNegotiation($api->getCodecMatcher(), $serverRequest);
+        $initiator->doContentNegotiation($api, $serverRequest);
 
         /** Set the encoding parameters into the container */
         $parameters = $initiator->parseParameters($serverRequest);

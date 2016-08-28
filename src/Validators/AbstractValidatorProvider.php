@@ -144,7 +144,7 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
     public function modifyRelationship($resourceType, $resourceId, $relationshipName, $record)
     {
         $validator = $this
-            ->resourceRelationships($resourceType, $resourceId, $record)
+            ->resourceRelationships($resourceType, $record)
             ->get($relationshipName);
 
         return $this->factory->relationshipDocument($validator);
@@ -195,7 +195,7 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
 
     /**
      * @param string $resourceType
-     * @param string|int|null $resourceId
+     * @param string|null $resourceId
      * @param object|null $record
      * @return ResourceValidatorInterface
      */
@@ -258,13 +258,11 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
      *
      * @param string $resourceType
      *      the resource type being validated.
-     * @param string $resourceId
-     *      the resource id that is being validated.
      * @param object|null $record
      *      the record being updated, or null if it is a create request.
      * @return RelationshipsValidatorInterface
      */
-    protected function resourceRelationships($resourceType, $resourceId, $record = null)
+    protected function resourceRelationships($resourceType, $record = null)
     {
         $validator = $this->factory->relationships();
         $this->relationshipRules($validator, $resourceType, $record);

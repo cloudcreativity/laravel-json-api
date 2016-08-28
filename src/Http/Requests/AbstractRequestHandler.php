@@ -20,6 +20,7 @@ namespace CloudCreativity\LaravelJsonApi\Http\Requests;
 
 use CloudCreativity\JsonApi\Contracts\Authorizer\AuthorizerInterface;
 use CloudCreativity\JsonApi\Contracts\Http\RequestInterpreterInterface;
+use CloudCreativity\JsonApi\Contracts\Validators\FilterValidatorInterface;
 use CloudCreativity\JsonApi\Contracts\Validators\ValidatorProviderInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestHandlerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PageParameterHandlerInterface;
@@ -30,7 +31,7 @@ use Neomerx\JsonApi\Factories\Factory;
  * Class Request
  * @package CloudCreativity\LaravelJsonApi
  */
-abstract class AbstractRequest implements RequestHandlerInterface
+abstract class AbstractRequestHandler implements RequestHandlerInterface
 {
 
     use ChecksUrlParameters,
@@ -99,13 +100,13 @@ abstract class AbstractRequest implements RequestHandlerInterface
 
     /**
      * AbstractRequest constructor.
-     * @param ValidatorProviderInterface $validators
      * @param AuthorizerInterface|null $authorizer
+     * @param ValidatorProviderInterface|null $validators
      * @param HttpFactoryInterface|null $factory
      */
     public function __construct(
-        ValidatorProviderInterface $validators,
-        AuthorizerInterface $authorizer,
+        AuthorizerInterface $authorizer = null,
+        ValidatorProviderInterface $validators = null,
         HttpFactoryInterface $factory = null
     ) {
         $this->validators = $validators;
@@ -118,8 +119,6 @@ abstract class AbstractRequest implements RequestHandlerInterface
      */
     public function handle(RequestInterpreterInterface $interpreter, JsonApiRequest $request)
     {
-        $resourceType = $this->getResourceType();
-
         /** Check that a resource id has resolved to a record */
         $this->checkResourceId($interpreter, $request);
 
@@ -129,15 +128,17 @@ abstract class AbstractRequest implements RequestHandlerInterface
         }
 
         /** Check request parameters are acceptable */
-        $filterValidator = $interpreter->isIndex() ?
-            $this->validators->filterResources($resourceType) : null;
-        $this->checkQueryParameters($this->factory, $request, $filterValidator);
+        $this->checkQueryParameters($this->factory, $request, $this->filterValidator());
 
         /** Authorize the request */
-        $this->authorize($interpreter, $this->authorizer, $request);
+        if ($this->authorizer) {
+            $this->authorize($interpreter, $this->authorizer, $request);
+        }
 
         /** Check the document content is acceptable */
-        $this->checkDocumentIsAcceptable($this->validators, $interpreter, $request);
+        if ($this->validators) {
+            $this->checkDocumentIsAcceptable($this->validators, $interpreter, $request);
+        }
     }
 
     /**
@@ -199,4 +200,11 @@ abstract class AbstractRequest implements RequestHandlerInterface
         return $param->getAllowedPagingParameters();
     }
 
+    /**
+     * @return FilterValidatorInterface|null
+     */
+    private function filterValidator()
+    {
+        return $this->validators ? $this->validators->filterResources($this->getResourceType()) : null;
+    }
 }

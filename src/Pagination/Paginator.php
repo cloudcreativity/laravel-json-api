@@ -20,10 +20,10 @@ namespace CloudCreativity\LaravelJsonApi\Pagination;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Document\LinkFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PaginatorInterface;
-use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Contracts\Pagination\Paginator as IlluminatePaginator;
 use Neomerx\JsonApi\Contracts\Document\LinkInterface;
+use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\SortParameterInterface;
 use Neomerx\JsonApi\Contracts\Http\Query\QueryParametersParserInterface;
 
@@ -35,9 +35,9 @@ class Paginator implements PaginatorInterface
 {
 
     /**
-     * @var JsonApiService
+     * @var EncodingParametersInterface
      */
-    private $service;
+    private $parameters;
 
     /**
      * @var LinkFactoryInterface
@@ -51,16 +51,16 @@ class Paginator implements PaginatorInterface
 
     /**
      * Paginator constructor.
-     * @param JsonApiService $service
+     * @param EncodingParametersInterface $parameters
      * @param LinkFactoryInterface $links
      * @param PaginatorConfiguration $config
      */
     public function __construct(
-        JsonApiService $service,
+        EncodingParametersInterface $parameters,
         LinkFactoryInterface $links,
         PaginatorConfiguration $config
     ) {
-        $this->service = $service;
+        $this->parameters = $parameters;
         $this->links = $links;
         $this->config = $config;
     }
@@ -137,16 +137,11 @@ class Paginator implements PaginatorInterface
      */
     protected function buildParams()
     {
-        $encodingParameters = $this
-            ->service
-            ->getRequest()
-            ->getEncodingParameters();
-
         return array_filter([
             QueryParametersParserInterface::PARAM_FILTER =>
-                $encodingParameters->getFilteringParameters(),
+                $this->parameters->getFilteringParameters(),
             QueryParametersParserInterface::PARAM_SORT =>
-                $this->buildSortParams((array) $encodingParameters->getSortParameters())
+                $this->buildSortParams((array) $this->parameters->getSortParameters())
         ]);
     }
 

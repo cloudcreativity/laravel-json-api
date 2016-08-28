@@ -112,7 +112,7 @@ class CreateRequest
     {
         /** @var StoreInterface $store */
         $store = $this->container->make(StoreInterface::class);
-        $identifier = new ResourceIdentifier($resourceType, $resourceId);
+        $identifier = ResourceIdentifier::create($resourceType, $resourceId);
 
         return $store->find($identifier);
     }
