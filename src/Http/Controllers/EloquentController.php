@@ -102,8 +102,9 @@ abstract class EloquentController extends JsonApiController
      */
     public function create(JsonApiRequest $request)
     {
-        $model = $this->hydrate($request->getDocument()->getResource(), $this->model);
-        $result = ($model instanceof Response) ? $model : $this->doCommit($model);
+        $resource = $request->getDocument()->getResource();
+        $model = $this->hydrate($resource, $this->model);
+        $result = ($model instanceof Response) ? $model : $this->doCommit($model, $resource);
 
         if ($result instanceof Response) {
             return $result;
@@ -133,8 +134,9 @@ abstract class EloquentController extends JsonApiController
      */
     public function update(JsonApiRequest $request)
     {
-        $model = $this->hydrate($request->getDocument()->getResource(), $this->getRecord($request));
-        $result = ($model instanceof Response) ? $model : $this->doCommit($model);
+        $resource = $request->getDocument()->getResource();
+        $model = $this->hydrate($resource, $this->getRecord($request));
+        $result = ($model instanceof Response) ? $model : $this->doCommit($model, $resource);
 
         if ($result instanceof Response) {
             return $result;
@@ -232,21 +234,38 @@ abstract class EloquentController extends JsonApiController
      * Commit the model to the database.
      *
      * @param Model $model
+     * @param ResourceInterface $resource
      * @return bool|Response
      */
-    protected function commit(Model $model)
+    protected function commit(Model $model, ResourceInterface $resource)
     {
         $isUpdating = $model->exists;
 
         $this->beforeCommit($model, $isUpdating);
 
-        $result = $model->save();
+        $result = $this->save($model, $resource);
 
         if ($result) {
             $this->afterCommit($model, $isUpdating);
         }
 
         return $result;
+    }
+
+    /**
+     * Execute a save.
+     *
+     * Child classes can overload this method if they need to implement additional writing to the database
+     * on save. For example, if the resource includes a has-many relationship, that will have to be persisted
+     * to the database after the primary model is saved if creating that model.
+     *
+     * @param Model $model
+     * @param ResourceInterface $resource
+     * @return bool
+     */
+    protected function save(Model $model, ResourceInterface $resource)
+    {
+        return $model->save();
     }
 
     /**
@@ -371,12 +390,13 @@ abstract class EloquentController extends JsonApiController
      * Perform the commit task within a transaction.
      *
      * @param Model $model
+     * @param ResourceInterface $resource
      * @return bool|Response
      */
-    private function doCommit(Model $model)
+    private function doCommit(Model $model, ResourceInterface $resource)
     {
-        return $this->transaction(function () use ($model) {
-            return $this->commit($model);
+        return $this->transaction(function () use ($model, $resource) {
+            return $this->commit($model, $resource);
         });
     }
 
