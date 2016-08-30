@@ -18,8 +18,11 @@
 
 namespace CloudCreativity\LaravelJsonApi\Search;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PageParameterHandlerInterface;
+use CloudCreativity\JsonApi\Contracts\Pagination\PageInterface;
+use CloudCreativity\JsonApi\Contracts\Pagination\PaginatorInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Search\SearchInterface;
+use CloudCreativity\LaravelJsonApi\Pagination\Page;
+use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
 use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
@@ -94,6 +97,20 @@ abstract class AbstractSearch implements SearchInterface
     abstract protected function isSearchOne(Collection $filters);
 
     /**
+     * @var JsonApiService
+     */
+    private $service;
+
+    /**
+     * AbstractSearch constructor.
+     * @param JsonApiService $service
+     */
+    public function __construct(JsonApiService $service)
+    {
+        $this->service = $service;
+    }
+
+    /**
      * @inheritdoc
      */
     public function search(Builder $builder, EncodingParametersInterface $parameters)
@@ -138,7 +155,13 @@ abstract class AbstractSearch implements SearchInterface
      */
     protected function isPaginated()
     {
-        return 0 < $this->maxPerPage || $this->page()->isPaginated();
+        if (0 < $this->maxPerPage) {
+            return true;
+        }
+
+        $paginator = $this->service->getPaginator();
+
+        return is_int($paginator->getCurrentPage());
     }
 
     /**
@@ -146,18 +169,24 @@ abstract class AbstractSearch implements SearchInterface
      */
     protected function getPerPage()
     {
-        return $this->page()->getPerPage($this->perPage, $this->maxPerPage ?: null);
+        $paginator = $this->service->getPaginator();
+
+        return $paginator->getPerPage($this->perPage, $this->maxPerPage ?: null);
     }
 
     /**
      * @param Builder $builder
-     * @return Paginator
+     * @return PageInterface
      */
     protected function paginate(Builder $builder)
     {
         $size = $this->getPerPage();
+        $page = new Page($this->service);
 
-        return $this->simplePagination ? $builder->simplePaginate($size) : $builder->paginate($size);
+        $data = $this->simplePagination ? $builder->simplePaginate($size) : $builder->paginate($size);
+        $page->setData($data);
+
+        return $page;
     }
 
     /**
@@ -197,14 +226,6 @@ abstract class AbstractSearch implements SearchInterface
     protected function normalizeIds($ids)
     {
         return is_array($ids) ? $ids : explode(',', (string) $ids);
-    }
-
-    /**
-     * @return PageParameterHandlerInterface
-     */
-    protected function page()
-    {
-        return app(PageParameterHandlerInterface::class);
     }
 
 }

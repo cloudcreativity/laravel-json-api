@@ -18,10 +18,10 @@
 
 namespace CloudCreativity\LaravelJsonApi\Contracts\Search;
 
-use Illuminate\Contracts\Pagination\Paginator;
+use CloudCreativity\JsonApi\Contracts\Pagination\PageInterface;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 /**
@@ -34,7 +34,7 @@ interface SearchInterface
     /**
      * @param Builder $builder
      * @param EncodingParametersInterface $parameters
-     * @return Collection|Paginator|Model|null
+     * @return Collection|PageInterface|Model|null
      */
     public function search(Builder $builder, EncodingParametersInterface $parameters);
 }

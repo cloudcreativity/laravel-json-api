@@ -20,7 +20,10 @@ namespace CloudCreativity\LaravelJsonApi;
 
 use CloudCreativity\JsonApi\Contracts\Exceptions\ExceptionParserInterface;
 use CloudCreativity\JsonApi\Contracts\Http\ApiFactoryInterface;
-use CloudCreativity\JsonApi\Contracts\Http\RequestInterpreterInterface;
+use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestFactoryInterface;
+use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterpreterInterface;
+use CloudCreativity\JsonApi\Contracts\Http\Responses\ResponseFactoryInterface;
+use CloudCreativity\JsonApi\Contracts\Pagination\PaginatorInterface;
 use CloudCreativity\JsonApi\Contracts\Repositories\CodecMatcherRepositoryInterface;
 use CloudCreativity\JsonApi\Contracts\Repositories\ErrorRepositoryInterface;
 use CloudCreativity\JsonApi\Contracts\Repositories\SchemasRepositoryInterface;
@@ -29,6 +32,9 @@ use CloudCreativity\JsonApi\Contracts\Utils\ConfigurableInterface;
 use CloudCreativity\JsonApi\Contracts\Utils\ReplacerInterface;
 use CloudCreativity\JsonApi\Contracts\Validators\ValidatorFactoryInterface as BaseValidatorFactoryInterface;
 use CloudCreativity\JsonApi\Http\ApiFactory;
+use CloudCreativity\JsonApi\Http\Requests\RequestFactory;
+use CloudCreativity\JsonApi\Http\Responses\ResponseFactory;
+use CloudCreativity\JsonApi\Pagination\Paginator;
 use CloudCreativity\JsonApi\Repositories\CodecMatcherRepository;
 use CloudCreativity\JsonApi\Repositories\ErrorRepository;
 use CloudCreativity\JsonApi\Repositories\SchemasRepository;
@@ -36,19 +42,15 @@ use CloudCreativity\JsonApi\Store\Store;
 use CloudCreativity\JsonApi\Utils\Replacer;
 use CloudCreativity\LaravelJsonApi\Adapters\EloquentAdapter;
 use CloudCreativity\LaravelJsonApi\Contracts\Document\LinkFactoryInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PageParameterHandlerInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PaginatorInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorErrorFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Document\LinkFactory;
 use CloudCreativity\LaravelJsonApi\Exceptions\ExceptionParser;
 use CloudCreativity\LaravelJsonApi\Http\Middleware\BootJsonApi;
-use CloudCreativity\LaravelJsonApi\Http\Middleware\CreateRequest;
+use CloudCreativity\LaravelJsonApi\Http\Middleware\HandleRequest;
 use CloudCreativity\LaravelJsonApi\Http\Requests\RequestInterpreter;
-use CloudCreativity\LaravelJsonApi\Http\Responses\ResponseFactory;
 use CloudCreativity\LaravelJsonApi\Http\Responses\Responses;
-use CloudCreativity\LaravelJsonApi\Pagination\PageParameterHandler;
-use CloudCreativity\LaravelJsonApi\Pagination\Paginator;
+use CloudCreativity\LaravelJsonApi\Pagination\Page;
 use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
 use CloudCreativity\LaravelJsonApi\Validators\ValidatorErrorFactory;
 use CloudCreativity\LaravelJsonApi\Validators\ValidatorFactory;
@@ -100,15 +102,14 @@ class ServiceProvider extends BaseServiceProvider
         $this->bindSchemaRepository();
         $this->bindErrorRepository();
         $this->bindExceptionParser();
-        $this->bindRequestInterpreter();
+        $this->bindRequestFactory();
         $this->bindResponses();
         $this->bindValidatorFactory();
         $this->bindValidatorErrorFactory();
         $this->bindStore();
         $this->bindEloquentAdapter();
         $this->bindLinkFactory();
-        $this->bindPageParameterHandler();
-        $this->bindPaginator();
+        $this->bindPagination();
     }
 
     /**
@@ -135,7 +136,7 @@ class ServiceProvider extends BaseServiceProvider
     protected function bootMiddleware(Router $router)
     {
         $router->middleware('json-api', BootJsonApi::class);
-        $router->middleware('json-api-request', CreateRequest::class);
+        $router->middleware('json-api.request', HandleRequest::class);
     }
 
     /**
@@ -147,7 +148,7 @@ class ServiceProvider extends BaseServiceProvider
     {
         if (method_exists($responses, 'macro')) {
             $responses->macro('jsonApi', function () {
-                return app(ResponseFactory::class);
+                return app(ResponseFactoryInterface::class);
             });
         }
     }
@@ -212,10 +213,11 @@ class ServiceProvider extends BaseServiceProvider
     }
 
     /**
-     * Bind the request interpreter into the service container.
+     * Bind the request factory into the service container.
      */
-    protected function bindRequestInterpreter()
+    protected function bindRequestFactory()
     {
+        $this->app->singleton(RequestFactoryInterface::class, RequestFactory::class);
         $this->app->singleton(RequestInterpreterInterface::class, RequestInterpreter::class);
     }
 
@@ -225,6 +227,7 @@ class ServiceProvider extends BaseServiceProvider
     protected function bindResponses()
     {
         $this->app->singleton(ResponsesInterface::class, Responses::class);
+        $this->app->singleton(ResponseFactoryInterface::class, ResponseFactory::class);
     }
 
     /**
@@ -304,19 +307,12 @@ class ServiceProvider extends BaseServiceProvider
     }
 
     /**
-     * Bind the page parameter handler into the service container.
+     * Bind pagination into the service container.
      */
-    protected function bindPageParameterHandler()
+    protected function bindPagination()
     {
-        $this->app->singleton(['json-api.page' => PageParameterHandlerInterface::class], PageParameterHandler::class);
-    }
-
-    /**
-     * Bind the paginator into the service container.
-     */
-    protected function bindPaginator()
-    {
-        $this->app->singleton(['json-api.paginator' => PaginatorInterface::class], Paginator::class);
+        $this->app->singleton(PaginatorInterface::class, Paginator::class);
+        $this->app->singleton(Page::class);
     }
 
     /**

@@ -19,18 +19,17 @@
 namespace CloudCreativity\LaravelJsonApi\Http\Controllers;
 
 use Closure;
+use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface as JsonApiRequest;
 use CloudCreativity\JsonApi\Contracts\Hydrator\HydratorInterface;
 use CloudCreativity\JsonApi\Contracts\Object\ResourceInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestHandlerInterface;
+use CloudCreativity\JsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Contracts\Search\SearchInterface;
-use CloudCreativity\LaravelJsonApi\Http\Requests\JsonApiRequest;
 use CloudCreativity\LaravelJsonApi\Search\SearchAll;
 use Exception;
 use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Response;
-use RuntimeException;
 
 /**
  * Class EloquentController
@@ -80,7 +79,7 @@ abstract class EloquentController extends JsonApiController
         parent::__construct();
         $this->model = $model;
         $this->hydrator = $hydrator;
-        $this->search = $search ?: new SearchAll();
+        $this->search = $search;
     }
 
     /**
@@ -90,6 +89,10 @@ abstract class EloquentController extends JsonApiController
     public function index(JsonApiRequest $request)
     {
         $result = $this->search($request);
+
+        if ($result instanceof Response) {
+            return $result;
+        }
 
         return $this
             ->reply()
@@ -199,10 +202,14 @@ abstract class EloquentController extends JsonApiController
 
     /**
      * @param JsonApiRequest $request
-     * @return Paginator|Collection|Model|null
+     * @return Paginator|Collection|Model|Response|null
      */
     protected function search(JsonApiRequest $request)
     {
+        if (!$this->search) {
+            return $this->notImplemented();
+        }
+
         $builder = $this->model->newQuery();
 
         return $this->search->search($builder, $request->getParameters());

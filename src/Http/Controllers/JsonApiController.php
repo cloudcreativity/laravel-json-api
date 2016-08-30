@@ -18,8 +18,8 @@
 
 namespace CloudCreativity\LaravelJsonApi\Http\Controllers;
 
+use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface as JsonApiRequest;
 use CloudCreativity\LaravelJsonApi\Document\GeneratesLinks;
-use CloudCreativity\LaravelJsonApi\Http\Requests\JsonApiRequest;
 use CloudCreativity\LaravelJsonApi\Http\Responses\ReplyTrait;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
@@ -51,7 +51,7 @@ abstract class JsonApiController extends Controller
      */
     public function __construct()
     {
-        $middleware = sprintf('json-api-request:%s', $this->getRequestHandler());
+        $middleware = sprintf('json-api.request:%s', $this->getRequestHandler());
         $this->middleware($middleware, $this->requestHandlerOptions);
     }
 

@@ -18,9 +18,11 @@
 
 namespace CloudCreativity\LaravelJsonApi\Http\Requests;
 
-use CloudCreativity\JsonApi\Http\AbstractRequestInterpreter;
+use CloudCreativity\JsonApi\Exceptions\RuntimeException;
+use CloudCreativity\JsonApi\Http\Requests\AbstractRequestInterpreter;
 use CloudCreativity\LaravelJsonApi\Routing\ResourceRegistrar;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Router;
 
 /**
  * Class RequestInterpreter
@@ -35,12 +37,19 @@ final class RequestInterpreter extends AbstractRequestInterpreter
     private $request;
 
     /**
+     * @var Router
+     */
+    private $router;
+
+    /**
      * RequestInterpreter constructor.
      * @param Request $request
+     * @param Router $router
      */
-    public function __construct(Request $request)
+    public function __construct(Request $request, Router $router)
     {
         $this->request = $request;
+        $this->router = $router;
     }
 
     /**
@@ -49,6 +58,22 @@ final class RequestInterpreter extends AbstractRequestInterpreter
     protected function isMethod($method)
     {
         return $this->request->isMethod($method);
+    }
+
+    /**
+     * @return string
+     */
+    public function getResourceType()
+    {
+        $name = $this->router->getCurrentRoute()->getName();
+
+        preg_match('/([a-zA-Z\-_]+).{1}[a-z]+$/', $name, $matches);
+
+        if (!isset($matches[1])) {
+            throw new RuntimeException('No matching resource type from the current route name.');
+        }
+
+        return $matches[1];
     }
 
     /**

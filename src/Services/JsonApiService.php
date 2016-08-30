@@ -20,18 +20,17 @@ namespace CloudCreativity\LaravelJsonApi\Services;
 
 use CloudCreativity\JsonApi\Contracts\Http\ApiFactoryInterface;
 use CloudCreativity\JsonApi\Contracts\Http\ApiInterface;
-use CloudCreativity\JsonApi\Contracts\Http\ErrorResponseInterface;
+use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestFactoryInterface;
+use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface;
+use CloudCreativity\JsonApi\Contracts\Http\Responses\ErrorResponseInterface;
+use CloudCreativity\JsonApi\Contracts\Pagination\PaginatorInterface;
 use CloudCreativity\JsonApi\Contracts\Utils\ErrorReporterInterface;
-use CloudCreativity\LaravelJsonApi\Http\Requests\JsonApiRequest;
+use CloudCreativity\JsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Http\Requests\ManualRequest;
-use CloudCreativity\LaravelJsonApi\Http\Requests\RequestDocument;
-use CloudCreativity\LaravelJsonApi\Http\Requests\RequestInitiator;
 use CloudCreativity\LaravelJsonApi\Routing\ResourceRegistrar;
 use Exception;
 use Illuminate\Contracts\Container\Container;
-use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use Neomerx\JsonApi\Contracts\Http\Headers\MediaTypeInterface;
-use RuntimeException;
 
 /**
  * Class JsonApiService
@@ -112,49 +111,9 @@ class JsonApiService implements ErrorReporterInterface
     }
 
     /**
-     * @return EncodingParametersInterface
-     */
-    public function getEncodingParameters()
-    {
-        if (!$this->hasEncodingParameters()) {
-            throw new RuntimeException('No encoding parameters. The JSON API middleware has not been run.');
-        }
-
-        return $this->container->make(EncodingParametersInterface::class);
-    }
-
-    /**
-     * @return bool
-     */
-    public function hasEncodingParameters()
-    {
-        return $this->container->bound(EncodingParametersInterface::class);
-    }
-
-    /**
-     * @return RequestDocument
-     */
-    public function getRequestDocument()
-    {
-        if (!$this->hasRequestDocument()) {
-            throw new RuntimeException('No JSON API request document.');
-        }
-
-        return $this->container->make(RequestDocument::class);
-    }
-
-    /**
-     * @return bool
-     */
-    public function hasRequestDocument()
-    {
-        return $this->container->bound(RequestDocument::class);
-    }
-
-    /**
      * Get the current JSON API request.
      *
-     * @return JsonApiRequest
+     * @return RequestInterface
      */
     public function getRequest()
     {
@@ -162,7 +121,7 @@ class JsonApiService implements ErrorReporterInterface
             throw new RuntimeException('No JSON API request has been created.');
         }
 
-        return $this->container->make(JsonApiRequest::class);
+        return $this->container->make(RequestInterface::class);
     }
 
     /**
@@ -172,7 +131,15 @@ class JsonApiService implements ErrorReporterInterface
      */
     public function hasRequest()
     {
-        return $this->container->bound(JsonApiRequest::class);
+        return $this->container->bound(RequestInterface::class);
+    }
+
+    /**
+     * @return PaginatorInterface
+     */
+    public function getPaginator()
+    {
+        return $this->container->make(PaginatorInterface::class);
     }
 
     /**
@@ -191,7 +158,7 @@ class JsonApiService implements ErrorReporterInterface
     ) {
         $config = (array) config('json-api.namespaces');
         $headers = ['Accept' => $accept, 'Content-Type' => $contentType];
-        $request = new ManualRequest('GET', $headers, $parameters);
+        $serverRequest = new ManualRequest('GET', $headers, $parameters);
 
         if (!array_key_exists($namespace, $config)) {
             throw new RuntimeException("Did not recognise JSON API namespace: $namespace");
@@ -202,10 +169,10 @@ class JsonApiService implements ErrorReporterInterface
         $api = $factory->createApi($namespace, $config[$namespace]);
         $this->container->instance(ApiInterface::class, $api);
 
-        /** @var RequestInitiator $initiator */
-        $initiator = $this->container->make(RequestInitiator::class);
-        $initiator->doContentNegotiation($api, $request);
+        /** @var RequestFactoryInterface $requestFactory */
+        $requestFactory = $this->container->make(RequestFactoryInterface::class);
+        $request = $requestFactory->build($api, $serverRequest);
 
-        $this->container->instance(EncodingParametersInterface::class, $initiator->parseParameters($request));
+        $this->container->instance(RequestInterface::class, $request);
     }
 }

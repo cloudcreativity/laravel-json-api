@@ -4,6 +4,11 @@ This file provides notes on how to upgrade between versions.
 
 ## v0.4 to v0.5
 
+The dependent framework-agnostic package has a number of changes. Below lists the changes you will need to make 
+to your application. However, if you are also extending underlying package functionality you will also need to refer 
+to the `v0.5` to `v0.6` upgrade notes here: 
+[cloudcreativty/json-api Upgrade Notes](https://github.com/cloudcreativity/json-api/blob/feature/v0.6/UPGRADE.md)
+
 ### Authorizers
 
 #### Abstract Authorizer
@@ -87,6 +92,20 @@ public function canModifyRelationship(
 The namespace of the `AbstractHydrator` has changed from `CloudCreativity\LaravelJsonApi\Hydrator\AbstractHydrator`
 to `CloudCreativity\JsonApi\Hydrator\AbstractHydrator`.
 
+### Requests
+
+Class `CloudCreativity\LaravelJsonApi\Http\Requests\AbstractRequest` has been removed. Instead you should extend
+`CloudCreativity\JsonApi\Requests\RequestHandler`.
+
+Note that the constructor for this new class has the authorizer as the first argument and the validators as the 
+second (i.e. it is the other way round from what it was before). We've made this change because authorization
+occurs before validation, so it makes more sense for the arguments to be this way round.
+
+### Responses (Reply Trait)
+
+The method signature for the `errors` method has changed. To maintain the old behaviour use `error` instead (it
+accepts an error collection as well as a single error). 
+
 ### Validator Providers
 
 The classes that provide validators for individual resource types generally extend `AbstractValidatorProvider`. This
@@ -134,14 +153,6 @@ it.
 
 The signatures of other `protected` methods have also changed to pass down this additional argument. If you have
 implemented any other methods, check the abstract class for the new argument order.
-
-### Custom Validator Classes
-
-If you have written any custom validator classes, you will need to refer to the `v0.5` to `v0.6` notes here: 
-[cloudcreativty/json-api Upgrade Notes](https://github.com/cloudcreativity/json-api/blob/feature/v0.6/UPGRADE.md)
-
-By custom validators, we mean the validators that validate individual parts of a JSON API document. You are unlikely
-to have done this!
 
 ## v0.3 to v0.4
 

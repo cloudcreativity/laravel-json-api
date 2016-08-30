@@ -21,14 +21,13 @@ namespace CloudCreativity\LaravelJsonApi\Http\Middleware;
 use Closure;
 use CloudCreativity\JsonApi\Contracts\Http\ApiFactoryInterface;
 use CloudCreativity\JsonApi\Contracts\Http\ApiInterface;
+use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestFactoryInterface;
+use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface;
+use CloudCreativity\JsonApi\Contracts\Pagination\PaginatorInterface;
 use CloudCreativity\JsonApi\Http\ApiFactory;
-use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PageParameterHandlerInterface;
-use CloudCreativity\LaravelJsonApi\Http\Requests\RequestDocument;
-use CloudCreativity\LaravelJsonApi\Http\Requests\RequestInitiator;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\AbstractPaginator;
-use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use RuntimeException;
 
@@ -76,31 +75,24 @@ class BootJsonApi
 
         /** @var ApiFactory $factory */
         $factory = $this->container->make(ApiFactoryInterface::class);
+        /** @var ServerRequestInterface $request */
+        $serverRequest = $this->container->make(ServerRequestInterface::class);
+        /** @var RequestFactoryInterface $requestFactory */
+        $requestFactory = $this->container->make(RequestFactoryInterface::class);
+
+        /** Build and register the API */
         $api = $factory->createApi($namespace, $this->appendSchemaAndHost($request, (array) $config[$namespace]));
         $this->container->instance(ApiInterface::class, $api);
 
-        /** @var RequestInitiator $initiator */
-        $initiator = $this->container->make(RequestInitiator::class);
-        /** @var ServerRequestInterface $request */
-        $serverRequest = $this->container->make(ServerRequestInterface::class);
-
-        /** Parse headers */
-        $initiator->doContentNegotiation($api, $serverRequest);
-
-        /** Set the encoding parameters into the container */
-        $parameters = $initiator->parseParameters($serverRequest);
-        $this->container->instance(EncodingParametersInterface::class, $parameters);
-
-        /** Set the document content into the container */
-        if ($document = $initiator->parseDocument($api, $serverRequest)) {
-            $this->container->instance(RequestDocument::class, $document);
-        }
+        /** Build and register the JSON API request */
+        $jsonApiRequest = $requestFactory->build($api, $serverRequest);
+        $this->container->instance(RequestInterface::class, $jsonApiRequest);
 
         /** Override the current page resolution */
         AbstractPaginator::currentPageResolver(function () {
-            /** @var PageParameterHandlerInterface $param */
-            $param = $this->container->make(PageParameterHandlerInterface::class);
-            return $param->getCurrentPage();
+            /** @var PaginatorInterface $paginator */
+            $paginator = $this->container->make(PaginatorInterface::class);
+            return $paginator->getCurrentPage();
         });
 
         return $next($request);

@@ -19,12 +19,8 @@
 namespace CloudCreativity\LaravelJsonApi\Http\Middleware;
 
 use Closure;
-use CloudCreativity\JsonApi\Contracts\Http\RequestInterpreterInterface;
-use CloudCreativity\JsonApi\Contracts\Store\StoreInterface;
-use CloudCreativity\JsonApi\Object\ResourceIdentifier;
-use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestHandlerInterface;
-use CloudCreativity\LaravelJsonApi\Exceptions\RequestException;
-use CloudCreativity\LaravelJsonApi\Http\Requests\JsonApiRequest;
+use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestHandlerInterface;
+use CloudCreativity\JsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Http\Request;
@@ -33,7 +29,7 @@ use Illuminate\Http\Request;
  * Class CreateRequest
  * @package CloudCreativity\LaravelJsonApi
  */
-class CreateRequest
+class HandleRequest
 {
 
     /**
@@ -59,31 +55,11 @@ class CreateRequest
     public function handle($request, Closure $next, $requestClass)
     {
         $handler = $this->requestHandler($requestClass);
-        /** @var RequestInterpreterInterface $interpreter */
-        $interpreter = $this->container->make(RequestInterpreterInterface::class);
         /** @var JsonApiService $service */
         $service = $this->container->make(JsonApiService::class);
 
-        /** Get the things we need to create a request */
-        $resourceType = $handler->getResourceType();
-        $resourceId = $interpreter->getResourceId();
-        $record = $resourceId ? $this->record($resourceType, $resourceId) : null;
-
-        /** Create the request and register it in the container prior to validation */
-        $jsonApiRequest = new JsonApiRequest(
-            $resourceType,
-            $service->getEncodingParameters(),
-            $resourceId,
-            $interpreter->getRelationshipName(),
-            $service->hasRequestDocument() ? $service->getRequestDocument() : null,
-            $record
-        );
-
-        /** Register the request in the container so it is accessible after this point */
-        $this->container->instance(JsonApiRequest::class, $jsonApiRequest);
-
         /** Ask the handler to validate the request */
-        $handler->handle($interpreter, $jsonApiRequest);
+        $handler->handle($service->getApi(), $service->getRequest());
 
         return $next($request);
     }
@@ -97,23 +73,10 @@ class CreateRequest
         $handler = $this->container->make($requestClass);
 
         if (!$handler instanceof RequestHandlerInterface) {
-            throw new RequestException("Class $requestClass is not a request handler.");
+            throw new RuntimeException("Class $requestClass is not a request handler.");
         }
 
         return $handler;
     }
 
-    /**
-     * @param $resourceType
-     * @param $resourceId
-     * @return object
-     */
-    private function record($resourceType, $resourceId)
-    {
-        /** @var StoreInterface $store */
-        $store = $this->container->make(StoreInterface::class);
-        $identifier = ResourceIdentifier::create($resourceType, $resourceId);
-
-        return $store->find($identifier);
-    }
 }

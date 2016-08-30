@@ -18,15 +18,8 @@
 
 namespace CloudCreativity\LaravelJsonApi\Http\Responses;
 
-use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
+use CloudCreativity\JsonApi\Http\Responses\AbstractResponses;
 use Illuminate\Http\Response;
-use Neomerx\JsonApi\Contracts\Encoder\EncoderInterface;
-use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
-use Neomerx\JsonApi\Contracts\Http\Headers\MediaTypeInterface;
-use Neomerx\JsonApi\Contracts\Http\Headers\SupportedExtensionsInterface;
-use Neomerx\JsonApi\Contracts\Schema\ContainerInterface;
-use Neomerx\JsonApi\Http\Responses as AbstractResponses;
-use RuntimeException;
 
 /**
  * Class Responses
@@ -34,20 +27,6 @@ use RuntimeException;
  */
 class Responses extends AbstractResponses
 {
-
-    /**
-     * @var JsonApiService
-     */
-    private $service;
-
-    /**
-     * Responses constructor.
-     * @param JsonApiService $service
-     */
-    public function __construct(JsonApiService $service)
-    {
-        $this->service = $service;
-    }
 
     /**
      * @param null|string $content
@@ -58,69 +37,6 @@ class Responses extends AbstractResponses
     protected function createResponse($content, $statusCode, array $headers)
     {
         return new Response($content, $statusCode, $headers);
-    }
-
-    /**
-     * @return EncoderInterface|null
-     */
-    protected function getEncoder()
-    {
-        return $this->service->getApi()->getEncoder();
-    }
-
-    /**
-     * @return null|string
-     */
-    protected function getUrlPrefix()
-    {
-        return $this->service->getApi()->getUrlPrefix();
-    }
-
-
-    /**
-     * @return EncodingParametersInterface|null
-     */
-    protected function getEncodingParameters()
-    {
-        if (!$this->service->hasEncodingParameters()) {
-            return null;
-        }
-
-        return $this->service->getEncodingParameters();
-    }
-
-    /**
-     * @return ContainerInterface
-     */
-    protected function getSchemaContainer()
-    {
-        return $this->service->getApi()->getSchemas();
-    }
-
-    /**
-     * @return SupportedExtensionsInterface|null
-     */
-    protected function getSupportedExtensions()
-    {
-        return $this->service->getApi()->getSupportedExts();
-    }
-
-    /**
-     * @return MediaTypeInterface
-     */
-    protected function getMediaType()
-    {
-        $type = $this
-            ->service
-            ->getApi()
-            ->getCodecMatcher()
-            ->getEncoderRegisteredMatchedType();
-
-        if (!$type instanceof MediaTypeInterface) {
-            throw new RuntimeException('No matching media type for encoded JSON-API response.');
-        }
-
-        return $type;
     }
 
 }

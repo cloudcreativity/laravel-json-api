@@ -18,12 +18,14 @@
 
 namespace CloudCreativity\LaravelJsonApi\Pagination;
 
+use CloudCreativity\JsonApi\Contracts\Pagination\PageInterface;
+use CloudCreativity\JsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Contracts\Document\LinkFactoryInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PaginatorInterface;
+use CloudCreativity\LaravelJsonApi\Document\GeneratesLinks;
+use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Contracts\Pagination\Paginator as IlluminatePaginator;
+use Illuminate\Contracts\Pagination\Paginator;
 use Neomerx\JsonApi\Contracts\Document\LinkInterface;
-use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\SortParameterInterface;
 use Neomerx\JsonApi\Contracts\Http\Query\QueryParametersParserInterface;
 
@@ -31,81 +33,83 @@ use Neomerx\JsonApi\Contracts\Http\Query\QueryParametersParserInterface;
  * Class Paginator
  * @package CloudCreativity\LaravelJsonApi
  */
-class Paginator implements PaginatorInterface
+class Page implements PageInterface
 {
 
-    /**
-     * @var EncodingParametersInterface
-     */
-    private $parameters;
+    use GeneratesLinks;
 
     /**
-     * @var LinkFactoryInterface
+     * @var JsonApiService
      */
-    private $links;
+    private $service;
 
     /**
-     * @var PaginatorConfiguration
+     * @var Paginator|null
      */
-    private $config;
+    private $data;
 
     /**
-     * Paginator constructor.
-     * @param EncodingParametersInterface $parameters
-     * @param LinkFactoryInterface $links
-     * @param PaginatorConfiguration $config
+     * Page constructor.
+     * @param JsonApiService $service
      */
-    public function __construct(
-        EncodingParametersInterface $parameters,
-        LinkFactoryInterface $links,
-        PaginatorConfiguration $config
-    ) {
-        $this->parameters = $parameters;
-        $this->links = $links;
-        $this->config = $config;
+    public function __construct(JsonApiService $service)
+    {
+        $this->service = $service;
     }
 
     /**
-     * @param IlluminatePaginator $results
-     * @param array|object|null $meta
-     *      the meta to add the pagination meta to.
-     * @return array|object|null
-     *      the combined meta.
+     * @param Paginator $data
+     * @return $this
      */
-    public function addMeta(IlluminatePaginator $results, $meta = null)
+    public function setData(Paginator $data)
     {
-        $meta = $meta ?: [];
+        $this->data = $data;
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getData()
+    {
+        if (!$this->data) {
+            throw new RuntimeException('No paginated data set.');
+        }
+
+        return $this->data;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getMeta()
+    {
+        $pageMeta = new PageMeta($this->service->getApi());
+        $results = $this->getData();
 
         $page = [
-            $this->config->getMetaCurrentPage() => $results->currentPage(),
-            $this->config->getMetaPerPage() => $results->perPage(),
-            $this->config->getMetaFirstItem() => $results->firstItem(),
-            $this->config->getMetaLastItem() => $results->lastItem(),
+            $pageMeta->getCurrentPage() => $results->currentPage(),
+            $pageMeta->getPerPage() => $results->perPage(),
+            $pageMeta->getFirstItem() => $results->firstItem(),
+            $pageMeta->getLastItem() => $results->lastItem(),
         ];
 
         if ($results instanceof LengthAwarePaginator) {
-            $page[$this->config->getMetaTotal()] = $results->total();
-            $page[$this->config->getMetaLastPage()] = $results->lastPage();
+            $page[$pageMeta->getTotal()] = $results->total();
+            $page[$pageMeta->getLastPage()] = $results->lastPage();
         }
 
-        $key = $this->config->getMetaKey();
-
-        if (is_array($meta)) {
-            $meta[$key] = $page;
-        } elseif (is_object($meta)) {
-            $meta->{$key} = $page;
-        }
-
-        return $meta;
+        return $page;
     }
 
     /**
-     * @param IlluminatePaginator $results
-     * @param array $links
-     * @return array
+     * @inheritDoc
      */
-    public function addLinks(IlluminatePaginator $results, array $links = [])
+    public function getLinks()
     {
+        /** @var Paginator $results */
+        $results = $this->getData();
         $currentPage = $results->currentPage();
         $perPage = $results->perPage();
         $params = $this->buildParams();
@@ -120,14 +124,12 @@ class Paginator implements PaginatorInterface
             $nextPage = $currentPage + 1;
         }
 
-        $page = array_filter([
+        return array_filter([
             self::LINK_FIRST => $this->createLink(1, $perPage, $params),
             self::LINK_PREV => $this->createLink($previousPage, $perPage, $params),
             self::LINK_NEXT => $this->createLink($nextPage, $perPage, $params),
             self::LINK_LAST => $this->createLink($lastPage, $perPage, $params),
         ]);
-
-        return array_merge($page, $links);
     }
 
     /**
@@ -137,11 +139,16 @@ class Paginator implements PaginatorInterface
      */
     protected function buildParams()
     {
+        $parameters = $this
+            ->service
+            ->getRequest()
+            ->getParameters();
+
         return array_filter([
             QueryParametersParserInterface::PARAM_FILTER =>
-                $this->parameters->getFilteringParameters(),
+                $parameters->getFilteringParameters(),
             QueryParametersParserInterface::PARAM_SORT =>
-                $this->buildSortParams((array) $this->parameters->getSortParameters())
+                $this->buildSortParams((array) $parameters->getSortParameters())
         ]);
     }
 
@@ -158,10 +165,12 @@ class Paginator implements PaginatorInterface
             return null;
         }
 
-        return $this->links->current(array_merge($parameters, [
+        $strategy = $this->service->getApi()->getPagingStrategy();
+
+        return $this->linkTo()->current(array_merge($parameters, [
             QueryParametersParserInterface::PARAM_PAGE => [
-                $this->config->getParamPage() => $page,
-                $this->config->getParamPerPage() => $perPage,
+                $strategy->getPage() => $page,
+                $strategy->getPerPage() => $perPage,
             ],
         ]), $meta);
     }
