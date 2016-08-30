@@ -20,6 +20,7 @@ namespace CloudCreativity\LaravelJsonApi;
 
 use CloudCreativity\JsonApi\Contracts\Exceptions\ExceptionParserInterface;
 use CloudCreativity\JsonApi\Contracts\Http\ApiFactoryInterface;
+use CloudCreativity\JsonApi\Contracts\Http\HttpServiceInterface;
 use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestFactoryInterface;
 use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterpreterInterface;
 use CloudCreativity\JsonApi\Contracts\Http\Responses\ResponseFactoryInterface;
@@ -168,6 +169,8 @@ class ServiceProvider extends BaseServiceProvider
      */
     protected function bindService()
     {
+        $this->app->singleton(JsonApiService::class);
+        $this->app->alias(JsonApiService::class, HttpServiceInterface::class);
         $this->app->alias(JsonApiService::class, 'json-api.service');
     }
 

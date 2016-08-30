@@ -18,12 +18,11 @@
 
 namespace CloudCreativity\LaravelJsonApi\Search;
 
+use CloudCreativity\JsonApi\Contracts\Http\HttpServiceInterface;
 use CloudCreativity\JsonApi\Contracts\Pagination\PageInterface;
 use CloudCreativity\JsonApi\Contracts\Pagination\PaginatorInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Search\SearchInterface;
 use CloudCreativity\LaravelJsonApi\Pagination\Page;
-use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
-use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Model;
@@ -97,17 +96,24 @@ abstract class AbstractSearch implements SearchInterface
     abstract protected function isSearchOne(Collection $filters);
 
     /**
-     * @var JsonApiService
+     * @var HttpServiceInterface
      */
     private $service;
 
     /**
-     * AbstractSearch constructor.
-     * @param JsonApiService $service
+     * @var PaginatorInterface
      */
-    public function __construct(JsonApiService $service)
+    private $paginator;
+
+    /**
+     * AbstractSearch constructor.
+     * @param HttpServiceInterface $service
+     * @param PaginatorInterface $paginator
+     */
+    public function __construct(HttpServiceInterface $service, PaginatorInterface $paginator)
     {
         $this->service = $service;
+        $this->paginator = $paginator;
     }
 
     /**
@@ -155,13 +161,15 @@ abstract class AbstractSearch implements SearchInterface
      */
     protected function isPaginated()
     {
-        if (0 < $this->maxPerPage) {
-            return true;
-        }
+        return $this->isAlwaysPaginated() || is_int($this->paginator->getCurrentPage());
+    }
 
-        $paginator = $this->service->getPaginator();
-
-        return is_int($paginator->getCurrentPage());
+    /**
+     * @return bool
+     */
+    protected function isAlwaysPaginated()
+    {
+        return 0 < $this->maxPerPage;
     }
 
     /**
@@ -169,9 +177,7 @@ abstract class AbstractSearch implements SearchInterface
      */
     protected function getPerPage()
     {
-        $paginator = $this->service->getPaginator();
-
-        return $paginator->getPerPage($this->perPage, $this->maxPerPage ?: null);
+        return $this->paginator->getPerPage($this->perPage, $this->maxPerPage ?: null);
     }
 
     /**

@@ -20,6 +20,7 @@ namespace CloudCreativity\LaravelJsonApi\Services;
 
 use CloudCreativity\JsonApi\Contracts\Http\ApiFactoryInterface;
 use CloudCreativity\JsonApi\Contracts\Http\ApiInterface;
+use CloudCreativity\JsonApi\Contracts\Http\HttpServiceInterface;
 use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestFactoryInterface;
 use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface;
 use CloudCreativity\JsonApi\Contracts\Http\Responses\ErrorResponseInterface;
@@ -36,7 +37,7 @@ use Neomerx\JsonApi\Contracts\Http\Headers\MediaTypeInterface;
  * Class JsonApiService
  * @package CloudCreativity\LaravelJsonApi
  */
-class JsonApiService implements ErrorReporterInterface
+class JsonApiService implements HttpServiceInterface, ErrorReporterInterface
 {
 
     /**
@@ -91,19 +92,15 @@ class JsonApiService implements ErrorReporterInterface
      */
     public function isActive()
     {
-        return $this->container->bound(ApiInterface::class);
+        return $this->hasApi();
     }
 
     /**
-     * Get the active API.
-     *
-     * An active API will be available once the JSON API middleware has been run.
-     *
-     * @return ApiInterface
+     * @inheritdoc
      */
     public function getApi()
     {
-        if (!$this->isActive()) {
+        if (!$this->hasApi()) {
             throw new RuntimeException('No active API. The JSON API middleware has not been run.');
         }
 
@@ -111,9 +108,15 @@ class JsonApiService implements ErrorReporterInterface
     }
 
     /**
-     * Get the current JSON API request.
-     *
-     * @return RequestInterface
+     * @inheritdoc
+     */
+    public function hasApi()
+    {
+        return $this->container->bound(ApiInterface::class);
+    }
+
+    /**
+     * @inheritdoc
      */
     public function getRequest()
     {
@@ -125,21 +128,11 @@ class JsonApiService implements ErrorReporterInterface
     }
 
     /**
-     * Has a request been registered?
-     *
-     * @return bool
+     * @inheritdoc
      */
     public function hasRequest()
     {
         return $this->container->bound(RequestInterface::class);
-    }
-
-    /**
-     * @return PaginatorInterface
-     */
-    public function getPaginator()
-    {
-        return $this->container->make(PaginatorInterface::class);
     }
 
     /**

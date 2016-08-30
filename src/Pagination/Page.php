@@ -18,11 +18,10 @@
 
 namespace CloudCreativity\LaravelJsonApi\Pagination;
 
+use CloudCreativity\JsonApi\Contracts\Http\HttpServiceInterface;
 use CloudCreativity\JsonApi\Contracts\Pagination\PageInterface;
 use CloudCreativity\JsonApi\Exceptions\RuntimeException;
-use CloudCreativity\LaravelJsonApi\Contracts\Document\LinkFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Document\GeneratesLinks;
-use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Contracts\Pagination\Paginator;
 use Neomerx\JsonApi\Contracts\Document\LinkInterface;
@@ -39,7 +38,7 @@ class Page implements PageInterface
     use GeneratesLinks;
 
     /**
-     * @var JsonApiService
+     * @var HttpServiceInterface
      */
     private $service;
 
@@ -50,9 +49,9 @@ class Page implements PageInterface
 
     /**
      * Page constructor.
-     * @param JsonApiService $service
+     * @param HttpServiceInterface $service
      */
-    public function __construct(JsonApiService $service)
+    public function __construct(HttpServiceInterface $service)
     {
         $this->service = $service;
     }
