@@ -106,6 +106,30 @@ occurs before validation, so it makes more sense for the arguments to be this wa
 The method signature for the `errors` method has changed. To maintain the old behaviour use `error` instead (it
 accepts an error collection as well as a single error). 
 
+### Sort
+
+We've merged the abstract sorted search class into the abstract search class, to simplify things.
+
+You'll need to change:
+
+``` php
+use CloudCreativity\LaravelJsonApi\Search\AbstractSortedSearch;
+
+class Search extends AbstractSortedSearch
+{
+}
+```
+
+to:
+
+``` php
+use CloudCreativity\LaravelJsonApi\Search\AbstractSearch;
+
+class Search extends AbstractSearch
+{
+}
+```
+
 ### Validator Providers
 
 The classes that provide validators for individual resource types generally extend `AbstractValidatorProvider`. This

@@ -65,6 +65,17 @@ abstract class AbstractSearch implements SearchInterface
     protected $simplePagination = false;
 
     /**
+     * A mapping of sort parameters to columns.
+     *
+     * Use this to map any parameters to columns where the two are not identical. E.g. if
+     * your sort param is called `sort` but the column to use is `type`, then set this
+     * property to `['sort' => 'type']`.
+     *
+     * @var array
+     */
+    protected $sortColumns = [];
+
+    /**
      * The filter param for a find-many request.
      *
      * @var string
@@ -79,13 +90,6 @@ abstract class AbstractSearch implements SearchInterface
      * @return void
      */
     abstract protected function filter(Builder $builder, Collection $filters);
-
-    /**
-     * @param Builder $builder
-     * @param SortParameterInterface[] $sortBy
-     * @return void
-     */
-    abstract protected function sort(Builder $builder, array $sortBy);
 
     /**
      * Is this a search for a singleton resource?
@@ -135,6 +139,26 @@ abstract class AbstractSearch implements SearchInterface
         }
 
         return $this->isPaginated() ? $this->paginate($builder) : $this->all($builder);
+    }
+
+    /**
+     * Apply sort parameters to the query.
+     *
+     * @param Builder $query
+     * @param SortParameterInterface[] $sortBy
+     * @return void
+     */
+    protected function sort(Builder $query, array $sortBy)
+    {
+        if (empty($sortBy)) {
+            $this->defaultSort($query);
+            return;
+        }
+
+        /** @var SortParameterInterface $param */
+        foreach ($sortBy as $param) {
+            $this->sortBy($query, $param);
+        }
     }
 
     /**
@@ -232,6 +256,58 @@ abstract class AbstractSearch implements SearchInterface
     protected function normalizeIds($ids)
     {
         return is_array($ids) ? $ids : explode(',', (string) $ids);
+    }
+
+    /**
+     * @param Builder $builder
+     * @param SortParameterInterface $param
+     */
+    protected function sortBy(Builder $builder, SortParameterInterface $param)
+    {
+        $column = $this->getQualifiedSortColumn($builder, $param->getField());
+        $order = $param->isAscending() ? 'asc' : 'desc';
+
+        $builder->orderBy($column, $order);
+    }
+
+    /**
+     * @param Builder $builder
+     * @param string $field
+     * @return string
+     */
+    protected function getQualifiedSortColumn(Builder $builder, $field)
+    {
+        $key = $this->columnForField($field);
+
+        if (!str_contains('.', $key)) {
+            $key = sprintf('%s.%s', $builder->getModel()->getTable(), $key);
+        }
+
+        return $key;
+    }
+
+    /**
+     * Get the table column to use for the specified search field.
+     *
+     * @param string $field
+     * @return string
+     */
+    protected function columnForField($field)
+    {
+        return isset($this->sortColumns[$field]) ? $this->sortColumns[$field] : $field;
+    }
+
+    /**
+     * Apply a default sort order if the client has not requested any sort order.
+     *
+     * Child classes can override this method if they want to implement their
+     * own default sort order.
+     *
+     * @param Builder $builder
+     * @return void
+     */
+    protected function defaultSort(Builder $builder)
+    {
     }
 
 }
