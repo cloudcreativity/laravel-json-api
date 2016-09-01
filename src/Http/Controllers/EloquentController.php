@@ -228,9 +228,7 @@ class EloquentController extends JsonApiController
             return $this->methodNotAllowed();
         }
 
-        $this->hydrator->hydrate($resource, $model);
-
-        return $model;
+        return $this->hydrator->hydrate($resource, $model);
     }
 
     /**
