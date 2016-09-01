@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## [0.4.6] - 2016-09-01
+
+### Fixed
+- Return value from hydrator was not being used in the Eloquent controller. The hydrator interface defines that the
+hydrated object should be returned, so the controller has been amended to respect this return value.
+
 ## [0.4.5] - 2016-08-26
 
 ### Change
