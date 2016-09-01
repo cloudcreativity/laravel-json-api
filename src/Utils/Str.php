@@ -38,9 +38,7 @@ final class Str
      */
     public static function dasherize($value)
     {
-        $value = IlluminateStr::snake($value);
-
-        return str_replace('_', '-', $value);
+        return self::snake($value, '-');
     }
 
     /**
