@@ -23,6 +23,7 @@ use CloudCreativity\JsonApi\Contracts\Pagination\PageInterface;
 use CloudCreativity\JsonApi\Contracts\Pagination\PaginatorInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Search\SearchInterface;
 use CloudCreativity\LaravelJsonApi\Pagination\Page;
+use CloudCreativity\LaravelJsonApi\Utils\Str;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Model;
@@ -277,7 +278,7 @@ abstract class AbstractSearch implements SearchInterface
      */
     protected function getQualifiedSortColumn(Builder $builder, $field)
     {
-        $key = $this->columnForField($field);
+        $key = $this->columnForField($field, $builder->getModel());
 
         if (!str_contains('.', $key)) {
             $key = sprintf('%s.%s', $builder->getModel()->getTable(), $key);
@@ -290,11 +291,17 @@ abstract class AbstractSearch implements SearchInterface
      * Get the table column to use for the specified search field.
      *
      * @param string $field
+     * @param Model $model
      * @return string
      */
-    protected function columnForField($field)
+    protected function columnForField($field, Model $model)
     {
-        return isset($this->sortColumns[$field]) ? $this->sortColumns[$field] : $field;
+        /** If there is a custom mapping, return that */
+        if (isset($this->sortColumns[$field])) {
+            return $this->sortColumns[$field];
+        }
+
+        return $model::$snakeAttributes ? Str::snake($field) : Str::camel($field);
     }
 
     /**

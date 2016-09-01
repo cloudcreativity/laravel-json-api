@@ -106,6 +106,26 @@ occurs before validation, so it makes more sense for the arguments to be this wa
 The method signature for the `errors` method has changed. To maintain the old behaviour use `error` instead (it
 accepts an error collection as well as a single error). 
 
+### Schemas
+
+The JSON API specification recommends using hyphens for member names, e.g. `foo-bar`. The Eloquent schema now uses
+this recommendation as its default behaviour. E.g. a model key of `foo_bar` will be serialized as `foo-bar`.
+
+To maintain the old behaviour (of using the model key for the member key), set the `$hyphenated` property on your
+schema to `false`. If you want to implement your own logic, overload the `keyForAttribute` method.
+
+If you have irregular mappings of model keys to attribute keys, you can define these in your `$attributes` property,
+e.g.
+
+``` php
+protected $attributes = [
+  'foo',
+  'bar',
+  'foo_bar' // will be dasherized to 'foo-bar' by default
+  'baz' => 'bat' // model key `baz` will be serialized to attribute key `bat`
+];
+```
+
 ### Sort
 
 We've merged the abstract sorted search class into the abstract search class, to simplify things.
@@ -129,6 +149,17 @@ class Search extends AbstractSearch
 {
 }
 ```
+
+#### Sort Parameter Field Conversion
+
+When working out what column to use for a sort parameter, the sort parameter will automatically be snake cased if
+your model uses snake attributes. If it does not use snake attributes, the parameter will be camel cased.
+
+If you have irregular mappings of search params to column names, add that mapping to your `$sortColumns` property,
+e.g. `$sortColumns = ['foo-bar' => 'baz_bat']`.
+
+If you want to use a complete different logic for converting search params to column names, overload the 
+`columnForField()` method.
 
 ### Validator Providers
 
