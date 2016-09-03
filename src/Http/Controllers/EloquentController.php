@@ -25,7 +25,7 @@ use CloudCreativity\JsonApi\Contracts\Hydrator\HydratorInterface;
 use CloudCreativity\JsonApi\Contracts\Object\ResourceInterface;
 use CloudCreativity\JsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Contracts\Search\SearchInterface;
-use CloudCreativity\LaravelJsonApi\Search\SearchAll;
+use CloudCreativity\LaravelJsonApi\Utils\Str;
 use Exception;
 use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Database\Eloquent\Collection;
@@ -377,7 +377,7 @@ abstract class EloquentController extends JsonApiController
     protected function keyForRelationship($relationshipName)
     {
         return isset($this->relationships[$relationshipName]) ?
-            $this->relationships[$relationshipName] : camel_case($relationshipName);
+            $this->relationships[$relationshipName] : Str::camel($relationshipName);
     }
 
     /**
