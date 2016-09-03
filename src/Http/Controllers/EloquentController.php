@@ -20,6 +20,7 @@ namespace CloudCreativity\LaravelJsonApi\Http\Controllers;
 
 use Closure;
 use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface as JsonApiRequest;
+use CloudCreativity\JsonApi\Contracts\Hydrator\HydratesRelatedInterface;
 use CloudCreativity\JsonApi\Contracts\Hydrator\HydratorInterface;
 use CloudCreativity\JsonApi\Contracts\Object\ResourceInterface;
 use CloudCreativity\JsonApi\Exceptions\RuntimeException;
@@ -272,7 +273,24 @@ abstract class EloquentController extends JsonApiController
      */
     protected function save(Model $model, ResourceInterface $resource)
     {
-        return $model->save();
+        /** We save the primary model */
+        if (!$model->save()) {
+            return false;
+        }
+
+        /** If needed, we trigger hydration of secondary resources/has-many relationships and persist the
+         * changes on any returned models. */
+        if ($this->hydrator instanceof HydratesRelatedInterface) {
+            $related = $this->hydrator->hydrateRelated($resource, $model);
+
+            foreach ($related as $relatedModel) {
+                if ($relatedModel instanceof Model && !$relatedModel->save()) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     /**
