@@ -87,6 +87,36 @@ public function canModifyRelationship(
 )
 ```
 
+### Controllers
+
+#### JsonApiController
+
+The method signature of all the action methods have changed - they now all receive the validated JSON API request
+object as they first argument.
+
+For example, this:
+
+``` php
+public function read($resourceId) {}
+```
+
+Has become this:
+
+```
+use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface as JsonApiRequest;
+// ...
+public function read(JsonApiRequest $request) {}
+```
+
+Use the request object to get the resource id, relationship name and document (the JSON API request content). Refer
+to the interface for methods available.
+
+#### Eloquent Controller
+
+If you have extended any of the action methods you'll need to make the changes described for the `JsonApiController`
+above. In addition if you are using the `getRecord()` helper method, you'll need to pass the JSON API request object to
+that method.
+
 ### Hydrators
 
 The namespace of the `AbstractHydrator` has changed from `CloudCreativity\LaravelJsonApi\Hydrator\AbstractHydrator`
