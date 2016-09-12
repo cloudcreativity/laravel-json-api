@@ -208,10 +208,20 @@ abstract class EloquentSchema extends AbstractSchema
     protected function serializeAttribute($value, Model $model, $modelKey)
     {
         if ($value instanceof DateTime) {
-            $value = $value->format($this->getDateFormat());
+            $value = $this->serializeDateTime($value, $model);
         }
 
         return $value;
+    }
+
+    /**
+     * @param DateTime $value
+     * @param Model $model
+     * @return string
+     */
+    protected function serializeDateTime(DateTime $value, Model $model)
+    {
+        return $value->format($this->getDateFormat());
     }
 
     /**

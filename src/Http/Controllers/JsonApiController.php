@@ -42,7 +42,7 @@ abstract class JsonApiController extends Controller
     /**
      * Get the fully qualified name of the request handler to use for this controller.
      *
-     * @return string
+     * @return string|null
      */
     abstract protected function getRequestHandler();
 
@@ -51,8 +51,12 @@ abstract class JsonApiController extends Controller
      */
     public function __construct()
     {
-        $middleware = sprintf('json-api.request:%s', $this->getRequestHandler());
-        $this->middleware($middleware, $this->requestHandlerOptions);
+        $handler = $this->getRequestHandler();
+
+        if ($handler) {
+            $middleware = sprintf('json-api.request:%s', $handler);
+            $this->middleware($middleware, $this->requestHandlerOptions);
+        }
     }
 
     /**

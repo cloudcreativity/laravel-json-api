@@ -102,7 +102,7 @@ public function read($resourceId) {}
 
 Has become this:
 
-```
+``` php
 use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface as JsonApiRequest;
 // ...
 public function read(JsonApiRequest $request) {}
@@ -110,6 +110,23 @@ public function read(JsonApiRequest $request) {}
 
 Use the request object to get the resource id, relationship name and document (the JSON API request content). Refer
 to the interface for methods available.
+
+#### Search All
+
+You now need to always inject a search object into the Eloquent controller, otherwise the controller will return a 
+`501 Not Implemented` response for the index action.
+
+To use the default search functionality for an Eloquent model, type hint the following class in your controller
+constructor and pass it into the parent constructor:
+
+``` php
+use CloudCreativity\LaravelJsonApi\Search\SearchAll;
+
+public function __construct(SearchAll $search)
+{
+  parent::__construct(new Post(), null, $search);
+}
+```
 
 #### Eloquent Controller
 
