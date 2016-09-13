@@ -18,20 +18,15 @@
 
 namespace CloudCreativity\LaravelJsonApi\Services;
 
-use CloudCreativity\JsonApi\Contracts\Http\ApiFactoryInterface;
 use CloudCreativity\JsonApi\Contracts\Http\ApiInterface;
 use CloudCreativity\JsonApi\Contracts\Http\HttpServiceInterface;
-use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestFactoryInterface;
 use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface;
 use CloudCreativity\JsonApi\Contracts\Http\Responses\ErrorResponseInterface;
-use CloudCreativity\JsonApi\Contracts\Pagination\PaginatorInterface;
 use CloudCreativity\JsonApi\Contracts\Utils\ErrorReporterInterface;
 use CloudCreativity\JsonApi\Exceptions\RuntimeException;
-use CloudCreativity\LaravelJsonApi\Http\Requests\ManualRequest;
 use CloudCreativity\LaravelJsonApi\Routing\ResourceRegistrar;
 use Exception;
 use Illuminate\Contracts\Container\Container;
-use Neomerx\JsonApi\Contracts\Http\Headers\MediaTypeInterface;
 
 /**
  * Class JsonApiService
@@ -135,37 +130,4 @@ class JsonApiService implements HttpServiceInterface, ErrorReporterInterface
         return $this->container->bound(RequestInterface::class);
     }
 
-    /**
-     * Manually boot JSON API support.
-     *
-     * @param $namespace
-     * @param array $parameters
-     * @param string $accept
-     * @param string $contentType
-     */
-    public function boot(
-        $namespace,
-        array $parameters = [],
-        $accept = MediaTypeInterface::JSON_API_MEDIA_TYPE,
-        $contentType = MediaTypeInterface::JSON_API_MEDIA_TYPE
-    ) {
-        $config = (array) config('json-api.namespaces');
-        $headers = ['Accept' => $accept, 'Content-Type' => $contentType];
-        $serverRequest = new ManualRequest('GET', $headers, $parameters);
-
-        if (!array_key_exists($namespace, $config)) {
-            throw new RuntimeException("Did not recognise JSON API namespace: $namespace");
-        }
-
-        /** @var ApiFactoryInterface $factory */
-        $factory = $this->container->make(ApiFactoryInterface::class);
-        $api = $factory->createApi($namespace, $config[$namespace]);
-        $this->container->instance(ApiInterface::class, $api);
-
-        /** @var RequestFactoryInterface $requestFactory */
-        $requestFactory = $this->container->make(RequestFactoryInterface::class);
-        $request = $requestFactory->build($api, $serverRequest);
-
-        $this->container->instance(RequestInterface::class, $request);
-    }
 }
