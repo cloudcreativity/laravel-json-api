@@ -281,16 +281,31 @@ abstract class EloquentController extends JsonApiController
         /** If needed, we trigger hydration of secondary resources/has-many relationships and persist the
          * changes on any returned models. */
         if ($this->hydrator instanceof HydratesRelatedInterface) {
-            $related = $this->hydrator->hydrateRelated($resource, $model);
+            $related = (array) $this->hydrator->hydrateRelated($resource, $model);
 
-            foreach ($related as $relatedModel) {
-                if ($relatedModel instanceof Model && !$relatedModel->save()) {
+            foreach ($related as $relatedResource) {
+                if (!$this->saveRelated($relatedResource)) {
                     return false;
                 }
             }
         }
 
         return true;
+    }
+
+    /**
+     * Save a related resource that has been hydrated.
+     *
+     * @param object $related
+     * @return bool
+     */
+    protected function saveRelated($related)
+    {
+        if ($related instanceof Model) {
+            return $related->save();
+        }
+
+        return false;
     }
 
     /**
