@@ -89,7 +89,39 @@ public function canModifyRelationship(
 
 ### Controllers
 
-#### JsonApiController
+#### Request Handler
+
+The request class is no longer injected into the parent constructor. This change was necessary to support Laravel 5.3.
+Instead you now need to implement the `getRequestHandler` method and return a string of the fully qualified class
+name of the handler that is to be used. If you were not calling the parent constructor, you must now call it.
+
+For example in an Eloquent controller, this:
+
+``` php
+  public function __construct(
+      Posts\Request $request,
+      Posts\Hydrator $hydrator,
+      Posts\Search $search
+  ) {
+      parent::__construct(new Post(), $request, $hydrator, $search);
+  }
+```
+
+Must be changed to:
+
+``` php
+public function __construct(Posts\Hydrator $hydrator, Posts\Search $search)
+{
+    parent::__construct(new Post(), $hydrator, $search);
+}
+
+protected function getRequestHandler()
+{
+    return Posts\Request::class;
+}
+```
+
+#### Action Methods
 
 The method signature of all the action methods have changed - they now all receive the validated JSON API request
 object as they first argument.
@@ -116,7 +148,7 @@ to the interface for methods available.
 You now need to always inject a search object into the Eloquent controller, otherwise the controller will return a 
 `501 Not Implemented` response for the index action.
 
-To use the default search functionality for an Eloquent model, type hint the following class in your controller
+To use the previous search behaviour for an Eloquent model, type hint the following class in your controller
 constructor and pass it into the parent constructor:
 
 ``` php
@@ -127,12 +159,6 @@ public function __construct(SearchAll $search)
   parent::__construct(new Post(), null, $search);
 }
 ```
-
-#### Eloquent Controller
-
-If you have extended any of the action methods you'll need to make the changes described for the `JsonApiController`
-above. In addition if you are using the `getRecord()` helper method, you'll need to pass the JSON API request object to
-that method.
 
 ### Hydrators
 
@@ -173,7 +199,7 @@ protected $attributes = [
 ];
 ```
 
-### Sort
+### Search
 
 We've merged the abstract sorted search class into the abstract search class, to simplify things.
 
@@ -197,6 +223,16 @@ class Search extends AbstractSearch
 }
 ```
 
+#### Constructor
+
+If you are overloading the constructor, you will need to call the parent constructor and provide it with the 
+following two dependencies:
+
+```
+CloudCreativity\JsonApi\Contracts\Http\HttpServiceInterface
+CloudCreativity\JsonApi\Contracts\Pagination\PaginatorInterface
+```
+
 #### Sort Parameter Field Conversion
 
 When working out what column to use for a sort parameter, the sort parameter will automatically be snake cased if
@@ -205,7 +241,7 @@ your model uses snake attributes. If it does not use snake attributes, the param
 If you have irregular mappings of search params to column names, add that mapping to your `$sortColumns` property,
 e.g. `$sortColumns = ['foo-bar' => 'baz_bat']`.
 
-If you want to use a complete different logic for converting search params to column names, overload the 
+If you want to use a completely different logic for converting search params to column names, overload the 
 `columnForField()` method.
 
 ### Validator Providers
@@ -214,8 +250,8 @@ The classes that provide validators for individual resource types generally exte
 now receives the resource type that is being validated into its public methods, and this is now passed down through 
 the internal methods. You'll therefore need to make the changes described below.
 
-This change has been made so that a single validator provider can be used for multiple resource types if desired. In
-general you are likely to keep a validator provider per resource type (because attribute and relationship rules will
+This change has been made so that a single validator provider can be used for multiple resource types if desired. 
+Although you are likely to keep a validator provider per resource type (because attribute and relationship rules will
 be specific to a resource type), this has given us the capability to implement a generic validator provider capable of
 validating any resource type according to the JSON API spec.
 
