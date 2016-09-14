@@ -109,6 +109,7 @@ class ServiceProvider extends BaseServiceProvider
         $this->bindValidatorErrorFactory();
         $this->bindStore();
         $this->bindEloquentAdapter();
+        $this->bindStoreAdapters();
         $this->bindLinkFactory();
         $this->bindPagination();
     }
@@ -293,11 +294,21 @@ class ServiceProvider extends BaseServiceProvider
 
             return new EloquentAdapter($map, $columns);
         });
+    }
 
+    /**
+     * Bind adapters to the store when it is resolved via the service container.
+     */
+    protected function bindStoreAdapters()
+    {
         $this->app->resolving(StoreInterface::class, function (StoreInterface $store) {
-            /** @var EloquentAdapter $adapter */
-            $adapter = $this->app->make(EloquentAdapter::class);
-            $store->register($adapter);
+            /** @var EloquentAdapter $eloquent */
+            $eloquent = $this->app->make(EloquentAdapter::class);
+            $store->register($eloquent);
+
+            foreach ((array) $this->getConfig('adapters') as $adapter) {
+                $store->register($this->app->make($adapter));
+            }
         });
     }
 

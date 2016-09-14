@@ -95,6 +95,22 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Store Adapters
+    |--------------------------------------------------------------------------
+    |
+    | Store adapters are used to locate your domain records using a JSON API
+    | resource identifier. For Eloquent models you can configure the Eloquent
+    | adapter above. For other records, you will need to write an adapter class
+    | (implementing CloudCreativity\JsonApi\Contracts\Store\AdapterInterface).
+    |
+    | To attach these adapters to the store, list the fully qualified name of
+    | your custom adapters here. These will be created via the service
+    | container, so you can type-hint dependencies in an adapter's constructor.
+    */
+    'adapters' => [],
+
+    /*
+    |--------------------------------------------------------------------------
     | Pagination
     |--------------------------------------------------------------------------
     |
