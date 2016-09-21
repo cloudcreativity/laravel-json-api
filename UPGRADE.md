@@ -9,6 +9,68 @@ to your application. However, if you are also extending underlying package funct
 to the `v0.5` to `v0.6` upgrade notes here: 
 [cloudcreativty/json-api Upgrade Notes](https://github.com/cloudcreativity/json-api/blob/feature/v0.6/UPGRADE.md)
 
+### Config
+
+Paging config is now defined on a per-API basis, so you need to move your paging config into your API namespace
+config in the `json-api.php` config file. We have updated the comment blocks to reflect this; you can find those
+in the `config/json-api.php` file within this package.
+
+Before:
+
+``` php
+return [
+  'namespaces' => [
+    'v1' => [
+      'url-prefix' => '/api/v1',
+      'supported-ext' => null,
+    ],
+  ],
+  
+  // ...
+  
+  'paging' => [
+    'params' => [
+      'page' => null,
+      'per-page' => null,
+    ],
+    'meta' => [
+      'key' => null,
+      'current-page' => 'page',
+      'per-page' => 'size',
+      'first-item' => null,
+      'last-item' => null,
+      'total' => null,
+      'last-page' => 'last',
+    ],
+  ]
+];
+```
+
+After:
+
+``` php
+return [
+  'namespaces' => [
+    'v2' => [
+      'url-prefix' => '/api/v2',
+      'supported-ext' => null,
+      'paging' => [
+        'page' => null,
+        'per-page' => null,
+      ],
+      'paging-meta' => [
+        'current-page' => 'page',
+        'per-page' => 'size',
+        'first-item' => null,
+        'last-item' => null,
+        'total' => null,
+        'last-page' => 'last',
+      ],
+    ],
+  ],
+];
+```
+
 ### Authorizers
 
 #### Abstract Authorizer
