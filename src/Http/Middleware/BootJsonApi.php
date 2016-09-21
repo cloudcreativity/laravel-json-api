@@ -29,7 +29,6 @@ use Illuminate\Contracts\Container\Container;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\AbstractPaginator;
 use Psr\Http\Message\ServerRequestInterface;
-use RuntimeException;
 
 /**
  * Class BootJsonApi
@@ -67,12 +66,6 @@ class BootJsonApi
      */
     public function handle($request, Closure $next, $namespace)
     {
-        $config = (array) config('json-api.namespaces');
-
-        if (!array_key_exists($namespace, $config)) {
-            throw new RuntimeException("Did not recognised JSON API namespace: $namespace");
-        }
-
         /** @var ApiFactory $factory */
         $factory = $this->container->make(ApiFactoryInterface::class);
         /** @var ServerRequestInterface $request */
@@ -81,7 +74,7 @@ class BootJsonApi
         $requestFactory = $this->container->make(RequestFactoryInterface::class);
 
         /** Build and register the API */
-        $api = $factory->createApi($namespace, $this->appendSchemaAndHost($request, (array) $config[$namespace]));
+        $api = $factory->createApi($namespace, $request->getSchemeAndHttpHost());
         $this->container->instance(ApiInterface::class, $api);
 
         /** Build and register the JSON API request */
@@ -96,20 +89,5 @@ class BootJsonApi
         });
 
         return $next($request);
-    }
-
-    /**
-     * @param Request $request
-     * @param array $config
-     * @return string
-     */
-    private function appendSchemaAndHost(Request $request, array $config)
-    {
-        if (array_key_exists(ApiFactory::CONFIG_URL_PREFIX, $config)) {
-            $config[ApiFactory::CONFIG_URL_PREFIX] =
-                $request->getSchemeAndHttpHost() . $config[ApiFactory::CONFIG_URL_PREFIX];
-        }
-
-        return $config;
     }
 }

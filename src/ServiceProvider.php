@@ -181,6 +181,9 @@ class ServiceProvider extends BaseServiceProvider
     protected function bindApiFactory()
     {
         $this->app->singleton(ApiFactoryInterface::class, ApiFactory::class);
+        $this->app->resolving(ApiFactoryInterface::class, function (ConfigurableInterface $factory) {
+            $factory->configure($this->getConfig('namespaces'));
+        });
     }
 
     /**
