@@ -18,37 +18,35 @@
 
 namespace CloudCreativity\LaravelJsonApi\Services;
 
-use CloudCreativity\JsonApi\Contracts\Http\ApiFactoryInterface;
 use CloudCreativity\JsonApi\Contracts\Http\ApiInterface;
-use CloudCreativity\JsonApi\Contracts\Http\ErrorResponseInterface;
+use CloudCreativity\JsonApi\Contracts\Http\HttpServiceInterface;
+use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface;
+use CloudCreativity\JsonApi\Contracts\Http\Responses\ErrorResponseInterface;
 use CloudCreativity\JsonApi\Contracts\Utils\ErrorReporterInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestHandlerInterface;
+use CloudCreativity\JsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Routing\ResourceRegistrar;
 use Exception;
-use Neomerx\JsonApi\Contracts\Http\Headers\MediaTypeInterface;
-use Neomerx\JsonApi\Http\Headers\AcceptHeader;
-use Neomerx\JsonApi\Http\Headers\Header;
-use RuntimeException;
+use Illuminate\Contracts\Container\Container;
 
 /**
  * Class JsonApiService
  * @package CloudCreativity\LaravelJsonApi
  */
-class JsonApiService implements ErrorReporterInterface
+class JsonApiService implements HttpServiceInterface, ErrorReporterInterface
 {
 
     /**
-     * @var ResourceRegistrar
+     * @var Container
      */
-    private $registrar;
+    private $container;
 
     /**
      * JsonApiService constructor.
-     * @param ResourceRegistrar $registrar
+     * @param Container $container
      */
-    public function __construct(ResourceRegistrar $registrar)
+    public function __construct(Container $container)
     {
-        $this->registrar = $registrar;
+        $this->container = $container;
     }
 
     /**
@@ -57,10 +55,15 @@ class JsonApiService implements ErrorReporterInterface
      * @param string $resourceType
      * @param string|null $controller
      * @param array $options
+     * @return ResourceRegistrar
      */
     public function resource($resourceType, $controller = null, array $options = [])
     {
-        $this->registrar->resource($resourceType, $controller, $options);
+        /** @var ResourceRegistrar $registrar */
+        $registrar = $this->container->make(ResourceRegistrar::class);
+        $registrar->resource($resourceType, $controller, $options);
+
+        return $registrar;
     }
 
     /**
@@ -68,7 +71,7 @@ class JsonApiService implements ErrorReporterInterface
      */
     public function report(ErrorResponseInterface $response, Exception $e = null)
     {
-        if (!app()->bound(ErrorReporterInterface::class)) {
+        if (!$this->container->bound(ErrorReporterInterface::class)) {
             return;
         }
 
@@ -84,79 +87,47 @@ class JsonApiService implements ErrorReporterInterface
      */
     public function isActive()
     {
-        return app()->bound(ApiInterface::class);
+        return $this->hasApi();
     }
 
     /**
-     * Get the active API.
-     *
-     * An active API will be available once the JSON API middleware has been run.
-     *
-     * @return ApiInterface
+     * @inheritdoc
      */
     public function getApi()
     {
-        if (!$this->isActive()) {
+        if (!$this->hasApi()) {
             throw new RuntimeException('No active API. The JSON API middleware has not been run.');
         }
 
-        return app(ApiInterface::class);
+        return $this->container->make(ApiInterface::class);
     }
 
     /**
-     * Get the handler for the current HTTP Request.
-     *
-     * A request handler will be registered if a request object has been created via the
-     * service container (which starts validation).
-     *
-     * @return RequestHandlerInterface
+     * @inheritdoc
+     */
+    public function hasApi()
+    {
+        return $this->container->bound(ApiInterface::class);
+    }
+
+    /**
+     * @inheritdoc
      */
     public function getRequest()
     {
-        if (!app()->bound(RequestHandlerInterface::class)) {
-            throw new RuntimeException('No active JSON API request.');
+        if (!$this->hasRequest()) {
+            throw new RuntimeException('No JSON API request has been created.');
         }
 
-        return app(RequestHandlerInterface::class);
+        return $this->container->make(RequestInterface::class);
     }
 
     /**
-     * Has a request handler been registered?
-     *
-     * @return bool
+     * @inheritdoc
      */
     public function hasRequest()
     {
-        return app()->bound(RequestHandlerInterface::class);
+        return $this->container->bound(RequestInterface::class);
     }
 
-    /**
-     * Manually boot JSON API support.
-     *
-     * @param $namespace
-     * @param string $accept
-     * @param string $contentType
-     */
-    public function boot(
-        $namespace,
-        $accept = MediaTypeInterface::JSON_API_MEDIA_TYPE,
-        $contentType = MediaTypeInterface::JSON_API_MEDIA_TYPE
-    ) {
-        $config = (array) config('json-api.namespaces');
-        $accept = AcceptHeader::parse($accept);
-        $contentType = Header::parse($contentType, Header::HEADER_CONTENT_TYPE);
-
-        if (!array_key_exists($namespace, $config)) {
-            throw new RuntimeException("Did not recognise JSON API namespace: $namespace");
-        }
-
-        /** @var ApiFactoryInterface $factory */
-        $factory = app(ApiFactoryInterface::class);
-        $api = $factory->createApi($namespace, $config[$namespace]);
-        app()->instance(ApiInterface::class, $api);
-
-        $codecMatcher = $api->getCodecMatcher();
-        $codecMatcher->matchEncoder($accept);
-        $codecMatcher->matchDecoder($contentType);
-    }
 }

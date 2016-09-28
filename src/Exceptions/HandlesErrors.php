@@ -19,7 +19,7 @@
 namespace CloudCreativity\LaravelJsonApi\Exceptions;
 
 use CloudCreativity\JsonApi\Contracts\Exceptions\ExceptionParserInterface;
-use CloudCreativity\LaravelJsonApi\Http\Responses\ResponseFactory;
+use CloudCreativity\JsonApi\Contracts\Http\Responses\ResponseFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
 use Exception;
 use Illuminate\Http\Request;
@@ -59,17 +59,13 @@ trait HandlesErrors
 
         /** @var ExceptionParserInterface $handler */
         $handler = app(ExceptionParserInterface::class);
-        /** @var ResponseFactory $responses */
+        /** @var ResponseFactoryInterface $responses */
         $responses = response()->jsonApi();
 
         $response = $handler->parse($e);
         $service->report($response, $e);
 
-        return $responses->errors(
-            $response->getErrors(),
-            $response->getHttpCode(),
-            $response->getHeaders()
-        );
+        return $responses->errors($response);
     }
 
     /**

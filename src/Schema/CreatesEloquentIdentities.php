@@ -18,7 +18,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Schema;
 
-use CloudCreativity\JsonApi\Exceptions\SchemaException;
+use CloudCreativity\JsonApi\Exceptions\RuntimeException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -46,7 +46,7 @@ trait CreatesEloquentIdentities
         $relation = $model->{$relationshipKey}();
 
         if (!$relation instanceof BelongsTo) {
-            throw new SchemaException(sprintf(
+            throw new RuntimeException(sprintf(
                 'Expecting %s on %s to be a belongs-to relationship.',
                 $relationshipKey,
                 get_class($model)
@@ -86,7 +86,7 @@ trait CreatesEloquentIdentities
         $model = new $modelClass();
 
         if (!$model instanceof Model) {
-            throw new SchemaException(sprintf('Expecting a model class, got %s.', $modelClass));
+            throw new RuntimeException(sprintf('Expecting a model class, got %s.', $modelClass));
         }
 
         $model->setAttribute($keyName ?: $model->getKeyName(), $id);

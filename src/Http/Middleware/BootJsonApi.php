@@ -21,14 +21,14 @@ namespace CloudCreativity\LaravelJsonApi\Http\Middleware;
 use Closure;
 use CloudCreativity\JsonApi\Contracts\Http\ApiFactoryInterface;
 use CloudCreativity\JsonApi\Contracts\Http\ApiInterface;
-use CloudCreativity\JsonApi\Contracts\Http\ContentNegotiatorInterface;
+use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestFactoryInterface;
+use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface;
+use CloudCreativity\JsonApi\Contracts\Pagination\PaginatorInterface;
 use CloudCreativity\JsonApi\Http\ApiFactory;
-use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PageParameterHandlerInterface;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\AbstractPaginator;
 use Psr\Http\Message\ServerRequestInterface;
-use RuntimeException;
 
 /**
  * Class BootJsonApi
@@ -66,46 +66,28 @@ class BootJsonApi
      */
     public function handle($request, Closure $next, $namespace)
     {
-        $config = (array) config('json-api.namespaces');
-
-        if (!array_key_exists($namespace, $config)) {
-            throw new RuntimeException("Did not recognised JSON API namespace: $namespace");
-        }
-
         /** @var ApiFactory $factory */
         $factory = $this->container->make(ApiFactoryInterface::class);
-        $api = $factory->createApi($namespace, $this->appendSchemaAndHost($request, (array) $config[$namespace]));
-        $this->container->instance(ApiInterface::class, $api);
-
-        /** @var ContentNegotiatorInterface $negotiator */
-        $negotiator = $this->container->make(ContentNegotiatorInterface::class);
         /** @var ServerRequestInterface $request */
         $serverRequest = $this->container->make(ServerRequestInterface::class);
-        $negotiator->doContentNegotiation($api->getCodecMatcher(), $serverRequest);
+        /** @var RequestFactoryInterface $requestFactory */
+        $requestFactory = $this->container->make(RequestFactoryInterface::class);
+
+        /** Build and register the API */
+        $api = $factory->createApi($namespace, $request->getSchemeAndHttpHost());
+        $this->container->instance(ApiInterface::class, $api);
+
+        /** Build and register the JSON API request */
+        $jsonApiRequest = $requestFactory->build($api, $serverRequest);
+        $this->container->instance(RequestInterface::class, $jsonApiRequest);
 
         /** Override the current page resolution */
         AbstractPaginator::currentPageResolver(function () {
-            /** @var PageParameterHandlerInterface $param */
-            $param = app(PageParameterHandlerInterface::class);
-            return $param->getCurrentPage();
+            /** @var PaginatorInterface $paginator */
+            $paginator = $this->container->make(PaginatorInterface::class);
+            return $paginator->getCurrentPage();
         });
 
         return $next($request);
     }
-
-    /**
-     * @param Request $request
-     * @param array $config
-     * @return string
-     */
-    private function appendSchemaAndHost(Request $request, array $config)
-    {
-        if (array_key_exists(ApiFactory::CONFIG_URL_PREFIX, $config)) {
-            $config[ApiFactory::CONFIG_URL_PREFIX] =
-                $request->getSchemeAndHttpHost() . $config[ApiFactory::CONFIG_URL_PREFIX];
-        }
-
-        return $config;
-    }
-
 }

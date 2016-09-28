@@ -23,7 +23,7 @@ use CloudCreativity\JsonApi\Contracts\Exceptions\ErrorIdAllocatorInterface;
 use CloudCreativity\JsonApi\Contracts\Exceptions\ExceptionParserInterface;
 use CloudCreativity\JsonApi\Contracts\Repositories\ErrorRepositoryInterface;
 use CloudCreativity\JsonApi\Exceptions\MutableErrorCollection as Errors;
-use CloudCreativity\JsonApi\Http\ErrorResponse;
+use CloudCreativity\JsonApi\Http\Responses\ErrorResponse;
 use Exception;
 use Illuminate\Http\Response;
 use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
