@@ -20,7 +20,7 @@ namespace CloudCreativity\LaravelJsonApi\Adapters;
 
 use CloudCreativity\JsonApi\Contracts\Object\ResourceIdentifierInterface;
 use CloudCreativity\JsonApi\Contracts\Store\AdapterInterface;
-use CloudCreativity\JsonApi\Exceptions\StoreException;
+use CloudCreativity\JsonApi\Exceptions\RuntimeException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
@@ -109,7 +109,7 @@ class EloquentAdapter implements AdapterInterface
         $model = new $fqn();
 
         if (!$model instanceof Model) {
-            throw new StoreException("Resource type $resourceType does not resolve to an Eloquent model.");
+            throw new RuntimeException("Resource type $resourceType does not resolve to an Eloquent model.");
         }
 
         return $model;
@@ -122,13 +122,13 @@ class EloquentAdapter implements AdapterInterface
     protected function lookup($resourceType)
     {
         if (!isset($this->map[$resourceType])) {
-            throw new StoreException("Resource type $resourceType is not recognised.");
+            throw new RuntimeException("Resource type $resourceType is not recognised.");
         }
 
         $fqn = $this->map[$resourceType];
 
         if (!is_string($fqn) || !class_exists($fqn)) {
-            throw new StoreException("Class name for resource type $resourceType is not a valid class.");
+            throw new RuntimeException("Class name for resource type $resourceType is not a valid class.");
         }
 
         return $fqn;
