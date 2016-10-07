@@ -28,7 +28,7 @@ return [
   
   // ...
   
-  'paging' => [
+  'pagination' => [
     'params' => [
       'page' => null,
       'per-page' => null,
