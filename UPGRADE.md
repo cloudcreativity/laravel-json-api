@@ -51,8 +51,8 @@ After:
 ``` php
 return [
   'namespaces' => [
-    'v2' => [
-      'url-prefix' => '/api/v2',
+    'v1' => [
+      'url-prefix' => '/api/v1',
       'supported-ext' => null,
       'paging' => [
         'page' => null,
