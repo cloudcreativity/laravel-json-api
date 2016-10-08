@@ -210,8 +210,9 @@ to the interface for methods available.
 You now need to always inject a search object into the Eloquent controller, otherwise the controller will return a 
 `501 Not Implemented` response for the index action.
 
-To use the previous search behaviour for an Eloquent model, type hint the following class in your controller
-constructor and pass it into the parent constructor:
+Previously the controller would list all models and would allow a find-many request (i.e. the client providing
+a list of ids as the `id` filter). If you have not written your own search class for the model being handled by
+your controller and want to maintain the previous behaviour, inject a `SearchAll` instance via your constructor:
 
 ``` php
 use CloudCreativity\LaravelJsonApi\Search\SearchAll;
@@ -230,7 +231,7 @@ to `CloudCreativity\JsonApi\Hydrator\AbstractHydrator`.
 ### Requests
 
 Class `CloudCreativity\LaravelJsonApi\Http\Requests\AbstractRequest` has been removed. Instead you should extend
-`CloudCreativity\JsonApi\Requests\RequestHandler`.
+`CloudCreativity\JsonApi\Http\Requests\RequestHandler`.
 
 Note that the constructor for this new class has the authorizer as the first argument and the validators as the 
 second (i.e. it is the other way round from what it was before). We've made this change because authorization
