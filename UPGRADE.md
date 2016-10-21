@@ -205,6 +205,16 @@ public function read(JsonApiRequest $request) {}
 Use the request object to get the resource id, relationship name and document (the JSON API request content). Refer
 to the interface for methods available.
 
+#### Eloquent Hooks
+
+The `saving`, `saved`, `creating`, `created`, `updating`, `updated` method hooks now receive the resource provided
+by the client as the second method argument. (This object passed implements 
+`CloudCreativity\JsonApi\Contracts\Object\ResourceInterface`.)
+
+In addition, these methods are no longer implemented in the parent class. This means you can use whatever method
+signature you want, including type-hinting the first argument as the specific class of model that is being handled by
+the controller.
+
 #### Search All
 
 You now need to always inject a search object into the Eloquent controller, otherwise the controller will return a 

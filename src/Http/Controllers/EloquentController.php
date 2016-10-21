@@ -247,12 +247,12 @@ abstract class EloquentController extends JsonApiController
     {
         $isUpdating = $model->exists;
 
-        $this->beforeCommit($model, $isUpdating);
+        $this->beforeCommit($model, $resource, $isUpdating);
 
         $result = $this->save($model, $resource);
 
         if ($result) {
-            $this->afterCommit($model, $isUpdating);
+            $this->afterCommit($model, $resource, $isUpdating);
         }
 
         return $result;
@@ -310,16 +310,21 @@ abstract class EloquentController extends JsonApiController
      * Determines which callback to use before creating or updating a model.
      *
      * @param Model $model
+     * @param ResourceInterface $resource
      * @param bool $isUpdating
      */
-    protected function beforeCommit(Model $model, $isUpdating)
+    protected function beforeCommit(Model $model, ResourceInterface $resource, $isUpdating)
     {
-        $this->saving($model);
+        /** Trigger the saving hook if it is implemented */
+        if (method_exists($this, 'saving')) {
+            $this->saving($model, $resource);
+        }
 
-        if ($isUpdating) {
-            $this->updating($model);
-        } else {
-            $this->creating($model);
+        $fn = $isUpdating ? 'updating' : 'creating';
+
+        /** Trigger the updating or creating hook if it is implemented */
+        if (method_exists($this, $fn)) {
+            call_user_func([$this, $fn], $model, $resource);
         }
     }
 
@@ -327,17 +332,22 @@ abstract class EloquentController extends JsonApiController
      * Determines which callback to use after a model is updated or created.
      *
      * @param Model $model
+     * @param ResourceInterface $resource
      * @param bool $isUpdating
      */
-    protected function afterCommit(Model $model, $isUpdating)
+    protected function afterCommit(Model $model, ResourceInterface $resource, $isUpdating)
     {
-        if ($isUpdating) {
-            $this->updated($model);
-        } else {
-            $this->created($model);
+        $fn = $isUpdating ? 'updated' : 'created';
+
+        /** Trigger the updated or created hook if it is implemented */
+        if (method_exists($this, $fn)) {
+            call_user_func([$this, $fn], $model, $resource);
         }
 
-        $this->saved($model);
+        /** Trigger the saved hook if it is implemented */
+        if (method_exists($this, 'saved')) {
+            $this->saved($model, $resource);
+        }
     }
 
     /**
@@ -348,11 +358,15 @@ abstract class EloquentController extends JsonApiController
      */
     protected function destroy(Model $model)
     {
-        $this->deleting($model);
+        /** Trigger the deleting hook if it is implemented */
+        if (method_exists($this, 'deleting')) {
+            $this->deleting($model);
+        }
 
         $result = (bool) $model->delete();
 
-        if ($result) {
+        /** Trigger the deleted hook if it is implemented and delete was successful */
+        if ($result && method_exists($this, 'deleted')) {
             $this->deleted($model);
         }
 
@@ -451,91 +465,4 @@ abstract class EloquentController extends JsonApiController
         });
     }
 
-    /**
-     * Called before the model is saved (either creating or updating an existing model).
-     *
-     * Child classes can overload this method if they need to do any logic pre-save.
-     *
-     * @param Model $model
-     */
-    protected function saving(Model $model)
-    {
-    }
-
-    /**
-     * Called after the model has been saved (when a model has been created or updated)
-     *
-     * Child classes can overload this method if they need to do any logic post-save.
-     *
-     * @param Model $model
-     */
-    protected function saved(Model $model)
-    {
-    }
-
-    /**
-     * Called before the model is created.
-     *
-     * Child classes can overload this method if they need to do any logic pre-creation.
-     *
-     * @param Model $model
-     */
-    protected function creating(Model $model)
-    {
-    }
-
-    /**
-     * Called after the model has been created.
-     *
-     * Child classes can overload this method if they need to do any logic post-creation.
-     *
-     * @param Model $model
-     */
-    protected function created(Model $model)
-    {
-    }
-
-    /**
-     * Called before the model is updated.
-     *
-     * Child classes can overload this method if they need to do any logic pre-updating.
-     *
-     * @param Model $model
-     */
-    protected function updating(Model $model)
-    {
-    }
-
-    /**
-     * Called after the model has been updated.
-     *
-     * Child classes can overload this method if they need to do any logic post-updating.
-     *
-     * @param Model $model
-     */
-    protected function updated(Model $model)
-    {
-    }
-
-    /**
-     * Called before the model is destroyed.
-     *
-     * Child classes can overload this method if they need to do any logic pre-delete.
-     *
-     * @param Model $model
-     */
-    protected function deleting(Model $model)
-    {
-    }
-
-    /**
-     * Called after the model has been destroyed.
-     *
-     * Child classes can overload this method if they need to do any logic post-delete.
-     *
-     * @param Model $model
-     */
-    protected function deleted(Model $model)
-    {
-    }
 }
