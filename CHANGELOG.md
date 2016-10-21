@@ -2,6 +2,37 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## [0.5.0] - 2016-10-21
+
+This release is the first release to support Laravel 5.3.
+
+### Added
+- Can now attach custom adapters to the store via the `json-api.php` config file.
+- Authorizer now supports adding error messages from the error repository using string keys.
+- An abstract Eloquent model hydrator can now be used.
+- The Eloquent controller now handles saving of has many relationships that need to be committed to the database
+after the primary model has been created. You must be using the new Eloquent hydrator for this to work, or your 
+existing hydrator can type hint the capability by implementing the new `HydratesRelatedInterface`.
+
+### Changed
+- Paging configuration is now held on a per-API basis.
+- Update authorization can now access the resource submitted by the client via an additional method argument.
+- Request handlers are now not injected to a controller via the constructor: instead the fully qualified class name
+is passed and controller middleware is used to validate requests. This change was necessary to support Laravel 5.3, 
+while maintaining support for 5.1 and 5.2.
+- Various classes have been moved into the `cloudcreativity/json-api` package (changing their namespace), because the
+implementations are now framework agnostic.
+- Eloquent schemas now follow the JSON API recommendation and use hyphenated member names by default. This behaviour
+can however be overridden, e.g. if the Eloquent underscored attribute names is the desired convention.
+- To match this, the search class also assumed a default of hyphenated member names, although this can be overridden.
+- Validator provides now receive the resource type that they are validating into their method signatures. This allows
+for a single validator provider to validate multiple resource types if desired.
+
+### Removed
+- `AbstractSortedSearch` was removed and its capability merged into `AbstractSearch` as there was no need to have the
+two separate classes.
+- Removed the experimental `boot` feature on the JSON API service.
+
 ## [0.4.6] - 2016-09-01
 
 ### Fixed
