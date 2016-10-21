@@ -21,7 +21,8 @@ namespace CloudCreativity\LaravelJsonApi\Routing;
 use CloudCreativity\LaravelJsonApi\Contracts\Document\LinkFactoryInterface;
 use CloudCreativity\LaravelJsonApi\TestCase;
 use Illuminate\Contracts\Routing\Registrar;
-use PHPUnit_Framework_MockObject_MockObject;
+use Illuminate\Routing\Route;
+use PHPUnit_Framework_MockObject_MockObject as Mock;
 
 /**
  * Class ResourceRegistrarTest
@@ -31,7 +32,7 @@ final class ResourceRegistrarTest extends TestCase
 {
 
     /**
-     * @var PHPUnit_Framework_MockObject_MockObject
+     * @var Mock
      */
     private $mock;
 
@@ -61,74 +62,66 @@ final class ResourceRegistrarTest extends TestCase
 
     public function testRegistration()
     {
-        $index = sprintf(LinkFactoryInterface::ROUTE_NAME_INDEX, 'posts');
-        $resource = sprintf(LinkFactoryInterface::ROUTE_NAME_RESOURCE, 'posts');
-        $relatedResource = sprintf(LinkFactoryInterface::ROUTE_NAME_RELATED_RESOURCE, 'posts');
-        $relationship = sprintf(LinkFactoryInterface::ROUTE_NAME_RELATIONSHIPS, 'posts');
-
-        $this->willSee('GET', '/posts', 'index', $index);
-        $this->willSee('POST', '/posts', 'create');
-        $this->willSee('GET', '/posts/{resource_id}', 'read', $resource);
-        $this->willSee('PATCH', '/posts/{resource_id}', 'update');
-        $this->willSee('DELETE', '/posts/{resource_id}', 'delete');
-        $this->willSee('GET', '/posts/{resource_id}/{relationship_name}', 'readRelatedResource', $relatedResource);
-        $this->willSee('GET', '/posts/{resource_id}/relationships/{relationship_name}', 'readRelationship', $relationship);
-        $this->willSee('PATCH', '/posts/{resource_id}/relationships/{relationship_name}', 'replaceRelationship');
-        $this->willSee('POST', '/posts/{resource_id}/relationships/{relationship_name}', 'addToRelationship');
-        $this->willSee('DELETE', '/posts/{resource_id}/relationships/{relationship_name}', 'removeFromRelationship');
-
+        $this->willRegister('posts', 'PostsController');
         $this->registrar->resource('posts');
     }
 
     public function testRegistrationWithController()
     {
-        $controller = 'MyNamespace/PostsController';
-        $index = sprintf(LinkFactoryInterface::ROUTE_NAME_INDEX, 'posts');
-        $resource = sprintf(LinkFactoryInterface::ROUTE_NAME_RESOURCE, 'posts');
-        $relatedResource = sprintf(LinkFactoryInterface::ROUTE_NAME_RELATED_RESOURCE, 'posts');
-        $relationship = sprintf(LinkFactoryInterface::ROUTE_NAME_RELATIONSHIPS, 'posts');
-
-        $this->willSee('GET', '/posts', 'index', $index, $controller);
-        $this->willSee('POST', '/posts', 'create', null, $controller);
-        $this->willSee('GET', '/posts/{resource_id}', 'read', $resource, $controller);
-        $this->willSee('PATCH', '/posts/{resource_id}', 'update', null, $controller);
-        $this->willSee('DELETE', '/posts/{resource_id}', 'delete', null, $controller);
-        $this->willSee('GET', '/posts/{resource_id}/{relationship_name}', 'readRelatedResource', $relatedResource, $controller);
-        $this->willSee('GET', '/posts/{resource_id}/relationships/{relationship_name}', 'readRelationship', $relationship, $controller);
-        $this->willSee('PATCH', '/posts/{resource_id}/relationships/{relationship_name}', 'replaceRelationship', null, $controller);
-        $this->willSee('POST', '/posts/{resource_id}/relationships/{relationship_name}', 'addToRelationship', null, $controller);
-        $this->willSee('DELETE', '/posts/{resource_id}/relationships/{relationship_name}', 'removeFromRelationship', null, $controller);
-
+        $this->willRegister('posts', $controller = 'MyNamespace/PostsController');
         $this->registrar->resource('posts', $controller);
     }
 
     public function testRegistrationWithSlugResourceType()
     {
-        $index = sprintf(LinkFactoryInterface::ROUTE_NAME_INDEX, 'user-accounts');
-        $this->willSee('GET', '/user-accounts', 'index', $index, 'UserAccountsController');
+        $this->willRegister('user-accounts', 'UserAccountsController');
         $this->registrar->resource('user-accounts');
     }
 
     public function testRegistrationWithSnakeResourceType()
     {
-        $index = sprintf(LinkFactoryInterface::ROUTE_NAME_INDEX, 'user_accounts');
-        $this->willSee('GET', '/user_accounts', 'index', $index, 'UserAccountsController');
+        $this->willRegister('user_accounts', 'UserAccountsController');
         $this->registrar->resource('user_accounts');
     }
 
     /**
-     * @param $uri
+     * @param $resourceType
+     * @param $expectedController
+     */
+    private function willRegister($resourceType, $expectedController)
+    {
+        $index = sprintf(LinkFactoryInterface::ROUTE_NAME_INDEX, $resourceType);
+        $resource = sprintf(LinkFactoryInterface::ROUTE_NAME_RESOURCE, $resourceType);
+        $relatedResource = sprintf(LinkFactoryInterface::ROUTE_NAME_RELATED_RESOURCE, $resourceType);
+        $relationship = sprintf(LinkFactoryInterface::ROUTE_NAME_RELATIONSHIPS, $resourceType);
+
+        $this->willSee($resourceType, 'GET', "/$resourceType", $expectedController, 'index', $index);
+        $this->willSee($resourceType, 'POST', "/$resourceType", $expectedController, 'create');
+        $this->willSee($resourceType, 'GET', "/$resourceType/{resource_id}", $expectedController, 'read', $resource);
+        $this->willSee($resourceType, 'PATCH', "/$resourceType/{resource_id}", $expectedController, 'update');
+        $this->willSee($resourceType, 'DELETE', "/$resourceType/{resource_id}", $expectedController, 'delete');
+        $this->willSee($resourceType, 'GET', "/$resourceType/{resource_id}/{relationship_name}", $expectedController, 'readRelatedResource', $relatedResource);
+        $this->willSee($resourceType, 'GET', "/$resourceType/{resource_id}/relationships/{relationship_name}", $expectedController, 'readRelationship', $relationship);
+        $this->willSee($resourceType, 'PATCH', "/$resourceType/{resource_id}/relationships/{relationship_name}", $expectedController, 'replaceRelationship');
+        $this->willSee($resourceType, 'POST', "/$resourceType/{resource_id}/relationships/{relationship_name}", $expectedController, 'addToRelationship');
+        $this->willSee($resourceType, 'DELETE', "/$resourceType/{resource_id}/relationships/{relationship_name}", $expectedController, 'removeFromRelationship');
+    }
+
+    /**
+     * @param $resourceType
      * @param $httpMethod
+     * @param $uri
+     * @param $controller
      * @param $controllerMethod
      * @param $as
-     * @param string $controller
      */
     private function willSee(
+        $resourceType,
         $httpMethod,
         $uri,
+        $controller,
         $controllerMethod,
-        $as = null,
-        $controller = 'PostsController'
+        $as = null
     ) {
         $options = ['uses' => $controller . '@' . $controllerMethod];
 
@@ -139,8 +132,28 @@ final class ResourceRegistrarTest extends TestCase
         $this->mock
             ->expects($this->at($this->index))
             ->method(strtolower($httpMethod))
-            ->with($uri, $options);
+            ->with($uri, $options)
+            ->willReturn($this->route($resourceType));
 
         $this->index++;
+    }
+
+    /**
+     * @param $resourceType
+     * @return Mock
+     */
+    private function route($resourceType)
+    {
+        $route = $this
+            ->getMockBuilder(Route::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $route->expects($this->once())
+            ->method('defaults')
+            ->with(ResourceRegistrar::PARAM_RESOURCE_TYPE, $resourceType)
+            ->willReturnSelf();
+
+        return $route;
     }
 }

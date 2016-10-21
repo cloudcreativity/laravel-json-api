@@ -20,7 +20,6 @@ namespace CloudCreativity\LaravelJsonApi\Search;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
-use Neomerx\JsonApi\Contracts\Encoder\Parameters\SortParameterInterface;
 
 /**
  * Class UnfilteredFilter
@@ -34,15 +33,6 @@ final class SearchAll extends AbstractSearch
      * @param Collection $filters
      */
     protected function filter(Builder $builder, Collection $filters)
-    {
-
-    }
-
-    /**
-     * @param Builder $builder
-     * @param SortParameterInterface[] $sortBy
-     */
-    protected function sort(Builder $builder, array $sortBy)
     {
 
     }

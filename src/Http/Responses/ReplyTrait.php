@@ -18,6 +18,8 @@
 
 namespace CloudCreativity\LaravelJsonApi\Http\Responses;
 
+use CloudCreativity\JsonApi\Http\Responses\ResponseFactory;
+
 /**
  * Class ReplyTrait
  * @package CloudCreativity\LaravelJsonApi

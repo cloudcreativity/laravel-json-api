@@ -19,7 +19,8 @@
 namespace CloudCreativity\LaravelJsonApi\Schema;
 
 use Carbon\Carbon;
-use CloudCreativity\JsonApi\Exceptions\SchemaException;
+use CloudCreativity\JsonApi\Exceptions\RuntimeException;
+use CloudCreativity\LaravelJsonApi\Utils\Str;
 use DateTime;
 use Illuminate\Database\Eloquent\Model;
 
@@ -84,13 +85,24 @@ abstract class EloquentSchema extends AbstractSchema
     protected $attributes = [];
 
     /**
+     * Whether resource member names are hyphenated
+     *
+     * The JSON API spec recommends using hyphens for resource member names, so this package
+     * uses this as the default. If you do not want to follow the recommendation, set this
+     * to `false`.
+     *
+     * @var bool
+     */
+    protected $hyphenated = true;
+
+    /**
      * @param object $resource
      * @return mixed
      */
     public function getId($resource)
     {
         if (!$resource instanceof Model) {
-            throw new SchemaException('Expecting an Eloquent model.');
+            throw new RuntimeException('Expecting an Eloquent model.');
         }
 
         $key = $this->idName ?: $resource->getKeyName();
@@ -105,7 +117,7 @@ abstract class EloquentSchema extends AbstractSchema
     public function getAttributes($resource)
     {
         if (!$resource instanceof Model) {
-            throw new SchemaException('Expecting an Eloquent model to serialize.');
+            throw new RuntimeException('Expecting an Eloquent model to serialize.');
         }
 
         return array_merge(
@@ -172,7 +184,7 @@ abstract class EloquentSchema extends AbstractSchema
      */
     protected function keyForAttribute($modelKey)
     {
-        return $modelKey;
+        return $this->hyphenated ? Str::dasherize($modelKey) : $modelKey;
     }
 
     /**
@@ -196,10 +208,20 @@ abstract class EloquentSchema extends AbstractSchema
     protected function serializeAttribute($value, Model $model, $modelKey)
     {
         if ($value instanceof DateTime) {
-            $value = $value->format($this->getDateFormat());
+            $value = $this->serializeDateTime($value, $model);
         }
 
         return $value;
+    }
+
+    /**
+     * @param DateTime $value
+     * @param Model $model
+     * @return string
+     */
+    protected function serializeDateTime(DateTime $value, Model $model)
+    {
+        return $value->format($this->getDateFormat());
     }
 
     /**

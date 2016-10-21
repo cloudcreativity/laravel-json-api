@@ -18,9 +18,12 @@
 
 namespace CloudCreativity\LaravelJsonApi\Search;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PageParameterHandlerInterface;
+use CloudCreativity\JsonApi\Contracts\Http\HttpServiceInterface;
+use CloudCreativity\JsonApi\Contracts\Pagination\PageInterface;
+use CloudCreativity\JsonApi\Contracts\Pagination\PaginatorInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Search\SearchInterface;
-use Illuminate\Contracts\Pagination\Paginator;
+use CloudCreativity\LaravelJsonApi\Pagination\Page;
+use CloudCreativity\LaravelJsonApi\Utils\Str;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Model;
@@ -63,6 +66,17 @@ abstract class AbstractSearch implements SearchInterface
     protected $simplePagination = false;
 
     /**
+     * A mapping of sort parameters to columns.
+     *
+     * Use this to map any parameters to columns where the two are not identical. E.g. if
+     * your sort param is called `sort` but the column to use is `type`, then set this
+     * property to `['sort' => 'type']`.
+     *
+     * @var array
+     */
+    protected $sortColumns = [];
+
+    /**
      * The filter param for a find-many request.
      *
      * @var string
@@ -79,19 +93,33 @@ abstract class AbstractSearch implements SearchInterface
     abstract protected function filter(Builder $builder, Collection $filters);
 
     /**
-     * @param Builder $builder
-     * @param SortParameterInterface[] $sortBy
-     * @return void
-     */
-    abstract protected function sort(Builder $builder, array $sortBy);
-
-    /**
      * Is this a search for a singleton resource?
      *
      * @param Collection $filters
      * @return bool
      */
     abstract protected function isSearchOne(Collection $filters);
+
+    /**
+     * @var HttpServiceInterface
+     */
+    private $service;
+
+    /**
+     * @var PaginatorInterface
+     */
+    private $paginator;
+
+    /**
+     * AbstractSearch constructor.
+     * @param HttpServiceInterface $service
+     * @param PaginatorInterface $paginator
+     */
+    public function __construct(HttpServiceInterface $service, PaginatorInterface $paginator)
+    {
+        $this->service = $service;
+        $this->paginator = $paginator;
+    }
 
     /**
      * @inheritdoc
@@ -112,6 +140,26 @@ abstract class AbstractSearch implements SearchInterface
         }
 
         return $this->isPaginated() ? $this->paginate($builder) : $this->all($builder);
+    }
+
+    /**
+     * Apply sort parameters to the query.
+     *
+     * @param Builder $query
+     * @param SortParameterInterface[] $sortBy
+     * @return void
+     */
+    protected function sort(Builder $query, array $sortBy)
+    {
+        if (empty($sortBy)) {
+            $this->defaultSort($query);
+            return;
+        }
+
+        /** @var SortParameterInterface $param */
+        foreach ($sortBy as $param) {
+            $this->sortBy($query, $param);
+        }
     }
 
     /**
@@ -138,7 +186,15 @@ abstract class AbstractSearch implements SearchInterface
      */
     protected function isPaginated()
     {
-        return 0 < $this->maxPerPage || $this->page()->isPaginated();
+        return $this->isAlwaysPaginated() || is_int($this->paginator->getCurrentPage());
+    }
+
+    /**
+     * @return bool
+     */
+    protected function isAlwaysPaginated()
+    {
+        return 0 < $this->maxPerPage;
     }
 
     /**
@@ -146,18 +202,22 @@ abstract class AbstractSearch implements SearchInterface
      */
     protected function getPerPage()
     {
-        return $this->page()->getPerPage($this->perPage, $this->maxPerPage ?: null);
+        return $this->paginator->getPerPage($this->perPage, $this->maxPerPage ?: null);
     }
 
     /**
      * @param Builder $builder
-     * @return Paginator
+     * @return PageInterface
      */
     protected function paginate(Builder $builder)
     {
         $size = $this->getPerPage();
+        $page = new Page($this->service);
 
-        return $this->simplePagination ? $builder->simplePaginate($size) : $builder->paginate($size);
+        $data = $this->simplePagination ? $builder->simplePaginate($size) : $builder->paginate($size);
+        $page->setData($data);
+
+        return $page;
     }
 
     /**
@@ -200,11 +260,61 @@ abstract class AbstractSearch implements SearchInterface
     }
 
     /**
-     * @return PageParameterHandlerInterface
+     * @param Builder $builder
+     * @param SortParameterInterface $param
      */
-    protected function page()
+    protected function sortBy(Builder $builder, SortParameterInterface $param)
     {
-        return app(PageParameterHandlerInterface::class);
+        $column = $this->getQualifiedSortColumn($builder, $param->getField());
+        $order = $param->isAscending() ? 'asc' : 'desc';
+
+        $builder->orderBy($column, $order);
+    }
+
+    /**
+     * @param Builder $builder
+     * @param string $field
+     * @return string
+     */
+    protected function getQualifiedSortColumn(Builder $builder, $field)
+    {
+        $key = $this->columnForField($field, $builder->getModel());
+
+        if (!str_contains('.', $key)) {
+            $key = sprintf('%s.%s', $builder->getModel()->getTable(), $key);
+        }
+
+        return $key;
+    }
+
+    /**
+     * Get the table column to use for the specified search field.
+     *
+     * @param string $field
+     * @param Model $model
+     * @return string
+     */
+    protected function columnForField($field, Model $model)
+    {
+        /** If there is a custom mapping, return that */
+        if (isset($this->sortColumns[$field])) {
+            return $this->sortColumns[$field];
+        }
+
+        return $model::$snakeAttributes ? Str::snake($field) : Str::camel($field);
+    }
+
+    /**
+     * Apply a default sort order if the client has not requested any sort order.
+     *
+     * Child classes can override this method if they want to implement their
+     * own default sort order.
+     *
+     * @param Builder $builder
+     * @return void
+     */
+    protected function defaultSort(Builder $builder)
+    {
     }
 
 }

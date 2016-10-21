@@ -19,23 +19,24 @@
 namespace CloudCreativity\LaravelJsonApi\Http\Controllers;
 
 use Closure;
+use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface as JsonApiRequest;
+use CloudCreativity\JsonApi\Contracts\Hydrator\HydratesRelatedInterface;
 use CloudCreativity\JsonApi\Contracts\Hydrator\HydratorInterface;
 use CloudCreativity\JsonApi\Contracts\Object\ResourceInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestHandlerInterface;
+use CloudCreativity\JsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Contracts\Search\SearchInterface;
-use CloudCreativity\LaravelJsonApi\Search\SearchAll;
+use CloudCreativity\LaravelJsonApi\Utils\Str;
 use Exception;
 use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Response;
-use RuntimeException;
 
 /**
  * Class EloquentController
  * @package CloudCreativity\LaravelJsonApi
  */
-class EloquentController extends JsonApiController
+abstract class EloquentController extends JsonApiController
 {
 
     /**
@@ -68,28 +69,31 @@ class EloquentController extends JsonApiController
     /**
      * EloquentController constructor.
      * @param Model $model
-     * @param RequestHandlerInterface $request
      * @param HydratorInterface|null $hydrator
      * @param SearchInterface|null $search
      */
     public function __construct(
         Model $model,
-        RequestHandlerInterface $request,
         HydratorInterface $hydrator = null,
         SearchInterface $search = null
     ) {
-        parent::__construct($request);
+        parent::__construct();
         $this->model = $model;
         $this->hydrator = $hydrator;
-        $this->search = $search ?: new SearchAll();
+        $this->search = $search;
     }
 
     /**
+     * @param JsonApiRequest $request
      * @return Response
      */
-    public function index()
+    public function index(JsonApiRequest $request)
     {
-        $result = $this->search();
+        $result = $this->search($request);
+
+        if ($result instanceof Response) {
+            return $result;
+        }
 
         return $this
             ->reply()
@@ -97,12 +101,14 @@ class EloquentController extends JsonApiController
     }
 
     /**
+     * @param JsonApiRequest $request
      * @return Response
      */
-    public function create()
+    public function create(JsonApiRequest $request)
     {
-        $model = $this->hydrate($this->getResource(), $this->model);
-        $result = ($model instanceof Response) ? $model : $this->doCommit($model);
+        $resource = $request->getDocument()->getResource();
+        $model = $this->hydrate($resource, $this->model);
+        $result = ($model instanceof Response) ? $model : $this->doCommit($model, $resource);
 
         if ($result instanceof Response) {
             return $result;
@@ -116,24 +122,25 @@ class EloquentController extends JsonApiController
     }
 
     /**
-     * @param $resourceId
+     * @param JsonApiRequest $request
      * @return Response
      */
-    public function read($resourceId)
+    public function read(JsonApiRequest $request)
     {
         return $this
             ->reply()
-            ->content($this->getRecord());
+            ->content($this->getRecord($request));
     }
 
     /**
-     * @param $resourceId
+     * @param JsonApiRequest $request
      * @return Response
      */
-    public function update($resourceId)
+    public function update(JsonApiRequest $request)
     {
-        $model = $this->hydrate($this->getResource(), $this->getRecord());
-        $result = ($model instanceof Response) ? $model : $this->doCommit($model);
+        $resource = $request->getDocument()->getResource();
+        $model = $this->hydrate($resource, $this->getRecord($request));
+        $result = ($model instanceof Response) ? $model : $this->doCommit($model, $resource);
 
         if ($result instanceof Response) {
             return $result;
@@ -147,12 +154,12 @@ class EloquentController extends JsonApiController
     }
 
     /**
-     * @param $resourceId
+     * @param JsonApiRequest $request
      * @return Response
      */
-    public function delete($resourceId)
+    public function delete(JsonApiRequest $request)
     {
-        $model = $this->getRecord();
+        $model = $this->getRecord($request);
         $result = $this->doDestroy($model);
 
         if ($result instanceof Response) {
@@ -167,14 +174,13 @@ class EloquentController extends JsonApiController
     }
 
     /**
-     * @param $resourceId
-     * @param $relationshipName
+     * @param JsonApiRequest $request
      * @return Response
      */
-    public function readRelatedResource($resourceId, $relationshipName)
+    public function readRelatedResource(JsonApiRequest $request)
     {
-        $model = $this->getRecord();
-        $key = $this->keyForRelationship($relationshipName);
+        $model = $this->getRecord($request);
+        $key = $this->keyForRelationship($request->getRelationshipName());
 
         return $this
             ->reply()
@@ -182,14 +188,13 @@ class EloquentController extends JsonApiController
     }
 
     /**
-     * @param $resourceId
-     * @param $relationshipName
+     * @param JsonApiRequest $request
      * @return Response
      */
-    public function readRelationship($resourceId, $relationshipName)
+    public function readRelationship(JsonApiRequest $request)
     {
-        $model = $this->getRecord();
-        $key = $this->keyForRelationship($relationshipName);
+        $model = $this->getRecord($request);
+        $key = $this->keyForRelationship($request->getRelationshipName());
 
         return $this
             ->reply()
@@ -197,18 +202,18 @@ class EloquentController extends JsonApiController
     }
 
     /**
-     * @return Paginator|Collection|Model|null
+     * @param JsonApiRequest $request
+     * @return Paginator|Collection|Model|Response|null
      */
-    protected function search()
+    protected function search(JsonApiRequest $request)
     {
         if (!$this->search) {
-            return $this->model->all();
+            return $this->notImplemented();
         }
 
         $builder = $this->model->newQuery();
-        $parameters = $this->getRequestHandler()->getEncodingParameters();
 
-        return $this->search->search($builder, $parameters);
+        return $this->search->search($builder, $request->getParameters());
     }
 
     /**
@@ -235,37 +240,91 @@ class EloquentController extends JsonApiController
      * Commit the model to the database.
      *
      * @param Model $model
+     * @param ResourceInterface $resource
      * @return bool|Response
      */
-    protected function commit(Model $model)
+    protected function commit(Model $model, ResourceInterface $resource)
     {
         $isUpdating = $model->exists;
 
-        $this->beforeCommit($model, $isUpdating);
+        $this->beforeCommit($model, $resource, $isUpdating);
 
-        $result = $model->save();
+        $result = $this->save($model, $resource);
 
         if ($result) {
-            $this->afterCommit($model, $isUpdating);
+            $this->afterCommit($model, $resource, $isUpdating);
         }
 
         return $result;
     }
 
     /**
+     * Execute a save.
+     *
+     * Child classes can overload this method if they need to implement additional writing to the database
+     * on save. For example, if the resource includes a has-many relationship, that will have to be persisted
+     * to the database after the primary model is saved if creating that model.
+     *
+     * @param Model $model
+     * @param ResourceInterface $resource
+     * @return bool
+     */
+    protected function save(Model $model, ResourceInterface $resource)
+    {
+        /** We save the primary model */
+        if (!$model->save()) {
+            return false;
+        }
+
+        /** If needed, we trigger hydration of secondary resources/has-many relationships and persist the
+         * changes on any returned models. */
+        if ($this->hydrator instanceof HydratesRelatedInterface) {
+            $related = (array) $this->hydrator->hydrateRelated($resource, $model);
+
+            foreach ($related as $relatedResource) {
+                if (!$this->saveRelated($relatedResource)) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Save a related resource that has been hydrated.
+     *
+     * @param object $related
+     * @return bool
+     */
+    protected function saveRelated($related)
+    {
+        if ($related instanceof Model) {
+            return $related->save();
+        }
+
+        return false;
+    }
+
+    /**
      * Determines which callback to use before creating or updating a model.
      *
      * @param Model $model
+     * @param ResourceInterface $resource
      * @param bool $isUpdating
      */
-    protected function beforeCommit(Model $model, $isUpdating)
+    protected function beforeCommit(Model $model, ResourceInterface $resource, $isUpdating)
     {
-        $this->saving($model);
+        /** Trigger the saving hook if it is implemented */
+        if (method_exists($this, 'saving')) {
+            $this->saving($model, $resource);
+        }
 
-        if ($isUpdating) {
-            $this->updating($model);
-        } else {
-            $this->creating($model);
+        $fn = $isUpdating ? 'updating' : 'creating';
+
+        /** Trigger the updating or creating hook if it is implemented */
+        if (method_exists($this, $fn)) {
+            call_user_func([$this, $fn], $model, $resource);
         }
     }
 
@@ -273,17 +332,22 @@ class EloquentController extends JsonApiController
      * Determines which callback to use after a model is updated or created.
      *
      * @param Model $model
+     * @param ResourceInterface $resource
      * @param bool $isUpdating
      */
-    protected function afterCommit(Model $model, $isUpdating)
+    protected function afterCommit(Model $model, ResourceInterface $resource, $isUpdating)
     {
-        if ($isUpdating) {
-            $this->updated($model);
-        } else {
-            $this->created($model);
+        $fn = $isUpdating ? 'updated' : 'created';
+
+        /** Trigger the updated or created hook if it is implemented */
+        if (method_exists($this, $fn)) {
+            call_user_func([$this, $fn], $model, $resource);
         }
 
-        $this->saved($model);
+        /** Trigger the saved hook if it is implemented */
+        if (method_exists($this, 'saved')) {
+            $this->saved($model, $resource);
+        }
     }
 
     /**
@@ -294,11 +358,15 @@ class EloquentController extends JsonApiController
      */
     protected function destroy(Model $model)
     {
-        $this->deleting($model);
+        /** Trigger the deleting hook if it is implemented */
+        if (method_exists($this, 'deleting')) {
+            $this->deleting($model);
+        }
 
         $result = (bool) $model->delete();
 
-        if ($result) {
+        /** Trigger the deleted hook if it is implemented and delete was successful */
+        if ($result && method_exists($this, 'deleted')) {
             $this->deleted($model);
         }
 
@@ -336,15 +404,16 @@ class EloquentController extends JsonApiController
     protected function keyForRelationship($relationshipName)
     {
         return isset($this->relationships[$relationshipName]) ?
-            $this->relationships[$relationshipName] : camel_case($relationshipName);
+            $this->relationships[$relationshipName] : Str::camel($relationshipName);
     }
 
     /**
+     * @param JsonApiRequest $request
      * @return Model
      */
-    protected function getRecord()
+    protected function getRecord(JsonApiRequest $request)
     {
-        $record = parent::getRecord();
+        $record = $request->getRecord();
 
         if (!$record instanceof Model) {
             throw new RuntimeException(sprintf('%s expects to be used with a %s record.', static::class, Model::class));
@@ -373,12 +442,13 @@ class EloquentController extends JsonApiController
      * Perform the commit task within a transaction.
      *
      * @param Model $model
+     * @param ResourceInterface $resource
      * @return bool|Response
      */
-    private function doCommit(Model $model)
+    private function doCommit(Model $model, ResourceInterface $resource)
     {
-        return $this->transaction(function () use ($model) {
-            return $this->commit($model);
+        return $this->transaction(function () use ($model, $resource) {
+            return $this->commit($model, $resource);
         });
     }
 
@@ -395,91 +465,4 @@ class EloquentController extends JsonApiController
         });
     }
 
-    /**
-     * Called before the model is saved (either creating or updating an existing model).
-     *
-     * Child classes can overload this method if they need to do any logic pre-save.
-     *
-     * @param Model $model
-     */
-    protected function saving(Model $model)
-    {
-    }
-
-    /**
-     * Called after the model has been saved (when a model has been created or updated)
-     *
-     * Child classes can overload this method if they need to do any logic post-save.
-     *
-     * @param Model $model
-     */
-    protected function saved(Model $model)
-    {
-    }
-
-    /**
-     * Called before the model is created.
-     *
-     * Child classes can overload this method if they need to do any logic pre-creation.
-     *
-     * @param Model $model
-     */
-    protected function creating(Model $model)
-    {
-    }
-
-    /**
-     * Called after the model has been created.
-     *
-     * Child classes can overload this method if they need to do any logic post-creation.
-     *
-     * @param Model $model
-     */
-    protected function created(Model $model)
-    {
-    }
-
-    /**
-     * Called before the model is updated.
-     *
-     * Child classes can overload this method if they need to do any logic pre-updating.
-     *
-     * @param Model $model
-     */
-    protected function updating(Model $model)
-    {
-    }
-
-    /**
-     * Called after the model has been updated.
-     *
-     * Child classes can overload this method if they need to do any logic post-updating.
-     *
-     * @param Model $model
-     */
-    protected function updated(Model $model)
-    {
-    }
-
-    /**
-     * Called before the model is destroyed.
-     *
-     * Child classes can overload this method if they need to do any logic pre-delete.
-     *
-     * @param Model $model
-     */
-    protected function deleting(Model $model)
-    {
-    }
-
-    /**
-     * Called after the model has been destroyed.
-     *
-     * Child classes can overload this method if they need to do any logic post-delete.
-     *
-     * @param Model $model
-     */
-    protected function deleted(Model $model)
-    {
-    }
 }

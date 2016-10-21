@@ -20,6 +20,7 @@ namespace CloudCreativity\LaravelJsonApi\Routing;
 
 use CloudCreativity\LaravelJsonApi\Document\GeneratesRouteNames;
 use Illuminate\Contracts\Routing\Registrar;
+use Illuminate\Routing\Route;
 use Illuminate\Support\Str;
 
 /**
@@ -30,6 +31,7 @@ class ResourceRegistrar
 {
 
     const KEYWORD_RELATIONSHIPS = 'relationships';
+    const PARAM_RESOURCE_TYPE = 'resource_type';
     const PARAM_RESOURCE_ID = 'resource_id';
     const PARAM_RELATIONSHIP_NAME = 'relationship_name';
 
@@ -74,8 +76,8 @@ class ResourceRegistrar
     {
         $uri = $this->indexUri($resourceType);
         $name = $this->indexRouteName($resourceType);
-        $this->route('get', $uri, $controller, 'index', $name);
-        $this->route('post', $uri, $controller, 'create');
+        $this->route($resourceType, 'get', $uri, $controller, 'index', $name);
+        $this->route($resourceType, 'post', $uri, $controller, 'create');
     }
 
     /**
@@ -86,9 +88,9 @@ class ResourceRegistrar
     {
         $uri = $this->resourceUri($resourceType);
         $name = $this->resourceRouteName($resourceType);
-        $this->route('get', $uri, $controller, 'read', $name);
-        $this->route('patch', $uri, $controller, 'update');
-        $this->route('delete', $uri, $controller, 'delete');
+        $this->route($resourceType, 'get', $uri, $controller, 'read', $name);
+        $this->route($resourceType, 'patch', $uri, $controller, 'update');
+        $this->route($resourceType, 'delete', $uri, $controller, 'delete');
     }
 
     /**
@@ -99,7 +101,7 @@ class ResourceRegistrar
     {
         $uri = $this->relatedResourceUri($resourceType);
         $name = $this->relatedResourceRouteName($resourceType);
-        $this->route('get', $uri, $controller, 'readRelatedResource', $name);
+        $this->route($resourceType, 'get', $uri, $controller, 'readRelatedResource', $name);
     }
 
     /**
@@ -110,13 +112,14 @@ class ResourceRegistrar
     {
         $uri = $this->relationshipUri($resourceType);
         $name = $this->relationshipRouteName($resourceType);
-        $this->route('get', $uri, $controller, 'readRelationship', $name);
-        $this->route('patch', $uri, $controller, 'replaceRelationship');
-        $this->route('post', $uri, $controller, 'addToRelationship');
-        $this->route('delete', $uri, $controller, 'removeFromRelationship');
+        $this->route($resourceType, 'get', $uri, $controller, 'readRelationship', $name);
+        $this->route($resourceType, 'patch', $uri, $controller, 'replaceRelationship');
+        $this->route($resourceType, 'post', $uri, $controller, 'addToRelationship');
+        $this->route($resourceType, 'delete', $uri, $controller, 'removeFromRelationship');
     }
 
     /**
+     * @param $resourceType
      * @param $routerMethod
      * @param $uri
      * @param $controller
@@ -124,6 +127,7 @@ class ResourceRegistrar
      * @param $as
      */
     protected function route(
+        $resourceType,
         $routerMethod,
         $uri,
         $controller,
@@ -136,7 +140,9 @@ class ResourceRegistrar
             $options['as'] = $as;
         }
 
-        $this->router->{$routerMethod}($uri, $options);
+        /** @var Route $route */
+        $route = $this->router->{$routerMethod}($uri, $options);
+        $route->defaults(self::PARAM_RESOURCE_TYPE, $resourceType);
     }
 
     /**

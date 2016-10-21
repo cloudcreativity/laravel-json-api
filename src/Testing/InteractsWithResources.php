@@ -77,7 +77,7 @@ trait InteractsWithResources
     }
 
     /**
-     * @param array|Collection $ids
+     * @param array|Collection|UrlRoutable $ids
      *      the ids - may contain UrlRoutable objects (includes Models)
      * @param array $params
      * @param array $headers
@@ -201,7 +201,7 @@ trait InteractsWithResources
     /**
      * Assert that the response to a search by id(s) request contains the expected ids.
      *
-     * @param array|Collection $expectedIds
+     * @param array|Collection|UrlRoutable $expectedIds
      *      the ids - may contain UrlRoutable objects (e.g. Models)
      * @param string $contentType
      * @return ResourcesTester
@@ -243,11 +243,15 @@ trait InteractsWithResources
     /**
      * Normalize ids for a find many request
      *
-     * @param array|Collection $ids
+     * @param array|Collection|UrlRoutable $ids
      * @return array
      */
     protected function normalizeIds($ids)
     {
+        if ($ids instanceof UrlRoutable) {
+            $ids = [$ids];
+        }
+
         $ids = new Collection($ids);
 
         return $ids->map(function ($id) {
