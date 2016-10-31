@@ -63,6 +63,12 @@ use Neomerx\JsonApi\Contracts\Http\HttpFactoryInterface;
 use Neomerx\JsonApi\Contracts\Http\ResponsesInterface;
 use Neomerx\JsonApi\Contracts\Schema\SchemaFactoryInterface;
 use Neomerx\JsonApi\Factories\Factory;
+use CloudCreativity\LaravelJsonApi\Console\Commands\HydratorMakeCommand;
+use CloudCreativity\LaravelJsonApi\Console\Commands\RequestMakeCommand;
+use CloudCreativity\LaravelJsonApi\Console\Commands\ResourceMakeCommand;
+use CloudCreativity\LaravelJsonApi\Console\Commands\SchemaMakeCommand;
+use CloudCreativity\LaravelJsonApi\Console\Commands\SearchMakeCommand;
+use CloudCreativity\LaravelJsonApi\Console\Commands\ValidatorsMakeCommand;
 
 /**
  * Class ServiceProvider
@@ -75,6 +81,15 @@ class ServiceProvider extends BaseServiceProvider
      * @var bool
      */
     protected $defer = false;
+
+    protected $generatorCommands = [
+        'json-api.make.hydrator'    => HydratorMakeCommand::class,
+        'json-api.make.request'     => RequestMakeCommand::class,
+        'json-api.make.resource'    => ResourceMakeCommand::class,
+        'json-api.make.schema'      => SchemaMakeCommand::class,
+        'json-api.make.search'      => SearchMakeCommand::class,
+        'json-api.make.validators'  => ValidatorsMakeCommand::class,
+    ];
 
     /**
      * @param Router $router
@@ -112,6 +127,7 @@ class ServiceProvider extends BaseServiceProvider
         $this->bindStoreAdapters();
         $this->bindLinkFactory();
         $this->bindPagination();
+        $this->bindArtisanCommands();
     }
 
     /**
@@ -330,6 +346,17 @@ class ServiceProvider extends BaseServiceProvider
     {
         $this->app->singleton(PaginatorInterface::class, Paginator::class);
         $this->app->singleton(Page::class);
+    }
+
+    protected function bindArtisanCommands()
+    {
+        foreach( $this->generatorCommands as $key => $command ) {
+            $this->app->singleton($key, function($app) use ($command) {
+                $app[$command];
+            });
+        }
+
+        $this->commands(array_values($this->generatorCommands));
     }
 
     /**
