@@ -24,9 +24,9 @@ class ResourceMakeCommand extends Command
 
     private $commands = [
         'make:json-api:hydrator',
-        'make:json-api:request',
         'make:json-api:schema',
         'make:json-api:search',
+        'make:json-api:request',
         'make:json-api:validators',
     ];
 
@@ -47,13 +47,20 @@ class ResourceMakeCommand extends Command
      */
     public function handle()
     {
-        $arguments = [
+        $resourceParameter = [
             'resource' => $this->argument('resource'),
+        ];
+        $eloquentParameter = [
             '--eloquent' => $this->option('eloquent'),
         ];
 
-        foreach( $this->commands as $command ) {
-            $this->call($command, $arguments);
-        }
+        // Call independent generators
+        $this->call('make:json-api:validators', $resourceParameter);
+        $this->call('make:json-api:request', $resourceParameter);
+
+        // Call configurable commands
+        $this->call('make:json-api:hydrator', array_merge($resourceParameter, $eloquentParameter));
+        $this->call('make:json-api:schema', array_merge($resourceParameter, $eloquentParameter));
+        $this->call('make:json-api:search', array_merge($resourceParameter, $eloquentParameter));
     }
 }

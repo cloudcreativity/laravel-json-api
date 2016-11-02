@@ -20,5 +20,12 @@ class Request extends RequestHandler
     protected $hasMany = [
         //
     ];
+
+    /**
+     * @var array
+     */
+    protected $allowedFilteringParameters = [
+        'id',
+    ];
 }
 

@@ -18,5 +18,13 @@ class Schema extends EloquentSchema
     protected $attributes = [
         //
     ];
+
+    /**
+     * @return string
+     */
+    public function getResourceType()
+    {
+        return self::RESOURCE_TYPE;
+    }
 }
 

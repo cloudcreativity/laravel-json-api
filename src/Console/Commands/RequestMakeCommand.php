@@ -24,4 +24,11 @@ class RequestMakeCommand extends JsonApiGeneratorCommand
      * @var string
      */
     protected $type = 'Request';
+
+    /**
+     * Whether the resource type is non-dependent on eloquent
+     *
+     * @var mixed
+     */
+    protected $isIndependent = true;
 }

@@ -31,11 +31,18 @@ abstract class JsonApiGeneratorCommand extends LaravelGeneratorCommand
     protected $type;
 
     /**
-     * Whether the resource type is non-dependant on eloquent
+     * Whether the resource type is non-dependent on eloquent
      *
-     * @var mixed
+     * @var boolean
      */
-    protected $isIndependant = false;
+    protected $isIndependent = false;
+
+    /**
+     * The location of all generator stubs
+     *
+     * @var string
+     */
+    private $stubsDirectory = __DIR__.'/../../../stubs';
 
     /**
      * Create a new config clear command instance.
@@ -122,15 +129,46 @@ abstract class JsonApiGeneratorCommand extends LaravelGeneratorCommand
      */
     protected function getStub()
     {
-        if($this->isIndependant) {
-            return __DIR__.'/stubs/'.strtolower($this->type).'.stub';
+        if($this->isIndependent) {
+            return $this->getStubFor('independent');
         }
 
-        if ($this->option('eloquent') || $this->useEloquent) {
-            return __DIR__.'/stubs/eloquent/'.strtolower($this->type).'.stub';
+        if ($this->isEloquent()) {
+            return $this->getStubFor('eloquent');
         }
 
-        return __DIR__.'/stubs/abstract/'.strtolower($this->type).'.stub';
+        return $this->getStubFor('abstract');
+    }
+
+    /**
+     * Get the stub for specific generator type
+     *
+     * @param string mentationType
+     */
+    private function getStubFor($implementationType)
+    {
+        return implode('', [
+            $this->stubsDirectory,
+            '/',
+            $implementationType,
+            '/',
+            $this->type,
+            '.stub'
+        ]);
+    }
+
+    /**
+     * Determine whether a resource is eloquent or not
+     *
+     * @return boolean
+     */
+    private function isEloquent()
+    {
+        if($this->isIndependent){
+            return false;
+        }
+
+        return $this->option('eloquent') ?: $this->useEloquent;
     }
 
     /**
@@ -158,7 +196,7 @@ abstract class JsonApiGeneratorCommand extends LaravelGeneratorCommand
     protected function getArguments()
     {
         return [
-            ['resource', InputArgument::REQUIRED, 'The resource for which a Schema will be generated'],
+            ['resource', InputArgument::REQUIRED, "The resource for which a {$this->type} class will be generated"],
         ];
     }
 
@@ -169,6 +207,10 @@ abstract class JsonApiGeneratorCommand extends LaravelGeneratorCommand
      */
     protected function getOptions()
     {
+        if($this->isIndependent) {
+            return [];
+        }
+
         return [
             ['eloquent', 'e', InputOption::VALUE_OPTIONAL, 'Use eloquent as adapter.'],
         ];

@@ -26,9 +26,9 @@ class ValidatorsMakeCommand extends JsonApiGeneratorCommand
     protected $type = 'Validators';
 
     /**
-     * Whether the resource type is non-dependant on eloquent
+     * Whether the resource type is non-dependent on eloquent
      *
-     * @var mixed
+     * @var boolean
      */
-    protected $isIndependant = true;
+    protected $isIndependent = true;
 }
