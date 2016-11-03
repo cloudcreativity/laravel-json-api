@@ -3,10 +3,7 @@
 return [
 
     /*
-    |--------------------------------------------------------------------------
-    | JSON API Namespaces
-    |--------------------------------------------------------------------------
-    |
+    |-------------------------------------------------------------------------- | JSON API Namespaces |-------------------------------------------------------------------------- |
     | The aliases of the different APIs within your application that are
     | using the JSON API spec. For example, you may have a `v1` and `v2` API.
     | Generally these are going to match your route groups.

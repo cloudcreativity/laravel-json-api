@@ -74,9 +74,9 @@ abstract class JsonApiGeneratorCommand extends LaravelGeneratorCommand
     {
         parent::__construct($files);
 
-        $this->useEloquent = config('json-api.generator.use-eloquent', true);
-        $this->subNamespace = config('json-api.generator.namespace', 'JsonApi');
-        $this->namespaceByResource = config('json-api.generator.by-namespace', true);
+        $this->useEloquent = config('json-api.generator.use-eloquent');
+        $this->subNamespace = config('json-api.generator.namespace');
+        $this->namespaceByResource = config('json-api.generator.by-resource');
     }
 
     /**
@@ -137,7 +137,7 @@ abstract class JsonApiGeneratorCommand extends LaravelGeneratorCommand
     protected function getNameInput()
     {
         if( ! $this->namespaceByResource) {
-            return str_plural($this->type);
+            return $this->getResourceName();
         }
 
         return $this->type;
@@ -204,10 +204,19 @@ abstract class JsonApiGeneratorCommand extends LaravelGeneratorCommand
      */
     protected function getDefaultNamespace($rootNamespace)
     {
-        return implode('', [
-            $rootNamespace,
-            '\\',
-            $this->subNamespace, '\\', $this->getResourceName() ]);
+        $namespace = [
+            $rootNamespace,             // #0
+            '\\',                       // #1
+            $this->subNamespace,        // #2
+            '\\',                       // #3
+            $this->getResourceName()    // #4
+        ];
+
+        if(! $this->namespaceByResource) {
+            $namespace[4] = str_plural($this->type);
+        }
+
+        return implode('', $namespace);
     }
 
     /**
