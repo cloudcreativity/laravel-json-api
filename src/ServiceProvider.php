@@ -353,7 +353,9 @@ class ServiceProvider extends BaseServiceProvider
      */
     protected function registerArtisanCommands()
     {
-        $this->commands($this->generatorCommands);
+        if ($this->app->runningInConsole()) {
+            $this->commands($this->generatorCommands);
+        }
     }
 
     /**
