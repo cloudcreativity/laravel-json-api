@@ -174,6 +174,6 @@ return [
     'generator' => [
         'namespace' => 'JsonApi',
         'by-resource' => true,
-        'use_eloquent' => true,
+        'use-eloquent' => true,
     ]
 ];

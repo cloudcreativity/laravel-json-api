@@ -31,11 +31,32 @@ abstract class JsonApiGeneratorCommand extends LaravelGeneratorCommand
     protected $type;
 
     /**
-     * Whether the resource type is non-dependent on eloquent
+     * Whether the resource type is non-dependent on eloquent.
      *
      * @var boolean
      */
     protected $isIndependent = false;
+
+    /**
+     * Whether the resource should use eloquent implementations.
+     *
+     * @var boolean
+     */
+    protected $useEloquent;
+
+    /**
+     * The folder within the root namespace, where files should be generated.
+     *
+     * @var string
+     */
+    protected $subNamespace;
+
+    /**
+     * Whether generated files should be grouped by their resource files.
+     *
+     * @var mixed
+     */
+    protected $namespaceByResource;
 
     /**
      * The location of all generator stubs
@@ -53,13 +74,13 @@ abstract class JsonApiGeneratorCommand extends LaravelGeneratorCommand
     {
         parent::__construct($files);
 
+        $this->useEloquent = config('json-api.generator.use-eloquent', true);
         $this->subNamespace = config('json-api.generator.namespace', 'JsonApi');
-        $this->useEloquent = config('json-api.generator.use_eloquent', true);
+        $this->namespaceByResource = config('json-api.generator.by-namespace', true);
     }
 
     /**
      * Build the class with the given name.
-     *
      * Remove the base controller import if we are already in base namespace.
      *
      * @param  string  $name
@@ -72,7 +93,7 @@ abstract class JsonApiGeneratorCommand extends LaravelGeneratorCommand
         $stub = $this->files->get($this->getStub());
 
         $this->replaceNamespace($stub, $name)
-                ->replaceResourceType($stub, $this->getPluralizedResource());
+                ->replaceResourceType($stub, $this->getResourceName());
 
         return $stub;
     }
@@ -93,23 +114,19 @@ abstract class JsonApiGeneratorCommand extends LaravelGeneratorCommand
     }
 
     /**
-     * Get the plural version of the resource name
-     *
-     * @return string
-     */
-    protected function getPluralizedResource()
-    {
-        return str_plural($this->getResourceName());
-    }
-
-    /**
      * Get the resource name
      *
      * @return string
      */
     protected function getResourceName()
     {
-        return ucwords($this->argument('resource'));
+        $name = ucwords($this->argument('resource'));
+
+        if($this->namespaceByResource) {
+            return str_plural($name);
+        }
+
+        return $name;
     }
 
     /**
@@ -119,7 +136,11 @@ abstract class JsonApiGeneratorCommand extends LaravelGeneratorCommand
      */
     protected function getNameInput()
     {
-        return trim($this->type);
+        if( ! $this->namespaceByResource) {
+            return str_plural($this->type);
+        }
+
+        return $this->type;
     }
 
     /**
@@ -164,7 +185,11 @@ abstract class JsonApiGeneratorCommand extends LaravelGeneratorCommand
      */
     private function isEloquent()
     {
-        if($this->isIndependent){
+        if($this->isIndependent) {
+            return false;
+        }
+
+        if($this->option('no-eloquent')) {
             return false;
         }
 
@@ -182,10 +207,7 @@ abstract class JsonApiGeneratorCommand extends LaravelGeneratorCommand
         return implode('', [
             $rootNamespace,
             '\\',
-            $this->subNamespace,
-            '\\',
-            $this->getPluralizedResource()
-        ]);
+            $this->subNamespace, '\\', $this->getResourceName() ]);
     }
 
     /**
@@ -212,7 +234,8 @@ abstract class JsonApiGeneratorCommand extends LaravelGeneratorCommand
         }
 
         return [
-            ['eloquent', 'e', InputOption::VALUE_OPTIONAL, 'Use eloquent as adapter.'],
+            ['eloquent', 'e', InputOption::VALUE_NONE, 'Use eloquent as adapter'],
+            ['no-eloquent', 'ne', InputOption::VALUE_NONE, 'Use an abstract adapter'],
         ];
     }
 }

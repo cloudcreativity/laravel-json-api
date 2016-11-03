@@ -1,0 +1,28 @@
+<?php
+
+namespace DummyNamespace;
+
+use CloudCreativity\JsonApi\Hydrator\AbstractHydrator;
+use CloudCreativity\JsonApi\Hydrator\RelatedHydratorTrait;
+use CloudCreativity\JsonApi\Contracts\Hydrator\HydratesRelatedInterface;
+
+class Hydrator extends AbstractHydrator implements HydratesRelatedInterface
+{
+    use RelatedHydratorTrait;
+
+    /**
+     * @var array
+     */
+    protected $attributes = [
+        //
+    ];
+
+    /**
+     * @var array
+     */
+    protected $relationships = [
+        //
+    ];
+
+}
+

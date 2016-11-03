@@ -1,0 +1,30 @@
+<?php
+
+namespace DummyNamespace;
+
+use CloudCreativity\LaravelJsonApi\Schema\AbstractSchema;
+
+class Schema extends AbstractSchema
+{
+
+    /**
+     * @var string
+     */
+    const RESOURCE_TYPE = 'dummyResourceType';
+
+    /**
+     * @var array
+     */
+    protected $attributes = [
+        //
+    ];
+
+    /**
+     * @return string
+     */
+    public function getResourceType()
+    {
+        return self::RESOURCE_TYPE;
+    }
+}
+
