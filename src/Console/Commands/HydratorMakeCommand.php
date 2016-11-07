@@ -2,7 +2,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Console\Commands;
 
-class HydratorMakeCommand extends JsonApiGeneratorCommand
+class HydratorMakeCommand extends AbstractGeneratorCommand
 {
     /**
      * The console command name.
@@ -16,7 +16,7 @@ class HydratorMakeCommand extends JsonApiGeneratorCommand
      *
      * @var string
      */
-    protected $description = 'Create a new json-api resource hydrator';
+    protected $description = 'Create a new JSON API resource hydrator';
 
     /**
      * The type of class being generated.

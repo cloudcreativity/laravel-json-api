@@ -2,7 +2,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Console\Commands;
 
-class RequestMakeCommand extends JsonApiGeneratorCommand
+class RequestMakeCommand extends AbstractGeneratorCommand
 {
     /**
      * The console command name.
@@ -16,7 +16,7 @@ class RequestMakeCommand extends JsonApiGeneratorCommand
      *
      * @var string
      */
-    protected $description = 'Create a new json-api resource request';
+    protected $description = 'Create a new JSON API resource request';
 
     /**
      * The type of class being generated.

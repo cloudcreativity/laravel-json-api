@@ -1,6 +1,6 @@
 <?php
 
-namespace DummyNamespace
+namespace DummyNamespace;
 
 use CloudCreativity\JsonApi\Contracts\Validators\RelationshipsValidatorInterface;
 use CloudCreativity\LaravelJsonApi\Validators\AbstractValidatorProvider;

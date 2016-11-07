@@ -3,7 +3,10 @@
 return [
 
     /*
-    |-------------------------------------------------------------------------- | JSON API Namespaces |-------------------------------------------------------------------------- |
+    |--------------------------------------------------------------------------
+    | JSON API Namespaces
+    |--------------------------------------------------------------------------
+    |
     | The aliases of the different APIs within your application that are
     | using the JSON API spec. For example, you may have a `v1` and `v2` API.
     | Generally these are going to match your route groups.
@@ -145,19 +148,21 @@ return [
     | Generators
     |--------------------------------------------------------------------------
     |
-    | With this package comes a set of handy generators. Which makes it possible
-    | to easily generate every class needed to implement an api resource.
+    | This package supplies a set of handy generators. These make it possible
+    | to easily generate every class needed to implement a JSON API resource.
     |
     | To smoothen out any rough edges, without enforcing any specific patterns
     | we have included a few handy configuration options, so that the generators
     | can follow your workflow.
     |
-    | `namespace`       = The folder in which you will be storing everyting
+    | `namespace`       = The folder in which you will be storing everything
     |                     related to LaravelJsonApi.
     |                     (default: 'JsonApi')
     |
-    | 'by_resource`     = Whether the generated classes should group by resource
-    |                     name or not.
+    | 'by_resource`     = Whether your JSON API resources relate to Eloquent models or not.
+    |                     You can override the setting here when running a generator. If the
+    |                     setting here is `true` running a generator with `--no-eloquent` will
+    |                     override it; if the setting is `false`, then `--eloquent` is the override.
     |                     Choose:
     |                      - true (default)
     |                           e.g. \App\JsonApi\Tasks\{Schema, Request, Hydrator}
@@ -172,5 +177,5 @@ return [
         'namespace' => 'JsonApi',
         'by-resource' => true,
         'use-eloquent' => true,
-    ]
+    ],
 ];

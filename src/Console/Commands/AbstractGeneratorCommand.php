@@ -107,7 +107,7 @@ abstract class JsonApiGeneratorCommand extends LaravelGeneratorCommand
     protected function replaceResourceType(&$stub, $resource)
     {
         $stub = str_replace(
-            'dummyResourceType', camel_case($resource), $stub
+            'dummyResourceType', snake_case($resource, '-'), $stub
         );
 
         return $this;
@@ -164,7 +164,7 @@ abstract class JsonApiGeneratorCommand extends LaravelGeneratorCommand
     /**
      * Get the stub for specific generator type
      *
-     * @param string mentationType
+     * @param string implementationType
      */
     private function getStubFor($implementationType)
     {
@@ -173,7 +173,7 @@ abstract class JsonApiGeneratorCommand extends LaravelGeneratorCommand
             '/',
             $implementationType,
             '/',
-            $this->type,
+            lcfirst($this->type),
             '.stub'
         ]);
     }

@@ -25,7 +25,7 @@ class ResourceMakeCommand extends Command
      *
      * @var string
      */
-    protected $description = 'Create a full Json Api resource.';
+    protected $description = 'Create a full JSON API resource.';
 
     /**
      * The available generator commands.

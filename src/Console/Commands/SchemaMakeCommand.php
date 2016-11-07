@@ -2,7 +2,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Console\Commands;
 
-class SchemaMakeCommand extends JsonApiGeneratorCommand
+class SchemaMakeCommand extends AbstractGeneratorCommand
 {
     /**
      * The console command name.
@@ -16,7 +16,7 @@ class SchemaMakeCommand extends JsonApiGeneratorCommand
      *
      * @var string
      */
-    protected $description = 'Create a new json-api resource schema';
+    protected $description = 'Create a new JSON API resource schema';
 
     /**
      * The type of class being generated.

@@ -1,6 +1,6 @@
 <?php
 
-namespace DummyNamespace
+namespace DummyNamespace;
 
 use CloudCreativity\LaravelJsonApi\Search\AbstractSearch;
 use Illuminate\Database\Eloquent\Builder;

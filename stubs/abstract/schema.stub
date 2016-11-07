@@ -13,18 +13,29 @@ class Schema extends AbstractSchema
     const RESOURCE_TYPE = 'dummyResourceType';
 
     /**
-     * @var array
-     */
-    protected $attributes = [
-        //
-    ];
-
-    /**
      * @return string
      */
     public function getResourceType()
     {
         return self::RESOURCE_TYPE;
+    }
+
+    /**
+     * @param object $resource
+     * @return mixed
+     */
+    public function getId($resource)
+    {
+        // TODO
+    }
+
+    /**
+     * @param object $resource
+     * @return mixed
+     */
+    public function getAttributes($resource)
+    {
+        // TODO
     }
 }
 
