@@ -2,13 +2,14 @@
 
 namespace CloudCreativity\LaravelJsonApi\Console\Commands;
 
-use Illuminate\Console\GeneratorCommand as LaravelGeneratorCommand;
+use Illuminate\Console\GeneratorCommand;
 use Illuminate\Filesystem\Filesystem;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
 
-abstract class JsonApiGeneratorCommand extends LaravelGeneratorCommand
+abstract class AbstractGeneratorCommand extends GeneratorCommand
 {
+
     /**
      * The console command name.
      *
@@ -68,15 +69,15 @@ abstract class JsonApiGeneratorCommand extends LaravelGeneratorCommand
     /**
      * Create a new config clear command instance.
      *
-     * @return void
+     * @param Filesystem $files
      */
     public function __construct(Filesystem $files)
     {
         parent::__construct($files);
 
-        $this->useEloquent = config('json-api.generator.use-eloquent');
-        $this->subNamespace = config('json-api.generator.namespace');
-        $this->namespaceByResource = config('json-api.generator.by-resource');
+        $this->useEloquent = config('json-api.generator.use-eloquent', true);
+        $this->subNamespace = config('json-api.generator.namespace', 'JsonApi');
+        $this->namespaceByResource = config('json-api.generator.by-resource', true);
     }
 
     /**
@@ -88,8 +89,6 @@ abstract class JsonApiGeneratorCommand extends LaravelGeneratorCommand
      */
     protected function buildClass($name)
     {
-        $namespace = $this->getNamespace($name);
-
         $stub = $this->files->get($this->getStub());
 
         $this->replaceNamespace($stub, $name)
@@ -103,12 +102,11 @@ abstract class JsonApiGeneratorCommand extends LaravelGeneratorCommand
      *
      * @param mixed $stub
      * @param mixed $resource
+     * @return $this
      */
     protected function replaceResourceType(&$stub, $resource)
     {
-        $stub = str_replace(
-            'dummyResourceType', snake_case($resource, '-'), $stub
-        );
+        $stub = str_replace('dummyResourceType', snake_case($resource, '-'), $stub);
 
         return $this;
     }
@@ -164,7 +162,8 @@ abstract class JsonApiGeneratorCommand extends LaravelGeneratorCommand
     /**
      * Get the stub for specific generator type
      *
-     * @param string implementationType
+     * @param string $implementationType
+     * @return string
      */
     private function getStubFor($implementationType)
     {

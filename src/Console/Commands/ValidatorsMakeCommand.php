@@ -2,7 +2,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Console\Commands;
 
-class ValidatorsMakeCommand extends JsonApiGeneratorCommand
+class ValidatorsMakeCommand extends AbstractGeneratorCommand
 {
     /**
      * The console command name.
