@@ -129,6 +129,7 @@ class ServiceProvider extends BaseServiceProvider
         $this->bindPagination();
 
         $this->registerArtisanCommands();
+        $this->mergeConfigFiles();
     }
 
     /**
@@ -357,6 +358,19 @@ class ServiceProvider extends BaseServiceProvider
         if ($this->app->runningInConsole()) {
             $this->commands($this->generatorCommands);
         }
+    }
+
+    /**
+     * Merge config files to eliminate errors upon missing config elements
+     */
+    protected function mergeConfigFiles()
+    {
+        $this->mergeConfigFrom(
+            __DIR__.'/../config/json-api.php', 'json-api'
+        );
+        $this->mergeConfigFrom(
+            __DIR__.'/../config/json-api-errors.php', 'json-api-errors'
+        );
     }
 
     /**
