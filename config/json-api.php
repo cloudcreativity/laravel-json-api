@@ -143,4 +143,39 @@ return [
     */
     'adapters' => [],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Generators
+    |--------------------------------------------------------------------------
+    |
+    | This package supplies a set of handy generators. These make it possible
+    | to easily generate every class needed to implement a JSON API resource.
+    |
+    | To smoothen out any rough edges, without enforcing any specific patterns
+    | we have included a few handy configuration options, so that the generators
+    | can follow your workflow.
+    |
+    | `namespace`       = The folder in which you will be storing everything
+    |                     related to LaravelJsonApi.
+    |                     (default: 'JsonApi')
+    |
+    | 'by_resource`     = Whether your JSON API resources relate to Eloquent models or not.
+    |                     You can override the setting here when running a generator. If the
+    |                     setting here is `true` running a generator with `--no-eloquent` will
+    |                     override it; if the setting is `false`, then `--eloquent` is the override.
+    |                     Choose:
+    |                      - true (default)
+    |                           e.g. \App\JsonApi\Tasks\{Schema, Request, Hydrator}
+    |                      - false
+    |                           e.g. \App\JsonApi\Schemas\{User, Post, Comment}
+    |                           e.g. \App\JsonApi\Requests\{User, Post, Comment}
+    |
+    | `use_eloquent`    = Whether you are using Eloquent ORM in this app.
+    |                     (default: true)
+    */
+    'generator' => [
+        'namespace' => 'JsonApi',
+        'by-resource' => true,
+        'use-eloquent' => true,
+    ],
 ];
