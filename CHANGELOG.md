@@ -2,6 +2,15 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## [0.5.1] - 2016-11-09
+
+### Changed
+- Dependency `symfony/psr-http-message-bridge` now allows `^1.0` as version 1 has now been released. Version `0.2.*` is
+still allowed to maintain backwards compatibility but will be removed in `v0.6` of this package.
+
+### Fixed
+- Amended testing that a model has been trashed so that it is compatible with Laravel 5.2 and 5.3.
+
 ## [0.5.0] - 2016-10-21
 
 This release is the first release to support Laravel 5.3.

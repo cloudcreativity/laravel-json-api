@@ -26,7 +26,7 @@
         "laravel/framework": "5.1.*|5.2.*|5.3.*",
         "neomerx/json-api": "^0.8.9",
         "cloudcreativity/json-api": "^0.6.0",
-        "symfony/psr-http-message-bridge": "^0.2.0",
+        "symfony/psr-http-message-bridge": "^0.2.0|^1.0",
         "zendframework/zend-diactoros": "^1.3"
     },
     "require-dev": {
@@ -45,7 +45,6 @@
     },
     "extra": {
       "branch-alias": {
-        "dev-master": "0.5.x-dev",
         "dev-develop": "0.6.x-dev"
       }
     }
