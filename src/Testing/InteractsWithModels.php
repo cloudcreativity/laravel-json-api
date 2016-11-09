@@ -111,7 +111,12 @@ trait InteractsWithModels
      */
     protected function assertModelTrashed(Model $model)
     {
-        PHPUnit::assertNull($model->fresh(), 'Model is not trashed.');
+        /** Cannot use `fresh()` because it is different between 5.2 and 5.3. */
+        $fresh = $model->newQueryWithoutScopes()->where($model->getKeyName(), $model->getKey())->first();
+
+        PHPUnit::assertNotNull($fresh, 'Model has been removed from the database.');
+        PHPUnit::assertTrue($fresh->trashed(), 'Model is not trashed.');
+
         return $this->seeModelInDatabase($model, [$model->getKeyName() => $model->getKey()]);
     }
 
