@@ -151,27 +151,31 @@ return [
     | This package supplies a set of handy generators. These make it possible
     | to easily generate every class needed to implement a JSON API resource.
     |
-    | To smoothen out any rough edges, without enforcing any specific patterns
-    | we have included a few handy configuration options, so that the generators
-    | can follow your workflow.
+    | So that we do not enforce any specific patterns, we have included a few
+    | handy configuration options. This is so that the generators can follow
+    | your workflow.
     |
-    | `namespace`       = The folder in which you will be storing everything
-    |                     related to LaravelJsonApi.
-    |                     (default: 'JsonApi')
+    | ## namespace (default: 'JsonApi')
     |
-    | 'by_resource`     = Whether your JSON API resources relate to Eloquent models or not.
-    |                     You can override the setting here when running a generator. If the
-    |                     setting here is `true` running a generator with `--no-eloquent` will
-    |                     override it; if the setting is `false`, then `--eloquent` is the override.
-    |                     Choose:
-    |                      - true (default)
-    |                           e.g. \App\JsonApi\Tasks\{Schema, Request, Hydrator}
-    |                      - false
-    |                           e.g. \App\JsonApi\Schemas\{User, Post, Comment}
-    |                           e.g. \App\JsonApi\Requests\{User, Post, Comment}
+    | The folder in which you will be storing everything related to your JSON
+    | API implementation.
     |
-    | `use_eloquent`    = Whether you are using Eloquent ORM in this app.
-    |                     (default: true)
+    | ## by-resource (default: true)
+    |
+    | How you are organising your JSON API classes within your application.
+    |
+    | - true: e.g. \App\JsonApi\Tasks\{Schema, Request, Hydrator}
+    | - false:
+    |   - e.g. \App\JsonApi\Schemas\{User, Post, Comment}
+    |   - e.g. \App\JsonApi\Requests\{User, Post, Comment}
+    |
+    | ## use-eloquent (default: true)
+    |
+    | Whether your JSON API resources predominantly relate to Eloquent models.
+    | You can override the setting here when running a generator. If the
+    | setting here is `true` running a generator with `--no-eloquent` will
+    | override it; if the setting is `false`, then `--eloquent` is the override.
+    |
     */
     'generator' => [
         'namespace' => 'JsonApi',
