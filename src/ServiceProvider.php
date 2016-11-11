@@ -42,6 +42,12 @@ use CloudCreativity\JsonApi\Repositories\SchemasRepository;
 use CloudCreativity\JsonApi\Store\Store;
 use CloudCreativity\JsonApi\Utils\Replacer;
 use CloudCreativity\LaravelJsonApi\Adapters\EloquentAdapter;
+use CloudCreativity\LaravelJsonApi\Console\Commands\HydratorMakeCommand;
+use CloudCreativity\LaravelJsonApi\Console\Commands\RequestMakeCommand;
+use CloudCreativity\LaravelJsonApi\Console\Commands\ResourceMakeCommand;
+use CloudCreativity\LaravelJsonApi\Console\Commands\SchemaMakeCommand;
+use CloudCreativity\LaravelJsonApi\Console\Commands\SearchMakeCommand;
+use CloudCreativity\LaravelJsonApi\Console\Commands\ValidatorsMakeCommand;
 use CloudCreativity\LaravelJsonApi\Contracts\Document\LinkFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorErrorFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorFactoryInterface;
@@ -66,6 +72,7 @@ use Neomerx\JsonApi\Factories\Factory;
 
 /**
  * Class ServiceProvider
+ *
  * @package CloudCreativity\LaravelJsonApi
  */
 class ServiceProvider extends BaseServiceProvider
@@ -75,6 +82,18 @@ class ServiceProvider extends BaseServiceProvider
      * @var bool
      */
     protected $defer = false;
+
+    /**
+     * @var array
+     */
+    protected $generatorCommands = [
+        HydratorMakeCommand::class,
+        RequestMakeCommand::class,
+        ResourceMakeCommand::class,
+        SchemaMakeCommand::class,
+        SearchMakeCommand::class,
+        ValidatorsMakeCommand::class,
+    ];
 
     /**
      * @param Router $router
@@ -112,6 +131,8 @@ class ServiceProvider extends BaseServiceProvider
         $this->bindStoreAdapters();
         $this->bindLinkFactory();
         $this->bindPagination();
+
+        $this->registerArtisanCommands();
     }
 
     /**
@@ -330,6 +351,16 @@ class ServiceProvider extends BaseServiceProvider
     {
         $this->app->singleton(PaginatorInterface::class, Paginator::class);
         $this->app->singleton(Page::class);
+    }
+
+    /**
+     * Register generator commands with artisan
+     */
+    protected function registerArtisanCommands()
+    {
+        if ($this->app->runningInConsole()) {
+            $this->commands($this->generatorCommands);
+        }
     }
 
     /**

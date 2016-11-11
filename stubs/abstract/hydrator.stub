@@ -1,0 +1,25 @@
+<?php
+
+namespace DummyNamespace;
+
+use CloudCreativity\JsonApi\Contracts\Hydrator\HydratesRelatedInterface;
+use CloudCreativity\JsonApi\Contracts\Object\StandardObjectInterface;
+use CloudCreativity\JsonApi\Hydrator\AbstractHydrator;
+use CloudCreativity\JsonApi\Hydrator\RelatedHydratorTrait;
+
+class Hydrator extends AbstractHydrator implements HydratesRelatedInterface
+{
+
+    use RelatedHydratorTrait;
+
+    /**
+     * @param StandardObjectInterface $attributes
+     * @param $record
+     * @return void
+     */
+    protected function hydrateAttributes(StandardObjectInterface $attributes, $record)
+    {
+        // TODO: Implement hydrateAttributes() method.
+    }
+
+}
