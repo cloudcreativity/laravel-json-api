@@ -2,6 +2,13 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## [0.5.2] - 2016-11-11
+
+### Added
+- Generator commands to generate the classes required for a JSON API resource. To view available commands use 
+`php artisan list make:json-api`. The main command is `make:json-api:resource` which generates multiple classes for
+a JSON API resource at once. Credit to @jstoone for contributing this feature.
+
 ## [0.5.1] - 2016-11-09
 
 ### Changed
