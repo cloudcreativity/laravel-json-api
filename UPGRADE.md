@@ -2,6 +2,14 @@
 
 This file provides notes on how to upgrade between versions.
 
+## v0.5.0|v0.5.1 to v0.5.2
+
+Version `0.5.2` adds generator commands to your application. We've updated the configuration so you will need to
+add the `generator` config array from the bottom of the `config/json-api.php` to the `json-api.php` config file
+in your application. 
+
+This however is optional as the generators will work without this configuration being added.
+
 ## v0.4 to v0.5
 
 Refer to the [UPGRADE-0.5.md](UPGRADE-0.5.md) file for instructions.

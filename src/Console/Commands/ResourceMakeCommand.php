@@ -1,23 +1,41 @@
 <?php
 
+/**
+ * Copyright 2016 Cloud Creativity Limited
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 namespace CloudCreativity\LaravelJsonApi\Console\Commands;
 
 use Illuminate\Console\Command;
-use CloudCreativity\LaravelJsonApi\Console\Commands\RequestMakeCommand;
-use CloudCreativity\LaravelJsonApi\Console\Commands\ValidatorsMakeCommand;
-use CloudCreativity\LaravelJsonApi\Console\Commands\HydratorMakeCommand;
-use CloudCreativity\LaravelJsonApi\Console\Commands\SchemaMakeCommand;
-use CloudCreativity\LaravelJsonApi\Console\Commands\SearchMakeCommand;
 use Illuminate\Support\Collection;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputOption;
 
+/**
+ * Class ResourceMakeCommand
+ *
+ * @package CloudCreativity\LaravelJsonApi
+ */
 class ResourceMakeCommand extends Command
 {
+
     /**
      * The name and signature of the console command.
      *
-     * @var string */
+     * @var string
+     */
     protected $name = 'make:json-api:resource';
 
     /**
@@ -35,7 +53,6 @@ class ResourceMakeCommand extends Command
     private $commands = [
         'make:json-api:request' => RequestMakeCommand::class,
         'make:json-api:validators' => ValidatorsMakeCommand::class,
-
         'make:json-api:hydrator' => HydratorMakeCommand::class,
         'make:json-api:schema' => SchemaMakeCommand::class,
         'make:json-api:search' => SearchMakeCommand::class,
@@ -59,14 +76,14 @@ class ResourceMakeCommand extends Command
         $commands = collect($this->commands);
 
         // Filter out any commands the user asked os to.
-        if($this->option('only') || $this->option('except')) {
+        if ($this->option('only') || $this->option('except')) {
             $type = $this->option('only') ? 'only' : 'except';
 
             $commands = $this->filterCommands($commands, $type);
         }
 
         // The search unit is only for eloquent.
-        if( ! $this->isEloquent()) {
+        if (!$this->isEloquent()) {
             $commands->forget('make:json-api:search');
         }
 
@@ -84,7 +101,7 @@ class ResourceMakeCommand extends Command
         ]), $adapterParameters);
 
         // Just tell the user, if no files are created
-        if($commands->isEmpty()) {
+        if ($commands->isEmpty()) {
             $this->info('No files created.');
         }
 
@@ -106,7 +123,7 @@ class ResourceMakeCommand extends Command
         $filterValues = explode(',', $this->option($type));
 
         $targetCommands = collect($filterValues)
-            ->map(function($target) use ($baseCommandName) {
+            ->map(function ($target) use ($baseCommandName) {
                 return $baseCommandName . strtolower(trim($target));
             });
 
@@ -123,7 +140,7 @@ class ResourceMakeCommand extends Command
      */
     private function runCommandsWithParameters(Collection $commands, array $parameters)
     {
-        $commands->keys()->each(function($command) use ($parameters) {
+        $commands->keys()->each(function ($command) use ($parameters) {
             $this->call($command, $parameters);
         });
     }
@@ -137,7 +154,7 @@ class ResourceMakeCommand extends Command
     {
         $useEloquent = config('json-api.generator.use-eloquent', true);
 
-        if($this->option('no-eloquent')) {
+        if ($this->option('no-eloquent')) {
             return false;
         }
 

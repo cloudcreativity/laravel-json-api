@@ -42,6 +42,12 @@ use CloudCreativity\JsonApi\Repositories\SchemasRepository;
 use CloudCreativity\JsonApi\Store\Store;
 use CloudCreativity\JsonApi\Utils\Replacer;
 use CloudCreativity\LaravelJsonApi\Adapters\EloquentAdapter;
+use CloudCreativity\LaravelJsonApi\Console\Commands\HydratorMakeCommand;
+use CloudCreativity\LaravelJsonApi\Console\Commands\RequestMakeCommand;
+use CloudCreativity\LaravelJsonApi\Console\Commands\ResourceMakeCommand;
+use CloudCreativity\LaravelJsonApi\Console\Commands\SchemaMakeCommand;
+use CloudCreativity\LaravelJsonApi\Console\Commands\SearchMakeCommand;
+use CloudCreativity\LaravelJsonApi\Console\Commands\ValidatorsMakeCommand;
 use CloudCreativity\LaravelJsonApi\Contracts\Document\LinkFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorErrorFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorFactoryInterface;
@@ -63,15 +69,10 @@ use Neomerx\JsonApi\Contracts\Http\HttpFactoryInterface;
 use Neomerx\JsonApi\Contracts\Http\ResponsesInterface;
 use Neomerx\JsonApi\Contracts\Schema\SchemaFactoryInterface;
 use Neomerx\JsonApi\Factories\Factory;
-use CloudCreativity\LaravelJsonApi\Console\Commands\HydratorMakeCommand;
-use CloudCreativity\LaravelJsonApi\Console\Commands\RequestMakeCommand;
-use CloudCreativity\LaravelJsonApi\Console\Commands\ResourceMakeCommand;
-use CloudCreativity\LaravelJsonApi\Console\Commands\SchemaMakeCommand;
-use CloudCreativity\LaravelJsonApi\Console\Commands\SearchMakeCommand;
-use CloudCreativity\LaravelJsonApi\Console\Commands\ValidatorsMakeCommand;
 
 /**
  * Class ServiceProvider
+ *
  * @package CloudCreativity\LaravelJsonApi
  */
 class ServiceProvider extends BaseServiceProvider
@@ -82,6 +83,9 @@ class ServiceProvider extends BaseServiceProvider
      */
     protected $defer = false;
 
+    /**
+     * @var array
+     */
     protected $generatorCommands = [
         HydratorMakeCommand::class,
         RequestMakeCommand::class,

@@ -1,12 +1,33 @@
 <?php
 
+/**
+ * Copyright 2016 Cloud Creativity Limited
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 namespace CloudCreativity\LaravelJsonApi\Console\Commands;
 
 use Illuminate\Console\GeneratorCommand;
 use Illuminate\Filesystem\Filesystem;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputOption;
 
+/**
+ * Class AbstractGeneratorCommand
+ *
+ * @package CloudCreativity\LaravelJsonApi
+ */
 abstract class AbstractGeneratorCommand extends GeneratorCommand
 {
 
@@ -64,7 +85,7 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
      *
      * @var string
      */
-    private $stubsDirectory = __DIR__.'/../../../stubs';
+    private $stubsDirectory = __DIR__ . '/../../../stubs';
 
     /**
      * Create a new config clear command instance.
@@ -84,7 +105,7 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
      * Build the class with the given name.
      * Remove the base controller import if we are already in base namespace.
      *
-     * @param  string  $name
+     * @param  string $name
      * @return string
      */
     protected function buildClass($name)
@@ -92,7 +113,7 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
         $stub = $this->files->get($this->getStub());
 
         $this->replaceNamespace($stub, $name)
-                ->replaceResourceType($stub, $this->getResourceName());
+            ->replaceResourceType($stub, $this->getResourceName());
 
         return $stub;
     }
@@ -120,7 +141,7 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
     {
         $name = ucwords($this->argument('resource'));
 
-        if($this->namespaceByResource) {
+        if ($this->namespaceByResource) {
             return str_plural($name);
         }
 
@@ -134,7 +155,7 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
      */
     protected function getNameInput()
     {
-        if( ! $this->namespaceByResource) {
+        if (!$this->namespaceByResource) {
             return $this->getResourceName();
         }
 
@@ -148,7 +169,7 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
      */
     protected function getStub()
     {
-        if($this->isIndependent) {
+        if ($this->isIndependent) {
             return $this->getStubFor('independent');
         }
 
@@ -173,7 +194,7 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
             $implementationType,
             '/',
             lcfirst($this->type),
-            '.stub'
+            '.stub',
         ]);
     }
 
@@ -184,11 +205,11 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
      */
     private function isEloquent()
     {
-        if($this->isIndependent) {
+        if ($this->isIndependent) {
             return false;
         }
 
-        if($this->option('no-eloquent')) {
+        if ($this->option('no-eloquent')) {
             return false;
         }
 
@@ -198,7 +219,7 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
     /**
      * Get the default namespace for the class.
      *
-     * @param  string  $rootNamespace
+     * @param  string $rootNamespace
      * @return string
      */
     protected function getDefaultNamespace($rootNamespace)
@@ -211,7 +232,7 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
             $this->getResourceName()    // #4
         ];
 
-        if(! $this->namespaceByResource) {
+        if (!$this->namespaceByResource) {
             $namespace[4] = str_plural($this->type);
         }
 
@@ -237,7 +258,7 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
      */
     protected function getOptions()
     {
-        if($this->isIndependent) {
+        if ($this->isIndependent) {
             return [];
         }
 
