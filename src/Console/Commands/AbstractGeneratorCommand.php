@@ -85,7 +85,7 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
      *
      * @var string
      */
-    private $stubsDirectory = __DIR__ . '/../../../stubs';
+    private $stubsDirectory;
 
     /**
      * Create a new config clear command instance.
@@ -99,6 +99,7 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
         $this->useEloquent = config('json-api.generator.use-eloquent', true);
         $this->subNamespace = config('json-api.generator.namespace', 'JsonApi');
         $this->namespaceByResource = config('json-api.generator.by-resource', true);
+        $this->stubsDirectory = __DIR__ . '/../../../stubs';
     }
 
     /**
