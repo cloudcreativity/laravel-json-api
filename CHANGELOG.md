@@ -2,6 +2,11 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## [0.5.3] - 2016-12-01
+
+### Fixed
+- #31 Fix expression in abstract generator command that is not compatible with PHP 5.5
+
 ## [0.5.2] - 2016-11-11
 
 ### Added
