@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## [0.5.4] - 2016-12-21
+
+### Fixed
+- Bug in Eloquent adapter meant that a check for whether a resource identifier exists was checking whether the
+whole table had any rows, rather than the specific id.
+
 ## [0.5.3] - 2016-12-01
 
 ### Fixed
