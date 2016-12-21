@@ -67,14 +67,14 @@ class EloquentAdapter implements AdapterInterface
 
     /**
      * @param ResourceIdentifierInterface $identifier
-     * @return mixed
+     * @return bool
      */
     public function exists(ResourceIdentifierInterface $identifier)
     {
         $model = $this->resolve($identifier->getType());
         $key = $this->resolveQualifiedKeyName($model, $identifier->getType());
 
-        return $this->newQuery($model)->exists($key, $identifier->getId());
+        return $this->newQuery($model)->where($key, $identifier->getId())->exists();
     }
 
     /**
