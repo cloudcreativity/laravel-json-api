@@ -158,8 +158,15 @@ class ServiceProvider extends BaseServiceProvider
      */
     protected function bootMiddleware(Router $router)
     {
-        $router->middleware('json-api', BootJsonApi::class);
-        $router->middleware('json-api.request', HandleRequest::class);
+        /** Laravel 5.4 */
+        if (method_exists($router, 'aliasMiddleware')) {
+            $router->aliasMiddleware('json-api', BootJsonApi::class);
+            $router->aliasMiddleware('json-api.request', HandleRequest::class);
+        } /** Laravel 5.1|5.2|5.3 */
+        else {
+            $router->middleware('json-api', BootJsonApi::class);
+            $router->middleware('json-api.request', HandleRequest::class);
+        }
     }
 
     /**
@@ -282,13 +289,14 @@ class ServiceProvider extends BaseServiceProvider
     {
         $this->app->singleton(ReplacerInterface::class, Replacer::class);
 
-        $this->app->singleton(['json-api.errors' => ErrorRepositoryInterface::class], function () {
+        $this->app->singleton(ErrorRepositoryInterface::class, function () {
             /** @var ReplacerInterface $replacer */
             $replacer = $this->app->make(ReplacerInterface::class);
             $repository = new ErrorRepository($replacer);
             $repository->configure($this->getErrorConfig());
             return $repository;
         });
+        $this->app->alias(ErrorRepositoryInterface::class, 'json-api.errors');
     }
 
     /**
@@ -296,7 +304,8 @@ class ServiceProvider extends BaseServiceProvider
      */
     protected function bindExceptionParser()
     {
-        $this->app->singleton(['json-api.exceptions' => ExceptionParserInterface::class], ExceptionParser::class);
+        $this->app->singleton(ExceptionParserInterface::class, ExceptionParser::class);
+        $this->app->alias(ExceptionParserInterface::class, 'json-api.exceptions');
     }
 
     /**
@@ -304,7 +313,8 @@ class ServiceProvider extends BaseServiceProvider
      */
     protected function bindStore()
     {
-        $this->app->singleton(['json-api.store' => StoreInterface::class], Store::class);
+        $this->app->singleton(StoreInterface::class, Store::class);
+        $this->app->alias(StoreInterface::class, 'json-api.store');
     }
 
     /**
@@ -341,7 +351,8 @@ class ServiceProvider extends BaseServiceProvider
      */
     protected function bindLinkFactory()
     {
-        $this->app->singleton(['json-api.links' => LinkFactoryInterface::class], LinkFactory::class);
+        $this->app->singleton(LinkFactoryInterface::class, LinkFactory::class);
+        $this->app->alias(LinkFactoryInterface::class, 'json-api.links');
     }
 
     /**
