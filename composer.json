@@ -23,7 +23,7 @@
     ],
     "require": {
         "php": ">=5.5.0",
-        "laravel/framework": "5.1.*|5.2.*|5.3.*",
+        "laravel/framework": "5.1.*|5.2.*|5.3.*|5.4.*",
         "neomerx/json-api": "^0.8.9",
         "cloudcreativity/json-api": "^0.6.0",
         "symfony/psr-http-message-bridge": "^0.2.0|^1.0",
