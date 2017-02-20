@@ -2,6 +2,29 @@
 
 This file provides notes on how to upgrade between versions.
 
+## v0.5 to v0.6
+
+### Config
+
+Add the following to your `json-api-errors.php` config file:
+
+```php
+  /**
+   * When the resource type of a related resource is not recognised.
+   */
+  V::RELATIONSHIP_UNKNOWN_TYPE => [
+      Error::TITLE => 'Invalid Relationship',
+      Error::DETAIL => "Resource type '{actual}' is not recognised.",
+      Error::STATUS => 400,
+  ],
+```
+
+### Other
+
+This upgrade includes updating `cloudcreativity/json-api` from v0.6 to v0.7. This will not affect the vast majority
+of applications. However, if you have implemented your own Store or Validator Error Factory, you will need to refer
+to the upgrade notes in that package.
+
 ## v0.5.0|v0.5.1 to v0.5.2
 
 Version `0.5.2` adds generator commands to your application. We've updated the configuration so you will need to

@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
-## Unreleased
+## [0.6.0] - 2017-02-20
 
 ### Added
 - Added support for Laravel 5.4. However, consuming applications will need to use the Browserkit testing package
