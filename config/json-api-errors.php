@@ -123,6 +123,15 @@ return [
     ],
 
     /**
+     * When the resource type of a related resource is not recognised.
+     */
+    V::RELATIONSHIP_UNKNOWN_TYPE => [
+        Error::TITLE => 'Invalid Relationship',
+        Error::DETAIL => "Resource type '{actual}' is not recognised.",
+        Error::STATUS => 400,
+    ],
+
+    /**
      * When a related resource is not of the correct type for the relationship.
      */
     V::RELATIONSHIP_UNSUPPORTED_TYPE => [
