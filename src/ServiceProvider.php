@@ -205,20 +205,19 @@ class ServiceProvider extends BaseServiceProvider
      */
     protected function bindNeomerx()
     {
-        $this->app->singleton(FactoryInterface::class, function (Application $app) {
-            $logger = $app->make(LoggerInterface::class);
+        $this->app->singleton(Factory::class, function (Application $app) {
             $factory = new Factory();
-            $factory->setLogger($logger);
-
+            $factory->setLogger($app->make(LoggerInterface::class));
             return $factory;
         });
 
-        $this->app->alias(FactoryInterface::class, DocumentFactoryInterface::class);
-        $this->app->alias(FactoryInterface::class, HandlerFactoryInterface::class);
-        $this->app->alias(FactoryInterface::class, HttpFactoryInterface::class);
-        $this->app->alias(FactoryInterface::class, ParserFactoryInterface::class);
-        $this->app->alias(FactoryInterface::class, SchemaFactoryInterface::class);
-        $this->app->alias(FactoryInterface::class, StackFactoryInterface::class);
+        $this->app->alias(Factory::class, FactoryInterface::class);
+        $this->app->alias(Factory::class, DocumentFactoryInterface::class);
+        $this->app->alias(Factory::class, HandlerFactoryInterface::class);
+        $this->app->alias(Factory::class, HttpFactoryInterface::class);
+        $this->app->alias(Factory::class, ParserFactoryInterface::class);
+        $this->app->alias(Factory::class, SchemaFactoryInterface::class);
+        $this->app->alias(Factory::class, StackFactoryInterface::class);
     }
 
     /**
