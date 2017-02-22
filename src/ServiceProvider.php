@@ -32,6 +32,7 @@ use CloudCreativity\JsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\JsonApi\Contracts\Utils\ConfigurableInterface;
 use CloudCreativity\JsonApi\Contracts\Utils\ReplacerInterface;
 use CloudCreativity\JsonApi\Contracts\Validators\ValidatorFactoryInterface as BaseValidatorFactoryInterface;
+use CloudCreativity\JsonApi\Factories\Factory;
 use CloudCreativity\JsonApi\Http\ApiFactory;
 use CloudCreativity\JsonApi\Http\Requests\RequestFactory;
 use CloudCreativity\JsonApi\Http\Responses\ResponseFactory;
@@ -61,14 +62,19 @@ use CloudCreativity\LaravelJsonApi\Pagination\Page;
 use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
 use CloudCreativity\LaravelJsonApi\Validators\ValidatorErrorFactory;
 use CloudCreativity\LaravelJsonApi\Validators\ValidatorFactory;
+use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\Routing\ResponseFactory as ResponseFactoryContract;
 use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
+use Neomerx\JsonApi\Contracts\Document\DocumentFactoryInterface;
+use Neomerx\JsonApi\Contracts\Encoder\Handlers\HandlerFactoryInterface;
+use Neomerx\JsonApi\Contracts\Encoder\Parser\ParserFactoryInterface;
+use Neomerx\JsonApi\Contracts\Encoder\Stack\StackFactoryInterface;
 use Neomerx\JsonApi\Contracts\Factories\FactoryInterface;
 use Neomerx\JsonApi\Contracts\Http\HttpFactoryInterface;
 use Neomerx\JsonApi\Contracts\Http\ResponsesInterface;
 use Neomerx\JsonApi\Contracts\Schema\SchemaFactoryInterface;
-use Neomerx\JsonApi\Factories\Factory;
+use Psr\Log\LoggerInterface;
 
 /**
  * Class ServiceProvider
@@ -185,12 +191,33 @@ class ServiceProvider extends BaseServiceProvider
 
     /**
      * Bind parts of the neomerx/json-api dependency into the service container.
+     *
+     * For this Laravel JSON API package, we use our extended JSON API factory.
+     * This ensures that we can override any parts of the Neomerx JSON API pacakge
+     * that we want.
+     *
+     * As the Neomerx package splits the factories into multiple interfaces, we
+     * also register aliases for each of the factory interfaces.
+     *
+     * The Neomerx package allows a logger to be injected into the factory. This
+     * enables the Neomerx package to log messages. When creating the factory, we
+     * therefore set the logger as our application's logger.
      */
     protected function bindNeomerx()
     {
-        $this->app->singleton(FactoryInterface::class, Factory::class);
-        $this->app->singleton(SchemaFactoryInterface::class, FactoryInterface::class);
-        $this->app->singleton(HttpFactoryInterface::class, FactoryInterface::class);
+        $this->app->singleton(Factory::class, function (Application $app) {
+            $factory = new Factory();
+            $factory->setLogger($app->make(LoggerInterface::class));
+            return $factory;
+        });
+
+        $this->app->alias(Factory::class, FactoryInterface::class);
+        $this->app->alias(Factory::class, DocumentFactoryInterface::class);
+        $this->app->alias(Factory::class, HandlerFactoryInterface::class);
+        $this->app->alias(Factory::class, HttpFactoryInterface::class);
+        $this->app->alias(Factory::class, ParserFactoryInterface::class);
+        $this->app->alias(Factory::class, SchemaFactoryInterface::class);
+        $this->app->alias(Factory::class, StackFactoryInterface::class);
     }
 
     /**
