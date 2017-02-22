@@ -2,6 +2,11 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## [0.6.1] - 2017-02-22
+
+### Changed
+- Updated service provider bindings for the `neomerx/json-api` factories.
+
 ## [0.6.0] - 2017-02-20
 
 ### Added
