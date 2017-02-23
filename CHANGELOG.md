@@ -2,6 +2,11 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## [0.6.2] - 2017-02-23
+
+### Fixed
+- Corrected mistake in description of the `make:json-api:validators` Artisan command.
+
 ## [0.6.1] - 2017-02-22
 
 ### Changed
