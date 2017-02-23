@@ -38,7 +38,7 @@ class ValidatorsMakeCommand extends AbstractGeneratorCommand
      *
      * @var string
      */
-    protected $description = 'Create a new JSON API resource search';
+    protected $description = 'Create a new JSON API resource validator';
 
     /**
      * The type of class being generated.
