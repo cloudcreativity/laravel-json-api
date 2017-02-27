@@ -42,6 +42,7 @@ return [
     */
     'namespaces' => [
         'v1' => [
+            'automapping' => false,
             'url-prefix' => '/api/v1',
             'supported-ext' => null,
             'paging' => [
