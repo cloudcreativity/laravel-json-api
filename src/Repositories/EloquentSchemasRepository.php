@@ -7,7 +7,7 @@ use CloudCreativity\JsonApi\Contracts\Repositories\SchemasRepositoryInterface;
 use ReflectionClass;
 use Config;
 
-class SchemasRepository implements SchemasRepositoryInterface
+class EloquentSchemasRepository implements SchemasRepositoryInterface
 {
     const JSON_API_SCHEMA = 'JSON_API_SCHEMA';
 

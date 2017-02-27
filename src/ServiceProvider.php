@@ -58,7 +58,7 @@ use CloudCreativity\LaravelJsonApi\Http\Middleware\HandleRequest;
 use CloudCreativity\LaravelJsonApi\Http\Requests\RequestInterpreter;
 use CloudCreativity\LaravelJsonApi\Http\Responses\Responses;
 use CloudCreativity\LaravelJsonApi\Pagination\Page;
-use CloudCreativity\LaravelJsonApi\Repositories\SchemasRepository;
+use CloudCreativity\LaravelJsonApi\Repositories\EloquentSchemasRepository;
 use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
 use CloudCreativity\LaravelJsonApi\Validators\ValidatorErrorFactory;
 use CloudCreativity\LaravelJsonApi\Validators\ValidatorFactory;
@@ -260,7 +260,7 @@ class ServiceProvider extends BaseServiceProvider
      */
     protected function bindSchemasRepository()
     {
-        $this->app->singleton(SchemasRepositoryInterface::class, SchemasRepository::class);
+        $this->app->singleton(SchemasRepositoryInterface::class, EloquentSchemasRepository::class);
         $this->app->resolving(SchemasRepositoryInterface::class, function (ConfigurableInterface $repository) {
             $repository->configure((array) $this->getConfig('schemas', []));
         });
@@ -271,7 +271,7 @@ class ServiceProvider extends BaseServiceProvider
      */
     protected function bindSchemaRepository()
     {
-        $this->app->singleton(SchemasRepositoryInterface::class, SchemasRepository::class);
+        $this->app->singleton(SchemasRepositoryInterface::class, EloquentSchemasRepository::class);
         $this->app->resolving(SchemasRepositoryInterface::class, function (ConfigurableInterface $repository) {
             $repository->configure((array) $this->getConfig('schemas', []));
         });
