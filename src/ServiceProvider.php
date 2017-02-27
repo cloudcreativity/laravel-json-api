@@ -39,7 +39,6 @@ use CloudCreativity\JsonApi\Http\Responses\ResponseFactory;
 use CloudCreativity\JsonApi\Pagination\Paginator;
 use CloudCreativity\JsonApi\Repositories\CodecMatcherRepository;
 use CloudCreativity\JsonApi\Repositories\ErrorRepository;
-use CloudCreativity\JsonApi\Repositories\SchemasRepository;
 use CloudCreativity\JsonApi\Store\Store;
 use CloudCreativity\JsonApi\Utils\Replacer;
 use CloudCreativity\LaravelJsonApi\Adapters\EloquentAdapter;
@@ -59,6 +58,7 @@ use CloudCreativity\LaravelJsonApi\Http\Middleware\HandleRequest;
 use CloudCreativity\LaravelJsonApi\Http\Requests\RequestInterpreter;
 use CloudCreativity\LaravelJsonApi\Http\Responses\Responses;
 use CloudCreativity\LaravelJsonApi\Pagination\Page;
+use CloudCreativity\LaravelJsonApi\Repositories\EloquentSchemasRepository;
 use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
 use CloudCreativity\LaravelJsonApi\Validators\ValidatorErrorFactory;
 use CloudCreativity\LaravelJsonApi\Validators\ValidatorFactory;
@@ -75,6 +75,8 @@ use Neomerx\JsonApi\Contracts\Http\HttpFactoryInterface;
 use Neomerx\JsonApi\Contracts\Http\ResponsesInterface;
 use Neomerx\JsonApi\Contracts\Schema\SchemaFactoryInterface;
 use Psr\Log\LoggerInterface;
+use ReflectionClass;
+use App;
 
 /**
  * Class ServiceProvider
@@ -83,6 +85,7 @@ use Psr\Log\LoggerInterface;
  */
 class ServiceProvider extends BaseServiceProvider
 {
+    const JSON_API_SCHEMA = 'JSON_API_SCHEMA';
 
     /**
      * @var bool
@@ -257,7 +260,7 @@ class ServiceProvider extends BaseServiceProvider
      */
     protected function bindSchemasRepository()
     {
-        $this->app->singleton(SchemasRepositoryInterface::class, SchemasRepository::class);
+        $this->app->singleton(SchemasRepositoryInterface::class, EloquentSchemasRepository::class);
         $this->app->resolving(SchemasRepositoryInterface::class, function (ConfigurableInterface $repository) {
             $repository->configure((array) $this->getConfig('schemas', []));
         });
@@ -268,7 +271,7 @@ class ServiceProvider extends BaseServiceProvider
      */
     protected function bindSchemaRepository()
     {
-        $this->app->singleton(SchemasRepositoryInterface::class, SchemasRepository::class);
+        $this->app->singleton(SchemasRepositoryInterface::class, EloquentSchemasRepository::class);
         $this->app->resolving(SchemasRepositoryInterface::class, function (ConfigurableInterface $repository) {
             $repository->configure((array) $this->getConfig('schemas', []));
         });
@@ -352,6 +355,28 @@ class ServiceProvider extends BaseServiceProvider
         $this->app->singleton(EloquentAdapter::class, function () {
             $map = (array) $this->getConfig('eloquent-adapter.map');
             $columns = (array) $this->getConfig('eloquent-adapter.columns');
+
+            $models = array_filter(glob('app/Models/*'), 'is_file');
+            foreach($models as $model)
+            {
+                $class = '';
+                foreach(explode('/', str_replace('.php', '', $model)) as $item) $class .= ucfirst($item).'\\';
+                $class = substr($class, 0, strlen($class) - 1);
+
+                if(class_exists($class))
+                {
+                    $jsonSchema = (new ReflectionClass($class))->getConstant(static::JSON_API_SCHEMA);
+                    if($jsonSchema)
+                    {
+                        $resourceType = (new $jsonSchema(App::make(SchemaFactoryInterface::class)))
+                            ->getResourceType();
+                        if(! isset($map[$resourceType]))
+                        {
+                            $map[$resourceType] = $class;
+                        }
+                    }
+                }
+            }
 
             return new EloquentAdapter($map, $columns);
         });

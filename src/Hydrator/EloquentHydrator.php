@@ -117,6 +117,32 @@ class EloquentHydrator extends AbstractHydrator implements HydratesRelatedInterf
     }
 
     /**
+     * @param StandardObjectInterface $attributes
+     * @param $record
+     * @return void
+     */
+    protected function defaultHydrateAttributes(StandardObjectInterface $attributes, $record)
+    {
+        $hydratorAttributes = $this->attributes;
+        if(empty($hydratorAttributes))
+        {
+            $hydratorAttributes = [];
+            foreach($record->getFillable() as $attribute)
+            {
+                if(strpos($attribute, '_') !== false)
+                {
+                    $hydratorAttributes[str_replace('_', '-', $attribute)] = $attribute;
+                }
+                else
+                {
+                    $hydratorAttributes[] = $attribute;
+                }
+            }
+        }
+        return $hydratorAttributes;
+    }
+
+    /**
      * @inheritDoc
      */
     protected function hydrateAttributes(StandardObjectInterface $attributes, $record)
@@ -127,7 +153,7 @@ class EloquentHydrator extends AbstractHydrator implements HydratesRelatedInterf
 
         $data = [];
 
-        foreach ($this->attributes as $resourceKey => $modelKey) {
+        foreach ($this->defaultHydrateAttributes($attributes, $record) as $resourceKey => $modelKey) {
             if (is_numeric($resourceKey)) {
                 $resourceKey = $modelKey;
                 $modelKey = $this->keyForAttribute($modelKey, $record);
