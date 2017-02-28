@@ -155,6 +155,23 @@ abstract class EloquentSchema extends AbstractSchema
     }
 
     /**
+     * Get attributes for the provided model using fillable attribute.
+     *
+     * @param Model $model
+     * @return array
+     */
+    protected function getDefaultModelAttributes(Model $model)
+    {
+        $schemaAttributes = $this->attributes;
+        if(empty($schemaAttributes))
+        {
+            $schemaAttributes = $model->getFillable();
+        }
+        return $schemaAttributes;
+    }
+
+
+    /**
      * Get attributes for the provided model.
      *
      * @param Model $model
@@ -164,7 +181,7 @@ abstract class EloquentSchema extends AbstractSchema
     {
         $attributes = [];
 
-        foreach ($this->attributes as $modelKey => $attributeKey) {
+        foreach ($this->getDefaultModelAttributes($model) as $modelKey => $attributeKey) {
             if (is_numeric($modelKey)) {
                 $modelKey = $attributeKey;
                 $attributeKey = $this->keyForAttribute($attributeKey);
