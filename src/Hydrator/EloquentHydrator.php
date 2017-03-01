@@ -70,7 +70,7 @@ class EloquentHydrator extends AbstractHydrator implements HydratesRelatedInterf
      *
      * @var array
      */
-    protected $attributes = [];
+    protected $attributes = NULL;
 
     /**
      * The resource attributes that are dates.
@@ -117,29 +117,21 @@ class EloquentHydrator extends AbstractHydrator implements HydratesRelatedInterf
     }
     
     /**
-     * @param StandardObjectInterface $attributes
      * @param $record
      * @return void
      */
-    protected function defaultHydrateAttributes(StandardObjectInterface $attributes, $record)
+    protected function attributeKeys($record)
     {
-        $hydratorAttributes = $this->attributes;
-        if(empty($hydratorAttributes))
+        if(is_null($this->attributes))
         {
-            $hydratorAttributes = [];
+            $fillableAttributes = [];
             foreach($record->getFillable() as $attribute)
             {
-                if(strpos($attribute, '_') !== false)
-                {
-                    $hydratorAttributes[str_replace('_', '-', $attribute)] = $attribute;
-                }
-                else
-                {
-                    $hydratorAttributes[] = $attribute;
-                }
+                $fillableAttributes[Str::dasherize($attribute)] = $attribute;
             }
+            return $fillableAttributes;
         }
-        return $hydratorAttributes;
+        return $this->attributes;
     }
 
     /**
@@ -153,7 +145,7 @@ class EloquentHydrator extends AbstractHydrator implements HydratesRelatedInterf
 
         $data = [];
 
-        foreach ($this->defaultHydrateAttributes($attributes, $record) as $resourceKey => $modelKey) {
+        foreach ($this->attributeKeys($record) as $resourceKey => $modelKey) {
             if (is_numeric($resourceKey)) {
                 $resourceKey = $modelKey;
                 $modelKey = $this->keyForAttribute($modelKey, $record);

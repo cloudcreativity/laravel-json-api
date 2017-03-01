@@ -82,7 +82,7 @@ abstract class EloquentSchema extends AbstractSchema
      *
      * @var array
      */
-    protected $attributes = [];
+    protected $attributes = NULL;
 
     /**
      * Whether resource member names are hyphenated
@@ -160,14 +160,17 @@ abstract class EloquentSchema extends AbstractSchema
      * @param Model $model
      * @return array
      */
-    protected function getDefaultModelAttributes(Model $model)
+    protected function attributeKeys(Model $model)
     {
-        $schemaAttributes = $this->attributes;
-        if(empty($schemaAttributes))
+        if(is_null($this->attributes))
         {
-            $schemaAttributes = $model->getFillable();
+            if(! empty($model->getVisible()))
+            {
+                return $model->getVisible();
+            }
+            return array_diff($model->getFillable(), $model->getHidden());
         }
-        return $schemaAttributes;
+        return $this->attributes;
     }
 
 
@@ -181,7 +184,7 @@ abstract class EloquentSchema extends AbstractSchema
     {
         $attributes = [];
 
-        foreach ($this->getDefaultModelAttributes($model) as $modelKey => $attributeKey) {
+        foreach ($this->attributeKeys($model) as $modelKey => $attributeKey) {
             if (is_numeric($modelKey)) {
                 $modelKey = $attributeKey;
                 $attributeKey = $this->keyForAttribute($attributeKey);
