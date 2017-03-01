@@ -161,4 +161,20 @@ class EloquentAdapter implements AdapterInterface
             sprintf('%s.%s', $model->getTable(), $this->keyNames[$resourceType]) :
             $model->getQualifiedKeyName();
     }
+
+    /**
+     * Add a resource type and key name to Eloquent adapter
+     *
+     * @param string $resourceType
+     * @param string $model
+     * @param string $keyName
+     */
+    public function addResource($resourceType, $model, $keyName = NULL)
+    {
+        $this->map[$resourceType] = $model;
+        if(! is_null($keyName))
+        {
+            $this->keyNames[$resourceType] = $keyName;
+        }
+    }
 }
