@@ -80,6 +80,7 @@ class JsonApiService implements HttpServiceInterface, ErrorReporterInterface
     public function adapter($resourceType, $adapter, $controller = null, array $options = [])
     {
         $adapterObject = $this->container->make($adapter);
+        
         // Check if adapter recognises resource type
         if(! $adapterObject->recognises($resourceType)) {
             throw new RuntimeException("No adapter for resource type: $resourceType");
@@ -89,11 +90,7 @@ class JsonApiService implements HttpServiceInterface, ErrorReporterInterface
         $store = $this->container->make(StoreInterface::class);
         $store->register($adapterObject);
 
-        /** @var ResourceRegistrar $registrar */
-        $registrar = $this->container->make(ResourceRegistrar::class);
-        $registrar->resource($resourceType, $controller, $options);
-
-        return $registrar;
+        return $this->resource($resourceType, $controller, $options);
     }
 
     /**
@@ -112,11 +109,7 @@ class JsonApiService implements HttpServiceInterface, ErrorReporterInterface
         $adapter = $this->container->make(EloquentAdapter::class);
         $adapter->addResource($resourceType, $model, $keyName);
 
-        /** @var ResourceRegistrar $registrar */
-        $registrar = $this->container->make(ResourceRegistrar::class);
-        $registrar->resource($resourceType, $controller, $options);
-
-        return $registrar;
+        return $this->resource($resourceType, $controller, $options);
     }
 
     /**
