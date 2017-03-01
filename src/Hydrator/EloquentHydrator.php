@@ -70,7 +70,7 @@ class EloquentHydrator extends AbstractHydrator implements HydratesRelatedInterf
      *
      * @var array
      */
-    protected $attributes = [];
+    protected $attributes = NULL;
 
     /**
      * The resource attributes that are dates.
@@ -115,6 +115,24 @@ class EloquentHydrator extends AbstractHydrator implements HydratesRelatedInterf
     {
         $this->service = $service;
     }
+    
+    /**
+     * @param $record
+     * @return void
+     */
+    protected function attributeKeys($record)
+    {
+        if(is_null($this->attributes))
+        {
+            $fillableAttributes = [];
+            foreach($record->getFillable() as $attribute)
+            {
+                $fillableAttributes[Str::dasherize($attribute)] = $attribute;
+            }
+            return $fillableAttributes;
+        }
+        return $this->attributes;
+    }
 
     /**
      * @inheritDoc
@@ -127,7 +145,7 @@ class EloquentHydrator extends AbstractHydrator implements HydratesRelatedInterf
 
         $data = [];
 
-        foreach ($this->attributes as $resourceKey => $modelKey) {
+        foreach ($this->attributeKeys($record) as $resourceKey => $modelKey) {
             if (is_numeric($resourceKey)) {
                 $resourceKey = $modelKey;
                 $modelKey = $this->keyForAttribute($modelKey, $record);
