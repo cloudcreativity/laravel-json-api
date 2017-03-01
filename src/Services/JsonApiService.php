@@ -82,7 +82,7 @@ class JsonApiService implements HttpServiceInterface, ErrorReporterInterface
         $adapterObject = $this->container->make($adapter);
         
         // Check if adapter recognises resource type
-        if(! $adapterObject->recognises($resourceType)) {
+        if (! $adapterObject->recognises($resourceType)) {
             throw new RuntimeException("No adapter for resource type: $resourceType");
         }
 
@@ -103,7 +103,7 @@ class JsonApiService implements HttpServiceInterface, ErrorReporterInterface
      * @param array $options
      * @return ResourceRegistrar
      */
-    public function eloquentAdapter($resourceType, $model, $keyName = NULL, $controller = null, array $options = [])
+    public function eloquentAdapter($resourceType, $model, $keyName = null, $controller = null, array $options = [])
     {
         // Include resource type to Eloquent adapter
         $adapter = $this->container->make(EloquentAdapter::class);

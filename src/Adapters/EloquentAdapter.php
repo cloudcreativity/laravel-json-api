@@ -169,10 +169,11 @@ class EloquentAdapter implements AdapterInterface
      * @param string $model
      * @param string $keyName
      */
-    public function addResource($resourceType, $model, $keyName = NULL)
+    public function addResource($resourceType, $model, $keyName = null)
     {
         $this->map[$resourceType] = $model;
-        if(! is_null($keyName))
+
+        if (! is_null($keyName))
         {
             $this->keyNames[$resourceType] = $keyName;
         }
