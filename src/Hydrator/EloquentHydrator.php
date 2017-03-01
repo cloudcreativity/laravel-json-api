@@ -77,7 +77,7 @@ class EloquentHydrator extends AbstractHydrator implements HydratesRelatedInterf
      *
      * @var string[]
      */
-    protected $dates = [];
+    protected $dates = NULL;
 
     /**
      * Resource relationship keys that should be automatically hydrated.
@@ -134,7 +134,7 @@ class EloquentHydrator extends AbstractHydrator implements HydratesRelatedInterf
             }
 
             if ($attributes->has($resourceKey)) {
-                $data[$modelKey] = $this->deserializeAttribute($attributes->get($resourceKey), $resourceKey);
+                $data[$modelKey] = $this->deserializeAttribute($record, $attributes->get($resourceKey), $resourceKey);
             }
         }
 
@@ -226,15 +226,16 @@ class EloquentHydrator extends AbstractHydrator implements HydratesRelatedInterf
     /**
      * Deserialize a value obtained from the resource's attributes.
      *
+     * @param $record
      * @param $value
      *      the value that the client provided.
      * @param $resourceKey
      *      the attribute key for the value
      * @return Carbon|null
      */
-    protected function deserializeAttribute($value, $resourceKey)
+    protected function deserializeAttribute($record, $value, $resourceKey)
     {
-        if ($this->isDateAttribute($resourceKey)) {
+        if ($this->isDateAttribute($record, $resourceKey)) {
             return $this->deserializeDate($value);
         }
 
@@ -253,12 +254,20 @@ class EloquentHydrator extends AbstractHydrator implements HydratesRelatedInterf
     /**
      * Is this resource key a date attribute?
      *
+     * @param $record
      * @param $resourceKey
      * @return bool
      */
-    protected function isDateAttribute($resourceKey)
+    protected function isDateAttribute($record, $resourceKey)
     {
-        return in_array($resourceKey, $this->dates, true);
+        if(is_null($this->dates))
+        {
+            return in_array(Str::snake($resourceKey), $record->getDates(), true);
+        }
+        else
+        {
+            return in_array($resourceKey, $this->dates, true);
+        }
     }
 
     /**
