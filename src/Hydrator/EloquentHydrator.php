@@ -264,10 +264,8 @@ class EloquentHydrator extends AbstractHydrator implements HydratesRelatedInterf
         {
             return in_array(Str::snake($resourceKey), $record->getDates(), true);
         }
-        else
-        {
-            return in_array($resourceKey, $this->dates, true);
-        }
+        
+        return in_array($resourceKey, $this->dates, true);
     }
 
     /**
