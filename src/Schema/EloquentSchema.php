@@ -26,6 +26,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * Class EloquentSchema
+ *
  * @package CloudCreativity\LaravelJsonApi
  */
 abstract class EloquentSchema extends AbstractSchema
@@ -80,9 +81,18 @@ abstract class EloquentSchema extends AbstractSchema
     /**
      * The model attribute keys to serialize.
      *
-     * @var array
+     * - Empty array: no attributes to serialize.
+     * - Non-empty array: serialize the specified model keys.
+     * - Null: work out the keys to serialize.
+     *
+     * If `null`, then `Model::getVisible()` is used if it returns a non-empty array.
+     * Otherwise, `Model::getFillable()` will be used, minus any keys specified in
+     * `Model::getHidden()`. We use `getFillable` because that is also the default
+     * in `EloquentHydrator`.
+     *
+     * @var array|null
      */
-    protected $attributes = NULL;
+    protected $attributes = null;
 
     /**
      * Whether resource member names are hyphenated
@@ -162,17 +172,14 @@ abstract class EloquentSchema extends AbstractSchema
      */
     protected function attributeKeys(Model $model)
     {
-        if(is_null($this->attributes))
-        {
-            if(! empty($model->getVisible()))
-            {
+        if (is_null($this->attributes)) {
+            if (!empty($model->getVisible())) {
                 return $model->getVisible();
             }
             return array_diff($model->getFillable(), $model->getHidden());
         }
         return $this->attributes;
     }
-
 
     /**
      * Get attributes for the provided model.

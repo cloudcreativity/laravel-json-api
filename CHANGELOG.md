@@ -2,6 +2,19 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## Unreleased
+
+### Added
+- Default Eloquent hydration attributes are now calculated using `Model::getFillable()`. To use this,
+set the `$attributes` property on an Eloquent hydrator to `null`.
+- Default Eloquent serialization attribution in the `EloquentSchema` class. These are calculated using
+either `Model::getVisible()` or `Model::getFillable()` minus any `Model::getHidden()` keys. To use this,
+set the `$attributes` property on an Eloquent schema to `null`.
+
+### Changed
+- When generating an Eloquent hydrator or schema using the `make:json-api` commands, the `$attributes`
+property will be set as `null` by default.
+
 ## [0.6.2] - 2017-02-23
 
 ### Fixed
