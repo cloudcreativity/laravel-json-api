@@ -83,9 +83,12 @@ class EloquentHydrator extends AbstractHydrator implements HydratesRelatedInterf
     /**
      * The resource attributes that are dates.
      *
-     * @var string[]
+     * If an array, a list of JSON API resource attributes that should be cast to dates.
+     * If `null`, the list will be calculated using `Model::getDates()`
+     *
+     * @var string[]|null
      */
-    protected $dates = NULL;
+    protected $dates = null;
 
     /**
      * Resource relationship keys that should be automatically hydrated.
@@ -163,7 +166,7 @@ class EloquentHydrator extends AbstractHydrator implements HydratesRelatedInterf
             }
 
             if ($attributes->has($resourceKey)) {
-                $data[$modelKey] = $this->deserializeAttribute($record, $attributes->get($resourceKey), $resourceKey);
+                $data[$modelKey] = $this->deserializeAttribute($attributes->get($resourceKey), $resourceKey, $record);
             }
         }
 
@@ -217,7 +220,7 @@ class EloquentHydrator extends AbstractHydrator implements HydratesRelatedInterf
             }
         }
 
-        return array_merge($results, (array) $this->hydratedRelated($resource, $record));
+        return array_merge($results, (array)$this->hydratedRelated($resource, $record));
     }
 
     /**
@@ -255,16 +258,16 @@ class EloquentHydrator extends AbstractHydrator implements HydratesRelatedInterf
     /**
      * Deserialize a value obtained from the resource's attributes.
      *
-     * @param $record
      * @param $value
      *      the value that the client provided.
      * @param $resourceKey
      *      the attribute key for the value
+     * @param Model $record
      * @return Carbon|null
      */
-    protected function deserializeAttribute($record, $value, $resourceKey)
+    protected function deserializeAttribute($value, $resourceKey, $record)
     {
-        if ($this->isDateAttribute($record, $resourceKey)) {
+        if ($this->isDateAttribute($resourceKey, $record)) {
             return $this->deserializeDate($value);
         }
 
@@ -283,17 +286,16 @@ class EloquentHydrator extends AbstractHydrator implements HydratesRelatedInterf
     /**
      * Is this resource key a date attribute?
      *
-     * @param $record
      * @param $resourceKey
+     * @param Model $record
      * @return bool
      */
-    protected function isDateAttribute($record, $resourceKey)
+    protected function isDateAttribute($resourceKey, $record)
     {
-        if(is_null($this->dates))
-        {
+        if (is_null($this->dates)) {
             return in_array(Str::snake($resourceKey), $record->getDates(), true);
         }
-        
+
         return in_array($resourceKey, $this->dates, true);
     }
 
