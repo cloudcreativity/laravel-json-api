@@ -70,21 +70,21 @@ class EloquentHydrator extends AbstractHydrator implements HydratesRelatedInterf
      *
      * @var array
      */
-    protected $attributes = NULL;
+    protected $attributes = null;
 
     /**
      * The resource attributes that are dates.
      *
      * @var string[]
      */
-    protected $dates = NULL;
+    protected $dates = null;
 
     /**
      * Indicates timezone to use for save dates in database.
      *
      * @var string
      */
-    protected $timezone = NULL;
+    protected $timezone = null;
 
     /**
      * Resource relationship keys that should be automatically hydrated.
@@ -124,16 +124,18 @@ class EloquentHydrator extends AbstractHydrator implements HydratesRelatedInterf
     }
     
     /**
-     * @param $record
-     * @return void
+     * @param StandardObjectInterface $attributes
+     *      the attributes received from the client.
+     * @param Model $record
+     *      the model being hydrated
+     * @return array
+     *      the JSON API attribute keys to hydrate
      */
-    protected function attributeKeys($record)
+    protected function attributeKeys(StandardObjectInterface $attributes, $record)
     {
-        if(is_null($this->attributes))
-        {
+        if (is_null($this->attributes)) {
             $fillableAttributes = [];
-            foreach($record->getFillable() as $attribute)
-            {
+            foreach ($record->getFillable() as $attribute) {
                 $fillableAttributes[Str::dasherize($attribute)] = $attribute;
             }
             return $fillableAttributes;
@@ -152,7 +154,7 @@ class EloquentHydrator extends AbstractHydrator implements HydratesRelatedInterf
 
         $data = [];
 
-        foreach ($this->attributeKeys($record) as $resourceKey => $modelKey) {
+        foreach ($this->attributeKeys($attributes, $record) as $resourceKey => $modelKey) {
             if (is_numeric($resourceKey)) {
                 $resourceKey = $modelKey;
                 $modelKey = $this->keyForAttribute($modelKey, $record);
