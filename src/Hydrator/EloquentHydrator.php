@@ -80,6 +80,13 @@ class EloquentHydrator extends AbstractHydrator implements HydratesRelatedInterf
     protected $dates = NULL;
 
     /**
+     * Indicates timezone to use for save dates in database.
+     *
+     * @var string
+     */
+    protected $timezone = NULL;
+
+    /**
      * Resource relationship keys that should be automatically hydrated.
      *
      * This hydrator can hydrate Eloquent `BelongsTo` and `BelongsToMany` relationships. To do so,
@@ -266,7 +273,14 @@ class EloquentHydrator extends AbstractHydrator implements HydratesRelatedInterf
      */
     protected function deserializeDate($value)
     {
-        return !is_null($value) ? new Carbon($value) : null;
+        $date = null;
+
+        if (!is_null($value))
+        {
+            $date = is_null($this->timezone) ? new Carbon($value) : (new Carbon($value))->setTimezone($this->timezone);
+        }
+
+        return $date;
     }
 
     /**
