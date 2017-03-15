@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2016 Cloud Creativity Limited
+ * Copyright 2017 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,26 +19,31 @@
 namespace CloudCreativity\LaravelJsonApi\Http\Middleware;
 
 use Closure;
-use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestHandlerInterface;
+use CloudCreativity\JsonApi\Contracts\Validators\ValidatorProviderInterface;
 use CloudCreativity\JsonApi\Exceptions\RuntimeException;
+use CloudCreativity\JsonApi\Http\Middleware\ValidatesRequests;
 use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
-use Illuminate\Contracts\Container\Container;
+use Illuminate\Container\Container;
 use Illuminate\Http\Request;
 
 /**
- * Class CreateRequest
+ * Class ValidateRequest
+ *
  * @package CloudCreativity\LaravelJsonApi
  */
-class HandleRequest
+class ValidateRequest
 {
+
+    use ValidatesRequests;
 
     /**
      * @var Container
      */
-    private $container;
+    protected $container;
 
     /**
      * ValidateRequest constructor.
+     *
      * @param Container $container
      */
     public function __construct(Container $container)
@@ -49,34 +54,35 @@ class HandleRequest
     /**
      * @param Request $request
      * @param Closure $next
-     * @param $requestClass
+     * @param string $validators
      * @return mixed
      */
-    public function handle($request, Closure $next, $requestClass)
+    public function handle($request, Closure $next, $validators)
     {
-        $handler = $this->requestHandler($requestClass);
         /** @var JsonApiService $service */
         $service = $this->container->make(JsonApiService::class);
 
-        /** Ask the handler to validate the request */
-        $handler->handle($service->getApi(), $service->getRequest());
+        $this->validate(
+            $service->getApi()->getRequestInterpreter(),
+            $service->getRequest(),
+            $this->resolveValidators($validators)
+        );
 
         return $next($request);
     }
 
     /**
-     * @param $requestClass
-     * @return RequestHandlerInterface
+     * @param $name
+     * @return ValidatorProviderInterface
      */
-    private function requestHandler($requestClass)
+    protected function resolveValidators($name)
     {
-        $handler = $this->container->make($requestClass);
+        $validators = $this->container->make($name);
 
-        if (!$handler instanceof RequestHandlerInterface) {
-            throw new RuntimeException("Class $requestClass is not a request handler.");
+        if (!$validators instanceof ValidatorProviderInterface) {
+            throw new RuntimeException("Validators '$name' is not a validator provider instance.");
         }
 
-        return $handler;
+        return $validators;
     }
-
 }

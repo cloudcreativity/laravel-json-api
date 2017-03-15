@@ -54,8 +54,9 @@ use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorErrorFactoryInt
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Document\LinkFactory;
 use CloudCreativity\LaravelJsonApi\Exceptions\ExceptionParser;
+use CloudCreativity\LaravelJsonApi\Http\Middleware\AuthorizeRequest;
 use CloudCreativity\LaravelJsonApi\Http\Middleware\BootJsonApi;
-use CloudCreativity\LaravelJsonApi\Http\Middleware\HandleRequest;
+use CloudCreativity\LaravelJsonApi\Http\Middleware\ValidateRequest;
 use CloudCreativity\LaravelJsonApi\Http\Requests\RequestInterpreter;
 use CloudCreativity\LaravelJsonApi\Http\Responses\Responses;
 use CloudCreativity\LaravelJsonApi\Pagination\Page;
@@ -167,11 +168,13 @@ class ServiceProvider extends BaseServiceProvider
         /** Laravel 5.4 */
         if (method_exists($router, 'aliasMiddleware')) {
             $router->aliasMiddleware('json-api', BootJsonApi::class);
-            $router->aliasMiddleware('json-api.request', HandleRequest::class);
+            $router->aliasMiddleware('json-api.authorize', AuthorizeRequest::class);
+            $router->aliasMiddleware('json-api.validate', ValidateRequest::class);
         } /** Laravel 5.1|5.2|5.3 */
         else {
             $router->middleware('json-api', BootJsonApi::class);
-            $router->middleware('json-api.request', HandleRequest::class);
+            $router->middleware('json-api.authorize', AuthorizeRequest::class);
+            $router->middleware('json-api.validate', ValidateRequest::class);
         }
     }
 

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2016 Cloud Creativity Limited
+ * Copyright 2017 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,142 +18,292 @@
 
 namespace CloudCreativity\LaravelJsonApi\Routing;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Document\LinkFactoryInterface;
 use CloudCreativity\LaravelJsonApi\TestCase;
-use Illuminate\Contracts\Routing\Registrar;
+use Illuminate\Contracts\Events\Dispatcher;
+use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
-use PHPUnit_Framework_MockObject_MockObject as Mock;
+use Illuminate\Routing\Router;
+use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * Class ResourceRegistrarTest
+ *
  * @package CloudCreativity\LaravelJsonApi
  */
-final class ResourceRegistrarTest extends TestCase
+class ResourceRegistrarTest extends TestCase
 {
 
     /**
-     * @var Mock
+     * @var Router
      */
-    private $mock;
+    private $router;
 
     /**
      * @var ResourceRegistrar
      */
     private $registrar;
 
+    protected function setUp()
+    {
+        /** @var Dispatcher $events */
+        $events = $this->getMockBuilder(Dispatcher::class)->getMock();
+        $this->router = new Router($events);
+        $this->registrar = new ResourceRegistrar($this->router);
+    }
+
+    public function testBasic()
+    {
+        $this->router->group(['namespace' => __NAMESPACE__], function () {
+            $this->registrar->resource('posts');
+        });
+
+        $this->seeResource();
+    }
+
+    public function testHasOne()
+    {
+        $this->router->group(['namespace' => __NAMESPACE__], function () {
+            $this->registrar->resource('posts', [
+                'has-one' => 'author',
+            ]);
+        });
+
+        $this->seeHasOne('author');
+    }
+
+    public function testMultipleHasOne()
+    {
+        $this->router->group(['namespace' => __NAMESPACE__], function () {
+            $this->registrar->resource('posts', [
+                'has-one' => ['author', 'site'],
+            ]);
+        });
+
+        $this->seeHasOne('author');
+        $this->seeHasOne('site');
+    }
+
+    public function testDasherizedHasOne()
+    {
+        $this->router->group(['namespace' => __NAMESPACE__], function () {
+            $this->registrar->resource('posts', [
+                'has-one' => ['last-comment'],
+            ]);
+        });
+
+        $this->seeHasOne('last-comment');
+    }
+
+    public function testHasMany()
+    {
+        $this->router->group(['namespace' => __NAMESPACE__], function () {
+            $this->registrar->resource('posts', [
+                'has-many' => 'comments',
+            ]);
+        });
+
+        $this->seeHasMany('comments');
+    }
+
+    public function testMultipleHasMany()
+    {
+        $this->router->group(['namespace' => __NAMESPACE__], function () {
+            $this->registrar->resource('posts', [
+                'has-many' => ['comments', 'tags'],
+            ]);
+        });
+
+        $this->seeHasMany('comments');
+        $this->seeHasMany('tags');
+    }
+
+    public function testDasherizedHasMany()
+    {
+        $this->router->group(['namespace' => __NAMESPACE__], function () {
+            $this->registrar->resource('posts', [
+                'has-many' => 'recent-comments',
+            ]);
+        });
+
+        $this->seeHasMany('recent-comments');
+    }
+
+    public function testAllRelationships()
+    {
+        $this->router->group(['namespace' => __NAMESPACE__], function () {
+            $this->registrar->resource('posts', [
+                'has-one' => 'author',
+                'has-many' => ['comments', 'tags'],
+            ]);
+        });
+
+        $this->seeHasOne('author');
+        $this->seeHasMany('comments');
+        $this->seeHasMany('tags');
+    }
+
+    public function testNotARelationship()
+    {
+        $this->router->group(['namespace' => __NAMESPACE__], function () {
+            $this->registrar->resource('posts', [
+                'has-one' => 'author',
+                'has-many' => ['comments', 'tags'],
+            ]);
+        });
+
+        $this->seeNotFound(Request::create("/posts/123/site"));
+        $this->seeNotFound(Request::create("/posts/123/relationships/site"));
+        $this->seeNotFound(Request::create("/posts/123/relationships/site", 'PATCH'));
+        $this->seeNotFound(Request::create("/posts/123/relationships/site", 'POST'));
+        $this->seeNotFound(Request::create("/posts/123/relationships/site", 'DELETE'));
+    }
+
+    public function testSpecifiedController()
+    {
+        $this->registrar->resource('posts', [
+            'controller' => PostsController::class,
+            'has-one' => 'author',
+            'has-many' => 'comments',
+        ]);
+
+        $this->seeResource();
+        $this->seeHasOne('author');
+        $this->seeHasMany('comments');
+    }
+
+    public function testSpecifiedAuthorizer()
+    {
+        $this->router->group(['namespace' => __NAMESPACE__], function () {
+            $this->registrar->resource('posts', [
+                'authorizer' => 'App\JsonApi\GenericAuthorizer',
+            ]);
+        });
+
+        $this->seeAuthorizer('App\JsonApi\GenericAuthorizer');
+    }
+
+    public function testSpecifiedValidators()
+    {
+        $this->router->group(['namespace' => __NAMESPACE__], function () {
+            $this->registrar->resource('posts', [
+                'validators' => 'App\JsonApi\GenericValidator',
+            ]);
+        });
+
+        $this->seeValidator('App\JsonApi\GenericValidator');
+    }
+
     /**
-     * @var int
+     * @param Request $request
+     * @param string $content
+     * @return Route
      */
-    private $index = 0;
+    private function seeResponse(Request $request, $content)
+    {
+        $route = $this->router->getRoutes()->match($request);
+        $this->assertEquals($content, $route->bind($request)->run());
+        $this->assertEquals('posts', $route->parameter('resource_type'), 'resource type');
+
+        return $route;
+    }
 
     /**
      * @return void
      */
-    protected function setUp()
+    private function seeResource()
     {
-        parent::setUp();
-
-        /** @var Registrar $registrar */
-        $registrar = $this->getMockBuilder(Registrar::class)->getMock();
-
-        $this->registrar = new ResourceRegistrar($registrar);
-        $this->mock = $registrar;
-    }
-
-    public function testRegistration()
-    {
-        $this->willRegister('posts', 'PostsController');
-        $this->registrar->resource('posts');
-    }
-
-    public function testRegistrationWithController()
-    {
-        $this->willRegister('posts', $controller = 'MyNamespace/PostsController');
-        $this->registrar->resource('posts', $controller);
-    }
-
-    public function testRegistrationWithSlugResourceType()
-    {
-        $this->willRegister('user-accounts', 'UserAccountsController');
-        $this->registrar->resource('user-accounts');
-    }
-
-    public function testRegistrationWithSnakeResourceType()
-    {
-        $this->willRegister('user_accounts', 'UserAccountsController');
-        $this->registrar->resource('user_accounts');
+        $this->seeResponse(Request::create('/posts'), 'index');
+        $this->seeResponse(Request::create('/posts', 'POST'), 'create');
+        $this->seeResponse(Request::create('/posts/123'), 'read:123');
+        $this->seeResponse(Request::create('/posts/123', 'PATCH'), 'update:123');
+        $this->seeResponse(Request::create('/posts/123', 'DELETE'), 'delete:123');
     }
 
     /**
-     * @param $resourceType
-     * @param $expectedController
+     * @param $relationship
      */
-    private function willRegister($resourceType, $expectedController)
+    private function seeHasOne($relationship)
     {
-        $index = sprintf(LinkFactoryInterface::ROUTE_NAME_INDEX, $resourceType);
-        $resource = sprintf(LinkFactoryInterface::ROUTE_NAME_RESOURCE, $resourceType);
-        $relatedResource = sprintf(LinkFactoryInterface::ROUTE_NAME_RELATED_RESOURCE, $resourceType);
-        $relationship = sprintf(LinkFactoryInterface::ROUTE_NAME_RELATIONSHIPS, $resourceType);
+        $this->seeResponse(Request::create("/posts/123/$relationship"), "read-related:123:$relationship");
+        $this->seeResponse(Request::create("/posts/123/relationships/$relationship"), "read-relationship:123:$relationship");
+        $this->seeResponse(Request::create("/posts/123/relationships/$relationship", 'PATCH'), "replace-relationship:123:$relationship");
 
-        $this->willSee($resourceType, 'GET', "/$resourceType", $expectedController, 'index', $index);
-        $this->willSee($resourceType, 'POST', "/$resourceType", $expectedController, 'create');
-        $this->willSee($resourceType, 'GET', "/$resourceType/{resource_id}", $expectedController, 'read', $resource);
-        $this->willSee($resourceType, 'PATCH', "/$resourceType/{resource_id}", $expectedController, 'update');
-        $this->willSee($resourceType, 'DELETE', "/$resourceType/{resource_id}", $expectedController, 'delete');
-        $this->willSee($resourceType, 'GET', "/$resourceType/{resource_id}/{relationship_name}", $expectedController, 'readRelatedResource', $relatedResource);
-        $this->willSee($resourceType, 'GET', "/$resourceType/{resource_id}/relationships/{relationship_name}", $expectedController, 'readRelationship', $relationship);
-        $this->willSee($resourceType, 'PATCH', "/$resourceType/{resource_id}/relationships/{relationship_name}", $expectedController, 'replaceRelationship');
-        $this->willSee($resourceType, 'POST', "/$resourceType/{resource_id}/relationships/{relationship_name}", $expectedController, 'addToRelationship');
-        $this->willSee($resourceType, 'DELETE', "/$resourceType/{resource_id}/relationships/{relationship_name}", $expectedController, 'removeFromRelationship');
+        /** These should not be registered (i.e. ensure it has not been registered as a has-many */
+        $this->seeMethodNotAllowed(Request::create("/posts/123/relationships/$relationship", 'POST'), 'add-to relationship');
+        $this->seeMethodNotAllowed(Request::create("/posts/123/relationships/$relationship", 'DELETE'), 'remove-from relationship');
     }
 
     /**
-     * @param $resourceType
-     * @param $httpMethod
-     * @param $uri
-     * @param $controller
-     * @param $controllerMethod
-     * @param $as
+     * @param $relationship
      */
-    private function willSee(
-        $resourceType,
-        $httpMethod,
-        $uri,
-        $controller,
-        $controllerMethod,
-        $as = null
-    ) {
-        $options = ['uses' => $controller . '@' . $controllerMethod];
+    private function seeHasMany($relationship)
+    {
+        $this->seeResponse(Request::create("/posts/123/$relationship"), "read-related:123:$relationship");
+        $this->seeResponse(Request::create("/posts/123/relationships/$relationship"), "read-relationship:123:$relationship");
+        $this->seeResponse(Request::create("/posts/123/relationships/$relationship", 'PATCH'), "replace-relationship:123:$relationship");
+        $this->seeResponse(Request::create("/posts/123/relationships/$relationship", 'POST'), "add-relationship:123:$relationship");
+        $this->seeResponse(Request::create("/posts/123/relationships/$relationship", 'DELETE'), "remove-relationship:123:$relationship");
+    }
 
-        if ($as) {
-            $options['as'] = $as;
+    /**
+     * @param $expected
+     */
+    private function seeAuthorizer($expected)
+    {
+        $route = $this->seeResponse(Request::create('/posts'), 'index');
+        $this->seeMiddleware($route, "json-api.authorize:$expected");
+    }
+
+    /**
+     * @param $expected
+     */
+    private function seeValidator($expected)
+    {
+        $route = $this->seeResponse(Request::create('/posts'), 'index');
+        $this->seeMiddleware($route, "json-api.validate:$expected");
+    }
+
+    /**
+     * @param Route $route
+     * @param $expected
+     */
+    private function seeMiddleware(Route $route, $expected)
+    {
+        $this->assertContains($expected, $route->middleware());
+    }
+
+    /**
+     * @param Request $request
+     * @param string|null $message
+     */
+    private function seeNotFound(Request $request, $message = null)
+    {
+        $notFound = false;
+
+        try {
+            $this->router->getRoutes()->match($request);
+        } catch (NotFoundHttpException $ex) {
+            $notFound = true;
         }
 
-        $this->mock
-            ->expects($this->at($this->index))
-            ->method(strtolower($httpMethod))
-            ->with($uri, $options)
-            ->willReturn($this->route($resourceType));
-
-        $this->index++;
+        $this->assertTrue($notFound, $message ?: 'Route was found');
     }
 
     /**
-     * @param $resourceType
-     * @return Mock
+     * @param Request $request
+     * @param string|null $message
      */
-    private function route($resourceType)
+    private function seeMethodNotAllowed(Request $request, $message = null)
     {
-        $route = $this
-            ->getMockBuilder(Route::class)
-            ->disableOriginalConstructor()
-            ->getMock();
+        $notAllowed = false;
 
-        $route->expects($this->once())
-            ->method('defaults')
-            ->with(ResourceRegistrar::PARAM_RESOURCE_TYPE, $resourceType)
-            ->willReturnSelf();
+        try {
+            $this->router->getRoutes()->match($request);
+        } catch (MethodNotAllowedHttpException $ex) {
+            $notAllowed = true;
+        }
 
-        return $route;
+        $this->assertTrue($notAllowed, $message ?: 'Route was found');
     }
 }

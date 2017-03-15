@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2016 Cloud Creativity Limited
+ * Copyright 2017 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,18 +54,35 @@ class ResourceRegistrar
      * Register routes for the supplied resource type
      *
      * @param string $resourceType
-     * @param string|null $controller
      * @param array $options
      * @return void
      */
-    public function resource($resourceType, $controller = null, array $options = [])
+    public function resource($resourceType, array $options = [])
     {
-        $controller = $controller ?: $this->controllerFor($resourceType);
+        $controller = isset($options['controller']) ? $options['controller'] : $this->controllerFor($resourceType);
+        $middleware = $this->resourceMiddleware($resourceType, $options);
 
-        $this->registerIndex($resourceType, $controller);
-        $this->registerResource($resourceType, $controller);
-        $this->registerRelatedResource($resourceType, $controller);
-        $this->registerRelationships($resourceType, $controller);
+        $this->router->group(['middleware' => $middleware], function () use ($resourceType, $controller, $options) {
+            $this->registerIndex($resourceType, $controller);
+            $this->registerResource($resourceType, $controller);
+            $this->registerAllRelationships($resourceType, $controller, $options);
+        });
+    }
+
+    /**
+     * @param $resourceType
+     * @param array $options
+     * @return array
+     */
+    protected function resourceMiddleware($resourceType, array $options)
+    {
+        $authorizer = isset($options['authorizer']) ? $options['authorizer'] : null;
+        $validators = isset($options['validators']) ? $options['validators'] : null;
+
+        return array_filter([
+            $authorizer ? "json-api.authorize:$authorizer" : null,
+            $validators ? "json-api.validate:$validators" : null,
+        ]);
     }
 
     /**
@@ -95,27 +112,71 @@ class ResourceRegistrar
 
     /**
      * @param $resourceType
+     * @param array $relationships
      * @param $controller
      */
-    protected function registerRelatedResource($resourceType, $controller)
+    protected function registerRelatedResource($resourceType, array $relationships, $controller)
     {
         $uri = $this->relatedResourceUri($resourceType);
-        $name = $this->relatedResourceRouteName($resourceType);
-        $this->route($resourceType, 'get', $uri, $controller, 'readRelatedResource', $name);
+
+        $this->route($resourceType, 'get', $uri, $controller, 'readRelatedResource')
+            ->where(self::PARAM_RELATIONSHIP_NAME, implode('|', $relationships));
     }
 
     /**
      * @param $resourceType
      * @param $controller
+     * @param array $options
      */
-    protected function registerRelationships($resourceType, $controller)
+    protected function registerAllRelationships($resourceType, $controller, array $options)
+    {
+        $hasOne = isset($options['has-one']) ? (array) $options['has-one'] : [];
+        $hasMany = isset($options['has-many']) ? (array) $options['has-many'] : [];
+
+        if ($all = array_merge($hasOne, $hasMany)) {
+            $this->registerRelationships($resourceType, $all, $controller);
+        }
+
+        if ($hasMany) {
+            $this->registerHasMany($resourceType, $hasMany, $controller);
+        }
+    }
+
+    /**
+     * Register routes that are common to all relationships (has-one and has-many)
+     *
+     * @param $resourceType
+     * @param string[] $relationships
+     * @param $controller
+     */
+    protected function registerRelationships($resourceType, array $relationships, $controller)
     {
         $uri = $this->relationshipUri($resourceType);
-        $name = $this->relationshipRouteName($resourceType);
-        $this->route($resourceType, 'get', $uri, $controller, 'readRelationship', $name);
-        $this->route($resourceType, 'patch', $uri, $controller, 'replaceRelationship');
-        $this->route($resourceType, 'post', $uri, $controller, 'addToRelationship');
-        $this->route($resourceType, 'delete', $uri, $controller, 'removeFromRelationship');
+        $this->registerRelatedResource($resourceType, $relationships, $controller);
+
+        $this->route($resourceType, 'get', $uri, $controller, 'readRelationship')
+            ->where(self::PARAM_RELATIONSHIP_NAME, implode('|', $relationships));
+
+        $this->route($resourceType, 'patch', $uri, $controller, 'replaceRelationship')
+            ->where(self::PARAM_RELATIONSHIP_NAME, implode('|', $relationships));
+    }
+
+    /**
+     * Register routes that only exist for a has-many relationship.
+     *
+     * @param $resourceType
+     * @param string[] $relationships
+     * @param $controller
+     */
+    protected function registerHasMany($resourceType, array $relationships, $controller)
+    {
+        $uri = $this->relationshipUri($resourceType);
+
+        $this->route($resourceType, 'post', $uri, $controller, 'addToRelationship')
+            ->where(self::PARAM_RELATIONSHIP_NAME, implode('|', $relationships));
+
+        $this->route($resourceType, 'delete', $uri, $controller, 'removeFromRelationship')
+            ->where(self::PARAM_RELATIONSHIP_NAME, implode('|', $relationships));
     }
 
     /**
@@ -125,6 +186,7 @@ class ResourceRegistrar
      * @param $controller
      * @param $controllerMethod
      * @param $as
+     * @return Route
      */
     protected function route(
         $resourceType,
@@ -143,6 +205,8 @@ class ResourceRegistrar
         /** @var Route $route */
         $route = $this->router->{$routerMethod}($uri, $options);
         $route->defaults(self::PARAM_RESOURCE_TYPE, $resourceType);
+
+        return $route;
     }
 
     /**

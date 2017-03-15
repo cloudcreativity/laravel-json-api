@@ -24,7 +24,7 @@
     "require": {
         "php": "^5.6|^7.0",
         "laravel/framework": "5.1.*|5.2.*|5.3.*|5.4.*",
-        "cloudcreativity/json-api": "^0.7.1",
+        "cloudcreativity/json-api": "dev-feature/no-request-handler",
         "symfony/psr-http-message-bridge": "^1.0",
         "zendframework/zend-diactoros": "^1.3"
     },
