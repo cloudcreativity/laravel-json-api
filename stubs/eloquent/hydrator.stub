@@ -8,11 +8,9 @@ class Hydrator extends EloquentHydrator
 {
 
     /**
-     * @var array
+     * @var array|null
      */
-    protected $attributes = [
-        //
-    ];
+    protected $attributes = null;
 
     /**
      * @var array

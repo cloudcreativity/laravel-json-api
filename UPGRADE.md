@@ -2,6 +2,14 @@
 
 This file provides notes on how to upgrade between versions.
 
+## v0.6 to v0.7
+
+### Eloquent Hydrator
+
+The method signatures of `EloquentHydrator::deserializeAttribute()` and `EloquentHydrator::isDateAttribute()`,
+have changed to add the record being hydrated as the final method argument. This will only affect hydrators
+in which you have overloaded either of these methods.
+
 ## v0.5 to v0.6
 
 ### Config

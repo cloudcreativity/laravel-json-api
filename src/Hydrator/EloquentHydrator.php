@@ -38,6 +38,7 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 
 /**
  * Class EloquentHydrator
+ *
  * @package CloudCreativity\LaravelJsonApi
  */
 class EloquentHydrator extends AbstractHydrator implements HydratesRelatedInterface
@@ -47,6 +48,10 @@ class EloquentHydrator extends AbstractHydrator implements HydratesRelatedInterf
 
     /**
      * The resource attribute keys to hydrate.
+     *
+     * - Empty array = hydrate no attributes.
+     * - Non-empty array = hydrate the specified attribute keys (see below).
+     * - Null = calculate the attributes to hydrate using `Model::getFillable()`
      *
      * List the keys from the resource's attributes that should be transferred to your
      * model using the `fill()` method. To map a resource attribute key to a different
@@ -68,16 +73,22 @@ class EloquentHydrator extends AbstractHydrator implements HydratesRelatedInterf
      * attribute will be converted to `foo_bar` if the Model uses snake case attributes,
      * or `fooBar` if it does not use snake case.
      *
-     * @var array
+     * If this property is `null`, the attributes to hydrate will be calculated using
+     * `Model::getFillable()`.
+     *
+     * @var array|null
      */
-    protected $attributes = [];
+    protected $attributes = null;
 
     /**
      * The resource attributes that are dates.
      *
-     * @var string[]
+     * If an array, a list of JSON API resource attributes that should be cast to dates.
+     * If `null`, the list will be calculated using `Model::getDates()`
+     *
+     * @var string[]|null
      */
-    protected $dates = [];
+    protected $dates = null;
 
     /**
      * Resource relationship keys that should be automatically hydrated.
@@ -109,11 +120,32 @@ class EloquentHydrator extends AbstractHydrator implements HydratesRelatedInterf
 
     /**
      * EloquentHydrator constructor.
+     *
      * @param HttpServiceInterface $service
      */
     public function __construct(HttpServiceInterface $service)
     {
         $this->service = $service;
+    }
+
+    /**
+     * @param StandardObjectInterface $attributes
+     *      the attributes received from the client.
+     * @param Model $record
+     *      the model being hydrated
+     * @return array
+     *      the JSON API attribute keys to hydrate
+     */
+    protected function attributeKeys(StandardObjectInterface $attributes, $record)
+    {
+        if (is_null($this->attributes)) {
+            $fillableAttributes = [];
+            foreach ($record->getFillable() as $attribute) {
+                $fillableAttributes[Str::dasherize($attribute)] = $attribute;
+            }
+            return $fillableAttributes;
+        }
+        return $this->attributes;
     }
 
     /**
@@ -127,14 +159,14 @@ class EloquentHydrator extends AbstractHydrator implements HydratesRelatedInterf
 
         $data = [];
 
-        foreach ($this->attributes as $resourceKey => $modelKey) {
+        foreach ($this->attributeKeys($attributes, $record) as $resourceKey => $modelKey) {
             if (is_numeric($resourceKey)) {
                 $resourceKey = $modelKey;
                 $modelKey = $this->keyForAttribute($modelKey, $record);
             }
 
             if ($attributes->has($resourceKey)) {
-                $data[$modelKey] = $this->deserializeAttribute($attributes->get($resourceKey), $resourceKey);
+                $data[$modelKey] = $this->deserializeAttribute($attributes->get($resourceKey), $resourceKey, $record);
             }
         }
 
@@ -175,7 +207,7 @@ class EloquentHydrator extends AbstractHydrator implements HydratesRelatedInterf
         foreach ($resource->getRelationships()->getAll() as $key => $relationship) {
 
             /** If there is a specific method for this related member, we'll hydrate that */
-            $related = $this->callHydrateRelated($key, $relationship, $record);
+            $related = $this->callHydrateRelatedRelationship($key, $relationship, $record);
 
             if (false !== $related) {
                 $results = array_merge($results, $related);
@@ -188,7 +220,7 @@ class EloquentHydrator extends AbstractHydrator implements HydratesRelatedInterf
             }
         }
 
-        return array_merge($results, (array) $this->hydratedRelated($resource, $record));
+        return array_merge($results, (array)$this->hydratedRelated($resource, $record));
     }
 
     /**
@@ -230,11 +262,12 @@ class EloquentHydrator extends AbstractHydrator implements HydratesRelatedInterf
      *      the value that the client provided.
      * @param $resourceKey
      *      the attribute key for the value
+     * @param Model $record
      * @return Carbon|null
      */
-    protected function deserializeAttribute($value, $resourceKey)
+    protected function deserializeAttribute($value, $resourceKey, $record)
     {
-        if ($this->isDateAttribute($resourceKey)) {
+        if ($this->isDateAttribute($resourceKey, $record)) {
             return $this->deserializeDate($value);
         }
 
@@ -254,10 +287,15 @@ class EloquentHydrator extends AbstractHydrator implements HydratesRelatedInterf
      * Is this resource key a date attribute?
      *
      * @param $resourceKey
+     * @param Model $record
      * @return bool
      */
-    protected function isDateAttribute($resourceKey)
+    protected function isDateAttribute($resourceKey, $record)
     {
+        if (is_null($this->dates)) {
+            return in_array(Str::snake($resourceKey), $record->getDates(), true);
+        }
+
         return in_array($resourceKey, $this->dates, true);
     }
 
