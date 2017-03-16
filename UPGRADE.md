@@ -2,7 +2,7 @@
 
 This file provides notes on how to upgrade between versions.
 
-## v0.6 to v0.7 [Unreleased]
+## v0.6 to v0.7
 
 ### Eloquent Hydrator
 
