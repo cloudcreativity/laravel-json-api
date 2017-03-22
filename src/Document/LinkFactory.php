@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2016 Cloud Creativity Limited
+ * Copyright 2017 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,18 +20,18 @@ namespace CloudCreativity\LaravelJsonApi\Document;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Document\LinkFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Routing\ResourceRegistrar;
+use CloudCreativity\LaravelJsonApi\Utils\RouteName;
 use Illuminate\Contracts\Routing\UrlGenerator;
 use Neomerx\JsonApi\Contracts\Document\LinkInterface;
 use Neomerx\JsonApi\Document\Link;
 
 /**
  * Class LinkFactory
+ *
  * @package CloudCreativity\LaravelJsonApi
  */
 class LinkFactory implements LinkFactoryInterface
 {
-
-    use GeneratesRouteNames;
 
     /**
      * @var UrlGenerator
@@ -77,7 +77,7 @@ class LinkFactory implements LinkFactoryInterface
         array $queryParams = [],
         $meta = null
     ) {
-        $name = $this->indexRouteName($resourceType);
+        $name = RouteName::index($resourceType);
 
         return $this->route($name, $queryParams, $meta);
     }
@@ -99,7 +99,7 @@ class LinkFactory implements LinkFactoryInterface
         $meta = null
     ) {
         $queryParams[ResourceRegistrar::PARAM_RESOURCE_ID] = $id;
-        $name = $this->resourceRouteName($resourceType);
+        $name = RouteName::resource($resourceType);
 
         return $this->route($name, $queryParams, $meta);
     }
@@ -124,7 +124,7 @@ class LinkFactory implements LinkFactoryInterface
     ) {
         $queryParams[ResourceRegistrar::PARAM_RESOURCE_ID] = $id;
         $queryParams[ResourceRegistrar::PARAM_RELATIONSHIP_NAME] = $relationshipKey;
-        $name = $this->relatedResourceRouteName($resourceType);
+        $name = RouteName::related($resourceType);
 
         return $this->route($name, $queryParams, $meta);
     }
@@ -149,7 +149,7 @@ class LinkFactory implements LinkFactoryInterface
     ) {
         $queryParams[ResourceRegistrar::PARAM_RESOURCE_ID] = $id;
         $queryParams[ResourceRegistrar::PARAM_RELATIONSHIP_NAME] = $relationshipKey;
-        $name = $this->relationshipRouteName($resourceType);
+        $name = RouteName::relationship($resourceType);
 
         return $this->route($name, $queryParams, $meta);
     }

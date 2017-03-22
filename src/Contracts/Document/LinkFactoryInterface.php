@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2016 Cloud Creativity Limited
+ * Copyright 2017 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,11 +26,6 @@ use Neomerx\JsonApi\Contracts\Document\LinkInterface;
  */
 interface LinkFactoryInterface
 {
-
-    const ROUTE_NAME_INDEX = '%s.index';
-    const ROUTE_NAME_RESOURCE = '%s.resource';
-    const ROUTE_NAME_RELATED_RESOURCE = '%s.related';
-    const ROUTE_NAME_RELATIONSHIPS = '%s.relationships';
 
     /**
      * Get a link to the current URL.

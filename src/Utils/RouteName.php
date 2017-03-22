@@ -16,56 +16,49 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\LaravelJsonApi\Document;
-
-use CloudCreativity\LaravelJsonApi\Utils\RouteName;
+namespace CloudCreativity\LaravelJsonApi\Utils;
 
 /**
- * Class GeneratesRouteNames
+ * Class RouteName
  *
  * @package CloudCreativity\LaravelJsonApi
- * @deprecated
  */
-trait GeneratesRouteNames
+class RouteName
 {
 
     /**
      * @param $resourceType
      * @return string
-     * @deprecated use `RouteName::index`
      */
-    protected function indexRouteName($resourceType)
+    public static function index($resourceType)
     {
-        return RouteName::index($resourceType);
+        return sprintf('%s.index', $resourceType);
     }
 
     /**
      * @param $resourceType
      * @return string
-     * @deprecated use `RouteName::resource`
      */
-    protected function resourceRouteName($resourceType)
+    public static function resource($resourceType)
     {
-        return RouteName::resource($resourceType);
+        return sprintf('%s.resource', $resourceType);
     }
 
     /**
      * @param $resourceType
      * @return string
-     * @deprecated use `RouteName::related`
      */
-    protected function relatedResourceRouteName($resourceType)
+    public static function related($resourceType)
     {
-        return RouteName::related($resourceType);
+        return sprintf('%s.related', $resourceType);
     }
 
     /**
      * @param $resourceType
      * @return string
-     * @deprecated use `RouteName::relationship`
      */
-    protected function relationshipRouteName($resourceType)
+    public static function relationship($resourceType)
     {
-        return RouteName::relationship($resourceType);
+        return sprintf('%s.relationships', $resourceType);
     }
 }
