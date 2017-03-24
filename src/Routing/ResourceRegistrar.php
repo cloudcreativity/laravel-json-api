@@ -57,13 +57,12 @@ class ResourceRegistrar
      */
     public function resource($resourceType, array $options = [])
     {
-        $controller = isset($options['controller']) ? $options['controller'] : $this->controllerFor($resourceType);
         $middleware = $this->resourceMiddleware($resourceType, $options);
 
-        $this->router->group(['middleware' => $middleware], function () use ($resourceType, $controller, $options) {
-            $this->registerIndex($resourceType, $controller);
-            $this->registerResource($resourceType, $controller, $options);
-            $this->registerAllRelationships($resourceType, $controller, $options);
+        $this->router->group(['middleware' => $middleware], function () use ($resourceType, $options) {
+            $this->registerIndex($resourceType, $options);
+            $this->registerResource($resourceType, $options);
+            $this->registerAllRelationships($resourceType, $options);
         });
     }
 
@@ -85,70 +84,66 @@ class ResourceRegistrar
 
     /**
      * @param $resourceType
-     * @param $controller
+     * @param array $options
      */
-    protected function registerIndex($resourceType, $controller)
+    protected function registerIndex($resourceType, array $options)
     {
         $uri = $this->indexUri($resourceType);
-        $this->route($resourceType, 'get', $uri, $controller, 'index')
+
+        $this->route($resourceType, 'get', $uri, 'index', $options)
             ->name(RouteName::index($resourceType));
-        $this->route($resourceType, 'post', $uri, $controller, 'create')
+
+        $this->route($resourceType, 'post', $uri, 'create', $options)
             ->name(RouteName::create($resourceType));
     }
 
     /**
      * @param $resourceType
-     * @param $controller
      * @param array $options
      */
-    protected function registerResource($resourceType, $controller, array $options)
+    protected function registerResource($resourceType, array $options)
     {
         $uri = $this->resourceUri($resourceType);
 
-        $this->applyIdConstraint([
-            $this->route($resourceType, 'get', $uri, $controller, 'read')
-                ->name(RouteName::read($resourceType)),
-            $this->route($resourceType, 'patch', $uri, $controller, 'update')
-                ->name(RouteName::update($resourceType)),
-            $this->route($resourceType, 'delete', $uri, $controller, 'delete')
-                ->name(RouteName::delete($resourceType)),
-        ], $options);
+        $this->resourceRoute($resourceType, 'get', $uri, 'read', $options)
+            ->name(RouteName::read($resourceType));
+
+        $this->resourceRoute($resourceType, 'patch', $uri, 'update', $options)
+            ->name(RouteName::update($resourceType));
+
+        $this->resourceRoute($resourceType, 'delete', $uri, 'delete', $options)
+            ->name(RouteName::delete($resourceType));
     }
 
     /**
      * @param $resourceType
      * @param array $relationships
      * @param array $options
-     * @param $controller
      */
-    protected function registerRelatedResource($resourceType, array $relationships, $controller, array $options)
+    protected function registerRelatedResource($resourceType, array $relationships, array $options)
     {
         $uri = $this->relatedResourceUri($resourceType);
 
-        $route = $this
-            ->route($resourceType, 'get', $uri, $controller, 'readRelatedResource')
+        $this->resourceRoute($resourceType, 'get', $uri, 'readRelatedResource', $options)
             ->where(self::PARAM_RELATIONSHIP_NAME, implode('|', $relationships))
             ->name(RouteName::related($resourceType));
-
-        $this->applyIdConstraint($route, $options);
     }
 
     /**
      * @param $resourceType
-     * @param $controller
      * @param array $options
      */
-    protected function registerAllRelationships($resourceType, $controller, array $options)
+    protected function registerAllRelationships($resourceType, array $options)
     {
         $hasOne = isset($options['has-one']) ? (array) $options['has-one'] : [];
         $hasMany = isset($options['has-many']) ? (array) $options['has-many'] : [];
 
         if ($all = array_merge($hasOne, $hasMany)) {
-            $this->registerRelationships($resourceType, $all, $controller, $options);
+            $this->registerRelationships($resourceType, $all, $options);
         }
 
         if ($hasMany) {
-            $this->registerHasMany($resourceType, $hasMany, $controller, $options);
+            $this->registerHasMany($resourceType, $hasMany, $options);
         }
     }
 
@@ -157,24 +152,22 @@ class ResourceRegistrar
      *
      * @param $resourceType
      * @param string[] $relationships
-     * @param $controller
      * @param array $options
      */
-    protected function registerRelationships($resourceType, array $relationships, $controller, array $options)
+    protected function registerRelationships($resourceType, array $relationships, array $options)
     {
         $uri = $this->relationshipUri($resourceType);
-        $this->registerRelatedResource($resourceType, $relationships, $controller, $options);
+        $this->registerRelatedResource($resourceType, $relationships, $options);
 
-        $this->applyIdConstraint([
-            /** Read relationship... */
-            $this->route($resourceType, 'get', $uri, $controller, 'readRelationship')
-                ->where(self::PARAM_RELATIONSHIP_NAME, implode('|', $relationships))
-                ->name(RouteName::readRelationship($resourceType)),
-            /** Replace relationship name... */
-            $this->route($resourceType, 'patch', $uri, $controller, 'replaceRelationship')
-                ->where(self::PARAM_RELATIONSHIP_NAME, implode('|', $relationships))
-                ->name(RouteName::replaceRelationship($resourceType)),
-        ], $options);
+        /** Read relationship... */
+        $this->resourceRoute($resourceType, 'get', $uri, 'readRelationship', $options)
+            ->where(self::PARAM_RELATIONSHIP_NAME, implode('|', $relationships))
+            ->name(RouteName::readRelationship($resourceType));
+
+        /** Replace relationship name... */
+        $this->resourceRoute($resourceType, 'patch', $uri, 'replaceRelationship', $options)
+            ->where(self::PARAM_RELATIONSHIP_NAME, implode('|', $relationships))
+            ->name(RouteName::replaceRelationship($resourceType));
     }
 
     /**
@@ -182,45 +175,68 @@ class ResourceRegistrar
      *
      * @param $resourceType
      * @param string[] $relationships
-     * @param $controller
      * @param array $options
      */
-    protected function registerHasMany($resourceType, array $relationships, $controller, array $options)
+    protected function registerHasMany($resourceType, array $relationships, array $options)
     {
         $uri = $this->relationshipUri($resourceType);
 
-        $this->applyIdConstraint([
-            /** Add to relationship... */
-            $this->route($resourceType, 'post', $uri, $controller, 'addToRelationship')
-                ->where(self::PARAM_RELATIONSHIP_NAME, implode('|', $relationships))
-                ->name(RouteName::addRelationship($resourceType)),
-            /** Remove from relationship... */
-            $this->route($resourceType, 'delete', $uri, $controller, 'removeFromRelationship')
-                ->where(self::PARAM_RELATIONSHIP_NAME, implode('|', $relationships))
-                ->name(RouteName::removeRelationship($resourceType)),
-        ], $options);
+        /** Add to relationship... */
+        $this->resourceRoute($resourceType, 'post', $uri, 'addToRelationship', $options)
+            ->where(self::PARAM_RELATIONSHIP_NAME, implode('|', $relationships))
+            ->name(RouteName::addRelationship($resourceType));
+
+        /** Remove from relationship... */
+        $this->resourceRoute($resourceType, 'delete', $uri, 'removeFromRelationship', $options)
+            ->where(self::PARAM_RELATIONSHIP_NAME, implode('|', $relationships))
+            ->name(RouteName::removeRelationship($resourceType));
     }
 
     /**
      * @param $resourceType
      * @param $routerMethod
      * @param $uri
-     * @param $controller
      * @param $controllerMethod
+     * @param array $options
      * @return Route
      */
     protected function route(
         $resourceType,
         $routerMethod,
         $uri,
-        $controller,
-        $controllerMethod
+        $controllerMethod,
+        array $options
     ) {
+        $controller = isset($options['controller']) ? $options['controller'] : $this->controllerFor($resourceType);
         $options = ['uses' => sprintf('%s@%s', $controller, $controllerMethod)];
 
         /** @var Route $route */
         $route = $this->router->{$routerMethod}($uri, $options);
         $route->defaults(self::PARAM_RESOURCE_TYPE, $resourceType);
+
+        return $route;
+    }
+
+    /**
+     * @param $resourceType
+     * @param $routerMethod
+     * @param $uri
+     * @param $controllerMethod
+     * @param array $options
+     * @return Route
+     */
+    protected function resourceRoute(
+        $resourceType,
+        $routerMethod,
+        $uri,
+        $controllerMethod,
+        array $options
+    ) {
+        $route = $this->route($resourceType, $routerMethod, $uri, $controllerMethod, $options);
+
+        if (isset($options['id'])) {
+            $route->where(self::PARAM_RESOURCE_ID, $options['id']);
+        }
 
         return $route;
     }
@@ -281,19 +297,4 @@ class ResourceRegistrar
         return Str::studly($resourceType) . 'Controller';
     }
 
-    /**
-     * @param array|Route $routes
-     * @param array $options
-     */
-    protected function applyIdConstraint($routes, array $options)
-    {
-        if (!isset($options['id'])) {
-            return;
-        }
-
-        /** @var Route $route */
-        foreach (is_array($routes) ? $routes : [$routes] as $route) {
-            $route->where(self::PARAM_RESOURCE_ID, $options['id']);
-        }
-    }
 }
