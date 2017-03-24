@@ -92,7 +92,8 @@ class ResourceRegistrar
         $uri = $this->indexUri($resourceType);
         $this->route($resourceType, 'get', $uri, $controller, 'index')
             ->name(RouteName::index($resourceType));
-        $this->route($resourceType, 'post', $uri, $controller, 'create');
+        $this->route($resourceType, 'post', $uri, $controller, 'create')
+            ->name(RouteName::create($resourceType));
     }
 
     /**
@@ -106,9 +107,11 @@ class ResourceRegistrar
 
         $this->applyIdConstraint([
             $this->route($resourceType, 'get', $uri, $controller, 'read')
-                ->name(RouteName::resource($resourceType)),
-            $this->route($resourceType, 'patch', $uri, $controller, 'update'),
-            $this->route($resourceType, 'delete', $uri, $controller, 'delete'),
+                ->name(RouteName::read($resourceType)),
+            $this->route($resourceType, 'patch', $uri, $controller, 'update')
+                ->name(RouteName::update($resourceType)),
+            $this->route($resourceType, 'delete', $uri, $controller, 'delete')
+                ->name(RouteName::delete($resourceType)),
         ], $options);
     }
 
@@ -166,10 +169,11 @@ class ResourceRegistrar
             /** Read relationship... */
             $this->route($resourceType, 'get', $uri, $controller, 'readRelationship')
                 ->where(self::PARAM_RELATIONSHIP_NAME, implode('|', $relationships))
-                ->name(RouteName::relationship($resourceType)),
-            /** Read relationship name... */
+                ->name(RouteName::readRelationship($resourceType)),
+            /** Replace relationship name... */
             $this->route($resourceType, 'patch', $uri, $controller, 'replaceRelationship')
-                ->where(self::PARAM_RELATIONSHIP_NAME, implode('|', $relationships)),
+                ->where(self::PARAM_RELATIONSHIP_NAME, implode('|', $relationships))
+                ->name(RouteName::replaceRelationship($resourceType)),
         ], $options);
     }
 
@@ -188,10 +192,12 @@ class ResourceRegistrar
         $this->applyIdConstraint([
             /** Add to relationship... */
             $this->route($resourceType, 'post', $uri, $controller, 'addToRelationship')
-                ->where(self::PARAM_RELATIONSHIP_NAME, implode('|', $relationships)),
+                ->where(self::PARAM_RELATIONSHIP_NAME, implode('|', $relationships))
+                ->name(RouteName::addRelationship($resourceType)),
             /** Remove from relationship... */
             $this->route($resourceType, 'delete', $uri, $controller, 'removeFromRelationship')
-                ->where(self::PARAM_RELATIONSHIP_NAME, implode('|', $relationships)),
+                ->where(self::PARAM_RELATIONSHIP_NAME, implode('|', $relationships))
+                ->name(RouteName::removeRelationship($resourceType)),
         ], $options);
     }
 

@@ -46,14 +46,20 @@ interface LinkFactoryInterface
      *      meta to attach to the link object.
      * @return LinkInterface
      */
-    public function index(
-        $resourceType,
-        array $queryParams = [],
-        $meta = null
-    );
+    public function index($resourceType, array $queryParams = [], $meta = null);
 
     /**
-     * Get a link to a resource object.
+     * Get a link to create a resource object.
+     *
+     * @param $resourceType
+     * @param array $queryParams
+     * @param array|object|null $meta
+     * @return LinkInterface
+     */
+    public function create($resourceType, array $queryParams = [], $meta = null);
+
+    /**
+     * Get a link to read a resource object.
      *
      * @param $resourceType
      * @param $id
@@ -62,12 +68,31 @@ interface LinkFactoryInterface
      *      meta to attach to the link object.
      * @return LinkInterface
      */
-    public function resource(
-        $resourceType,
-        $id,
-        array $queryParams = [],
-        $meta = null
-    );
+    public function read($resourceType, $id, array $queryParams = [], $meta = null);
+
+    /**
+     * Get a link to update a resource object.
+     *
+     * @param $resourceType
+     * @param $id
+     * @param array $queryParams
+     * @param array|object|null
+     *      meta to attach to the link object.
+     * @return LinkInterface
+     */
+    public function update($resourceType, $id, array $queryParams = [], $meta = null);
+
+    /**
+     * Get a link to delete a resource object.
+     *
+     * @param $resourceType
+     * @param $id
+     * @param array $queryParams
+     * @param array|object|null
+     *      meta to attach to the link object.
+     * @return LinkInterface
+     */
+    public function delete($resourceType, $id, array $queryParams = [], $meta = null);
 
     /**
      * Get a link to a resource object's related resource.
@@ -89,7 +114,7 @@ interface LinkFactoryInterface
     );
 
     /**
-     * Get a link to a resource object's relationship.
+     * Get a link to read a resource object's relationship.
      *
      * @param $resourceType
      * @param $id
@@ -99,7 +124,64 @@ interface LinkFactoryInterface
      *      meta to attach to the link object.
      * @return LinkInterface
      */
-    public function relationship(
+    public function readRelationship(
+        $resourceType,
+        $id,
+        $relationshipKey,
+        array $queryParams = [],
+        $meta = null
+    );
+
+    /**
+     * Get a link to replace a resource object's relationship.
+     *
+     * @param $resourceType
+     * @param $id
+     * @param $relationshipKey
+     * @param array $queryParams
+     * @param array|object|null
+     *      meta to attach to the link object.
+     * @return LinkInterface
+     */
+    public function replaceRelationship(
+        $resourceType,
+        $id,
+        $relationshipKey,
+        array $queryParams = [],
+        $meta = null
+    );
+
+    /**
+     * Get a link to add to a resource object's relationship.
+     *
+     * @param $resourceType
+     * @param $id
+     * @param $relationshipKey
+     * @param array $queryParams
+     * @param array|object|null
+     *      meta to attach to the link object.
+     * @return LinkInterface
+     */
+    public function addRelationship(
+        $resourceType,
+        $id,
+        $relationshipKey,
+        array $queryParams = [],
+        $meta = null
+    );
+
+    /**
+     * Get a link to remove from a resource object's relationship.
+     *
+     * @param $resourceType
+     * @param $id
+     * @param $relationshipKey
+     * @param array $queryParams
+     * @param array|object|null
+     *      meta to attach to the link object.
+     * @return LinkInterface
+     */
+    public function removeRelationship(
         $resourceType,
         $id,
         $relationshipKey,

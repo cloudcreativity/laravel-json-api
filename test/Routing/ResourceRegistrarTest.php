@@ -246,10 +246,10 @@ class ResourceRegistrarTest extends TestCase
     private function seeResource($id = '123')
     {
         $this->seeResponse(Request::create('/posts'), 'index', 'posts.index');
-        $this->seeResponse(Request::create('/posts', 'POST'), 'create');
-        $this->seeResponse(Request::create("/posts/$id"), "read:$id", 'posts.resource');
-        $this->seeResponse(Request::create("/posts/$id", 'PATCH'), "update:$id");
-        $this->seeResponse(Request::create("/posts/$id", 'DELETE'), "delete:$id");
+        $this->seeResponse(Request::create('/posts', 'POST'), 'create', 'posts.create');
+        $this->seeResponse(Request::create("/posts/$id"), "read:$id", 'posts.read');
+        $this->seeResponse(Request::create("/posts/$id", 'PATCH'), "update:$id", 'posts.update');
+        $this->seeResponse(Request::create("/posts/$id", 'DELETE'), "delete:$id", 'posts.delete');
     }
 
     /**
@@ -259,8 +259,8 @@ class ResourceRegistrarTest extends TestCase
     private function seeHasOne($relationship, $id = '123')
     {
         $this->seeResponse(Request::create("/posts/$id/$relationship"), "read-related:$id:$relationship", 'posts.related');
-        $this->seeResponse(Request::create("/posts/$id/relationships/$relationship"), "read-relationship:$id:$relationship", 'posts.relationships');
-        $this->seeResponse(Request::create("/posts/$id/relationships/$relationship", 'PATCH'), "replace-relationship:$id:$relationship");
+        $this->seeResponse(Request::create("/posts/$id/relationships/$relationship"), "read-relationship:$id:$relationship", 'posts.relationships.read');
+        $this->seeResponse(Request::create("/posts/$id/relationships/$relationship", 'PATCH'), "replace-relationship:$id:$relationship", 'posts.relationships.replace');
 
         /** These should not be registered (i.e. ensure it has not been registered as a has-many */
         $this->seeMethodNotAllowed(Request::create("/posts/$id/relationships/$relationship", 'POST'), 'add-to relationship');
@@ -274,10 +274,10 @@ class ResourceRegistrarTest extends TestCase
     private function seeHasMany($relationship, $id = '123')
     {
         $this->seeResponse(Request::create("/posts/$id/$relationship"), "read-related:$id:$relationship", 'posts.related');
-        $this->seeResponse(Request::create("/posts/$id/relationships/$relationship"), "read-relationship:$id:$relationship", 'posts.relationships');
-        $this->seeResponse(Request::create("/posts/$id/relationships/$relationship", 'PATCH'), "replace-relationship:$id:$relationship");
-        $this->seeResponse(Request::create("/posts/$id/relationships/$relationship", 'POST'), "add-relationship:$id:$relationship");
-        $this->seeResponse(Request::create("/posts/$id/relationships/$relationship", 'DELETE'), "remove-relationship:$id:$relationship");
+        $this->seeResponse(Request::create("/posts/$id/relationships/$relationship"), "read-relationship:$id:$relationship", 'posts.relationships.read');
+        $this->seeResponse(Request::create("/posts/$id/relationships/$relationship", 'PATCH'), "replace-relationship:$id:$relationship", 'posts.relationships.replace');
+        $this->seeResponse(Request::create("/posts/$id/relationships/$relationship", 'POST'), "add-relationship:$id:$relationship", 'posts.relationships.add');
+        $this->seeResponse(Request::create("/posts/$id/relationships/$relationship", 'DELETE'), "remove-relationship:$id:$relationship", 'posts.relationships.remove');
     }
 
     /**

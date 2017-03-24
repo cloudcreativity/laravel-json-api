@@ -32,16 +32,43 @@ class RouteName
      */
     public static function index($resourceType)
     {
-        return sprintf('%s.index', $resourceType);
+        return "$resourceType.index";
     }
 
     /**
      * @param $resourceType
      * @return string
      */
-    public static function resource($resourceType)
+    public static function create($resourceType)
     {
-        return sprintf('%s.resource', $resourceType);
+        return "$resourceType.create";
+    }
+
+    /**
+     * @param $resourceType
+     * @return string
+     */
+    public static function read($resourceType)
+    {
+        return "$resourceType.read";
+    }
+
+    /**
+     * @param $resourceType
+     * @return string
+     */
+    public static function update($resourceType)
+    {
+        return "$resourceType.update";
+    }
+
+    /**
+     * @param $resourceType
+     * @return string
+     */
+    public static function delete($resourceType)
+    {
+        return "$resourceType.delete";
     }
 
     /**
@@ -50,15 +77,42 @@ class RouteName
      */
     public static function related($resourceType)
     {
-        return sprintf('%s.related', $resourceType);
+        return "$resourceType.related";
     }
 
     /**
      * @param $resourceType
      * @return string
      */
-    public static function relationship($resourceType)
+    public static function readRelationship($resourceType)
     {
-        return sprintf('%s.relationships', $resourceType);
+        return "$resourceType.relationships.read";
+    }
+
+    /**
+     * @param $resourceType
+     * @return string
+     */
+    public static function replaceRelationship($resourceType)
+    {
+        return "$resourceType.relationships.replace";
+    }
+
+    /**
+     * @param $resourceType
+     * @return string
+     */
+    public static function addRelationship($resourceType)
+    {
+        return "$resourceType.relationships.add";
+    }
+
+    /**
+     * @param $resourceType
+     * @return string
+     */
+    public static function removeRelationship($resourceType)
+    {
+        return "$resourceType.relationships.remove";
     }
 }

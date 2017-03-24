@@ -46,7 +46,7 @@ trait GeneratesRouteNames
      */
     protected function resourceRouteName($resourceType)
     {
-        return RouteName::resource($resourceType);
+        return RouteName::read($resourceType);
     }
 
     /**
@@ -66,6 +66,6 @@ trait GeneratesRouteNames
      */
     protected function relationshipRouteName($resourceType)
     {
-        return RouteName::relationship($resourceType);
+        return RouteName::readRelationship($resourceType);
     }
 }

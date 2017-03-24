@@ -119,7 +119,7 @@ trait InteractsWithResources
     {
         $params = $this->addDefaultRouteParams($params);
         $route = $this->resolveRouteName();
-        $uri = $this->linkTo()->resource($route, $resourceId, $params);
+        $uri = $this->linkTo()->read($route, $resourceId, $params);
 
         return $this->jsonApi('GET', $uri, $headers);
     }
@@ -140,7 +140,7 @@ trait InteractsWithResources
 
         $params = $this->addDefaultRouteParams($params);
         $route = $this->resolveRouteName();
-        $uri = $this->linkTo()->resource($route, $id, $params);
+        $uri = $this->linkTo()->read($route, $id, $params);
 
         return $this->jsonApi('PATCH', $uri, ['data' => $data], $headers);
     }
@@ -155,7 +155,7 @@ trait InteractsWithResources
     {
         $params = $this->addDefaultRouteParams($params);
         $route = $this->resolveRouteName();
-        $uri = $this->linkTo()->resource($route, $resourceId, $params);
+        $uri = $this->linkTo()->read($route, $resourceId, $params);
 
         return $this->jsonApi('DELETE', $uri, [], $headers);
     }
