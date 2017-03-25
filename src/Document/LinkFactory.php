@@ -120,7 +120,7 @@ class LinkFactory implements LinkFactoryInterface
         array $queryParams = [],
         $meta = null
     ) {
-        $name = RouteName::related($resourceType);
+        $name = RouteName::related($resourceType, $relationshipKey);
 
         return $this->relationshipRoute($name, $id, $relationshipKey, $queryParams, $meta);
     }
@@ -135,7 +135,7 @@ class LinkFactory implements LinkFactoryInterface
         array $queryParams = [],
         $meta = null
     ) {
-        $name = RouteName::readRelationship($resourceType);
+        $name = RouteName::readRelationship($resourceType, $relationshipKey);
 
         return $this->relationshipRoute($name, $id, $relationshipKey, $queryParams, $meta);
     }
@@ -150,7 +150,7 @@ class LinkFactory implements LinkFactoryInterface
         array $queryParams = [],
         $meta = null
     ) {
-        $name = RouteName::replaceRelationship($resourceType);
+        $name = RouteName::replaceRelationship($resourceType, $relationshipKey);
 
         return $this->relationshipRoute($name, $id, $relationshipKey, $queryParams, $meta);
     }
@@ -165,7 +165,7 @@ class LinkFactory implements LinkFactoryInterface
         array $queryParams = [],
         $meta = null
     ) {
-        $name = RouteName::addRelationship($resourceType);
+        $name = RouteName::addRelationship($resourceType, $relationshipKey);
 
         return $this->relationshipRoute($name, $id, $relationshipKey, $queryParams, $meta);
     }
@@ -180,7 +180,7 @@ class LinkFactory implements LinkFactoryInterface
         array $queryParams = [],
         $meta = null
     ) {
-        $name = RouteName::removeRelationship($resourceType);
+        $name = RouteName::removeRelationship($resourceType, $relationshipKey);
 
         return $this->relationshipRoute($name, $id, $relationshipKey, $queryParams, $meta);
     }

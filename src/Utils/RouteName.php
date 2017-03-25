@@ -73,46 +73,51 @@ class RouteName
 
     /**
      * @param $resourceType
+     * @param $relationship
      * @return string
      */
-    public static function related($resourceType)
+    public static function related($resourceType, $relationship)
     {
-        return "$resourceType.related";
+        return "$resourceType.relationships.$relationship";
     }
 
     /**
      * @param $resourceType
+     * @param $relationship
      * @return string
      */
-    public static function readRelationship($resourceType)
+    public static function readRelationship($resourceType, $relationship)
     {
-        return "$resourceType.relationships.read";
+        return self::related($resourceType, $relationship) . ".read";
     }
 
     /**
      * @param $resourceType
+     * @param $relationship
      * @return string
      */
-    public static function replaceRelationship($resourceType)
+    public static function replaceRelationship($resourceType, $relationship)
     {
-        return "$resourceType.relationships.replace";
+        return self::related($resourceType, $relationship) . ".replace";
     }
 
     /**
      * @param $resourceType
+     * @param $relationship
      * @return string
      */
-    public static function addRelationship($resourceType)
+    public static function addRelationship($resourceType, $relationship)
     {
-        return "$resourceType.relationships.add";
+        return self::related($resourceType, $relationship) . ".add";
     }
 
     /**
      * @param $resourceType
+     * @param $relationship
      * @return string
      */
-    public static function removeRelationship($resourceType)
+    public static function removeRelationship($resourceType, $relationship)
     {
-        return "$resourceType.relationships.remove";
+        return self::related($resourceType, $relationship) . ".remove";
     }
 }

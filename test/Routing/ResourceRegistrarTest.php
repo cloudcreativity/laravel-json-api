@@ -18,6 +18,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Routing;
 
+use App\Http\Controllers\PostsController;
 use CloudCreativity\LaravelJsonApi\TestCase;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Http\Request;
@@ -25,6 +26,7 @@ use Illuminate\Routing\Route;
 use Illuminate\Routing\Router;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\Routing\Exception\MethodNotAllowedException;
 
 /**
  * Class ResourceRegistrarTest
@@ -52,112 +54,74 @@ class ResourceRegistrarTest extends TestCase
         $this->registrar = new ResourceRegistrar($this->router);
     }
 
-    public function testBasic()
+    public function testResources()
     {
-        $this->router->group(['namespace' => __NAMESPACE__], function () {
+        $this->router->group(['namespace' => 'App\Http\Controllers'], function () {
             $this->registrar->resource('posts');
             $this->registrar->resource('comments');
         });
 
-        $this->seeResource();
+        $this->assertResource('posts', '1');
+        $this->assertResource('comments', '2');
+
     }
 
-    public function testHasOne()
+    public function testNotAResource()
     {
-        $this->router->group(['namespace' => __NAMESPACE__], function () {
+        $this->router->group(['namespace' => 'App\Http\Controllers'], function () {
+            $this->registrar->resource('posts');
+            $this->registrar->resource('comments');
+        });
+
+        $this->assertNotResource('tags', '1');
+    }
+
+    public function testRelationships()
+    {
+        $this->router->group(['namespace' => 'App\Http\Controllers'], function () {
             $this->registrar->resource('posts', [
                 'has-one' => 'author',
+                'has-many' => ['comments', 'tags'],
+            ]);
+            $this->registrar->resource('comments', [
+                'has-one' => ['user', 'post'],
+                'has-many' => 'likes',
             ]);
         });
 
-        $this->seeHasOne('author');
+        $this->assertResource('posts', '1');
+        $this->assertHasOne('posts', '1', 'author');
+        $this->assertHasMany('posts', '1', 'comments');
+        $this->assertHasMany('posts', '1', 'tags');
+        $this->assertResource('comments', '2');
+        $this->assertHasOne('comments', '2', 'user');
+        $this->assertHasOne('comments', '2', 'post');
+        $this->assertHasMany('comments', '2', 'likes');
     }
 
-    public function testMultipleHasOne()
+    public function testDasherizedRelationships()
     {
-        $this->router->group(['namespace' => __NAMESPACE__], function () {
-            $this->registrar->resource('posts', [
-                'has-one' => ['author', 'site'],
-            ]);
-        });
-
-        $this->seeHasOne('author');
-        $this->seeHasOne('site');
-    }
-
-    public function testDasherizedHasOne()
-    {
-        $this->router->group(['namespace' => __NAMESPACE__], function () {
+        $this->router->group(['namespace' => 'App\Http\Controllers'], function () {
             $this->registrar->resource('posts', [
                 'has-one' => ['last-comment'],
+                'has-many' => ['recent-comments'],
             ]);
         });
 
-        $this->seeHasOne('last-comment');
-    }
-
-    public function testHasMany()
-    {
-        $this->router->group(['namespace' => __NAMESPACE__], function () {
-            $this->registrar->resource('posts', [
-                'has-many' => 'comments',
-            ]);
-        });
-
-        $this->seeHasMany('comments');
-    }
-
-    public function testMultipleHasMany()
-    {
-        $this->router->group(['namespace' => __NAMESPACE__], function () {
-            $this->registrar->resource('posts', [
-                'has-many' => ['comments', 'tags'],
-            ]);
-        });
-
-        $this->seeHasMany('comments');
-        $this->seeHasMany('tags');
-    }
-
-    public function testDasherizedHasMany()
-    {
-        $this->router->group(['namespace' => __NAMESPACE__], function () {
-            $this->registrar->resource('posts', [
-                'has-many' => 'recent-comments',
-            ]);
-        });
-
-        $this->seeHasMany('recent-comments');
-    }
-
-    public function testAllRelationships()
-    {
-        $this->router->group(['namespace' => __NAMESPACE__], function () {
-            $this->registrar->resource('posts', [
-                'has-one' => 'author',
-                'has-many' => ['comments', 'tags'],
-            ]);
-        });
-
-        $this->seeHasOne('author');
-        $this->seeHasMany('comments');
-        $this->seeHasMany('tags');
+        $this->assertHasOne('posts', '1', 'last-comment');
+        $this->assertHasMany('posts', '1', 'recent-comments');
     }
 
     public function testNotARelationship()
     {
-        $this->router->group(['namespace' => __NAMESPACE__], function () {
+        $this->router->group(['namespace' => 'App\Http\Controllers'], function () {
             $this->registrar->resource('posts', [
                 'has-one' => 'author',
                 'has-many' => ['comments', 'tags'],
             ]);
         });
 
-        $this->seeNotFound(Request::create("/posts/123/site"));
-        $this->seeNotFound(Request::create("/posts/123/relationships/site"));
-        $this->seeNotFound(Request::create("/posts/123/relationships/site", 'PATCH'));
-        $this->seeNotFound(Request::create("/posts/123/relationships/site", 'POST'));
-        $this->seeNotFound(Request::create("/posts/123/relationships/site", 'DELETE'));
+        $this->assertNotRelationship('posts', '1', 'site');
     }
 
     public function testSpecifiedController()
@@ -168,36 +132,38 @@ class ResourceRegistrarTest extends TestCase
             'has-many' => 'comments',
         ]);
 
-        $this->seeResource();
-        $this->seeHasOne('author');
-        $this->seeHasMany('comments');
+        $this->assertResource('posts', '1');
+        $this->assertHasOne('posts', '1', 'author');
+        $this->assertHasMany('posts', '1', 'comments');
     }
 
     public function testSpecifiedAuthorizer()
     {
-        $this->router->group(['namespace' => __NAMESPACE__], function () {
+        $this->router->group(['namespace' => 'App\Http\Controllers'], function () {
             $this->registrar->resource('posts', [
                 'authorizer' => 'App\JsonApi\GenericAuthorizer',
             ]);
         });
 
-        $this->seeAuthorizer('App\JsonApi\GenericAuthorizer');
+        $route = $this->matchRoute(Request::create('/posts'), 'posts.index');
+        $this->assertAuthorizer($route, 'App\JsonApi\GenericAuthorizer');
     }
 
     public function testSpecifiedValidators()
     {
-        $this->router->group(['namespace' => __NAMESPACE__], function () {
+        $this->router->group(['namespace' => 'App\Http\Controllers'], function () {
             $this->registrar->resource('posts', [
                 'validators' => 'App\JsonApi\GenericValidator',
             ]);
         });
 
-        $this->seeValidator('App\JsonApi\GenericValidator');
+        $route = $this->matchRoute(Request::create('/posts'), 'posts.index');
+        $this->assertValidator($route, 'App\JsonApi\GenericValidator');
     }
 
     public function testWithIdConstraint()
     {
-        $this->router->group(['namespace' => __NAMESPACE__], function () {
+        $this->router->group(['namespace' => 'App\Http\Controllers'], function () {
             $this->registrar->resource('posts', [
                 'has-one' => 'author',
                 'has-many' => 'comments',
@@ -205,113 +171,455 @@ class ResourceRegistrarTest extends TestCase
             ]);
         });
 
-        $this->seeResource('999');
-        $this->seeNotFound(Request::create('/posts/123'));
-        $this->seeNotFound(Request::create('/posts/123', 'PATCH'));
-        $this->seeNotFound(Request::create('/posts/123', 'DELETE'));
+        $this->assertResource('posts', '99');
+        $this->assertHasOne('posts', '99', 'author');
+        $this->assertHasMany('posts', '99', 'comments');
 
-        $this->seeHasOne('author', '999');
-        $this->seeNotFound(Request::create('/posts/123/author'));
-        $this->seeNotFound(Request::create('/posts/123/relationships/author'));
-        $this->seeNotFound(Request::create('/posts/123/relationships/author', 'PATCH'));
-
-        $this->seeHasMany('comments', '999');
-        $this->seeNotFound(Request::create('/posts/123/comments'));
-        $this->seeNotFound(Request::create('/posts/123/relationships/comments'));
-        $this->seeNotFound(Request::create('/posts/123/relationships/comments', 'PATCH'));
-        $this->seeNotFound(Request::create('/posts/123/relationships/comments', 'POST'));
-        $this->seeNotFound(Request::create('/posts/123/relationships/comments', 'DELETE'));
+        $this->assertNotRead('posts', '1');
+        $this->assertNotUpdate('posts', '1');
+        $this->assertNotDelete('posts', '1');
+        $this->assertNotRelationship('posts', '1', 'author');
+        $this->assertNotRelationship('posts', '1', 'comments');
     }
 
     /**
      * @param Request $request
-     * @param string $content
-     * @param string|null $name
+     * @param $name
      * @return Route
      */
-    private function seeResponse(Request $request, $content, $name = null)
+    private function matchRoute(Request $request, $name)
     {
-        $route = $this->router->getRoutes()->match($request);
-        $this->assertEquals($content, $route->bind($request)->run());
-        $this->assertEquals('posts', $route->parameter('resource_type'), 'resource type');
-        $this->assertSame($name, $route->getName(), 'route name');
+        try {
+            $route = $this->router->getRoutes()->match($request);
+            $route->bind($request);
+            $this->assertSame($name, $route->getName(), 'route name');
+            return $route;
+        } catch (NotFoundHttpException $e) {
+            $this->fail("Route $name not found.");
+        } catch (MethodNotAllowedException $e) {
+            $this->fail("Route $name not allowed.");
+        }
+    }
+
+    /**
+     * @param Request $request
+     * @param string $resourceType
+     * @param string $content
+     * @param string $name
+     * @param string|null $relationship
+     * @return Route
+     */
+    private function assertRoute(Request $request, $resourceType, $content, $name, $relationship = null)
+    {
+        $route = $this->matchRoute($request, $name);
+
+        $this->assertEquals($content, $route->run());
+        $this->assertEquals($resourceType, $route->parameter('resource_type'), 'resource type');
+        $this->assertEquals($relationship, $route->parameter('relationship_name'), 'relationship name');
 
         return $route;
     }
 
     /**
+     * @param string $resourceType
      * @param string $id
      * @return void
      */
-    private function seeResource($id = '123')
+    private function assertResource($resourceType, $id)
     {
-        $this->seeResponse(Request::create('/posts'), 'index', 'posts.index');
-        $this->seeResponse(Request::create('/posts', 'POST'), 'create', 'posts.create');
-        $this->seeResponse(Request::create("/posts/$id"), "read:$id", 'posts.read');
-        $this->seeResponse(Request::create("/posts/$id", 'PATCH'), "update:$id", 'posts.update');
-        $this->seeResponse(Request::create("/posts/$id", 'DELETE'), "delete:$id", 'posts.delete');
+        $this->assertIndex($resourceType);
+        $this->assertCreate($resourceType);
+        $this->assertRead($resourceType, $id);
+        $this->assertUpdate($resourceType, $id);
+        $this->assertDelete($resourceType, $id);
     }
 
     /**
+     * @param $resourceType
+     * @param $id
+     */
+    private function assertNotResource($resourceType, $id)
+    {
+        $this->assertNotIndex($resourceType);
+        $this->assertNotCreate($resourceType);
+        $this->assertNotRead($resourceType, $id);
+        $this->assertNotUpdate($resourceType, $id);
+        $this->assertNotDelete($resourceType, $id);
+    }
+
+    /**
+     * @param string $resourceType
+     * @return Route
+     */
+    private function assertIndex($resourceType)
+    {
+        return $this->assertRoute(
+            Request::create("/{$resourceType}"),
+            $resourceType,
+            "{$resourceType}:index",
+            "{$resourceType}.index"
+        );
+    }
+
+    /**
+     * @param string $resourceType
+     * @param bool $notFound
+     */
+    private function assertNotIndex($resourceType, $notFound = true)
+    {
+        $this->assertNotRoute(Request::create("/{$resourceType}"), $notFound, "index {$resourceType}");
+    }
+
+    /**
+     * @param string $resourceType
+     * @return Route
+     */
+    private function assertCreate($resourceType)
+    {
+        return $this->assertRoute(
+            Request::create("/{$resourceType}", 'POST'),
+            $resourceType,
+            "{$resourceType}:create",
+            "{$resourceType}.create"
+        );
+    }
+
+    /**
+     * @param string $resourceType
+     * @param bool $notFound
+     */
+    private function assertNotCreate($resourceType, $notFound = true)
+    {
+        $this->assertNotRoute(Request::create("/{$resourceType}"), $notFound,"create {$resourceType}");
+    }
+
+    /**
+     * @param string $resourceType
+     * @param string $id
+     * @return Route
+     */
+    private function assertRead($resourceType, $id)
+    {
+        return $this->assertRoute(
+            Request::create("/{$resourceType}/{$id}"),
+            $resourceType,
+            "{$resourceType}:read:{$id}",
+            "{$resourceType}.read"
+        );
+    }
+
+    /**
+     * @param string $resourceType
+     * @param string $id
+     * @param bool $notFound
+     */
+    private function assertNotRead($resourceType, $id, $notFound = true)
+    {
+        $this->assertNotRoute(Request::create("/{$resourceType}/{$id}"), $notFound, "read {$resourceType}:{$id}");
+    }
+
+    /**
+     * @param string $resourceType
+     * @param string $id
+     * @return Route
+     */
+    private function assertUpdate($resourceType, $id)
+    {
+        return $this->assertRoute(
+            Request::create("/{$resourceType}/{$id}", 'PATCH'),
+            $resourceType,
+            "{$resourceType}:update:{$id}",
+            "{$resourceType}.update"
+        );
+    }
+
+    /**
+     * @param string $resourceType
+     * @param string $id
+     * @param bool $notFound
+     */
+    private function assertNotUpdate($resourceType, $id, $notFound = true)
+    {
+        $this->assertNotRoute(Request::create("/{$resourceType}/{$id}", 'PATCH'), $notFound, "update {$resourceType}:{$id}");
+    }
+
+    /**
+     * @param string $resourceType
+     * @param string $id
+     * @return Route
+     */
+    private function assertDelete($resourceType, $id)
+    {
+        return $this->assertRoute(
+            Request::create("/{$resourceType}/{$id}", 'DELETE'),
+            $resourceType,
+            "{$resourceType}:delete:{$id}",
+            "{$resourceType}.delete"
+        );
+    }
+
+    /**
+     * @param string $resourceType
+     * @param string $id
+     * @param bool $notFound
+     */
+    private function assertNotDelete($resourceType, $id, $notFound = true)
+    {
+        $this->assertNotRoute(Request::create("/{$resourceType}/{$id}", 'DELETE'), $notFound, "delete {$resourceType}:{$id}");
+    }
+
+    /**
+     * @param $resourceType
+     * @param $id
+     * @param $relationship
+     */
+    private function assertRelated($resourceType, $id, $relationship)
+    {
+        $this->assertRoute(
+            Request::create("/$resourceType/$id/$relationship"),
+            $resourceType,
+            "{$resourceType}:read-related:$id",
+            "{$resourceType}.relationships.$relationship",
+            $relationship
+        );
+    }
+
+    /**
+     * @param $resourceType
+     * @param $id
+     * @param $relationship
+     * @param bool $notFound
+     */
+    private function assertNotRelated($resourceType, $id, $relationship, $notFound = true)
+    {
+        $this->assertNotRoute(
+            Request::create("/$resourceType/$id/$relationship"),
+            $notFound,
+            "read related {$resourceType}:{$id}:{$relationship}"
+        );
+    }
+
+    /**
+     * @param $resourceType
+     * @param $id
+     * @param $relationship
+     */
+    private function assertReadRelationship($resourceType, $id, $relationship)
+    {
+        $this->assertRoute(
+            Request::create("/$resourceType/$id/relationships/$relationship"),
+            $resourceType,
+            "{$resourceType}:read-relationship:$id",
+            "{$resourceType}.relationships.$relationship.read",
+            $relationship
+        );
+    }
+
+    /**
+     * @param $resourceType
+     * @param $id
+     * @param $relationship
+     * @param bool $notFound
+     */
+    private function assertNotReadRelationship($resourceType, $id, $relationship, $notFound = true)
+    {
+        $this->assertNotRoute(
+            Request::create("/$resourceType/$id/relationships/$relationship"),
+            $notFound,
+            "read relationship {$resourceType}:{$id}:{$relationship}"
+        );
+    }
+
+    /**
+     * @param $resourceType
+     * @param $id
+     * @param $relationship
+     */
+    private function assertReplaceRelationship($resourceType, $id, $relationship)
+    {
+        $this->assertRoute(
+            Request::create("/$resourceType/$id/relationships/$relationship", 'PATCH'),
+            $resourceType,
+            "{$resourceType}:replace-relationship:$id",
+            "{$resourceType}.relationships.$relationship.replace",
+            $relationship
+        );
+    }
+
+    /**
+     * @param $resourceType
+     * @param $id
+     * @param $relationship
+     * @param bool $notFound
+     */
+    private function assertNotReplaceRelationship($resourceType, $id, $relationship, $notFound = true)
+    {
+        $this->assertNotRoute(
+            Request::create("/$resourceType/$id/relationships/$relationship", 'PATCH'),
+            $notFound,
+            "replace relationship {$resourceType}:{$id}:{$relationship}"
+        );
+    }
+
+    /**
+     * @param $resourceType
+     * @param $id
+     * @param $relationship
+     */
+    private function assertAddToRelationship($resourceType, $id, $relationship)
+    {
+        $this->assertRoute(
+            Request::create("/$resourceType/$id/relationships/$relationship", 'POST'),
+            $resourceType,
+            "{$resourceType}:add-relationship:$id",
+            "{$resourceType}.relationships.$relationship.add",
+            $relationship
+        );
+    }
+
+    /**
+     * @param $resourceType
+     * @param $id
+     * @param $relationship
+     * @param bool $notFound
+     */
+    private function assertNotAddToRelationship($resourceType, $id, $relationship, $notFound = true)
+    {
+        $this->assertNotRoute(
+            Request::create("/$resourceType/$id/relationships/$relationship", 'POST'),
+            $notFound,
+            "add to relationship {$resourceType}:{$id}:{$relationship}"
+        );
+    }
+
+    /**
+     * @param $resourceType
+     * @param $id
+     * @param $relationship
+     */
+    private function assertRemoveRelationship($resourceType, $id, $relationship)
+    {
+        $this->assertRoute(
+            Request::create("/$resourceType/$id/relationships/$relationship", 'DELETE'),
+            $resourceType,
+            "{$resourceType}:remove-relationship:$id",
+            "{$resourceType}.relationships.$relationship.remove",
+            $relationship
+        );
+    }
+
+    /**
+     * @param $resourceType
+     * @param $id
+     * @param $relationship
+     * @param bool $notFound
+     */
+    private function assertNotRemoveRelationship($resourceType, $id, $relationship, $notFound = true)
+    {
+        $this->assertNotRoute(
+            Request::create("/$resourceType/$id/relationships/$relationship", 'DELETE'),
+            $notFound,
+            "delete relationship {$resourceType}:{$id}:{$relationship}"
+        );
+    }
+
+    /**
+     * @param $resourceType
+     * @param $id
+     * @param $relationship
+     */
+    private function assertRelationship($resourceType, $id, $relationship)
+    {
+        $this->assertRelated($resourceType, $id, $relationship);
+        $this->assertReadRelationship($resourceType, $id, $relationship);
+        $this->assertReplaceRelationship($resourceType, $id, $relationship);
+    }
+
+    /**
+     * @param $resourceType
+     * @param $id
+     * @param $relationship
+     */
+    private function assertNotRelationship($resourceType, $id, $relationship)
+    {
+        $this->assertNotRelated($resourceType, $id, $relationship);
+        $this->assertNotReadRelationship($resourceType, $id, $relationship);
+        $this->assertNotReplaceRelationship($resourceType, $id, $relationship);
+        $this->assertNotAddToRelationship($resourceType, $id, $relationship);
+        $this->assertNotRemoveRelationship($resourceType, $id, $relationship);
+    }
+
+    /**
+     * @param $resourceType
      * @param $relationship
      * @param $id
      */
-    private function seeHasOne($relationship, $id = '123')
+    private function assertHasOne($resourceType, $id, $relationship)
     {
-        $this->seeResponse(Request::create("/posts/$id/$relationship"), "read-related:$id:$relationship", 'posts.related');
-        $this->seeResponse(Request::create("/posts/$id/relationships/$relationship"), "read-relationship:$id:$relationship", 'posts.relationships.read');
-        $this->seeResponse(Request::create("/posts/$id/relationships/$relationship", 'PATCH'), "replace-relationship:$id:$relationship", 'posts.relationships.replace');
-
+        $this->assertRelationship($resourceType, $id, $relationship);
         /** These should not be registered (i.e. ensure it has not been registered as a has-many */
-        $this->seeMethodNotAllowed(Request::create("/posts/$id/relationships/$relationship", 'POST'), 'add-to relationship');
-        $this->seeMethodNotAllowed(Request::create("/posts/$id/relationships/$relationship", 'DELETE'), 'remove-from relationship');
+        $this->assertNotAddToRelationship($resourceType, $id, $relationship, false);
+        $this->assertNotRemoveRelationship($resourceType, $id, $relationship, false);
     }
 
     /**
-     * @param $relationship
+     * @param $resourceType
      * @param $id
+     * @param $relationship
      */
-    private function seeHasMany($relationship, $id = '123')
+    private function assertHasMany($resourceType, $id, $relationship)
     {
-        $this->seeResponse(Request::create("/posts/$id/$relationship"), "read-related:$id:$relationship", 'posts.related');
-        $this->seeResponse(Request::create("/posts/$id/relationships/$relationship"), "read-relationship:$id:$relationship", 'posts.relationships.read');
-        $this->seeResponse(Request::create("/posts/$id/relationships/$relationship", 'PATCH'), "replace-relationship:$id:$relationship", 'posts.relationships.replace');
-        $this->seeResponse(Request::create("/posts/$id/relationships/$relationship", 'POST'), "add-relationship:$id:$relationship", 'posts.relationships.add');
-        $this->seeResponse(Request::create("/posts/$id/relationships/$relationship", 'DELETE'), "remove-relationship:$id:$relationship", 'posts.relationships.remove');
-    }
-
-    /**
-     * @param $expected
-     */
-    private function seeAuthorizer($expected)
-    {
-        $route = $this->seeResponse(Request::create('/posts'), 'index', 'posts.index');
-        $this->seeMiddleware($route, "json-api.authorize:$expected");
-    }
-
-    /**
-     * @param $expected
-     */
-    private function seeValidator($expected)
-    {
-        $route = $this->seeResponse(Request::create('/posts'), 'index', 'posts.index');
-        $this->seeMiddleware($route, "json-api.validate:$expected");
+        $this->assertRelationship($resourceType, $id, $relationship);
+        $this->assertAddToRelationship($resourceType, $id, $relationship);
+        $this->assertRemoveRelationship($resourceType, $id, $relationship);
     }
 
     /**
      * @param Route $route
      * @param $expected
      */
-    private function seeMiddleware(Route $route, $expected)
+    private function assertAuthorizer(Route $route, $expected)
+    {
+        $this->assertMiddleware($route, "json-api.authorize:$expected");
+    }
+
+    /**
+     * @param Route $route
+     * @param $expected
+     */
+    private function assertValidator(Route $route, $expected)
+    {
+        $this->assertMiddleware($route, "json-api.validate:$expected");
+    }
+
+    /**
+     * @param Route $route
+     * @param $expected
+     */
+    private function assertMiddleware(Route $route, $expected)
     {
         $this->assertContains($expected, $route->middleware());
     }
 
     /**
      * @param Request $request
+     * @param bool $notFound
      * @param string|null $message
      */
-    private function seeNotFound(Request $request, $message = null)
+    private function assertNotRoute(Request $request, $notFound = true, $message = null)
+    {
+        if ($notFound) {
+            $this->assertNotFound($request, $message);
+        } else {
+            $this->assertMethodNotAllowed($request, $message);
+        }
+    }
+
+    /**
+     * @param Request $request
+     * @param string|null $message
+     */
+    private function assertNotFound(Request $request, $message = null)
     {
         $notFound = false;
 
@@ -328,7 +636,7 @@ class ResourceRegistrarTest extends TestCase
      * @param Request $request
      * @param string|null $message
      */
-    private function seeMethodNotAllowed(Request $request, $message = null)
+    private function assertMethodNotAllowed(Request $request, $message = null)
     {
         $notAllowed = false;
 
