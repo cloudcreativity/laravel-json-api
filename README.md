@@ -1,6 +1,8 @@
 # cloudcreativity/laravel-json-api
 
-Add [jsonapi.org](http://jsonapi.org) compliant APIs to your Laravel 5 application. Based on the framework agnostic packages [neomerx/json-api](https://github.com/neomerx/json-api) and [cloudcreativity/json-api](https://github.com/cloudcreativity/json-api).
+Add [jsonapi.org](http://jsonapi.org) compliant APIs to your Laravel 5 application. 
+Based on the framework agnostic packages [neomerx/json-api](https://github.com/neomerx/json-api) 
+and [cloudcreativity/json-api](https://github.com/cloudcreativity/json-api).
 
 ## What is JSON API?
 
@@ -18,12 +20,14 @@ We're in the process of adding full documentation to the wiki. We'll also be add
 
 ## Status
 
-This repository is under development but is considered relatively stable. Tagged versions exist and we have live
-applications that are using the repository.
+This repository is under development. We have production applications that are using the package and extensive test
+coverage of these applications.
 
-> We want to get to v1.0 as soon as is possible. However, one of the base packages that
-we use - `neomerx/json-api` - is not yet on at 1.*. As they could in theory make breaking changes to their package,
-we can't yet tag this package as 1.0.
+The reason we have not tagged the package as `1.0` is because some features require refinement. You'll see from the
+issues that there are plenty of suggestions from users of the package as to how to improve it. We might therefore
+need to introduce breaking changes as we work on these improvements.
+
+We are committed to providing [upgrade notes](UPGRADE.md) on each breaking change as we develop the package.
 
 ## License
 
