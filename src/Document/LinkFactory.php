@@ -20,7 +20,7 @@ namespace CloudCreativity\LaravelJsonApi\Document;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Document\LinkFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Routing\ResourceRegistrar;
-use CloudCreativity\LaravelJsonApi\Utils\RouteName;
+use CloudCreativity\LaravelJsonApi\Routing\RouteName;
 use Illuminate\Contracts\Routing\UrlGenerator;
 use Neomerx\JsonApi\Contracts\Document\LinkInterface;
 use Neomerx\JsonApi\Document\Link;

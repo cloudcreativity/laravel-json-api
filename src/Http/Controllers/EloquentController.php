@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2016 Cloud Creativity Limited
+ * Copyright 2017 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ use Illuminate\Http\Response;
  * Class EloquentController
  * @package CloudCreativity\LaravelJsonApi
  */
-abstract class EloquentController extends JsonApiController
+class EloquentController extends JsonApiController
 {
 
     /**
@@ -68,6 +68,7 @@ abstract class EloquentController extends JsonApiController
 
     /**
      * EloquentController constructor.
+     *
      * @param Model $model
      * @param HydratorInterface|null $hydrator
      * @param SearchInterface|null $search
@@ -77,7 +78,6 @@ abstract class EloquentController extends JsonApiController
         HydratorInterface $hydrator = null,
         SearchInterface $search = null
     ) {
-        parent::__construct();
         $this->model = $model;
         $this->hydrator = $hydrator;
         $this->search = $search;

@@ -18,8 +18,9 @@
 
 namespace CloudCreativity\LaravelJsonApi\Routing;
 
+use Closure;
+use CloudCreativity\LaravelJsonApi\Api\Repository;
 use Illuminate\Contracts\Routing\Registrar;
-use Illuminate\Support\Fluent;
 
 /**
  * Class ResourceRegistrar
@@ -39,33 +40,62 @@ class ResourceRegistrar
     protected $router;
 
     /**
-     * @param Registrar $router
+     * @var Repository
      */
-    public function __construct(Registrar $router)
+    protected $apiRepository;
+
+    /**
+     * ResourceRegistrar constructor.
+     *
+     * @param Registrar $router
+     * @param Repository $apiRepository
+     */
+    public function __construct(Registrar $router, Repository $apiRepository)
     {
         $this->router = $router;
+        $this->apiRepository = $apiRepository;
     }
 
     /**
-     * Register routes for the supplied resource type
-     *
-     * @param string $resourceType
+     * @param $apiName
      * @param array $options
+     * @param Closure $routes
      * @return void
      */
-    public function resource($resourceType, array $options = [])
+    public function api($apiName, array $options, Closure $routes)
     {
-        $this->resourceGroup($resourceType, $options)
-            ->addResource($this->router);
+        $options = $this->pushMiddleware($apiName, $options);
+        $api = $this->apiGroup($apiName, $options);
+
+        $this->router->group($options, function () use ($api, $routes) {
+            $routes($api, $this->router);
+        });
     }
 
     /**
-     * @param $resourceType
+     * @param $apiName
      * @param array $options
-     * @return ResourceGroup
+     * @return array
      */
-    protected function resourceGroup($resourceType, array $options)
+    protected function pushMiddleware($apiName, array $options)
     {
-        return new ResourceGroup($resourceType, new Fluent($options));
+        $middleware = (array) array_get($options, 'middleware');
+        array_unshift($middleware, "json-api:$apiName");
+
+        $options['middleware'] = $middleware;
+
+        return $options;
+    }
+
+    /**
+     * @param $apiName
+     * @param array $options
+     * @return ApiGroup
+     */
+    protected function apiGroup($apiName, array $options)
+    {
+        $definition = $this->apiRepository->retrieveDefinition($apiName);
+
+        return new ApiGroup($this->router, $definition, $options);
     }
 }

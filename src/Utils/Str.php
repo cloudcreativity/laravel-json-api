@@ -22,7 +22,9 @@ use Illuminate\Support\Str as IlluminateStr;
 
 /**
  * Class Str
+ *
  * @package CloudCreativity\LaravelJsonApi
+ * @deprecated use `CloudCreativity\JsonApi\Utils\Str`
  */
 final class Str
 {

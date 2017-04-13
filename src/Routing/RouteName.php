@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\LaravelJsonApi\Utils;
+namespace CloudCreativity\LaravelJsonApi\Routing;
 
 /**
  * Class RouteName

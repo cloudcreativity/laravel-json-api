@@ -19,6 +19,7 @@
 namespace CloudCreativity\LaravelJsonApi\Routing;
 
 use CloudCreativity\JsonApi\Utils\Str;
+use CloudCreativity\LaravelJsonApi\Api\ApiResource;
 use Illuminate\Contracts\Routing\Registrar;
 use Illuminate\Routing\Route;
 use Illuminate\Support\Fluent;
@@ -34,14 +35,21 @@ class ResourceGroup
     use RegistersResources;
 
     /**
+     * @var ApiResource
+     */
+    private $apiResource;
+
+    /**
      * ResourceGroup constructor.
      *
      * @param string $resourceType
+     * @param ApiResource $apiResource
      * @param Fluent $options
      */
-    public function __construct($resourceType, Fluent $options)
+    public function __construct($resourceType, ApiResource $apiResource, Fluent $options)
     {
         $this->resourceType = $resourceType;
+        $this->apiResource = $apiResource;
         $this->options = $options;
     }
 
@@ -74,13 +82,37 @@ class ResourceGroup
     protected function middleware()
     {
         $middleware = (array) $this->options->get('middleware');
-        $authorizer = $this->options->get('authorizer');
-        $validators = $this->options->get('validators');
+        $authorizer = $this->authorizer();
+        $validators = $this->validators();
 
         return array_merge($middleware, array_filter([
             $authorizer ? "json-api.authorize:$authorizer" : null,
             $validators ? "json-api.validate:$validators" : null,
         ]));
+    }
+
+    /**
+     * @return string|null
+     */
+    protected function authorizer()
+    {
+        if ($authorizer = $this->options->get('authorizer')) {
+            return $authorizer;
+        }
+
+        return $this->apiResource->getAuthorizerFqn() ?: $this->options->get('default-authorizer');
+    }
+
+    /**
+     * @return string|null
+     */
+    protected function validators()
+    {
+        if ($validators = $this->options->get('validators')) {
+            return $validators;
+        }
+
+        return $this->apiResource->getValidatorsFqn();
     }
 
     /**
