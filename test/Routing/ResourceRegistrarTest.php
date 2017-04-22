@@ -114,6 +114,38 @@ class ResourceRegistrarTest extends TestCase
         $this->assertNotResource('tags', '1');
     }
 
+    public function testOnlyOption()
+    {
+        $this->registrar->api('v1', ['namespace' => 'App\Http\Controllers'], function (Api $api) {
+           $api->resource('posts', [
+               'only' => ['index', 'read'],
+           ]);
+        });
+
+        $this->assertIndex('posts');
+        $this->assertRead('posts', '1');
+        // the following should be method not allowed:
+        $this->assertNotCreate('posts', false);
+        $this->assertNotUpdate('posts', '1', false);
+        $this->assertNotDelete('posts', '1', false);
+    }
+
+    public function testExceptOption()
+    {
+        $this->registrar->api('v1', ['namespace' => 'App\Http\Controllers'], function (Api $api) {
+            $api->resource('posts', [
+                'except' => ['create', 'delete'],
+            ]);
+        });
+
+        $this->assertIndex('posts');
+        $this->assertRead('posts', '1');
+        $this->assertUpdate('posts', '1');
+        // the following should be method not allowed:
+        $this->assertNotCreate('posts', false);
+        $this->assertNotDelete('posts', '1', false);
+    }
+
     public function testRelationships()
     {
         $this->registrar->api('v1', ['namespace' => 'App\Http\Controllers'], function (Api $api) {
@@ -160,6 +192,64 @@ class ResourceRegistrarTest extends TestCase
         });
 
         $this->assertNotRelationship('posts', '1', 'site');
+    }
+
+    public function testRelationshipsOnlyOption()
+    {
+        $this->registrar->api('v1', ['namespace' => 'App\Http\Controllers'], function (Api $api) {
+            $api->resource('posts', [
+                'has-one' => [
+                    'author' => ['only' => 'related'],
+                ],
+                'has-many' => [
+                    'comments',
+                    'tags' => ['only' => ['related', 'read']],
+                ],
+            ]);
+        });
+
+        $this->assertHasMany('posts', '1', 'comments');
+
+        $this->assertRelated('posts', '1', 'author');
+        // these should be not found as we haven't registered any "relationship" endpoints
+        $this->assertNotReadRelationship('posts', '1', 'author');
+        $this->assertNotReplaceRelationship('posts', '1', 'author');
+
+        $this->assertRelated('posts', '1', 'tags');
+        $this->assertReadRelationship('posts', '1', 'tags');
+        // method not allowed for the following...
+        $this->assertNotReplaceRelationship('posts', '1', 'tags', false);
+        $this->assertNotAddToRelationship('posts', '1', 'tags', false);
+        $this->assertNotRemoveRelationship('posts', '1', 'tags', false);
+    }
+
+    public function testRelationshipsExceptOption()
+    {
+        $this->registrar->api('v1', ['namespace' => 'App\Http\Controllers'], function (Api $api) {
+            $api->resource('posts', [
+                'has-one' => [
+                    'author' => ['except' => 'replace'],
+                ],
+                'has-many' => [
+                    'comments',
+                    'tags' => ['except' => ['add', 'remove']],
+                ],
+            ]);
+        });
+
+        $this->assertHasMany('posts', '1', 'comments');
+
+        $this->assertRelated('posts', '1', 'author');
+        $this->assertReadRelationship('posts', '1', 'author');
+        // method not allowed for the following...
+        $this->assertNotReplaceRelationship('posts', '1', 'author', false);
+
+        $this->assertRelated('posts', '1', 'tags');
+        $this->assertReadRelationship('posts', '1', 'tags');
+        $this->assertReplaceRelationship('posts', '1', 'tags');
+        // method not allowed for the following...
+        $this->assertNotAddToRelationship('posts', '1', 'tags', false);
+        $this->assertNotRemoveRelationship('posts', '1', 'tags', false);
     }
 
     public function testSpecifiedController()
@@ -408,7 +498,7 @@ class ResourceRegistrarTest extends TestCase
      */
     private function assertNotCreate($resourceType, $notFound = true)
     {
-        $this->assertNotRoute(Request::create("/{$resourceType}"), $notFound,"create {$resourceType}");
+        $this->assertNotRoute(Request::create("/{$resourceType}", 'POST'), $notFound, "create {$resourceType}");
     }
 
     /**

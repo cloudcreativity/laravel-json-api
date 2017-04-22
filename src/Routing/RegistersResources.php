@@ -18,6 +18,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Routing;
 
+use ArrayAccess;
 use CloudCreativity\JsonApi\Utils\Str;
 use Illuminate\Contracts\Routing\Registrar;
 use Illuminate\Routing\Route;
@@ -40,7 +41,6 @@ trait RegistersResources
      * @var Fluent
      */
     protected $options;
-
 
     /**
      * @return string
@@ -111,7 +111,7 @@ trait RegistersResources
      */
     protected function hasOne()
     {
-        return (array) $this->options->get('has-one');
+        return $this->normalizeRelationships('has-one');
     }
 
     /**
@@ -119,7 +119,7 @@ trait RegistersResources
      */
     protected function hasMany()
     {
-        return (array) $this->options->get('has-many');
+        return $this->normalizeRelationships('has-many');
     }
 
     /**
@@ -140,5 +140,41 @@ trait RegistersResources
         }
 
         return $route;
+    }
+
+    /**
+     * @param array $defaults
+     * @param array|ArrayAccess $options
+     * @return array
+     */
+    protected function diffActions(array $defaults, $options)
+    {
+        if (isset($options['only'])) {
+            return array_intersect($defaults, (array) $options['only']);
+        } elseif (isset($options['except'])) {
+            return array_diff($defaults, (array) $options['except']);
+        }
+
+        return $defaults;
+    }
+
+    /**
+     * @param $optionsKey
+     * @return array
+     */
+    private function normalizeRelationships($optionsKey)
+    {
+        $relationships = [];
+
+        foreach ((array) $this->options->get($optionsKey) as $key => $value) {
+            if (is_numeric($key)) {
+                $key = $value;
+                $value = [];
+            }
+
+            $relationships[$key] = (array) $value;
+        }
+
+        return $relationships;
     }
 }

@@ -120,9 +120,17 @@ class ResourceGroup
      */
     protected function addResourceRoutes(Registrar $router)
     {
-        foreach(['index', 'create', 'read', 'update', 'delete'] as $action) {
+        foreach($this->resourceActions() as $action) {
             $this->resourceRoute($router, $action);
         }
+    }
+
+    /**
+     * @return array
+     */
+    protected function resourceActions()
+    {
+        return $this->diffActions(['index', 'create', 'read', 'update', 'delete'], $this->options);
     }
 
     /**

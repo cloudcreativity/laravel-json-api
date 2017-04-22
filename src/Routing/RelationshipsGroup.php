@@ -33,16 +33,25 @@ class RelationshipsGroup
 
     use RegistersResources;
 
+    /**
+     * RelationshipsGroup constructor.
+     *
+     * @param $resourceType
+     * @param Fluent $options
+     */
     public function __construct($resourceType, Fluent $options)
     {
         $this->resourceType = $resourceType;
         $this->options = $options;
     }
 
+    /**
+     * @param Registrar $router
+     */
     public function addRelationships(Registrar $router)
     {
-        foreach ($this->relationships() as $relationship => $actions) {
-            foreach ($actions as $action) {
+        foreach ($this->relationships() as $relationship => $options) {
+            foreach ($options['actions'] as $action) {
                 $this->relationshipRoute($router, $relationship, $action);
             }
         }
@@ -73,29 +82,33 @@ class RelationshipsGroup
      */
     protected function relationships()
     {
-        foreach ($this->hasOne() as $hasOne) {
-            yield $hasOne => $this->hasOneActions();
+        foreach ($this->hasOne() as $hasOne => $options) {
+            $options['actions'] = $this->hasOneActions($options);
+            yield $hasOne => $options;
         }
 
-        foreach ($this->hasMany() as $hasMany) {
-            yield $hasMany => $this->hasManyActions();
+        foreach ($this->hasMany() as $hasMany => $options) {
+            $options['actions'] = $this->hasManyActions($options);
+            yield $hasMany => $options;
         }
     }
 
     /**
+     * @param array $options
      * @return array
      */
-    protected function hasOneActions()
+    protected function hasOneActions(array $options)
     {
-        return ['related', 'read', 'replace'];
+        return $this->diffActions(['related', 'read', 'replace'], $options);
     }
 
     /**
+     * @param array $options
      * @return array
      */
-    protected function hasManyActions()
+    protected function hasManyActions(array $options)
     {
-        return array_merge($this->hasOneActions(), ['add', 'remove']);
+        return $this->diffActions(['related', 'read', 'replace', 'add', 'remove'], $options);
     }
 
     /**
