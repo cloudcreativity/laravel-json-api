@@ -81,6 +81,7 @@ class Fqn
      */
     private static function fqn($type, $resourceType, $rootNamespace, $byResource)
     {
+        $rootNamespace = rtrim($rootNamespace, '\\');
         $resourceType = Str::classify($resourceType);
 
         if ($byResource) {

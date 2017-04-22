@@ -18,21 +18,28 @@
 
 namespace CloudCreativity\LaravelJsonApi\Validators;
 
+use CloudCreativity\JsonApi\Contracts\Factories\FactoryInterface;
+use CloudCreativity\JsonApi\Contracts\Http\ApiInterface;
+use CloudCreativity\JsonApi\Contracts\Http\HttpServiceInterface;
 use CloudCreativity\JsonApi\Contracts\Object\ResourceInterface;
 use CloudCreativity\JsonApi\Contracts\Validators\AttributesValidatorInterface;
 use CloudCreativity\JsonApi\Contracts\Validators\FilterValidatorInterface;
 use CloudCreativity\JsonApi\Contracts\Validators\RelationshipsValidatorInterface;
 use CloudCreativity\JsonApi\Contracts\Validators\ResourceValidatorInterface;
 use CloudCreativity\JsonApi\Contracts\Validators\ValidatorProviderInterface;
+use CloudCreativity\JsonApi\Validators\ChecksQueryParameters;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorFactoryInterface;
 use Illuminate\Contracts\Validation\Validator;
 
 /**
  * Class AbstractValidatorProvider
+ *
  * @package CloudCreativity\LaravelJsonApi
  */
 abstract class AbstractValidatorProvider implements ValidatorProviderInterface
 {
+
+    use ChecksQueryParameters;
 
     /**
      * Custom messages for the attributes validator.
@@ -68,9 +75,19 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
     protected $filterCustomAttributes = [];
 
     /**
-     * @var ValidatorFactoryInterface
+     * @var ApiInterface
+     */
+    private $api;
+
+    /**
+     * @var FactoryInterface
      */
     private $factory;
+
+    /**
+     * @var ValidatorFactoryInterface
+     */
+    private $validatorFactory;
 
     /**
      * Get the validation rules for the resource attributes.
@@ -101,10 +118,13 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
 
     /**
      * AbstractValidatorProvider constructor.
-     * @param ValidatorFactoryInterface $factory
+     *
+     * @param ApiInterface $api
+     * @param FactoryInterface $factory
      */
-    public function __construct(ValidatorFactoryInterface $factory)
+    public function __construct(ApiInterface $api, FactoryInterface $factory)
     {
+        $this->api = $api;
         $this->factory = $factory;
     }
 
@@ -113,7 +133,7 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
      */
     public function resource($resourceType, $resourceId = null)
     {
-        $resource = $this->factory->resource($resourceType, $resourceId);
+        $resource = $this->validatorFactory()->resource($resourceType, $resourceId);
 
         return $this->factory->resourceDocument($resource);
     }
@@ -125,7 +145,7 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
     {
         $validator = $this->resourceValidator($resourceType);
 
-        return $this->factory->resourceDocument($validator);
+        return $this->validatorFactory()->resourceDocument($validator);
     }
 
     /**
@@ -135,7 +155,7 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
     {
         $validator = $this->resourceValidator($resourceType, $resourceId, $record);
 
-        return $this->factory->resourceDocument($validator);
+        return $this->validatorFactory()->resourceDocument($validator);
     }
 
     /**
@@ -147,16 +167,18 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
             ->resourceRelationships($resourceType, $record)
             ->get($relationshipName);
 
-        return $this->factory->relationshipDocument($validator);
+        return $this->validatorFactory()->relationshipDocument($validator);
     }
 
     /**
      * @inheritdoc
+     * @todo need to use the filter validator as well.
      */
-    public function filterResources($resourceType)
+    public function queryChecker($resourceType)
     {
-        return $this->filterValidator($resourceType);
+        return $this->createQueryChecker($this->factory);
     }
+
 
     /**
      * Callback to configure an attributes validator.
@@ -201,7 +223,7 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
      */
     protected function resourceValidator($resourceType, $resourceId = null, $record = null)
     {
-        return $this->factory->resource(
+        return $this->validatorFactory()->resource(
             $resourceType,
             $resourceId,
             $this->resourceAttributes($resourceType, $record),
@@ -220,7 +242,7 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
      */
     protected function resourceAttributes($resourceType, $record = null)
     {
-        return $this->factory->attributes(
+        return $this->validatorFactory()->attributes(
             $this->attributeRules($resourceType, $record),
             $this->attributeMessages($resourceType, $record),
             $this->attributeCustomAttributes($resourceType, $record),
@@ -264,7 +286,7 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
      */
     protected function resourceRelationships($resourceType, $record = null)
     {
-        $validator = $this->factory->relationships();
+        $validator = $this->validatorFactory()->relationships();
         $this->relationshipRules($validator, $resourceType, $record);
 
         return $validator;
@@ -356,4 +378,18 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
 
     }
 
+    /**
+     * @return ValidatorFactoryInterface
+     */
+    protected function validatorFactory()
+    {
+        if (!$this->validatorFactory) {
+            $this->validatorFactory = $this->factory->createValidatorFactory(
+                $this->api->getErrors(),
+                $this->api->getStore()
+            );
+        }
+
+        return $this->validatorFactory;
+    }
 }

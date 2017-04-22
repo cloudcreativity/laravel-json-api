@@ -63,7 +63,7 @@ class ValidateRequest
         $service = $this->container->make(JsonApiService::class);
 
         $this->validate(
-            $service->getApi()->getRequestInterpreter(),
+            $service->getRequestInterpreter(),
             $service->getRequest(),
             $this->resolveValidators($validators)
         );

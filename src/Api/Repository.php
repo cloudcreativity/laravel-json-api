@@ -99,6 +99,7 @@ class Repository
         $schemas = $this->factory->createContainer($resources->getSchemas());
         $adapters = $this->factory->createAdapterContainer($resources->getAdapters());
         $urlPrefix = $this->mergeHostAndUrlPrefix($host, $definition->getUrlPrefix());
+        $extensions = $definition->getSupportedExt();
 
         return $this->factory->createApi(
             $definition->getName(),
@@ -106,7 +107,7 @@ class Repository
             $schemas,
             $this->factory->createStore($adapters),
             $this->factory->createErrorRepository($definition->getErrors()),
-            $this->factory->createSupportedExtensions($definition->getSupportedExt()),
+            $extensions ? $this->factory->createSupportedExtensions($extensions) : null,
             $urlPrefix
         );
     }
@@ -120,7 +121,7 @@ class Repository
     {
         return new Definition(
             $apiName,
-            Arr::get($config, 'namespace'),
+            $this->normalizeRootNamespace(Arr::get($config, 'namespace')),
             (array) Arr::get($config, 'resources'),
             (array) Arr::get($config, 'codecs'),
             (bool) Arr::get($config, 'by-resource', true),
@@ -203,5 +204,14 @@ class Repository
         }
 
         return $urlPrefix ? $urlPrefix : null;
+    }
+
+    /**
+     * @param $namespace
+     * @return string
+     */
+    protected function normalizeRootNamespace($namespace)
+    {
+        return $namespace ?: rtrim(app()->getNamespace(), '\\') . '\\JsonApi';
     }
 }

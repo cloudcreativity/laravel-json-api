@@ -4,11 +4,9 @@ namespace CloudCreativity\LaravelJsonApi\Factories;
 
 use CloudCreativity\JsonApi\Contracts\Repositories\ErrorRepositoryInterface;
 use CloudCreativity\JsonApi\Contracts\Store\StoreInterface;
-use CloudCreativity\JsonApi\Contracts\Validators\ValidatorErrorFactoryInterface;
 use CloudCreativity\JsonApi\Exceptions\RuntimeException;
 use CloudCreativity\JsonApi\Factories\Factory as BaseFactory;
 use CloudCreativity\LaravelJsonApi\Api\ResourceProvider;
-use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorErrorFactoryInterface as LaravelValidatorErrorFactory;
 use CloudCreativity\LaravelJsonApi\Schema\Container as SchemaContainer;
 use CloudCreativity\LaravelJsonApi\Store\Container as AdapterContainer;
 use CloudCreativity\LaravelJsonApi\Validators\ValidatorErrorFactory;
@@ -63,31 +61,16 @@ class Factory extends BaseFactory
     }
 
     /**
-     * @param ValidatorErrorFactoryInterface $errors
-     * @param StoreInterface $store
-     * @return ValidatorFactory
+     * @inheritdoc
      */
-    public function createValidatorFactory(ValidatorErrorFactoryInterface $errors, StoreInterface $store)
+    public function createValidatorFactory(ErrorRepositoryInterface $errors, StoreInterface $store)
     {
-        if (!$errors instanceof LaravelValidatorErrorFactory) {
-            throw new RuntimeException('Expecting the error factory to be a Laravel-specific error factory.');
-        }
+        $errors = new ValidatorErrorFactory($errors);
 
         /** @var ValidatorFactoryContract $laravelFactory */
         $laravelFactory = $this->container->make(ValidatorFactoryContract::class);
 
         return new ValidatorFactory($errors, $store, $laravelFactory);
-    }
-
-    /**
-     * Return a Laravel-specific validator error factory.
-     *
-     * @param ErrorRepositoryInterface $errors
-     * @return LaravelValidatorErrorFactory
-     */
-    public function createValidatorErrorFactory(ErrorRepositoryInterface $errors)
-    {
-        return new ValidatorErrorFactory($errors);
     }
 
     /**

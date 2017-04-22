@@ -19,7 +19,9 @@
 namespace CloudCreativity\LaravelJsonApi;
 
 use CloudCreativity\JsonApi\Contracts\Exceptions\ExceptionParserInterface;
+use CloudCreativity\JsonApi\Contracts\Factories\FactoryInterface;
 use CloudCreativity\JsonApi\Contracts\Http\HttpServiceInterface;
+use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterpreterInterface;
 use CloudCreativity\JsonApi\Contracts\Http\Responses\ResponseFactoryInterface;
 use CloudCreativity\JsonApi\Contracts\Pagination\PaginatorInterface;
 use CloudCreativity\JsonApi\Http\Responses\ResponseFactory;
@@ -33,6 +35,7 @@ use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use CloudCreativity\LaravelJsonApi\Http\Middleware\AuthorizeRequest;
 use CloudCreativity\LaravelJsonApi\Http\Middleware\BootJsonApi;
 use CloudCreativity\LaravelJsonApi\Http\Middleware\ValidateRequest;
+use CloudCreativity\LaravelJsonApi\Http\Requests\RequestInterpreter;
 use CloudCreativity\LaravelJsonApi\Http\Responses\Responses;
 use CloudCreativity\LaravelJsonApi\Pagination\Page;
 use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
@@ -44,7 +47,7 @@ use Neomerx\JsonApi\Contracts\Document\DocumentFactoryInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Handlers\HandlerFactoryInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Parser\ParserFactoryInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Stack\StackFactoryInterface;
-use Neomerx\JsonApi\Contracts\Factories\FactoryInterface;
+use Neomerx\JsonApi\Contracts\Factories\FactoryInterface as NeomerxFactoryInterface;
 use Neomerx\JsonApi\Contracts\Http\HttpFactoryInterface;
 use Neomerx\JsonApi\Contracts\Http\ResponsesInterface;
 use Neomerx\JsonApi\Contracts\Schema\SchemaFactoryInterface;
@@ -68,11 +71,11 @@ class ServiceProvider extends BaseServiceProvider
      */
     protected $generatorCommands = [
         Commands\HydratorMakeCommand::class,
-        Commands\RequestMakeCommand::class,
         Commands\ResourceMakeCommand::class,
         Commands\SchemaMakeCommand::class,
         Commands\SearchMakeCommand::class,
         Commands\ValidatorsMakeCommand::class,
+        Commands\MakeApiCommand::class,
     ];
 
     /**
@@ -97,12 +100,12 @@ class ServiceProvider extends BaseServiceProvider
     {
         $this->bindNeomerx();
         $this->bindService();
+        $this->bindRequestInterpreter();
         $this->bindApiRepository();
         $this->bindExceptionParser();
         $this->bindResponses();
         $this->bindLinkFactory();
         $this->bindPagination();
-
         $this->registerArtisanCommands();
     }
 
@@ -179,6 +182,7 @@ class ServiceProvider extends BaseServiceProvider
         });
 
         $this->app->alias(Factory::class, FactoryInterface::class);
+        $this->app->alias(Factory::class, NeomerxFactoryInterface::class);
         $this->app->alias(Factory::class, DocumentFactoryInterface::class);
         $this->app->alias(Factory::class, HandlerFactoryInterface::class);
         $this->app->alias(Factory::class, HttpFactoryInterface::class);
@@ -195,6 +199,14 @@ class ServiceProvider extends BaseServiceProvider
         $this->app->singleton(JsonApiService::class);
         $this->app->alias(JsonApiService::class, HttpServiceInterface::class);
         $this->app->alias(JsonApiService::class, 'json-api.service');
+    }
+
+    /**
+     * Bind a request interpreter into the container.
+     */
+    protected function bindRequestInterpreter()
+    {
+        $this->app->singleton(RequestInterpreterInterface::class, RequestInterpreter::class);
     }
 
     /**

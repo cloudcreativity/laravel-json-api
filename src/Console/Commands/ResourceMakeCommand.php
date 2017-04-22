@@ -51,7 +51,6 @@ class ResourceMakeCommand extends Command
      * @var array
      */
     private $commands = [
-        'make:json-api:request' => RequestMakeCommand::class,
         'make:json-api:validators' => ValidatorsMakeCommand::class,
         'make:json-api:hydrator' => HydratorMakeCommand::class,
         'make:json-api:schema' => SchemaMakeCommand::class,

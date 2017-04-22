@@ -63,7 +63,7 @@ class EloquentAdapter implements AdapterInterface
      */
     public function find($resourceId)
     {
-        return $this->query()->find($this->getQualifiedKeyName(), $resourceId);
+        return $this->query()->where($this->getQualifiedKeyName(), $resourceId)->first();
     }
 
     /**
