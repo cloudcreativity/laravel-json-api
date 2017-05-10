@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2016 Cloud Creativity Limited
+ * Copyright 2017 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,15 +20,15 @@ namespace CloudCreativity\LaravelJsonApi\Validators;
 
 use CloudCreativity\JsonApi\Contracts\Factories\FactoryInterface;
 use CloudCreativity\JsonApi\Contracts\Http\ApiInterface;
-use CloudCreativity\JsonApi\Contracts\Http\HttpServiceInterface;
 use CloudCreativity\JsonApi\Contracts\Object\ResourceInterface;
 use CloudCreativity\JsonApi\Contracts\Validators\AttributesValidatorInterface;
-use CloudCreativity\JsonApi\Contracts\Validators\FilterValidatorInterface;
 use CloudCreativity\JsonApi\Contracts\Validators\RelationshipsValidatorInterface;
 use CloudCreativity\JsonApi\Contracts\Validators\ResourceValidatorInterface;
 use CloudCreativity\JsonApi\Contracts\Validators\ValidatorProviderInterface;
 use CloudCreativity\JsonApi\Validators\ChecksQueryParameters;
+use CloudCreativity\LaravelJsonApi\Contracts\Validators\FilterValidatorInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorFactoryInterface;
+use CloudCreativity\LaravelJsonApi\Http\Query\ExtendedQueryChecker;
 use Illuminate\Contracts\Validation\Validator;
 
 /**
@@ -135,7 +135,7 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
     {
         $resource = $this->validatorFactory()->resource($resourceType, $resourceId);
 
-        return $this->factory->resourceDocument($resource);
+        return $this->validatorFactory()->resourceDocument($resource);
     }
 
     /**
@@ -172,11 +172,13 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
 
     /**
      * @inheritdoc
-     * @todo need to use the filter validator as well.
      */
     public function queryChecker($resourceType)
     {
-        return $this->createQueryChecker($this->factory);
+        return new ExtendedQueryChecker(
+            $this->createQueryChecker($this->factory),
+            $this->filterValidator($resourceType)
+        );
     }
 
 
@@ -320,7 +322,7 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
      */
     protected function filterValidator($resourceType)
     {
-        return $this->factory->filterParams(
+        return $this->validatorFactory()->filterParams(
             $this->filterRules($resourceType),
             $this->filterMessages($resourceType),
             $this->filterCustomAttributes($resourceType),

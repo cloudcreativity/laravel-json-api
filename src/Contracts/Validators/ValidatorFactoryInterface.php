@@ -19,7 +19,6 @@
 namespace CloudCreativity\LaravelJsonApi\Contracts\Validators;
 
 use CloudCreativity\JsonApi\Contracts\Validators\AttributesValidatorInterface;
-use CloudCreativity\JsonApi\Contracts\Validators\FilterValidatorInterface;
 use CloudCreativity\JsonApi\Contracts\Validators\ValidatorFactoryInterface as BaseInterface;
 
 /**
