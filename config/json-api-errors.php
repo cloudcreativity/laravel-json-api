@@ -145,7 +145,7 @@ return [
      * parameter and error detail will be set using the message bag that the Laravel validator returns,
      * and a 400 response status will be set.
      */
-    V::FILTER_PARAMETERS_MESSAGES => [
+    V::QUERY_PARAMETERS_MESSAGES => [
         Error::TITLE => 'Invalid Filter',
     ],
 

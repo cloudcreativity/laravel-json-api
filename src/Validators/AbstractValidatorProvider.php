@@ -22,13 +22,14 @@ use CloudCreativity\JsonApi\Contracts\Factories\FactoryInterface;
 use CloudCreativity\JsonApi\Contracts\Http\ApiInterface;
 use CloudCreativity\JsonApi\Contracts\Object\ResourceInterface;
 use CloudCreativity\JsonApi\Contracts\Validators\AttributesValidatorInterface;
+use CloudCreativity\JsonApi\Contracts\Validators\QueryValidatorInterface;
 use CloudCreativity\JsonApi\Contracts\Validators\RelationshipsValidatorInterface;
 use CloudCreativity\JsonApi\Contracts\Validators\ResourceValidatorInterface;
 use CloudCreativity\JsonApi\Contracts\Validators\ValidatorProviderInterface;
-use CloudCreativity\JsonApi\Validators\ChecksQueryParameters;
-use CloudCreativity\LaravelJsonApi\Contracts\Validators\FilterValidatorInterface;
+use CloudCreativity\JsonApi\Http\Query\ChecksQueryParameters;
+use CloudCreativity\JsonApi\Http\Query\ValidationQueryChecker;
+use CloudCreativity\JsonApi\Validators\QueryValidatorIterator;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorFactoryInterface;
-use CloudCreativity\LaravelJsonApi\Http\Query\ExtendedQueryChecker;
 use Illuminate\Contracts\Validation\Validator;
 
 /**
@@ -56,6 +57,8 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
     protected $customAttributes = [];
 
     /**
+     * Validation rules for filter query parameters.
+     *
      * @var array
      */
     protected $filterRules = [];
@@ -73,6 +76,49 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
      * @var array
      */
     protected $filterCustomAttributes = [];
+
+    /**
+     * Validation rules for pagination query parameters.
+     *
+     * @var array
+     */
+    protected $paginationRules = [];
+
+    /**
+     * Custom messages for the pagination validator.
+     *
+     * @var array
+     */
+    protected $paginationMessages = [];
+
+    /**
+     * Custom attributes for the pagination validator.
+     *
+     * @var array
+     */
+    protected $paginationCustomAttributes = [];
+
+    /**
+     * The allowed filtering parameters.
+     *
+     * By default we set this to `null` to allow any filtering parameters, as we expect
+     * the filtering parameters to be validated using the filter validator.
+     *
+     * @var string[]|null
+     * @see ChecksQueryParameters::allowedFilteringParameters()
+     */
+    protected $allowedFilteringParameters = null;
+
+    /**
+     * The allowed paging parameters.
+     *
+     * By default we set this to `null` to allow any paging parameters, as we expect
+     * the paging parameters to be validated using the pagination validator.
+     *
+     * @var string[]|null
+     * @see ChecksQueryParameters::allowedPagingParameters()
+     */
+    protected $allowedPagingParameters = null;
 
     /**
      * @var ApiInterface
@@ -175,12 +221,8 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
      */
     public function queryChecker($resourceType)
     {
-        return new ExtendedQueryChecker(
-            $this->createQueryChecker($this->factory),
-            $this->filterValidator($resourceType)
-        );
+        return $this->createQueryChecker($this->factory, $this->createQueryValidator($resourceType));
     }
-
 
     /**
      * Callback to configure an attributes validator.
@@ -314,11 +356,23 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
     }
 
     /**
+     * @param $resourceType
+     * @return QueryValidatorInterface
+     */
+    protected function createQueryValidator($resourceType)
+    {
+        return new QueryValidatorIterator([
+            $this->filterValidator($resourceType),
+            $this->paginationValidator($resourceType)
+        ]);
+    }
+
+    /**
      * Get a validator for the filter query parameters.
      *
      * @param string $resourceType
      *      the resource type that is being filtered
-     * @return FilterValidatorInterface
+     * @return QueryValidatorInterface
      */
     protected function filterValidator($resourceType)
     {
@@ -376,6 +430,73 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
      *      the resource type being filtered
      */
     protected function conditionalFilters(Validator $validator, $resourceType)
+    {
+
+    }
+
+    /**
+     * Get a validator for the pagination query parameters.
+     *
+     * @param string $resourceType
+     *      the resource type that is being paged.
+     * @return QueryValidatorInterface
+     */
+    protected function paginationValidator($resourceType)
+    {
+        return $this->validatorFactory()->paginationParams(
+            $this->paginationRules($resourceType),
+            $this->paginationMessages($resourceType),
+            $this->paginationCustomAttributes($resourceType),
+            function (Validator $validator) use ($resourceType) {
+                return $this->conditionalPagination($validator, $resourceType);
+            }
+        );
+    }
+
+    /**
+     * Get the validation rules for the pagination query parameter.
+     *
+     * @param $resourceType
+     *      the resource type that is being paged
+     * @return array
+     */
+    protected function paginationRules($resourceType)
+    {
+        return $this->paginationRules;
+    }
+
+    /**
+     * @param $resourceType
+     *      the resource type that is being paged
+     * @return array
+     */
+    protected function paginationMessages($resourceType)
+    {
+        return $this->paginationMessages;
+    }
+
+    /**
+     * @param $resourceType
+     *      the resource type that is being paged
+     * @return array
+     */
+    protected function paginationCustomAttributes($resourceType)
+    {
+        return $this->paginationCustomAttributes;
+    }
+
+    /**
+     * Callback to configure a pagination validator.
+     *
+     * Child classes can override this method if they need to do custom
+     * configuration on the pagination validator.
+     *
+     * @param Validator $validator
+     *      the Laravel validator instance that will validate the pagination params.
+     * @param string $resourceType
+     *      the resource type being paged
+     */
+    protected function conditionalPagination(Validator $validator, $resourceType)
     {
 
     }

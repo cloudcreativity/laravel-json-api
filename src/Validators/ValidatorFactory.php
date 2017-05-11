@@ -87,7 +87,7 @@ class ValidatorFactory extends BaseFactory implements ValidatorFactoryInterface
         /** @var ValidatorErrorFactoryInterface $validationErrors */
         $validationErrors = $this->validationErrors;
 
-        return new FilterValidator(
+        return new AbstractQueryValidator(
             $this->validatorFactory,
             $validationErrors,
             $rules,

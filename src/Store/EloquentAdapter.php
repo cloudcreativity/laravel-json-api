@@ -18,9 +18,15 @@
 
 namespace CloudCreativity\LaravelJsonApi\Store;
 
+use CloudCreativity\JsonApi\Contracts\Pagination\PageInterface;
 use CloudCreativity\JsonApi\Contracts\Store\AdapterInterface;
+use CloudCreativity\JsonApi\Exceptions\RuntimeException;
+use CloudCreativity\LaravelJsonApi\Pagination\PagingStrategyInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
+use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
+use Neomerx\JsonApi\Contracts\Encoder\Parameters\SortParameterInterface;
 
 /**
  * Class EloquentAdapter
@@ -30,24 +36,90 @@ use Illuminate\Database\Eloquent\Model;
 abstract class EloquentAdapter implements AdapterInterface
 {
 
+    use FindsManyResources;
+
     /**
      * @var Model
      */
     protected $model;
 
     /**
+     * @var PagingStrategyInterface|null
+     */
+    protected $paging;
+
+    /**
+     * The model key that is the primary key for the resource id.
+     *
+     * If empty, defaults to `Model::getKeyName()`.
+     *
      * @var string|null
      */
     protected $primaryKey;
 
     /**
+     * The filter param for a find-many request.
+     *
+     * If null, defaults to the JSON API keyword `id`.
+     *
+     * @var string|null
+     */
+    protected $findManyFilter = null;
+
+    /**
+     * Apply the supplied filters to the builder instance.
+     *
+     * @param Builder $query
+     * @param Collection $filters
+     * @return void
+     */
+    abstract protected function filter(Builder $query, Collection $filters);
+
+    /**
+     * Is this a search for a singleton resource?
+     *
+     * @param Collection $filters
+     * @return bool
+     */
+    abstract protected function isSearchOne(Collection $filters);
+
+    /**
      * EloquentAdapter constructor.
      *
      * @param Model $model
+     * @param PagingStrategyInterface|null $paging
      */
-    public function __construct(Model $model)
+    public function __construct(Model $model, PagingStrategyInterface $paging = null)
     {
         $this->model = $model;
+        $this->paging = $paging;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function query(EncodingParametersInterface $parameters)
+    {
+        $filters = new Collection((array) $parameters->getFilteringParameters());
+
+        if ($this->isFindMany($filters)) {
+            return $this->findMany($filters);
+        }
+
+        $this->filter($query = $this->newQuery(), $filters);
+        $this->sort($query, (array) $parameters->getSortParameters());
+
+        if ($this->isSearchOne($filters)) {
+            return $this->first($query);
+        }
+
+        $pagination = new Collection((array) $parameters->getPaginationParameters());
+
+        if (!$pagination->isEmpty() && !$this->paging) {
+            throw new RuntimeException('Client has provided paging parameters but paging is not supported.');
+        }
+
+        return $pagination->isEmpty() ? $this->all($query) : $this->paginate($query, $parameters);
     }
 
     /**
@@ -67,11 +139,62 @@ abstract class EloquentAdapter implements AdapterInterface
     }
 
     /**
+     * Get a new query builder.
+     *
+     * Child classes can overload this method if they want to modify the query instance that
+     * is used for every query the adapter does.
+     *
      * @return Builder
      */
     protected function newQuery()
     {
         return $this->model->newQuery();
+    }
+
+    /**
+     * @param Collection $filters
+     * @return mixed
+     */
+    protected function findMany(Collection $filters)
+    {
+        return $this
+            ->newQuery()
+            ->whereIn($this->getQualifiedKeyName(), $this->extractIds($filters))
+            ->get();
+    }
+
+    /**
+     * Return the result for a search one query.
+     *
+     * @param Builder $query
+     * @return Model
+     */
+    protected function first(Builder $query)
+    {
+        return $query->first();
+    }
+
+    /**
+     * Return the result for query that is not paginated.
+     *
+     * @param Builder $query
+     * @return mixed
+     */
+    protected function all(Builder $query)
+    {
+        return $query->get();
+    }
+
+    /**
+     * Return the result for a paginated query.
+     *
+     * @param Builder $query
+     * @param EncodingParametersInterface $parameters
+     * @return PageInterface
+     */
+    protected function paginate(Builder $query, EncodingParametersInterface $parameters)
+    {
+        return $this->paging->paginate($query, $parameters);
     }
 
     /**
@@ -91,4 +214,83 @@ abstract class EloquentAdapter implements AdapterInterface
     {
         return sprintf('%s.%s', $this->model->getTable(), $this->getKeyName());
     }
+
+    /**
+     * Apply sort parameters to the query.
+     *
+     * @param Builder $query
+     * @param SortParameterInterface[] $sortBy
+     * @return void
+     */
+    protected function sort(Builder $query, array $sortBy)
+    {
+        if (empty($sortBy)) {
+            $this->defaultSort($query);
+            return;
+        }
+
+        /** @var SortParameterInterface $param */
+        foreach ($sortBy as $param) {
+            $this->sortBy($query, $param);
+        }
+    }
+
+    /**
+     * Apply a default sort order if the client has not requested any sort order.
+     *
+     * Child classes can override this method if they want to implement their
+     * own default sort order.
+     *
+     * @param Builder $query
+     * @return void
+     */
+    protected function defaultSort(Builder $query)
+    {
+    }
+
+    /**
+     * @param Builder $query
+     * @param SortParameterInterface $param
+     */
+    protected function sortBy(Builder $query, SortParameterInterface $param)
+    {
+        $column = $this->getQualifiedSortColumn($query, $param->getField());
+        $order = $param->isAscending() ? 'asc' : 'desc';
+
+        $query->orderBy($column, $order);
+    }
+
+    /**
+     * @param Builder $query
+     * @param string $field
+     * @return string
+     */
+    protected function getQualifiedSortColumn(Builder $query, $field)
+    {
+        $key = $this->columnForField($field, $query->getModel());
+
+        if (!str_contains('.', $key)) {
+            $key = sprintf('%s.%s', $query->getModel()->getTable(), $key);
+        }
+
+        return $key;
+    }
+
+    /**
+     * Get the table column to use for the specified search field.
+     *
+     * @param string $field
+     * @param Model $model
+     * @return string
+     */
+    protected function columnForField($field, Model $model)
+    {
+        /** If there is a custom mapping, return that */
+        if (isset($this->sortColumns[$field])) {
+            return $this->sortColumns[$field];
+        }
+
+        return $model::$snakeAttributes ? Str::snake($field) : Str::camel($field);
+    }
+
 }

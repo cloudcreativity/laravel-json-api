@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2016 Cloud Creativity Limited
+ * Copyright 2017 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@
 namespace CloudCreativity\LaravelJsonApi\Contracts\Validators;
 
 use CloudCreativity\JsonApi\Contracts\Validators\AttributesValidatorInterface;
+use CloudCreativity\JsonApi\Contracts\Validators\QueryValidatorInterface;
 use CloudCreativity\JsonApi\Contracts\Validators\ValidatorFactoryInterface as BaseInterface;
 
 /**
@@ -55,9 +56,26 @@ interface ValidatorFactoryInterface extends BaseInterface
      * @param array $messages
      * @param array $customAttributes
      * @param callable|null $callback
-     * @return FilterValidatorInterface
+     * @return QueryValidatorInterface
      */
     public function filterParams(
+        array $rules,
+        array $messages = [],
+        array $customAttributes = [],
+        callable $callback = null
+    );
+
+
+    /**
+     * Get a pagination parameters validator.
+     *
+     * @param array $rules
+     * @param array $messages
+     * @param array $customAttributes
+     * @param callable|null $callback
+     * @return QueryValidatorInterface
+     */
+    public function paginationParams(
         array $rules,
         array $messages = [],
         array $customAttributes = [],

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2016 Cloud Creativity Limited
+ * Copyright 2017 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,25 +16,33 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\LaravelJsonApi\Contracts\Search;
+namespace CloudCreativity\LaravelJsonApi\Validators;
 
-use CloudCreativity\JsonApi\Contracts\Pagination\PageInterface;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Collection;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
+use Neomerx\JsonApi\Contracts\Http\Query\QueryParametersParserInterface;
 
 /**
- * Interface EloquentFilterInterface
+ * Class FilterValidator
+ *
  * @package CloudCreativity\LaravelJsonApi
  */
-interface SearchInterface
+class PaginationValidator extends AbstractQueryValidator
 {
 
     /**
-     * @param Builder $builder
-     * @param EncodingParametersInterface $parameters
-     * @return Collection|PageInterface|Model|null
+     * @inheritDoc
      */
-    public function search(Builder $builder, EncodingParametersInterface $parameters);
+    protected function extract(EncodingParametersInterface $parameters)
+    {
+        return (array) $parameters->getPaginationParameters();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function getParameterKey()
+    {
+        return QueryParametersParserInterface::PARAM_PAGE;
+    }
+
 }
