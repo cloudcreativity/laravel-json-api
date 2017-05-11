@@ -27,7 +27,7 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @package CloudCreativity\LaravelJsonApi\Store
  */
-class EloquentAdapter implements AdapterInterface
+abstract class EloquentAdapter implements AdapterInterface
 {
 
     /**
@@ -55,7 +55,7 @@ class EloquentAdapter implements AdapterInterface
      */
     public function exists($resourceId)
     {
-        return $this->query()->where($this->getQualifiedKeyName(), $resourceId)->exists();
+        return $this->newQuery()->where($this->getQualifiedKeyName(), $resourceId)->exists();
     }
 
     /**
@@ -63,13 +63,13 @@ class EloquentAdapter implements AdapterInterface
      */
     public function find($resourceId)
     {
-        return $this->query()->where($this->getQualifiedKeyName(), $resourceId)->first();
+        return $this->newQuery()->where($this->getQualifiedKeyName(), $resourceId)->first();
     }
 
     /**
      * @return Builder
      */
-    protected function query()
+    protected function newQuery()
     {
         return $this->model->newQuery();
     }

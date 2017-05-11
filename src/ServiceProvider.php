@@ -37,7 +37,7 @@ use CloudCreativity\LaravelJsonApi\Http\Middleware\BootJsonApi;
 use CloudCreativity\LaravelJsonApi\Http\Middleware\ValidateRequest;
 use CloudCreativity\LaravelJsonApi\Http\Requests\RequestInterpreter;
 use CloudCreativity\LaravelJsonApi\Http\Responses\Responses;
-use CloudCreativity\LaravelJsonApi\Pagination\Page;
+use CloudCreativity\LaravelJsonApi\Pagination\StandardStrategy;
 use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\Routing\ResponseFactory as ResponseFactoryContract;
@@ -250,7 +250,7 @@ class ServiceProvider extends BaseServiceProvider
     protected function bindPagination()
     {
         $this->app->singleton(PaginatorInterface::class, Paginator::class);
-        $this->app->singleton(Page::class);
+        $this->app->singleton(StandardStrategy::class);
     }
 
     /**

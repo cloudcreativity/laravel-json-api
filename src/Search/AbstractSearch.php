@@ -22,7 +22,7 @@ use CloudCreativity\JsonApi\Contracts\Http\HttpServiceInterface;
 use CloudCreativity\JsonApi\Contracts\Pagination\PageInterface;
 use CloudCreativity\JsonApi\Contracts\Pagination\PaginatorInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Search\SearchInterface;
-use CloudCreativity\LaravelJsonApi\Pagination\Page;
+use CloudCreativity\LaravelJsonApi\Pagination\StandardStrategy;
 use CloudCreativity\LaravelJsonApi\Utils\Str;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
@@ -212,7 +212,7 @@ abstract class AbstractSearch implements SearchInterface
     protected function paginate(Builder $builder)
     {
         $size = $this->getPerPage();
-        $page = new Page($this->service);
+        $page = new StandardStrategy($this->service);
 
         $data = $this->simplePagination ? $builder->simplePaginate($size) : $builder->paginate($size);
         $page->setData($data);
