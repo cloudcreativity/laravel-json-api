@@ -81,6 +81,13 @@ abstract class EloquentAdapter implements AdapterInterface
     protected $defaultPagination = null;
 
     /**
+     * Default eager loading when querying many resources.
+     *
+     * @var string[]|null
+     */
+    protected $with = null;
+
+    /**
      * Apply the supplied filters to the builder instance.
      *
      * @param Builder $query
@@ -115,12 +122,13 @@ abstract class EloquentAdapter implements AdapterInterface
     public function query(EncodingParametersInterface $parameters)
     {
         $filters = $this->extractFilters($parameters);
+        $this->with($query = $this->newQuery(), $this->extractIncludePaths($parameters));
 
         if ($this->isFindMany($filters)) {
-            return $this->findMany($filters);
+            return $this->findMany($query, $filters);
         }
 
-        $this->filter($query = $this->newQuery(), $filters);
+        $this->filter($query, $filters);
         $this->sort($query, (array) $parameters->getSortParameters());
 
         if ($this->isSearchOne($filters)) {
@@ -166,13 +174,28 @@ abstract class EloquentAdapter implements AdapterInterface
     }
 
     /**
+     * Add eager loading to the query.
+     *
+     * @param Builder $query
+     * @param Collection $includePaths
+     *      the paths for resources that will be included.
+     * @return array
+     */
+    protected function with(Builder $query, Collection $includePaths)
+    {
+        if ($this->with) {
+            $query->with($this->with);
+        }
+    }
+
+    /**
+     * @param Builder $query
      * @param Collection $filters
      * @return mixed
      */
-    protected function findMany(Collection $filters)
+    protected function findMany(Builder $query, Collection $filters)
     {
-        return $this
-            ->newQuery()
+        return $query
             ->whereIn($this->getQualifiedKeyName(), $this->extractIds($filters))
             ->get();
     }
@@ -227,6 +250,15 @@ abstract class EloquentAdapter implements AdapterInterface
     protected function getQualifiedKeyName()
     {
         return sprintf('%s.%s', $this->model->getTable(), $this->getKeyName());
+    }
+
+    /**
+     * @param EncodingParametersInterface $parameters
+     * @return Collection
+     */
+    protected function extractIncludePaths(EncodingParametersInterface $parameters)
+    {
+        return new Collection((array) $parameters->getIncludePaths());
     }
 
     /**
