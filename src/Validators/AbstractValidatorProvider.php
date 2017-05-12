@@ -27,9 +27,9 @@ use CloudCreativity\JsonApi\Contracts\Validators\RelationshipsValidatorInterface
 use CloudCreativity\JsonApi\Contracts\Validators\ResourceValidatorInterface;
 use CloudCreativity\JsonApi\Contracts\Validators\ValidatorProviderInterface;
 use CloudCreativity\JsonApi\Http\Query\ChecksQueryParameters;
-use CloudCreativity\JsonApi\Http\Query\ValidationQueryChecker;
 use CloudCreativity\JsonApi\Validators\QueryValidatorIterator;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorFactoryInterface;
+use CloudCreativity\LaravelJsonApi\Http\Requests\RequestInterpreter;
 use Illuminate\Contracts\Validation\Validator;
 
 /**
@@ -121,6 +121,11 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
     protected $allowedPagingParameters = null;
 
     /**
+     * @var RequestInterpreter
+     */
+    protected $requestInterpreter;
+
+    /**
      * @var ApiInterface
      */
     private $api;
@@ -166,22 +171,14 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
      * AbstractValidatorProvider constructor.
      *
      * @param ApiInterface $api
+     * @param RequestInterpreter $interpreter
      * @param FactoryInterface $factory
      */
-    public function __construct(ApiInterface $api, FactoryInterface $factory)
+    public function __construct(ApiInterface $api, RequestInterpreter $interpreter, FactoryInterface $factory)
     {
         $this->api = $api;
+        $this->requestInterpreter = $interpreter;
         $this->factory = $factory;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function resource($resourceType, $resourceId = null)
-    {
-        $resource = $this->validatorFactory()->resource($resourceType, $resourceId);
-
-        return $this->validatorFactory()->resourceDocument($resource);
     }
 
     /**
@@ -357,14 +354,18 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
 
     /**
      * @param $resourceType
-     * @return QueryValidatorInterface
+     * @return QueryValidatorInterface|null
      */
     protected function createQueryValidator($resourceType)
     {
-        return new QueryValidatorIterator([
-            $this->filterValidator($resourceType),
-            $this->paginationValidator($resourceType)
-        ]);
+        $validator = new QueryValidatorIterator();
+
+        if ($this->requestInterpreter->isIndex()) {
+            $validator->add($this->filterValidator($resourceType));
+            $validator->add($this->paginationValidator($resourceType));
+        }
+
+        return $validator;
     }
 
     /**

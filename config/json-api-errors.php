@@ -146,7 +146,7 @@ return [
      * and a 400 response status will be set.
      */
     V::QUERY_PARAMETERS_MESSAGES => [
-        Error::TITLE => 'Invalid Filter',
+        Error::TITLE => 'Invalid Query Parameter',
     ],
 
     /**

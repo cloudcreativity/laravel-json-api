@@ -87,7 +87,33 @@ class ValidatorFactory extends BaseFactory implements ValidatorFactoryInterface
         /** @var ValidatorErrorFactoryInterface $validationErrors */
         $validationErrors = $this->validationErrors;
 
-        return new AbstractQueryValidator(
+        return new FilterValidator(
+            $this->validatorFactory,
+            $validationErrors,
+            $rules,
+            $messages,
+            $customAttributes,
+            $callback
+        );
+    }
+
+    /**
+     * @param array $rules
+     * @param array $messages
+     * @param array $customAttributes
+     * @param callable|null $callback
+     * @return PaginationValidator
+     */
+    public function paginationParams(
+        array $rules,
+        array $messages = [],
+        array $customAttributes = [],
+        callable $callback = null
+    ) {
+        /** @var ValidatorErrorFactoryInterface $validationErrors */
+        $validationErrors = $this->validationErrors;
+
+        return new PaginationValidator(
             $this->validatorFactory,
             $validationErrors,
             $rules,

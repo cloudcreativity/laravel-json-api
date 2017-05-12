@@ -86,7 +86,6 @@ class ServiceProvider extends BaseServiceProvider
         Router $router,
         ResponseFactoryContract $responses
     ) {
-        $this->bootPublishing();
         $this->bootMiddleware($router);
         $this->bootResponseMacro($responses);
     }
@@ -107,22 +106,7 @@ class ServiceProvider extends BaseServiceProvider
         $this->bindLinkFactory();
         $this->bindPagination();
         $this->registerArtisanCommands();
-    }
-
-    /**
-     * Register the configuration that this package publishes.
-     *
-     * @return void
-     */
-    protected function bootPublishing()
-    {
-        $this->publishes([
-            __DIR__ . '/../config/json-api.php' => config_path('json-api.php'),
-        ], 'config');
-
-        $this->publishes([
-            __DIR__ . '/../config/json-api-errors.php' => config_path('json-api-errors.php'),
-        ], 'errors');
+        $this->mergePackageConfig();
     }
 
     /**
@@ -261,6 +245,14 @@ class ServiceProvider extends BaseServiceProvider
         if ($this->app->runningInConsole()) {
             $this->commands($this->generatorCommands);
         }
+    }
+
+    /**
+     * Merge default package config.
+     */
+    protected function mergePackageConfig()
+    {
+        $this->mergeConfigFrom(__DIR__ . '/../config/json-api-errors.php', 'json-api-errors');
     }
 
     /**
