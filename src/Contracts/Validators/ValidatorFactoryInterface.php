@@ -50,7 +50,7 @@ interface ValidatorFactoryInterface extends BaseInterface
     );
 
     /**
-     * Get a filter parameters validator.
+     * Get a query parameters validator.
      *
      * @param array $rules
      * @param array $messages
@@ -58,27 +58,11 @@ interface ValidatorFactoryInterface extends BaseInterface
      * @param callable|null $callback
      * @return QueryValidatorInterface
      */
-    public function filterParams(
+    public function queryParameters(
         array $rules,
         array $messages = [],
         array $customAttributes = [],
         callable $callback = null
     );
 
-
-    /**
-     * Get a pagination parameters validator.
-     *
-     * @param array $rules
-     * @param array $messages
-     * @param array $customAttributes
-     * @param callable|null $callback
-     * @return QueryValidatorInterface
-     */
-    public function paginationParams(
-        array $rules,
-        array $messages = [],
-        array $customAttributes = [],
-        callable $callback = null
-    );
 }

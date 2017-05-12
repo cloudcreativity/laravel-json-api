@@ -21,7 +21,7 @@ namespace CloudCreativity\LaravelJsonApi\Store;
 use CloudCreativity\JsonApi\Contracts\Pagination\PageInterface;
 use CloudCreativity\JsonApi\Contracts\Store\AdapterInterface;
 use CloudCreativity\JsonApi\Exceptions\RuntimeException;
-use CloudCreativity\LaravelJsonApi\Pagination\PagingStrategyInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PagingStrategyInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
@@ -67,6 +67,20 @@ abstract class EloquentAdapter implements AdapterInterface
     protected $findManyFilter = null;
 
     /**
+     * The default pagination to use if no page parameters have been provided.
+     *
+     * If your resource must always be paginated, use this to return the default
+     * pagination variables... e.g. `['number' => 1]` for page 1.
+     *
+     * If this property is null or an empty array, then no pagination will be
+     * used if no page parameters have been provided (i.e. every resource
+     * will be returned).
+     *
+     * @var array|null
+     */
+    protected $defaultPagination = null;
+
+    /**
      * Apply the supplied filters to the builder instance.
      *
      * @param Builder $query
@@ -100,7 +114,7 @@ abstract class EloquentAdapter implements AdapterInterface
      */
     public function query(EncodingParametersInterface $parameters)
     {
-        $filters = new Collection((array) $parameters->getFilteringParameters());
+        $filters = $this->extractFilters($parameters);
 
         if ($this->isFindMany($filters)) {
             return $this->findMany($filters);
@@ -113,10 +127,10 @@ abstract class EloquentAdapter implements AdapterInterface
             return $this->first($query);
         }
 
-        $pagination = new Collection((array) $parameters->getPaginationParameters());
+        $pagination = $this->extractPagination($parameters);
 
-        if (!$pagination->isEmpty() && !$this->paging) {
-            throw new RuntimeException('Client has provided paging parameters but paging is not supported.');
+        if (!$pagination->isEmpty() && !$this->hasPaging()) {
+            throw new RuntimeException('Paging parameters exist but paging is not supported.');
         }
 
         return $pagination->isEmpty() ? $this->all($query) : $this->paginate($query, $parameters);
@@ -213,6 +227,42 @@ abstract class EloquentAdapter implements AdapterInterface
     protected function getQualifiedKeyName()
     {
         return sprintf('%s.%s', $this->model->getTable(), $this->getKeyName());
+    }
+
+    /**
+     * @param EncodingParametersInterface $parameters
+     * @return Collection
+     */
+    protected function extractFilters(EncodingParametersInterface $parameters)
+    {
+        return new Collection((array) $parameters->getFilteringParameters());
+    }
+
+    /**
+     * @param EncodingParametersInterface $parameters
+     * @return Collection
+     */
+    protected function extractPagination(EncodingParametersInterface $parameters)
+    {
+        $pagination = (array) $parameters->getPaginationParameters();
+
+        return new Collection($pagination ?: $this->defaultPagination());
+    }
+
+    /**
+     * @return array
+     */
+    protected function defaultPagination()
+    {
+        return (array) $this->defaultPagination;
+    }
+
+    /**
+     * @return bool
+     */
+    protected function hasPaging()
+    {
+        return $this->paging instanceof PagingStrategyInterface;
     }
 
     /**

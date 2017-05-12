@@ -141,7 +141,7 @@ return [
     ],
 
     /**
-     * Used when validating the filter query parameter with a Laravel validator. The source
+     * Used when validating the query parameter with a Laravel validator. The source
      * parameter and error detail will be set using the message bag that the Laravel validator returns,
      * and a 400 response status will be set.
      */

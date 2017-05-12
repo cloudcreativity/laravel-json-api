@@ -54,11 +54,14 @@ class ValidatorErrorFactory extends BaseFactory implements ValidatorErrorFactory
     /**
      * @inheritdoc
      */
-    public function queryParametersMessages(MessageBag $messages, $queryParam, $statusCode = self::STATUS_INVALID_PARAMETERS)
-    {
+    public function queryParametersMessages(
+        MessageBag $messages,
+        $prefix = null,
+        $statusCode = self::STATUS_INVALID_PARAMETERS
+    ) {
         $prototype = $this->repository->error(self::QUERY_PARAMETERS_MESSAGES);
         $prototype = Error::cast($prototype)->setStatus($statusCode);
-        $errors = new ErrorBag($messages, $prototype, $queryParam, true);
+        $errors = new ErrorBag($messages, $prototype, $prefix, true);
 
         return $errors->toArray();
     }

@@ -48,9 +48,14 @@ interface ValidatorErrorFactoryInterface extends BaseInterface
 
     /**
      * @param MessageBag $messages
-     * @param string $queryParam
+     * @param string|null $prefix
+     *      a prefix if the validator relates to a nested parameter.
      * @param int $statusCode
      * @return ErrorInterface[]
      */
-    public function queryParametersMessages(MessageBag $messages, $queryParam, $statusCode = self::STATUS_INVALID_PARAMETERS);
+    public function queryParametersMessages(
+        MessageBag $messages,
+        $prefix = null,
+        $statusCode = self::STATUS_INVALID_PARAMETERS
+    );
 }

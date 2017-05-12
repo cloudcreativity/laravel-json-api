@@ -27,7 +27,6 @@ use CloudCreativity\JsonApi\Contracts\Validators\RelationshipsValidatorInterface
 use CloudCreativity\JsonApi\Contracts\Validators\ResourceValidatorInterface;
 use CloudCreativity\JsonApi\Contracts\Validators\ValidatorProviderInterface;
 use CloudCreativity\JsonApi\Http\Query\ChecksQueryParameters;
-use CloudCreativity\JsonApi\Validators\QueryValidatorIterator;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Http\Requests\RequestInterpreter;
 use Illuminate\Contracts\Validation\Validator;
@@ -57,52 +56,31 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
     protected $customAttributes = [];
 
     /**
-     * Validation rules for filter query parameters.
+     * Validation rules for query parameters.
      *
      * @var array
      */
-    protected $filterRules = [];
+    protected $queryRules = [];
 
     /**
-     * Custom messages for the filter validator.
+     * Custom messages for the query parameters validator.
      *
      * @var array
      */
-    protected $filterMessages = [];
+    protected $queryMessages = [];
 
     /**
-     * Custom attributes for the filter validator.
+     * Custom attributes for the query parameters validator.
      *
      * @var array
      */
-    protected $filterCustomAttributes = [];
-
-    /**
-     * Validation rules for pagination query parameters.
-     *
-     * @var array
-     */
-    protected $paginationRules = [];
-
-    /**
-     * Custom messages for the pagination validator.
-     *
-     * @var array
-     */
-    protected $paginationMessages = [];
-
-    /**
-     * Custom attributes for the pagination validator.
-     *
-     * @var array
-     */
-    protected $paginationCustomAttributes = [];
+    protected $queryCustomAttributes = [];
 
     /**
      * The allowed filtering parameters.
      *
      * By default we set this to `null` to allow any filtering parameters, as we expect
-     * the filtering parameters to be validated using the filter validator.
+     * the filtering parameters to be validated using the query parameter validator.
      *
      * @var string[]|null
      * @see ChecksQueryParameters::allowedFilteringParameters()
@@ -113,7 +91,7 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
      * The allowed paging parameters.
      *
      * By default we set this to `null` to allow any paging parameters, as we expect
-     * the paging parameters to be validated using the pagination validator.
+     * the paging parameters to be validated using the query parameter validator.
      *
      * @var string[]|null
      * @see ChecksQueryParameters::allowedPagingParameters()
@@ -218,7 +196,7 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
      */
     public function queryChecker($resourceType)
     {
-        return $this->createQueryChecker($this->factory, $this->createQueryValidator($resourceType));
+        return $this->createQueryChecker($this->factory, $this->queryValidator($resourceType));
     }
 
     /**
@@ -353,153 +331,69 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
     }
 
     /**
-     * @param $resourceType
-     * @return QueryValidatorInterface|null
-     */
-    protected function createQueryValidator($resourceType)
-    {
-        $validator = new QueryValidatorIterator();
-
-        if ($this->requestInterpreter->isIndex()) {
-            $validator->add($this->filterValidator($resourceType));
-            $validator->add($this->paginationValidator($resourceType));
-        }
-
-        return $validator;
-    }
-
-    /**
      * Get a validator for the filter query parameters.
      *
      * @param string $resourceType
      *      the resource type that is being filtered
      * @return QueryValidatorInterface
      */
-    protected function filterValidator($resourceType)
+    protected function queryValidator($resourceType)
     {
-        return $this->validatorFactory()->filterParams(
-            $this->filterRules($resourceType),
-            $this->filterMessages($resourceType),
-            $this->filterCustomAttributes($resourceType),
+        return $this->validatorFactory()->queryParameters(
+            $this->queryRules($resourceType),
+            $this->queryMessages($resourceType),
+            $this->queryCustomAttributes($resourceType),
             function (Validator $validator) use ($resourceType) {
-                return $this->conditionalFilters($validator, $resourceType);
+                return $this->conditionalQuery($validator, $resourceType);
             }
         );
     }
 
     /**
-     * Get the validation rules for the filter query parameter.
+     * Get the validation rules for the query parameters.
      *
      * @param $resourceType
-     *      the resource type that is being filtered
+     *      the resource type that is being queried
      * @return array
      */
-    protected function filterRules($resourceType)
+    protected function queryRules($resourceType)
     {
-        return $this->filterRules;
+        return $this->queryRules;
     }
 
     /**
      * @param $resourceType
-     *      the resource type that is being filtered
+     *      the resource type that is being queried
      * @return array
      */
-    protected function filterMessages($resourceType)
+    protected function queryMessages($resourceType)
     {
-        return $this->filterMessages;
+        return $this->queryMessages;
     }
 
     /**
      * @param $resourceType
-     *      the resource type that is being filtered
+     *      the resource type that is being queried
      * @return array
      */
-    protected function filterCustomAttributes($resourceType)
+    protected function queryCustomAttributes($resourceType)
     {
-        return $this->filterCustomAttributes;
+        return $this->queryCustomAttributes;
     }
 
     /**
-     * Callback to configure a filter validator.
+     * Callback to configure a query parameter validator.
      *
      * Child classes can override this method if they need to do custom
-     * configuration on the filter validator.
+     * configuration on the query parameter validator.
      *
      * @param Validator $validator
-     *      the Laravel validator instance that will validate the filters.
+     *      the Laravel validator instance that will validate the query parameters.
      * @param string $resourceType
-     *      the resource type being filtered
+     *      the resource type being queried
      */
-    protected function conditionalFilters(Validator $validator, $resourceType)
+    protected function conditionalQuery(Validator $validator, $resourceType)
     {
-
-    }
-
-    /**
-     * Get a validator for the pagination query parameters.
-     *
-     * @param string $resourceType
-     *      the resource type that is being paged.
-     * @return QueryValidatorInterface
-     */
-    protected function paginationValidator($resourceType)
-    {
-        return $this->validatorFactory()->paginationParams(
-            $this->paginationRules($resourceType),
-            $this->paginationMessages($resourceType),
-            $this->paginationCustomAttributes($resourceType),
-            function (Validator $validator) use ($resourceType) {
-                return $this->conditionalPagination($validator, $resourceType);
-            }
-        );
-    }
-
-    /**
-     * Get the validation rules for the pagination query parameter.
-     *
-     * @param $resourceType
-     *      the resource type that is being paged
-     * @return array
-     */
-    protected function paginationRules($resourceType)
-    {
-        return $this->paginationRules;
-    }
-
-    /**
-     * @param $resourceType
-     *      the resource type that is being paged
-     * @return array
-     */
-    protected function paginationMessages($resourceType)
-    {
-        return $this->paginationMessages;
-    }
-
-    /**
-     * @param $resourceType
-     *      the resource type that is being paged
-     * @return array
-     */
-    protected function paginationCustomAttributes($resourceType)
-    {
-        return $this->paginationCustomAttributes;
-    }
-
-    /**
-     * Callback to configure a pagination validator.
-     *
-     * Child classes can override this method if they need to do custom
-     * configuration on the pagination validator.
-     *
-     * @param Validator $validator
-     *      the Laravel validator instance that will validate the pagination params.
-     * @param string $resourceType
-     *      the resource type being paged
-     */
-    protected function conditionalPagination(Validator $validator, $resourceType)
-    {
-
     }
 
     /**

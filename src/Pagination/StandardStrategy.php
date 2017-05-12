@@ -22,6 +22,7 @@ use CloudCreativity\JsonApi\Contracts\Factories\FactoryInterface;
 use CloudCreativity\JsonApi\Contracts\Pagination\PageInterface;
 use CloudCreativity\JsonApi\Utils\Str;
 use CloudCreativity\LaravelJsonApi\Contracts\Document\LinkFactoryInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PagingStrategyInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;

@@ -23,13 +23,14 @@ use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorErrorFactoryInt
 use Illuminate\Contracts\Validation\Factory;
 use Illuminate\Contracts\Validation\Validator;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
+use Neomerx\JsonApi\Contracts\Http\Query\QueryParametersParserInterface;
 
 /**
  * Class QueryValidator
  *
  * @package CloudCreativity\LaravelJsonApi
  */
-abstract class AbstractQueryValidator extends AbstractValidator implements QueryValidatorInterface
+class QueryValidator extends AbstractValidator implements QueryValidatorInterface
 {
 
     /**
@@ -56,17 +57,6 @@ abstract class AbstractQueryValidator extends AbstractValidator implements Query
      * @var callable|null
      */
     private $callback;
-
-    /**
-     * @param EncodingParametersInterface $parameters
-     * @return array
-     */
-    abstract protected function extract(EncodingParametersInterface $parameters);
-
-    /**
-     * @return string
-     */
-    abstract protected function getParameterKey();
 
     /**
      * AttributesValidator constructor.
@@ -146,12 +136,25 @@ abstract class AbstractQueryValidator extends AbstractValidator implements Query
     }
 
     /**
+     * @param EncodingParametersInterface $parameters
+     * @return array
+     */
+    protected function extract(EncodingParametersInterface $parameters)
+    {
+        $data = (array) $parameters->getUnrecognizedParameters();
+        $data[QueryParametersParserInterface::PARAM_FILTER] = (array) $parameters->getFilteringParameters();
+        $data[QueryParametersParserInterface::PARAM_PAGE] = (array) $parameters->getPaginationParameters();
+
+        return $data;
+    }
+
+    /**
      * @param Validator $validator
      */
     protected function addValidatorErrors(Validator $validator)
     {
         $messages = $validator->getMessageBag();
-        $this->addErrors($this->errorFactory->queryParametersMessages($messages, $this->getParameterKey()));
+        $this->addErrors($this->errorFactory->queryParametersMessages($messages));
     }
 
 }
