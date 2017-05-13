@@ -22,8 +22,10 @@ use CloudCreativity\JsonApi\Contracts\Http\ApiInterface;
 use CloudCreativity\JsonApi\Contracts\Http\HttpServiceInterface;
 use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface;
 use CloudCreativity\JsonApi\Contracts\Http\Responses\ErrorResponseInterface;
+use CloudCreativity\JsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\JsonApi\Contracts\Utils\ErrorReporterInterface;
 use CloudCreativity\JsonApi\Exceptions\RuntimeException;
+use CloudCreativity\LaravelJsonApi\Adapters\EloquentAdapter;
 use CloudCreativity\LaravelJsonApi\Routing\ResourceRegistrar;
 use Exception;
 use Illuminate\Contracts\Container\Container;
@@ -64,6 +66,50 @@ class JsonApiService implements HttpServiceInterface, ErrorReporterInterface
         $registrar->resource($resourceType, $controller, $options);
 
         return $registrar;
+    }
+
+    /**
+     * Register a resource type with the router and register adapter.
+     *
+     * @param string $resourceType
+     * @param string $adapter
+     * @param string|null $controller
+     * @param array $options
+     * @return ResourceRegistrar
+     */
+    public function adapter($resourceType, $adapter, $controller = null, array $options = [])
+    {
+        $adapterObject = $this->container->make($adapter);
+        
+        // Check if adapter recognises resource type
+        if(! $adapterObject->recognises($resourceType)) {
+            throw new RuntimeException("No adapter for resource type: $resourceType");
+        }
+
+        // Register adapter
+        $store = $this->container->make(StoreInterface::class);
+        $store->register($adapterObject);
+
+        return $this->resource($resourceType, $controller, $options);
+    }
+
+    /**
+     * Register a resource type with the router and include to the Eloquent adapter.
+     *
+     * @param string $resourceType
+     * @param string $model
+     * @param string $keyName
+     * @param string|null $controller
+     * @param array $options
+     * @return ResourceRegistrar
+     */
+    public function eloquentAdapter($resourceType, $model, $keyName = NULL, $controller = null, array $options = [])
+    {
+        // Include resource type to Eloquent adapter
+        $adapter = $this->container->make(EloquentAdapter::class);
+        $adapter->addResource($resourceType, $model, $keyName);
+
+        return $this->resource($resourceType, $controller, $options);
     }
 
     /**
