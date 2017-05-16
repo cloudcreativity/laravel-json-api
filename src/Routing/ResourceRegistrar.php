@@ -20,10 +20,12 @@ namespace CloudCreativity\LaravelJsonApi\Routing;
 
 use Closure;
 use CloudCreativity\LaravelJsonApi\Api\Repository;
+use CloudCreativity\LaravelJsonApi\Api\ResourceProviders;
 use Illuminate\Contracts\Routing\Registrar;
 
 /**
  * Class ResourceRegistrar
+ *
  * @package CloudCreativity\LaravelJsonApi
  */
 class ResourceRegistrar
@@ -66,9 +68,11 @@ class ResourceRegistrar
     {
         $options = $this->pushMiddleware($apiName, $options);
         $api = $this->apiGroup($apiName, $options);
+        $providers = $this->apiProviders($apiName);
 
-        $this->router->group($options, function () use ($api, $routes) {
+        $this->router->group($options, function () use ($api, $routes, $providers) {
             $routes($api, $this->router);
+            $providers->mountAll($api, $this->router);
         });
     }
 
@@ -97,5 +101,14 @@ class ResourceRegistrar
         $definition = $this->apiRepository->retrieveDefinition($apiName);
 
         return new ApiGroup($this->router, $definition, $options);
+    }
+
+    /**
+     * @param $apiName
+     * @return ResourceProviders
+     */
+    protected function apiProviders($apiName)
+    {
+        return $this->apiRepository->retrieveProviders($apiName);
     }
 }

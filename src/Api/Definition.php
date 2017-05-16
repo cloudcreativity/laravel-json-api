@@ -21,7 +21,7 @@ namespace CloudCreativity\LaravelJsonApi\Api;
 /**
  * Class Definition
  *
- * @package CloudCreativity\LaravelJsonApi\Api
+ * @package CloudCreativity\LaravelJsonApi
  */
 class Definition
 {

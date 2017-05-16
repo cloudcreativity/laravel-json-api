@@ -23,7 +23,7 @@ use IteratorAggregate;
 /**
  * Class ResourceMap
  *
- * @package CloudCreativity\LaravelJsonApi\Api
+ * @package CloudCreativity\LaravelJsonApi
  */
 class ResourceMap implements IteratorAggregate
 {

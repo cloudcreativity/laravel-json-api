@@ -18,10 +18,13 @@
 
 namespace CloudCreativity\LaravelJsonApi\Api;
 
+use CloudCreativity\LaravelJsonApi\Routing\ApiGroup;
+use Illuminate\Contracts\Routing\Registrar;
+
 /**
  * Class ResourceProvider
  *
- * @package CloudCreativity\LaravelJsonApi\Api
+ * @package CloudCreativity\LaravelJsonApi
  */
 abstract class ResourceProvider
 {
@@ -42,6 +45,15 @@ abstract class ResourceProvider
     protected $errors = [];
 
     /**
+     * Mount routes onto the provided API.
+     *
+     * @param ApiGroup $api
+     * @param Registrar $router
+     * @return void
+     */
+    abstract public function mount(ApiGroup $api, Registrar $router);
+
+    /**
      * @return string
      */
     abstract protected function getRootNamespace();
@@ -51,9 +63,7 @@ abstract class ResourceProvider
      */
     public function getResources()
     {
-        $resources = new ResourceMap($this->getRootNamespace(), $this->resources, $this->byResource);
-
-        return $resources->all();
+        return $this->createResourceMap()->all();
     }
 
     /**
@@ -62,5 +72,13 @@ abstract class ResourceProvider
     public function getErrors()
     {
         return $this->errors;
+    }
+
+    /**
+     * @return ResourceMap
+     */
+    protected function createResourceMap()
+    {
+        return new ResourceMap($this->getRootNamespace(), $this->resources, $this->byResource);
     }
 }

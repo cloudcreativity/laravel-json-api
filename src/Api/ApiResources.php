@@ -25,7 +25,7 @@ use IteratorAggregate;
 /**
  * Class ApiResources
  *
- * @package CloudCreativity\LaravelJsonApi\Api
+ * @package CloudCreativity\LaravelJsonApi
  */
 class ApiResources implements IteratorAggregate
 {

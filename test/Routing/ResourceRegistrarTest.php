@@ -23,6 +23,8 @@ use CloudCreativity\LaravelJsonApi\Api\ApiResource;
 use CloudCreativity\LaravelJsonApi\Api\ApiResources;
 use CloudCreativity\LaravelJsonApi\Api\Definition;
 use CloudCreativity\LaravelJsonApi\Api\Repository;
+use CloudCreativity\LaravelJsonApi\Api\ResourceProviders;
+use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use CloudCreativity\LaravelJsonApi\Routing\ApiGroup as Api;
 use CloudCreativity\LaravelJsonApi\TestCase;
 use Illuminate\Contracts\Events\Dispatcher;
@@ -69,8 +71,11 @@ class ResourceRegistrarTest extends TestCase
             ->method('getResources')
             ->willReturn($this->resources = new ApiResources());
 
+        $providers = $this->getMockBuilder(ResourceProviders::class)->disableOriginalConstructor()->getMock();
+
         $repository = $this->getMockBuilder(Repository::class)->disableOriginalConstructor()->getMock();
         $repository->method('retrieveDefinition')->with('v1')->willReturn($this->definition);
+        $repository->method('retrieveProviders')->with('v1')->willReturn($providers);
 
         /** @var Dispatcher $events */
         $events = $this->getMockBuilder(Dispatcher::class)->getMock();

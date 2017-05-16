@@ -23,7 +23,7 @@ use CloudCreativity\LaravelJsonApi\Utils\Fqn;
 /**
  * Class ApiResource
  *
- * @package CloudCreativity\LaravelJsonApi\Api
+ * @package CloudCreativity\LaravelJsonApi
  */
 class ApiResource
 {

@@ -19,12 +19,14 @@
 namespace CloudCreativity\LaravelJsonApi\Api;
 
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
+use CloudCreativity\LaravelJsonApi\Routing\ApiGroup;
+use Illuminate\Contracts\Routing\Registrar;
 use IteratorAggregate;
 
 /**
  * Class ResourceProviders
  *
- * @package CloudCreativity\LaravelJsonApi\Api
+ * @package CloudCreativity\LaravelJsonApi
  */
 class ResourceProviders implements IteratorAggregate
 {
@@ -53,12 +55,26 @@ class ResourceProviders implements IteratorAggregate
 
     /**
      * @param Definition $definition
+     * @return void
      */
     public function registerAll(Definition $definition)
     {
         /** @var ResourceProvider $provider */
         foreach ($this as $provider) {
             $definition->register($provider);
+        }
+    }
+
+    /**
+     * @param ApiGroup $api
+     * @param Registrar $router
+     * @return void
+     */
+    public function mountAll(ApiGroup $api, Registrar $router)
+    {
+        /** @var ResourceProvider $provider */
+        foreach ($this as $provider) {
+            $provider->mount($api, $router);
         }
     }
 

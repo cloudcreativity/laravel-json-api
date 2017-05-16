@@ -27,7 +27,7 @@ use Illuminate\Support\Arr;
 /**
  * Class Repository
  *
- * @package CloudCreativity\LaravelJsonApi\Api
+ * @package CloudCreativity\LaravelJsonApi
  */
 class Repository
 {
