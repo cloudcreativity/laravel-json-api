@@ -31,7 +31,7 @@ use Neomerx\JsonApi\Contracts\Encoder\Parameters\SortParameterInterface;
 /**
  * Class EloquentAdapter
  *
- * @package CloudCreativity\LaravelJsonApi\Store
+ * @package CloudCreativity\LaravelJsonApi
  */
 abstract class EloquentAdapter implements AdapterInterface
 {

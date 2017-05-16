@@ -26,7 +26,7 @@ use Illuminate\Contracts\Container\Container as LaravelContainer;
 /**
  * Class Container
  *
- * @package CloudCreativity\LaravelJsonApi\Store
+ * @package CloudCreativity\LaravelJsonApi
  */
 class Container extends BaseContainer
 {
