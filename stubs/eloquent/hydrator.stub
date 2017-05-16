@@ -20,4 +20,3 @@ class Hydrator extends EloquentHydrator
     ];
 
 }
-

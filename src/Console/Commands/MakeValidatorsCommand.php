@@ -23,7 +23,7 @@ namespace CloudCreativity\LaravelJsonApi\Console\Commands;
  *
  * @package CloudCreativity\LaravelJsonApi
  */
-class ValidatorsMakeCommand extends AbstractGeneratorCommand
+class MakeValidatorsCommand extends AbstractGeneratorCommand
 {
 
     /**
@@ -38,7 +38,7 @@ class ValidatorsMakeCommand extends AbstractGeneratorCommand
      *
      * @var string
      */
-    protected $description = 'Create a new JSON API resource validator';
+    protected $description = 'Create a new JSON API resource validator provider';
 
     /**
      * The type of class being generated.

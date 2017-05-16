@@ -53,11 +53,6 @@ class MakeApiCommand extends Command
             return 1;
         }
 
-        if ('errors' === $name) {
-            $this->error("Cannot use 'errors' as an API name.");
-            return 1;
-        }
-
         $filename = sprintf('json-api-%s.php', Str::dasherize($name));
 
         if ($files->exists($path = config_path($filename))) {
@@ -68,7 +63,7 @@ class MakeApiCommand extends Command
         $contents = $files->get(__DIR__ . '/../../../stubs/api.php');
         $files->put($path, $contents);
 
-        $this->info("Created config files for API '$name': $filename");
+        $this->info("Created config file for API '$name': $filename");
 
         return 0;
     }

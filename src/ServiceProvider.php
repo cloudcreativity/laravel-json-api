@@ -70,12 +70,12 @@ class ServiceProvider extends BaseServiceProvider
      * @var array
      */
     protected $generatorCommands = [
-        Commands\HydratorMakeCommand::class,
-        Commands\ResourceMakeCommand::class,
-        Commands\SchemaMakeCommand::class,
-        Commands\SearchMakeCommand::class,
-        Commands\ValidatorsMakeCommand::class,
+        Commands\MakeAdapterCommand::class,
         Commands\MakeApiCommand::class,
+        Commands\MakeHydratorCommand::class,
+        Commands\MakeResourceCommand::class,
+        Commands\MakeSchemaCommand::class,
+        Commands\MakeValidatorsCommand::class,
     ];
 
     /**

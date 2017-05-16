@@ -34,17 +34,6 @@ class Fqn
      * @param bool $byResource
      * @return string
      */
-    public static function schema($resourceType, $rootNamespace, $byResource = true)
-    {
-        return self::fqn('Schema', $resourceType, $rootNamespace, $byResource);
-    }
-
-    /**
-     * @param $resourceType
-     * @param $rootNamespace
-     * @param bool $byResource
-     * @return string
-     */
     public static function adapter($resourceType, $rootNamespace, $byResource = true)
     {
         return self::fqn('Adapter', $resourceType, $rootNamespace, $byResource);
@@ -59,6 +48,28 @@ class Fqn
     public static function authorizer($resourceType, $rootNamespace, $byResource = true)
     {
         return self::fqn('Authorizer', $resourceType, $rootNamespace, $byResource);
+    }
+
+    /**
+     * @param $resourceType
+     * @param $rootNamespace
+     * @param bool $byResource
+     * @return string
+     */
+    public static function hydrator($resourceType, $rootNamespace, $byResource = true)
+    {
+        return self::fqn('Hydrator', $resourceType, $rootNamespace, $byResource);
+    }
+
+    /**
+     * @param $resourceType
+     * @param $rootNamespace
+     * @param bool $byResource
+     * @return string
+     */
+    public static function schema($resourceType, $rootNamespace, $byResource = true)
+    {
+        return self::fqn('Schema', $resourceType, $rootNamespace, $byResource);
     }
 
     /**

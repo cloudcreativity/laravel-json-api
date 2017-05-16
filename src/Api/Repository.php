@@ -43,6 +43,11 @@ class Repository
     private $factory;
 
     /**
+     * @var array
+     */
+    private $definitions = [];
+
+    /**
      * Repository constructor.
      *
      * @param Config $config
@@ -72,11 +77,15 @@ class Repository
      */
     public function retrieveDefinition($apiName)
     {
+        if (isset($this->definitions[$apiName])) {
+            return $this->definitions[$apiName];
+        }
+
         $config = $this->configFor($apiName);
         $definition = $this->createDefinition($apiName, $config);
         $this->createProviders($config)->registerAll($definition);
 
-        return $definition;
+        return $this->definitions[$apiName] = $definition;
     }
 
     /**

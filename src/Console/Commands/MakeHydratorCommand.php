@@ -19,11 +19,11 @@
 namespace CloudCreativity\LaravelJsonApi\Console\Commands;
 
 /**
- * Class SearchMakeCommand
+ * Class HydratorMakeCommand
  *
  * @package CloudCreativity\LaravelJsonApi
  */
-class SearchMakeCommand extends AbstractGeneratorCommand
+class MakeHydratorCommand extends AbstractGeneratorCommand
 {
 
     /**
@@ -31,19 +31,19 @@ class SearchMakeCommand extends AbstractGeneratorCommand
      *
      * @var string
      */
-    protected $name = 'make:json-api:search';
+    protected $name = 'make:json-api:hydrator';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Create a new JSON API resource search';
+    protected $description = 'Create a new JSON API resource hydrator';
 
     /**
      * The type of class being generated.
      *
      * @var string
      */
-    protected $type = 'Search';
+    protected $type = 'Hydrator';
 }

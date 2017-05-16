@@ -28,7 +28,7 @@ use Symfony\Component\Console\Input\InputOption;
  *
  * @package CloudCreativity\LaravelJsonApi
  */
-class ResourceMakeCommand extends Command
+class MakeResourceCommand extends Command
 {
 
     /**
@@ -36,7 +36,14 @@ class ResourceMakeCommand extends Command
      *
      * @var string
      */
-    protected $name = 'make:json-api:resource';
+    protected $signature = "make:json-api:resource
+        {resource : The resource to create files for.}
+        {api=default : The API that the resource belongs to.}
+        {--e|eloquent : Use Eloquent classes.}
+        {--N|no-eloquent : Do not use Eloquent classes.}
+        {--o|only= : Specify the classes to generate.}
+        {--x|except= : Skip the specified classes.}
+    ";
 
     /**
      * The console command description.
@@ -51,28 +58,36 @@ class ResourceMakeCommand extends Command
      * @var array
      */
     private $commands = [
-        'make:json-api:validators' => ValidatorsMakeCommand::class,
-        'make:json-api:hydrator' => HydratorMakeCommand::class,
-        'make:json-api:schema' => SchemaMakeCommand::class,
-        'make:json-api:search' => SearchMakeCommand::class,
+        'make:json-api:adapter' => MakeAdapterCommand::class,
+        'make:json-api:hydrator' => MakeHydratorCommand::class,
+        'make:json-api:schema' => MakeSchemaCommand::class,
+        'make:json-api:validators' => MakeValidatorsCommand::class,
     ];
 
     /**
      * Execute the console command.
      *
-     * @return mixed
+     * @return int
      */
     public function handle()
     {
         $resourceParameter = [
             'resource' => $this->argument('resource'),
+            'api' => $this->argument('api'),
         ];
-        $adapterParameters = array_merge($resourceParameter, [
+
+        $eloquentParameters = array_merge($resourceParameter, [
             '--eloquent' => $this->option('eloquent'),
             '--no-eloquent' => $this->option('no-eloquent'),
         ]);
 
         $commands = collect($this->commands);
+
+        // Just tell the user, if no files are created
+        if ($commands->isEmpty()) {
+            $this->info('No files created.');
+            return 0;
+        }
 
         // Filter out any commands the user asked os to.
         if ($this->option('only') || $this->option('except')) {
@@ -81,31 +96,21 @@ class ResourceMakeCommand extends Command
             $commands = $this->filterCommands($commands, $type);
         }
 
-        // The search unit is only for eloquent.
-        if (!$this->isEloquent()) {
-            $commands->forget('make:json-api:search');
-        }
-
-        // Run independent commands.
+        // Run commands that cannot accept Eloquent parameters.
         $this->runCommandsWithParameters($commands->only([
-            'make:json-api:request',
             'make:json-api:validators',
         ]), $resourceParameter);
 
-        // Run adapter commands.
+        // Run commands that can accept Eloquent parameters.
         $this->runCommandsWithParameters($commands->only([
+            'make:json-api:adapter',
             'make:json-api:hydrator',
             'make:json-api:schema',
-            'make:json-api:search',
-        ]), $adapterParameters);
-
-        // Just tell the user, if no files are created
-        if ($commands->isEmpty()) {
-            $this->info('No files created.');
-        }
+        ]), $eloquentParameters);
 
         // Give the user a digial high-five.
         $this->comment('All done, keep doing what you do.');
+        return 0;
     }
 
     /**
@@ -130,7 +135,7 @@ class ResourceMakeCommand extends Command
     }
 
     /**
-     * Runs the given commands and paases them all the given parameters.
+     * Runs the given commands and passes them all the given parameters.
      *
      * @param Collection $commands
      * @param array $parameters
@@ -144,46 +149,4 @@ class ResourceMakeCommand extends Command
         });
     }
 
-    /**
-     * Determine whether the generator should use eloquent or not.
-     *
-     * @return boolean
-     */
-    private function isEloquent()
-    {
-        $useEloquent = config('json-api.generator.use-eloquent', true);
-
-        if ($this->option('no-eloquent')) {
-            return false;
-        }
-
-        return $this->option('eloquent') ?: $useEloquent;
-    }
-
-    /**
-     * Get the console command arguments.
-     *
-     * @return array
-     */
-    protected function getArguments()
-    {
-        return [
-            ['resource', InputArgument::REQUIRED, 'The resource to create files for'],
-        ];
-    }
-
-    /**
-     * Get the console command options.
-     *
-     * @return array
-     */
-    protected function getOptions()
-    {
-        return [
-            ['eloquent', 'e`', InputOption::VALUE_NONE, 'Use eloquent as adapter'],
-            ['no-eloquent', 'ne', InputOption::VALUE_NONE, 'Use an abstract adapter'],
-            ['only', 'o', InputOption::VALUE_OPTIONAL, 'Specifiy the exact resources you\'d like.'],
-            ['except', 'ex', InputOption::VALUE_OPTIONAL, 'Specifiy the resources you\'d like to skip.'],
-        ];
-    }
 }

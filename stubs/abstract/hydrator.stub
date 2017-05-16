@@ -19,7 +19,7 @@ class Hydrator extends AbstractHydrator implements HydratesRelatedInterface
      */
     protected function hydrateAttributes(StandardObjectInterface $attributes, $record)
     {
-        // TODO: Implement hydrateAttributes() method.
+        // TODO
     }
 
 }

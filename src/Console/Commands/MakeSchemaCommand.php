@@ -23,7 +23,7 @@ namespace CloudCreativity\LaravelJsonApi\Console\Commands;
  *
  * @package CloudCreativity\LaravelJsonApi
  */
-class SchemaMakeCommand extends AbstractGeneratorCommand
+class MakeSchemaCommand extends AbstractGeneratorCommand
 {
 
     /**

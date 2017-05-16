@@ -15,7 +15,7 @@ return [
     | The `by-resource` setting determines how your units are organised within
     | your root namespace.
     |
-    | - true: e.g. \App\JsonApi\Tasks\{Schema, Hydrator}
+    | - true: e.g. \App\JsonApi\Posts\{Schema, Hydrator}
     | - false:
     |   - e.g. \App\JsonApi\Schemas\{User, Post, Comment}
     |   - e.g. \App\JsonApi\Hydrators\{User, Post, Comment}
@@ -126,9 +126,14 @@ return [
     |--------------------------------------------------------------------------
     |
     | This is an array of JSON API errors that can be returned by the API.
-    | The value here is an array of errors specific to this API. These will
-    | be merged on top of the default errors supplied by this package (merging
-    | is not recursive) and stored in your `json-api-errors` config file.
+    | The value here is an array of errors specific to this API, with string
+    | array keys that are the references used to create those errors.
+    |
+    | Errors contained here will be merged on top of the default errors
+    | supplied by this package (merging is not recursive). This means if you
+    | need to override any of the default errors, you can include an error here
+    | with the same key as the default error you want to override. Default
+    | errors can be found in the package's 'config/json-api-errors.php' file.
     */
     'errors' => [],
 
