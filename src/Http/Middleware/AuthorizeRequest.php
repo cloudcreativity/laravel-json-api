@@ -63,7 +63,7 @@ class AuthorizeRequest
         $service = $this->container->make(JsonApiService::class);
 
         $this->authorize(
-            $service->getApi()->getRequestInterpreter(),
+            $service->getRequestInterpreter(),
             $service->getRequest(),
             $this->resolveAuthorizer($authorizer)
         );

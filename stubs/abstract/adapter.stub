@@ -19,7 +19,7 @@ class Adapter implements AdapterInterface
 
     /**
      * @param $resourceId
-     * @return mixed
+     * @return bool
      */
     public function exists($resourceId)
     {
@@ -28,7 +28,7 @@ class Adapter implements AdapterInterface
 
     /**
      * @param string $resourceId
-     * @return mixed
+     * @return object|null
      */
     public function find($resourceId)
     {
