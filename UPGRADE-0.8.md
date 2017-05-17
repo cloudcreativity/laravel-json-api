@@ -389,3 +389,12 @@ Please note that the `JsonApiController` now contains little of value and it is 
 a future version. For example, our `EloquentController` no longer extends from it.
 
 If you want to stop extending it, then remember to add the traits to your controller that it uses.
+
+## 9) Links
+
+All routes registered for a resource now have a route name - check the routing section in the Wiki for details.
+As such, we've updated the link factory, as follows:
+
+- removed `resource()`: use `read()`, `update()` or `delete()`
+- removed `relationship()`: use `readRelationship()`, `replaceRelationship()`, `addRelationship()`, `removeRelationship()`
+instead.
