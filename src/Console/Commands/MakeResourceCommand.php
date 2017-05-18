@@ -97,19 +97,22 @@ class MakeResourceCommand extends Command
         }
 
         // Run commands that cannot accept Eloquent parameters.
-        $this->runCommandsWithParameters($commands->only([
-            'make:json-api:validators',
-        ]), $resourceParameter);
+        $notEloquent = ['make:json-api:validators'];
+
+        if (!$this->runCommandsWithParameters($commands->only($notEloquent), $resourceParameter)) {
+            return 1;
+        }
 
         // Run commands that can accept Eloquent parameters.
-        $this->runCommandsWithParameters($commands->only([
-            'make:json-api:adapter',
-            'make:json-api:hydrator',
-            'make:json-api:schema',
-        ]), $eloquentParameters);
+        $eloquent = ['make:json-api:adapter', 'make:json-api:hydrator', 'make:json-api:schema'];
+
+        if (!$this->runCommandsWithParameters($commands->only($eloquent), $eloquentParameters)) {
+            return 1;
+        }
 
         // Give the user a digial high-five.
         $this->comment('All done, keep doing what you do.');
+
         return 0;
     }
 
@@ -118,7 +121,6 @@ class MakeResourceCommand extends Command
      *
      * @param Collection $commands
      * @param string $type
-     *
      * @return Collection
      */
     private function filterCommands(Collection $commands, $type)
@@ -139,14 +141,17 @@ class MakeResourceCommand extends Command
      *
      * @param Collection $commands
      * @param array $parameters
-     *
-     * @return void
+     * @return bool
      */
     private function runCommandsWithParameters(Collection $commands, array $parameters)
     {
-        $commands->keys()->each(function ($command) use ($parameters) {
-            $this->call($command, $parameters);
-        });
+        foreach ($commands->keys() as $command) {
+            if (0 !== $this->call($command, $parameters)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
 }

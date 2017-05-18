@@ -61,6 +61,15 @@ class Repository
 
     /**
      * @param $apiName
+     * @return bool
+     */
+    public function isApi($apiName)
+    {
+        return !empty($this->retrieveConfig($apiName));
+    }
+
+    /**
+     * @param $apiName
      * @param string|null $host
      * @return ApiInterface
      */

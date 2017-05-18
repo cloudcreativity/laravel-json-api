@@ -89,6 +89,19 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
     }
 
     /**
+     * @return bool|null
+     */
+    public function fire()
+    {
+        if (!$this->apiRepository->isApi($api = $this->argument('api'))) {
+            $this->error("JSON API '$api' does not exist.");
+            return 1;
+        }
+
+        return (parent::fire() !== false) ? 0 : 1;
+    }
+
+    /**
      * Get the desired class name from the input.
      *
      * @return string
@@ -103,10 +116,24 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
     }
 
     /**
-     * @param string $name
-     * @return mixed
+     * Laravel 5.3 name parsing.
+     *
+     * @param $name
+     * @return string
+     * @todo remove when dropping support for Laravel 5.3
      */
     protected function parseName($name)
+    {
+        return $this->qualifyClass($name);
+    }
+
+    /**
+     * Laravel 5.4 name parsing.
+     *
+     * @param string $name
+     * @return string
+     */
+    protected function qualifyClass($name)
     {
         return call_user_func(
             Fqn::class . '::' . $this->type,
