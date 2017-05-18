@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2016 Cloud Creativity Limited
+ * Copyright 2017 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,11 @@
 
 namespace CloudCreativity\LaravelJsonApi\Services;
 
+use Closure;
 use CloudCreativity\JsonApi\Contracts\Http\ApiInterface;
 use CloudCreativity\JsonApi\Contracts\Http\HttpServiceInterface;
 use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface;
+use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterpreterInterface;
 use CloudCreativity\JsonApi\Contracts\Http\Responses\ErrorResponseInterface;
 use CloudCreativity\JsonApi\Contracts\Utils\ErrorReporterInterface;
 use CloudCreativity\JsonApi\Exceptions\RuntimeException;
@@ -50,20 +52,16 @@ class JsonApiService implements HttpServiceInterface, ErrorReporterInterface
     }
 
     /**
-     * Register a resource type with the router.
-     *
-     * @param string $resourceType
-     * @param string|null $controller
+     * @param $apiName
      * @param array $options
-     * @return ResourceRegistrar
+     * @param Closure $routes
+     * @return void
      */
-    public function resource($resourceType, $controller = null, array $options = [])
+    public function api($apiName, array $options, Closure $routes)
     {
         /** @var ResourceRegistrar $registrar */
         $registrar = $this->container->make(ResourceRegistrar::class);
-        $registrar->resource($resourceType, $controller, $options);
-
-        return $registrar;
+        $registrar->api($apiName, $options, $routes);
     }
 
     /**
@@ -81,9 +79,18 @@ class JsonApiService implements HttpServiceInterface, ErrorReporterInterface
     }
 
     /**
+     * @inheritdoc
+     */
+    public function getRequestInterpreter()
+    {
+        return $this->container->make(RequestInterpreterInterface::class);
+    }
+
+    /**
      * Has JSON API support been started?
      *
      * @return bool
+     * @deprecated use `hasApi()`
      */
     public function isActive()
     {

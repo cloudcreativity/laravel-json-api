@@ -23,7 +23,7 @@ namespace CloudCreativity\LaravelJsonApi\Console\Commands;
  *
  * @package CloudCreativity\LaravelJsonApi
  */
-class HydratorMakeCommand extends AbstractGeneratorCommand
+class MakeHydratorCommand extends AbstractGeneratorCommand
 {
 
     /**

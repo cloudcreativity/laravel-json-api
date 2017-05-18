@@ -18,6 +18,10 @@
 
 namespace CloudCreativity\LaravelJsonApi\Console\Commands;
 
+use CloudCreativity\JsonApi\Utils\Str;
+use CloudCreativity\LaravelJsonApi\Api\Definition;
+use CloudCreativity\LaravelJsonApi\Api\Repository;
+use CloudCreativity\LaravelJsonApi\Utils\Fqn;
 use Illuminate\Console\GeneratorCommand;
 use Illuminate\Filesystem\Filesystem;
 use Symfony\Component\Console\Input\InputArgument;
@@ -60,27 +64,6 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
     protected $isIndependent = false;
 
     /**
-     * Whether the resource should use eloquent implementations.
-     *
-     * @var boolean
-     */
-    protected $useEloquent;
-
-    /**
-     * The folder within the root namespace, where files should be generated.
-     *
-     * @var string
-     */
-    protected $subNamespace;
-
-    /**
-     * Whether generated files should be grouped by their resource files.
-     *
-     * @var mixed
-     */
-    protected $namespaceByResource;
-
-    /**
      * The location of all generator stubs
      *
      * @var string
@@ -88,65 +71,34 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
     private $stubsDirectory;
 
     /**
-     * Create a new config clear command instance.
+     * @var Repository
+     */
+    private $apiRepository;
+
+    /**
+     * AbstractGeneratorCommand constructor.
      *
      * @param Filesystem $files
+     * @param Repository $apiRepository
      */
-    public function __construct(Filesystem $files)
+    public function __construct(Filesystem $files, Repository $apiRepository)
     {
         parent::__construct($files);
-
-        $this->useEloquent = config('json-api.generator.use-eloquent', true);
-        $this->subNamespace = config('json-api.generator.namespace', 'JsonApi');
-        $this->namespaceByResource = config('json-api.generator.by-resource', true);
+        $this->apiRepository = $apiRepository;
         $this->stubsDirectory = __DIR__ . '/../../../stubs';
     }
 
     /**
-     * Build the class with the given name.
-     * Remove the base controller import if we are already in base namespace.
-     *
-     * @param  string $name
-     * @return string
+     * @return bool|null
      */
-    protected function buildClass($name)
+    public function fire()
     {
-        $stub = $this->files->get($this->getStub());
-
-        $this->replaceNamespace($stub, $name)
-            ->replaceResourceType($stub, $this->getResourceName());
-
-        return $stub;
-    }
-
-    /**
-     * Replace the value of the resource type constant
-     *
-     * @param mixed $stub
-     * @param mixed $resource
-     * @return $this
-     */
-    protected function replaceResourceType(&$stub, $resource)
-    {
-        $stub = str_replace('dummyResourceType', snake_case($resource, '-'), $stub);
-
-        return $this;
-    }
-
-    /**
-     * Get the resource name
-     *
-     * @return string
-     */
-    protected function getResourceName()
-    {
-        $name = ucwords($this->argument('resource'));
-
-        if ($this->namespaceByResource) {
-            return str_plural($name);
+        if (!$this->apiRepository->isApi($api = $this->argument('api'))) {
+            $this->error("JSON API '$api' does not exist.");
+            return 1;
         }
 
-        return $name;
+        return (parent::fire() !== false) ? 0 : 1;
     }
 
     /**
@@ -156,11 +108,87 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
      */
     protected function getNameInput()
     {
-        if (!$this->namespaceByResource) {
+        if (!$this->isByResource()) {
             return $this->getResourceName();
         }
 
         return $this->type;
+    }
+
+    /**
+     * Laravel 5.3 name parsing.
+     *
+     * @param $name
+     * @return string
+     * @todo remove when dropping support for Laravel 5.3
+     */
+    protected function parseName($name)
+    {
+        return $this->qualifyClass($name);
+    }
+
+    /**
+     * Laravel 5.4 name parsing.
+     *
+     * @param string $name
+     * @return string
+     */
+    protected function qualifyClass($name)
+    {
+        return call_user_func(
+            Fqn::class . '::' . $this->type,
+            $this->getResourceName(),
+            $this->getRootNamespace(),
+            $this->isByResource()
+        );
+    }
+
+    /**
+     * Build the class with the given name.
+     *
+     * @param  string $name
+     * @return string
+     */
+    protected function buildClass($name)
+    {
+        $stub = $this->files->get($this->getStub());
+
+        $this->replaceNamespace($stub, $name)
+            ->replaceResourceType($stub, $this->getResourceName())
+            ->replaceApplicationNamespace($stub)
+            ->replaceModel($stub, $this->getResourceName());
+
+        return $stub;
+    }
+
+    /**
+     * Get the console command arguments.
+     *
+     * @return array
+     */
+    protected function getArguments()
+    {
+        return [
+            ['resource', InputArgument::REQUIRED, "The resource for which a {$this->type} class will be generated."],
+            ['api', InputArgument::OPTIONAL, "The API that the resource belongs to.", 'default'],
+        ];
+    }
+
+    /**
+     * Get the console command options.
+     *
+     * @return array
+     */
+    protected function getOptions()
+    {
+        if ($this->isIndependent) {
+            return [];
+        }
+
+        return [
+            ['eloquent', 'e', InputOption::VALUE_NONE, 'Use Eloquent classes.'],
+            ['no-eloquent', 'N', InputOption::VALUE_NONE, 'Do not use Eloquent classes.'],
+        ];
     }
 
     /**
@@ -182,6 +210,64 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
     }
 
     /**
+     * Get the resource name
+     *
+     * @return string
+     */
+    private function getResourceName()
+    {
+        $name = ucwords($this->argument('resource'));
+
+        if ($this->isByResource()) {
+            return str_plural($name);
+        }
+
+        return $name;
+    }
+
+    /**
+     * Replace the value of the resource type string.
+     *
+     * @param mixed $stub
+     * @param mixed $resource
+     * @return $this
+     */
+    private function replaceResourceType(&$stub, $resource)
+    {
+        $stub = str_replace('dummyResourceType', Str::dasherize($resource), $stub);
+
+        return $this;
+    }
+
+    /**
+     * Replace the value of the model class name.
+     *
+     * @param $stub
+     * @param $resource
+     * @return $this
+     */
+    private function replaceModel(&$stub, $resource)
+    {
+        $stub = str_replace('DummyModel', Str::classify(str_singular($resource)), $stub);
+
+        return $this;
+    }
+    /**
+     * Replace the value of the application namespace.
+     *
+     * @param $stub
+     * @param $resource
+     * @return $this
+     */
+    private function replaceApplicationNamespace(&$stub)
+    {
+        $namespace = rtrim($this->laravel->getNamespace(), '\\');
+        $stub = str_replace('DummyApplicationNamespace', $namespace, $stub);
+
+        return $this;
+    }
+
+    /**
      * Get the stub for specific generator type
      *
      * @param string $implementationType
@@ -189,14 +275,23 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
      */
     private function getStubFor($implementationType)
     {
-        return implode('', [
-            $this->stubsDirectory,
-            '/',
-            $implementationType,
-            '/',
-            lcfirst($this->type),
-            '.stub',
-        ]);
+        return sprintf('%s/%s/%s.stub', $this->stubsDirectory, $implementationType, lcfirst($this->type));
+    }
+
+    /**
+     * @return bool
+     */
+    private function isByResource()
+    {
+        return $this->getApiDefinition()->isByResource();
+    }
+
+    /**
+     * @return string
+     */
+    private function getRootNamespace()
+    {
+        return $this->getApiDefinition()->getRootNamespace();
     }
 
     /**
@@ -214,58 +309,14 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
             return false;
         }
 
-        return $this->option('eloquent') ?: $this->useEloquent;
+        return $this->option('eloquent') ?: $this->getApiDefinition()->isEloquent();
     }
 
     /**
-     * Get the default namespace for the class.
-     *
-     * @param  string $rootNamespace
-     * @return string
+     * @return Definition
      */
-    protected function getDefaultNamespace($rootNamespace)
+    private function getApiDefinition()
     {
-        $namespace = [
-            $rootNamespace,             // #0
-            '\\',                       // #1
-            $this->subNamespace,        // #2
-            '\\',                       // #3
-            $this->getResourceName()    // #4
-        ];
-
-        if (!$this->namespaceByResource) {
-            $namespace[4] = str_plural($this->type);
-        }
-
-        return implode('', $namespace);
-    }
-
-    /**
-     * Get the console command arguments.
-     *
-     * @return array
-     */
-    protected function getArguments()
-    {
-        return [
-            ['resource', InputArgument::REQUIRED, "The resource for which a {$this->type} class will be generated"],
-        ];
-    }
-
-    /**
-     * Get the console command options.
-     *
-     * @return array
-     */
-    protected function getOptions()
-    {
-        if ($this->isIndependent) {
-            return [];
-        }
-
-        return [
-            ['eloquent', 'e', InputOption::VALUE_NONE, 'Use eloquent as adapter'],
-            ['no-eloquent', 'ne', InputOption::VALUE_NONE, 'Use an abstract adapter'],
-        ];
+        return $this->apiRepository->retrieveDefinition($this->argument('api'));
     }
 }

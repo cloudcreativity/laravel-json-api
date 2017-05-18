@@ -19,11 +19,11 @@
 namespace CloudCreativity\LaravelJsonApi\Console\Commands;
 
 /**
- * Class SchemaMakeCommand
+ * Class ValidatorsMakeCommand
  *
  * @package CloudCreativity\LaravelJsonApi
  */
-class SchemaMakeCommand extends AbstractGeneratorCommand
+class MakeValidatorsCommand extends AbstractGeneratorCommand
 {
 
     /**
@@ -31,19 +31,26 @@ class SchemaMakeCommand extends AbstractGeneratorCommand
      *
      * @var string
      */
-    protected $name = 'make:json-api:schema';
+    protected $name = 'make:json-api:validators';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Create a new JSON API resource schema';
+    protected $description = 'Create a new JSON API resource validator provider';
 
     /**
      * The type of class being generated.
      *
      * @var string
      */
-    protected $type = 'Schema';
+    protected $type = 'Validators';
+
+    /**
+     * Whether the resource type is non-dependent on eloquent
+     *
+     * @var boolean
+     */
+    protected $isIndependent = true;
 }

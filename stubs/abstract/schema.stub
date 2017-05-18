@@ -10,15 +10,7 @@ class Schema extends AbstractSchema
     /**
      * @var string
      */
-    const RESOURCE_TYPE = 'dummyResourceType';
-
-    /**
-     * @return string
-     */
-    public function getResourceType()
-    {
-        return self::RESOURCE_TYPE;
-    }
+    protected $resourceType = 'dummyResourceType';
 
     /**
      * @param object $resource
@@ -38,4 +30,3 @@ class Schema extends AbstractSchema
         // TODO
     }
 }
-

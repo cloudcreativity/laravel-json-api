@@ -24,7 +24,6 @@ use CloudCreativity\JsonApi\Validators\ValidatorErrorFactory as BaseFactory;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorErrorFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Utils\ErrorBag;
 use Illuminate\Contracts\Support\MessageBag;
-use Neomerx\JsonApi\Contracts\Http\Query\QueryParametersParserInterface;
 
 /**
  * Class ValidatorErrorFactory
@@ -34,7 +33,7 @@ class ValidatorErrorFactory extends BaseFactory implements ValidatorErrorFactory
 {
 
     const RESOURCE_INVALID_ATTRIBUTES_MESSAGES = 'validation:resource-invalid-attributes-messages';
-    const FILTER_PARAMETERS_MESSAGES = 'validation:filter-parameters-messages';
+    const QUERY_PARAMETERS_MESSAGES = 'validation:query-parameters-messages';
 
     /**
      * @inheritdoc
@@ -55,11 +54,13 @@ class ValidatorErrorFactory extends BaseFactory implements ValidatorErrorFactory
     /**
      * @inheritdoc
      */
-    public function filterParametersMessages(MessageBag $messages, $statusCode = self::STATUS_INVALID_FILTERS)
-    {
-        $prototype = $this->repository->error(self::FILTER_PARAMETERS_MESSAGES);
+    public function queryParametersMessages(
+        MessageBag $messages,
+        $prefix = null,
+        $statusCode = self::STATUS_INVALID_PARAMETERS
+    ) {
+        $prototype = $this->repository->error(self::QUERY_PARAMETERS_MESSAGES);
         $prototype = Error::cast($prototype)->setStatus($statusCode);
-        $prefix = QueryParametersParserInterface::PARAM_FILTER;
         $errors = new ErrorBag($messages, $prototype, $prefix, true);
 
         return $errors->toArray();

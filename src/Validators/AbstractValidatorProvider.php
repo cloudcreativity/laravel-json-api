@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2016 Cloud Creativity Limited
+ * Copyright 2017 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,21 +18,36 @@
 
 namespace CloudCreativity\LaravelJsonApi\Validators;
 
+use CloudCreativity\JsonApi\Contracts\Factories\FactoryInterface;
+use CloudCreativity\JsonApi\Contracts\Http\ApiInterface;
 use CloudCreativity\JsonApi\Contracts\Object\ResourceInterface;
 use CloudCreativity\JsonApi\Contracts\Validators\AttributesValidatorInterface;
-use CloudCreativity\JsonApi\Contracts\Validators\FilterValidatorInterface;
+use CloudCreativity\JsonApi\Contracts\Validators\QueryValidatorInterface;
 use CloudCreativity\JsonApi\Contracts\Validators\RelationshipsValidatorInterface;
 use CloudCreativity\JsonApi\Contracts\Validators\ResourceValidatorInterface;
 use CloudCreativity\JsonApi\Contracts\Validators\ValidatorProviderInterface;
+use CloudCreativity\JsonApi\Exceptions\RuntimeException;
+use CloudCreativity\JsonApi\Http\Query\ChecksQueryParameters;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorFactoryInterface;
+use CloudCreativity\LaravelJsonApi\Http\Requests\RequestInterpreter;
 use Illuminate\Contracts\Validation\Validator;
 
 /**
  * Class AbstractValidatorProvider
+ *
  * @package CloudCreativity\LaravelJsonApi
  */
 abstract class AbstractValidatorProvider implements ValidatorProviderInterface
 {
+
+    use ChecksQueryParameters;
+
+    /**
+     * The resource type the validators relate to.
+     *
+     * @var string
+     */
+    protected $resourceType;
 
     /**
      * Custom messages for the attributes validator.
@@ -49,113 +64,151 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
     protected $customAttributes = [];
 
     /**
-     * @var array
-     */
-    protected $filterRules = [];
-
-    /**
-     * Custom messages for the filter validator.
+     * Validation rules for query parameters.
      *
      * @var array
      */
-    protected $filterMessages = [];
+    protected $queryRules = [];
 
     /**
-     * Custom attributes for the filter validator.
+     * Custom messages for the query parameters validator.
      *
      * @var array
      */
-    protected $filterCustomAttributes = [];
+    protected $queryMessages = [];
 
     /**
-     * @var ValidatorFactoryInterface
+     * Custom attributes for the query parameters validator.
+     *
+     * @var array
+     */
+    protected $queryCustomAttributes = [];
+
+    /**
+     * The allowed filtering parameters.
+     *
+     * By default we set this to `null` to allow any filtering parameters, as we expect
+     * the filtering parameters to be validated using the query parameter validator.
+     *
+     * @var string[]|null
+     * @see ChecksQueryParameters::allowedFilteringParameters()
+     */
+    protected $allowedFilteringParameters = null;
+
+    /**
+     * The allowed paging parameters.
+     *
+     * By default we set this to `null` to allow any paging parameters, as we expect
+     * the paging parameters to be validated using the query parameter validator.
+     *
+     * @var string[]|null
+     * @see ChecksQueryParameters::allowedPagingParameters()
+     */
+    protected $allowedPagingParameters = null;
+
+    /**
+     * @var RequestInterpreter
+     */
+    protected $requestInterpreter;
+
+    /**
+     * @var ApiInterface
+     */
+    private $api;
+
+    /**
+     * @var FactoryInterface
      */
     private $factory;
 
     /**
+     * @var ValidatorFactoryInterface
+     */
+    private $validatorFactory;
+
+    /**
      * Get the validation rules for the resource attributes.
      *
-     * @param string $resourceType
-     *      the resource type being validated
      * @param object|null $record
      *      the record being updated, or null if it is a create request.
      * @return array
      */
-    abstract protected function attributeRules($resourceType, $record = null);
+    abstract protected function attributeRules($record = null);
 
     /**
      * Define the validation rules for the resource relationships.
      *
      * @param RelationshipsValidatorInterface $relationships
-     * @param string $resourceType
-     *      the resource type being validated
      * @param object|null $record
      *      the record being updated, or null if it is a create request.
      * @return void
      */
-    abstract protected function relationshipRules(
-        RelationshipsValidatorInterface $relationships,
-        $resourceType,
-        $record = null
-    );
+    abstract protected function relationshipRules(RelationshipsValidatorInterface $relationships, $record = null);
 
     /**
      * AbstractValidatorProvider constructor.
-     * @param ValidatorFactoryInterface $factory
+     *
+     * @param ApiInterface $api
+     * @param RequestInterpreter $interpreter
+     * @param FactoryInterface $factory
      */
-    public function __construct(ValidatorFactoryInterface $factory)
+    public function __construct(ApiInterface $api, RequestInterpreter $interpreter, FactoryInterface $factory)
     {
+        $this->api = $api;
+        $this->requestInterpreter = $interpreter;
         $this->factory = $factory;
     }
 
     /**
      * @inheritdoc
      */
-    public function resource($resourceType, $resourceId = null)
+    public function createResource()
     {
-        $resource = $this->factory->resource($resourceType, $resourceId);
+        $validator = $this->resourceValidator();
 
-        return $this->factory->resourceDocument($resource);
+        return $this->validatorFactory()->resourceDocument($validator);
     }
 
     /**
      * @inheritdoc
      */
-    public function createResource($resourceType)
+    public function updateResource($resourceId, $record)
     {
-        $validator = $this->resourceValidator($resourceType);
+        $validator = $this->resourceValidator($resourceId, $record);
 
-        return $this->factory->resourceDocument($validator);
+        return $this->validatorFactory()->resourceDocument($validator);
     }
 
     /**
      * @inheritdoc
      */
-    public function updateResource($resourceType, $resourceId, $record)
-    {
-        $validator = $this->resourceValidator($resourceType, $resourceId, $record);
-
-        return $this->factory->resourceDocument($validator);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function modifyRelationship($resourceType, $resourceId, $relationshipName, $record)
+    public function modifyRelationship($resourceId, $relationshipName, $record)
     {
         $validator = $this
-            ->resourceRelationships($resourceType, $record)
+            ->resourceRelationships($record)
             ->get($relationshipName);
 
-        return $this->factory->relationshipDocument($validator);
+        return $this->validatorFactory()->relationshipDocument($validator);
     }
 
     /**
      * @inheritdoc
      */
-    public function filterResources($resourceType)
+    public function queryChecker()
     {
-        return $this->filterValidator($resourceType);
+        return $this->createQueryChecker($this->factory, $this->queryValidator());
+    }
+
+    /**
+     * @return string
+     */
+    protected function getResourceType()
+    {
+        if (!$this->resourceType) {
+            throw new RuntimeException('Expecting a resource type to be set.');
+        }
+
+        return $this->resourceType;
     }
 
     /**
@@ -166,13 +219,12 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
      *
      * @param Validator $validator
      *      the Laravel validator instance that will validate the attributes.
-     * @param string $resourceType
      * @param object|null $record
      *      the record being updated, or null if it is a create request.
      */
-    protected function conditionalAttributes(Validator $validator, $resourceType, $record = null)
+    protected function conditionalAttributes(Validator $validator, $record = null)
     {
-
+        // no-op
     }
 
     /**
@@ -181,91 +233,83 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
      * Child classes can override this method if they need to customise the extraction
      * of attributes from the supplied resource. Returning null from this function means
      * the validator will extract the attributes itself. If you are customising the
-     * extraction of attributes, you must return an array from this method.
+     * extraction of attributes, you MUST return an array from this method.
      *
      * @param ResourceInterface $resource
-     * @param string $resourceType
      * @param object|null $record
      * @return array|null
      */
-    protected function extractAttributes(ResourceInterface $resource, $resourceType, $record = null)
+    protected function extractAttributes(ResourceInterface $resource, $record = null)
     {
-
+        return null;
     }
 
     /**
-     * @param string $resourceType
      * @param string|null $resourceId
      * @param object|null $record
      * @return ResourceValidatorInterface
      */
-    protected function resourceValidator($resourceType, $resourceId = null, $record = null)
+    protected function resourceValidator($resourceId = null, $record = null)
     {
-        return $this->factory->resource(
-            $resourceType,
+        return $this->validatorFactory()->resource(
+            $this->getResourceType(),
             $resourceId,
-            $this->resourceAttributes($resourceType, $record),
-            $this->resourceRelationships($resourceType, $record),
-            $this->resourceContext($resourceType, $record)
+            $this->resourceAttributes($record),
+            $this->resourceRelationships($record),
+            $this->resourceContext($record)
         );
     }
 
     /**
      * Get a validator for the resource attributes member.
      *
-     * @param string $resourceType
-     *      the resource type being validated
      * @param object|null $record
      * @return AttributesValidatorInterface
      */
-    protected function resourceAttributes($resourceType, $record = null)
+    protected function resourceAttributes($record = null)
     {
-        return $this->factory->attributes(
-            $this->attributeRules($resourceType, $record),
-            $this->attributeMessages($resourceType, $record),
-            $this->attributeCustomAttributes($resourceType, $record),
-            function (Validator $validator) use ($resourceType, $record) {
-                return $this->conditionalAttributes($validator, $resourceType, $record);
+        return $this->validatorFactory()->attributes(
+            $this->attributeRules($record),
+            $this->attributeMessages($record),
+            $this->attributeCustomAttributes($record),
+            function (Validator $validator) use ($record) {
+                return $this->conditionalAttributes($validator, $record);
             },
-            function (ResourceInterface $resource, $record) use ($resourceType) {
-                return $this->extractAttributes($resource, $resourceType, $record);
+            function (ResourceInterface $resource, $record) {
+                return $this->extractAttributes($resource, $record);
             }
         );
     }
 
     /**
-     * @param $resourceType
      * @param object|null $record
      * @return array
      */
-    protected function attributeMessages($resourceType, $record = null)
+    protected function attributeMessages($record = null)
     {
         return $this->messages;
     }
 
     /**
-     * @param $resourceType
      * @param object|null $record
      * @return array
      */
-    protected function attributeCustomAttributes($resourceType, $record = null)
+    protected function attributeCustomAttributes($record = null)
     {
         return $this->customAttributes;
     }
 
     /**
      * Get a validator for the resource relationships member.
-     *
-     * @param string $resourceType
-     *      the resource type being validated.
+     *.
      * @param object|null $record
      *      the record being updated, or null if it is a create request.
      * @return RelationshipsValidatorInterface
      */
-    protected function resourceRelationships($resourceType, $record = null)
+    protected function resourceRelationships($record = null)
     {
-        $validator = $this->factory->relationships();
-        $this->relationshipRules($validator, $resourceType, $record);
+        $validator = $this->validatorFactory()->relationships();
+        $this->relationshipRules($validator, $record);
 
         return $validator;
     }
@@ -280,11 +324,10 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
      * Child classes can override this method to return their own validator if
      * needed.
      *
-     * @param string $resourceType
      * @param object|null $record
      * @return ResourceValidatorInterface|null
      */
-    protected function resourceContext($resourceType, $record = null)
+    protected function resourceContext($record = null)
     {
         return null;
     }
@@ -292,68 +335,72 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
     /**
      * Get a validator for the filter query parameters.
      *
-     * @param string $resourceType
-     *      the resource type that is being filtered
-     * @return FilterValidatorInterface
+     * @return QueryValidatorInterface
      */
-    protected function filterValidator($resourceType)
+    protected function queryValidator()
     {
-        return $this->factory->filterParams(
-            $this->filterRules($resourceType),
-            $this->filterMessages($resourceType),
-            $this->filterCustomAttributes($resourceType),
-            function (Validator $validator) use ($resourceType) {
-                return $this->conditionalFilters($validator, $resourceType);
+        return $this->validatorFactory()->queryParameters(
+            $this->queryRules(),
+            $this->queryMessages(),
+            $this->queryCustomAttributes(),
+            function (Validator $validator) {
+                return $this->conditionalQuery($validator);
             }
         );
     }
 
     /**
-     * Get the validation rules for the filter query parameter.
+     * Get the validation rules for the query parameters.
      *
-     * @param $resourceType
-     *      the resource type that is being filtered
      * @return array
      */
-    protected function filterRules($resourceType)
+    protected function queryRules()
     {
-        return $this->filterRules;
+        return $this->queryRules;
     }
 
     /**
-     * @param $resourceType
-     *      the resource type that is being filtered
      * @return array
      */
-    protected function filterMessages($resourceType)
+    protected function queryMessages()
     {
-        return $this->filterMessages;
+        return $this->queryMessages;
     }
 
     /**
-     * @param $resourceType
-     *      the resource type that is being filtered
      * @return array
      */
-    protected function filterCustomAttributes($resourceType)
+    protected function queryCustomAttributes()
     {
-        return $this->filterCustomAttributes;
+        return $this->queryCustomAttributes;
     }
 
     /**
-     * Callback to configure a filter validator.
+     * Callback to configure a query parameter validator.
      *
      * Child classes can override this method if they need to do custom
-     * configuration on the filter validator.
+     * configuration on the query parameter validator.
      *
      * @param Validator $validator
-     *      the Laravel validator instance that will validate the filters.
-     * @param string $resourceType
-     *      the resource type being filtered
+     *      the Laravel validator instance that will validate the query parameters.
      */
-    protected function conditionalFilters(Validator $validator, $resourceType)
+    protected function conditionalQuery(Validator $validator)
     {
-
+        // no-op
     }
 
+    /**
+     * @return ValidatorFactoryInterface
+     */
+    protected function validatorFactory()
+    {
+        if (!$this->validatorFactory) {
+            $this->validatorFactory = $this->factory->createValidatorFactory(
+                $this->api->getErrors(),
+                $this->api->getStore()
+            );
+        }
+
+        return $this->validatorFactory;
+    }
 }

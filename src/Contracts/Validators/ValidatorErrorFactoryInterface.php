@@ -31,7 +31,7 @@ interface ValidatorErrorFactoryInterface extends BaseInterface
 {
 
     const STATUS_INVALID_ATTRIBUTES = Response::HTTP_UNPROCESSABLE_ENTITY;
-    const STATUS_INVALID_FILTERS = Response::HTTP_BAD_REQUEST;
+    const STATUS_INVALID_PARAMETERS = Response::HTTP_BAD_REQUEST;
 
     /**
      * @param MessageBag $messageBag
@@ -48,8 +48,14 @@ interface ValidatorErrorFactoryInterface extends BaseInterface
 
     /**
      * @param MessageBag $messages
+     * @param string|null $prefix
+     *      a prefix if the validator relates to a nested parameter.
      * @param int $statusCode
      * @return ErrorInterface[]
      */
-    public function filterParametersMessages(MessageBag $messages, $statusCode = self::STATUS_INVALID_FILTERS);
+    public function queryParametersMessages(
+        MessageBag $messages,
+        $prefix = null,
+        $statusCode = self::STATUS_INVALID_PARAMETERS
+    );
 }

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2016 Cloud Creativity Limited
+ * Copyright 2017 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@
 namespace CloudCreativity\LaravelJsonApi\Contracts\Validators;
 
 use CloudCreativity\JsonApi\Contracts\Validators\AttributesValidatorInterface;
-use CloudCreativity\JsonApi\Contracts\Validators\FilterValidatorInterface;
+use CloudCreativity\JsonApi\Contracts\Validators\QueryValidatorInterface;
 use CloudCreativity\JsonApi\Contracts\Validators\ValidatorFactoryInterface as BaseInterface;
 
 /**
@@ -50,18 +50,19 @@ interface ValidatorFactoryInterface extends BaseInterface
     );
 
     /**
-     * Get a filter parameters validator.
+     * Get a query parameters validator.
      *
      * @param array $rules
      * @param array $messages
      * @param array $customAttributes
      * @param callable|null $callback
-     * @return FilterValidatorInterface
+     * @return QueryValidatorInterface
      */
-    public function filterParams(
+    public function queryParameters(
         array $rules,
         array $messages = [],
         array $customAttributes = [],
         callable $callback = null
     );
+
 }

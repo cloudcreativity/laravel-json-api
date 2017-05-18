@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2016 Cloud Creativity Limited
+ * Copyright 2017 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,13 @@
 
 namespace CloudCreativity\LaravelJsonApi\Document;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Document\LinkFactoryInterface;
+use CloudCreativity\LaravelJsonApi\Utils\RouteName;
 
 /**
  * Class GeneratesRouteNames
+ *
  * @package CloudCreativity\LaravelJsonApi
+ * @deprecated
  */
 trait GeneratesRouteNames
 {
@@ -30,36 +32,40 @@ trait GeneratesRouteNames
     /**
      * @param $resourceType
      * @return string
+     * @deprecated use `RouteName::index`
      */
     protected function indexRouteName($resourceType)
     {
-        return sprintf(LinkFactoryInterface::ROUTE_NAME_INDEX, $resourceType);
+        return RouteName::index($resourceType);
     }
 
     /**
      * @param $resourceType
      * @return string
+     * @deprecated use `RouteName::resource`
      */
     protected function resourceRouteName($resourceType)
     {
-        return sprintf(LinkFactoryInterface::ROUTE_NAME_RESOURCE, $resourceType);
+        return RouteName::read($resourceType);
     }
 
     /**
      * @param $resourceType
      * @return string
+     * @deprecated use `RouteName::related`
      */
     protected function relatedResourceRouteName($resourceType)
     {
-        return sprintf(LinkFactoryInterface::ROUTE_NAME_RELATED_RESOURCE, $resourceType);
+        return RouteName::related($resourceType);
     }
 
     /**
      * @param $resourceType
      * @return string
+     * @deprecated use `RouteName::relationship`
      */
     protected function relationshipRouteName($resourceType)
     {
-        return sprintf(LinkFactoryInterface::ROUTE_NAME_RELATIONSHIPS, $resourceType);
+        return RouteName::readRelationship($resourceType);
     }
 }

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2016 Cloud Creativity Limited
+ * Copyright 2017 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,38 +26,14 @@ use Illuminate\Routing\Controller;
 
 /**
  * Class JsonApiController
+ *
  * @package CloudCreativity\LaravelJsonApi
  */
-abstract class JsonApiController extends Controller
+class JsonApiController extends Controller
 {
 
     use ReplyTrait,
         GeneratesLinks;
-
-    /**
-     * @var array
-     */
-    protected $requestHandlerOptions = [];
-
-    /**
-     * Get the fully qualified name of the request handler to use for this controller.
-     *
-     * @return string|null
-     */
-    abstract protected function getRequestHandler();
-
-    /**
-     * JsonApiController constructor.
-     */
-    public function __construct()
-    {
-        $handler = $this->getRequestHandler();
-
-        if ($handler) {
-            $middleware = sprintf('json-api.request:%s', $handler);
-            $this->middleware($middleware, $this->requestHandlerOptions);
-        }
-    }
 
     /**
      * @param JsonApiRequest $request

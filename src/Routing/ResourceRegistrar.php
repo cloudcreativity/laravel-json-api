@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2016 Cloud Creativity Limited
+ * Copyright 2017 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,13 +18,14 @@
 
 namespace CloudCreativity\LaravelJsonApi\Routing;
 
-use CloudCreativity\LaravelJsonApi\Document\GeneratesRouteNames;
+use Closure;
+use CloudCreativity\LaravelJsonApi\Api\Repository;
+use CloudCreativity\LaravelJsonApi\Api\ResourceProviders;
 use Illuminate\Contracts\Routing\Registrar;
-use Illuminate\Routing\Route;
-use Illuminate\Support\Str;
 
 /**
  * Class ResourceRegistrar
+ *
  * @package CloudCreativity\LaravelJsonApi
  */
 class ResourceRegistrar
@@ -35,169 +36,79 @@ class ResourceRegistrar
     const PARAM_RESOURCE_ID = 'resource_id';
     const PARAM_RELATIONSHIP_NAME = 'relationship_name';
 
-    use GeneratesRouteNames;
-
     /**
      * @var Registrar
      */
     protected $router;
 
     /**
-     * @param Registrar $router
+     * @var Repository
      */
-    public function __construct(Registrar $router)
+    protected $apiRepository;
+
+    /**
+     * ResourceRegistrar constructor.
+     *
+     * @param Registrar $router
+     * @param Repository $apiRepository
+     */
+    public function __construct(Registrar $router, Repository $apiRepository)
     {
         $this->router = $router;
+        $this->apiRepository = $apiRepository;
     }
 
     /**
-     * Register routes for the supplied resource type
-     *
-     * @param string $resourceType
-     * @param string|null $controller
+     * @param $apiName
      * @param array $options
+     * @param Closure $routes
      * @return void
      */
-    public function resource($resourceType, $controller = null, array $options = [])
+    public function api($apiName, array $options, Closure $routes)
     {
-        $controller = $controller ?: $this->controllerFor($resourceType);
+        $options = $this->pushMiddleware($apiName, $options);
+        $api = $this->apiGroup($apiName, $options);
+        $providers = $this->apiProviders($apiName);
 
-        $this->registerIndex($resourceType, $controller);
-        $this->registerResource($resourceType, $controller);
-        $this->registerRelatedResource($resourceType, $controller);
-        $this->registerRelationships($resourceType, $controller);
+        $this->router->group($options, function () use ($api, $routes, $providers) {
+            $routes($api, $this->router);
+            $providers->mountAll($api, $this->router);
+        });
     }
 
     /**
-     * @param $resourceType
-     * @param $controller
+     * @param $apiName
+     * @param array $options
+     * @return array
      */
-    protected function registerIndex($resourceType, $controller)
+    protected function pushMiddleware($apiName, array $options)
     {
-        $uri = $this->indexUri($resourceType);
-        $name = $this->indexRouteName($resourceType);
-        $this->route($resourceType, 'get', $uri, $controller, 'index', $name);
-        $this->route($resourceType, 'post', $uri, $controller, 'create');
+        $middleware = (array) array_get($options, 'middleware');
+        array_unshift($middleware, "json-api:$apiName");
+
+        $options['middleware'] = $middleware;
+
+        return $options;
     }
 
     /**
-     * @param $resourceType
-     * @param $controller
+     * @param $apiName
+     * @param array $options
+     * @return ApiGroup
      */
-    protected function registerResource($resourceType, $controller)
+    protected function apiGroup($apiName, array $options)
     {
-        $uri = $this->resourceUri($resourceType);
-        $name = $this->resourceRouteName($resourceType);
-        $this->route($resourceType, 'get', $uri, $controller, 'read', $name);
-        $this->route($resourceType, 'patch', $uri, $controller, 'update');
-        $this->route($resourceType, 'delete', $uri, $controller, 'delete');
+        $definition = $this->apiRepository->retrieveDefinition($apiName);
+
+        return new ApiGroup($this->router, $definition, $options);
     }
 
     /**
-     * @param $resourceType
-     * @param $controller
+     * @param $apiName
+     * @return ResourceProviders
      */
-    protected function registerRelatedResource($resourceType, $controller)
+    protected function apiProviders($apiName)
     {
-        $uri = $this->relatedResourceUri($resourceType);
-        $name = $this->relatedResourceRouteName($resourceType);
-        $this->route($resourceType, 'get', $uri, $controller, 'readRelatedResource', $name);
-    }
-
-    /**
-     * @param $resourceType
-     * @param $controller
-     */
-    protected function registerRelationships($resourceType, $controller)
-    {
-        $uri = $this->relationshipUri($resourceType);
-        $name = $this->relationshipRouteName($resourceType);
-        $this->route($resourceType, 'get', $uri, $controller, 'readRelationship', $name);
-        $this->route($resourceType, 'patch', $uri, $controller, 'replaceRelationship');
-        $this->route($resourceType, 'post', $uri, $controller, 'addToRelationship');
-        $this->route($resourceType, 'delete', $uri, $controller, 'removeFromRelationship');
-    }
-
-    /**
-     * @param $resourceType
-     * @param $routerMethod
-     * @param $uri
-     * @param $controller
-     * @param $controllerMethod
-     * @param $as
-     */
-    protected function route(
-        $resourceType,
-        $routerMethod,
-        $uri,
-        $controller,
-        $controllerMethod,
-        $as = null
-    ) {
-        $options = ['uses' => sprintf('%s@%s', $controller, $controllerMethod)];
-
-        if ($as) {
-            $options['as'] = $as;
-        }
-
-        /** @var Route $route */
-        $route = $this->router->{$routerMethod}($uri, $options);
-        $route->defaults(self::PARAM_RESOURCE_TYPE, $resourceType);
-    }
-
-    /**
-     * @param $resourceType
-     * @return string
-     */
-    protected function indexUri($resourceType)
-    {
-        return sprintf('/%s', $resourceType);
-    }
-
-    /**
-     * @param $resourceType
-     * @return string
-     */
-    protected function resourceUri($resourceType)
-    {
-        return sprintf('%s/{%s}', $this->indexUri($resourceType), self::PARAM_RESOURCE_ID);
-    }
-
-    /**
-     * @param $resourceType
-     * @return string
-     */
-    protected function relatedResourceUri($resourceType)
-    {
-        return sprintf(
-            '%s/{%s}/{%s}',
-            $this->indexUri($resourceType),
-            self::PARAM_RESOURCE_ID,
-            self::PARAM_RELATIONSHIP_NAME
-        );
-    }
-
-    /**
-     * @param $resourceType
-     * @return string
-     */
-    protected function relationshipUri($resourceType)
-    {
-        return sprintf(
-            '%s/{%s}/%s/{%s}',
-            $this->indexUri($resourceType),
-            self::PARAM_RESOURCE_ID,
-            self::KEYWORD_RELATIONSHIPS,
-            self::PARAM_RELATIONSHIP_NAME
-        );
-    }
-
-    /**
-     * @param $resourceType
-     * @return string
-     */
-    protected function controllerFor($resourceType)
-    {
-        return Str::studly($resourceType) . 'Controller';
+        return $this->apiRepository->retrieveProviders($apiName);
     }
 }
