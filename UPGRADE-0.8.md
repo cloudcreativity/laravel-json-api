@@ -311,7 +311,7 @@ class Adapter extends EloquentAdapter
 {
   public function __construct(StandardStrategy $paging)
   {
-    $paging->withMetaKey('page')->withUnderscoredMetaKeys();
+    $paging->withPerPageKey('limit')->withUnderscoredMetaKeys();
     parent::__construct(new Post(), $paging);
   }
 }

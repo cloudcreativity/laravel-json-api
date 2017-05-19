@@ -85,6 +85,7 @@ class StandardStrategy implements PagingStrategyInterface
     {
         $this->factory = $factory;
         $this->linkFactory = $linkFactory;
+        $this->metaKey = QueryParametersParserInterface::PARAM_PAGE;
     }
 
     /**
@@ -94,6 +95,17 @@ class StandardStrategy implements PagingStrategyInterface
     public function withPageKey($key)
     {
         $this->pageKey = $key;
+
+        return $this;
+    }
+
+    /**
+     * @param $key
+     * @return $this
+     */
+    public function withPerPageKey($key)
+    {
+        $this->perPageKey = $key;
 
         return $this;
     }
@@ -132,15 +144,15 @@ class StandardStrategy implements PagingStrategyInterface
     /**
      * Set the key for the paging meta.
      *
-     * Use this if you need to 'nest' the paging meta in a sub-key of the JSON API
-     * document's top-level meta object.
+     * Use this to 'nest' the paging meta in a sub-key of the JSON API document's top-level meta object.
+     * A string sets the key to use for nesting. Use `null` to indicate no nesting.
      *
-     * @param $key
+     * @param string|null $key
      * @return $this
      */
     public function withMetaKey($key)
     {
-        $this->metaKey = $key;
+        $this->metaKey = $key ?: null;
 
         return $this;
     }
@@ -170,7 +182,7 @@ class StandardStrategy implements PagingStrategyInterface
      */
     protected function getPerPage(Collection $collection)
     {
-        return $collection->get($this->getPerPageKey());
+        return (int) $collection->get($this->getPerPageKey());
     }
 
     /**
