@@ -21,6 +21,7 @@ namespace CloudCreativity\LaravelJsonApi\Store;
 use CloudCreativity\JsonApi\Contracts\Pagination\PageInterface;
 use CloudCreativity\JsonApi\Contracts\Store\AdapterInterface;
 use CloudCreativity\JsonApi\Exceptions\RuntimeException;
+use CloudCreativity\JsonApi\Utils\Str;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PagingStrategyInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -86,6 +87,18 @@ abstract class EloquentAdapter implements AdapterInterface
      * @var string[]|null
      */
     protected $with = null;
+
+    /**
+     * A mapping of sort parameters to columns.
+     *
+     * Use this to map any parameters to columns where the two are not identical. E.g. if
+     * your sort param is called `sort` but the column to use is `type`, then set this
+     * property to `['sort' => 'type']`.
+     *
+     * @var array
+     */
+    protected $sortColumns = [];
+
 
     /**
      * Apply the supplied filters to the builder instance.
@@ -372,7 +385,7 @@ abstract class EloquentAdapter implements AdapterInterface
             return $this->sortColumns[$field];
         }
 
-        return $model::$snakeAttributes ? Str::snake($field) : Str::camel($field);
+        return $model::$snakeAttributes ? Str::underscore($field) : Str::camelize($field);
     }
 
 }
