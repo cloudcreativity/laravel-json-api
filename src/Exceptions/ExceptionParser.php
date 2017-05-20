@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2016 Cloud Creativity Limited
+ * Copyright 2017 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ use CloudCreativity\JsonApi\Contracts\Http\HttpServiceInterface;
 use CloudCreativity\JsonApi\Contracts\Repositories\ErrorRepositoryInterface;
 use CloudCreativity\JsonApi\Exceptions\MutableErrorCollection as Errors;
 use CloudCreativity\JsonApi\Http\Responses\ErrorResponse;
-use CloudCreativity\JsonApi\Repositories\ErrorRepository;
 use Exception;
 use Illuminate\Http\Response;
 use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
@@ -38,6 +37,7 @@ use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 /**
  * Class ExceptionParser
+ *
  * @package CloudCreativity\LaravelJsonApi
  */
 class ExceptionParser implements ExceptionParserInterface
@@ -188,7 +188,7 @@ class ExceptionParser implements ExceptionParserInterface
             return $this->httpService->getApi()->getErrors();
         }
 
-        return $this->factory->createErrorRepository();
+        return $this->factory->createErrorRepository([]);
     }
 
 }

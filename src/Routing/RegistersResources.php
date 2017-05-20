@@ -75,9 +75,9 @@ trait RegistersResources
     {
         return sprintf(
             '%s/%s/%s',
-                $this->resourceUrl(),
-                ResourceRegistrar::KEYWORD_RELATIONSHIPS,
-                Str::dasherize($relationship)
+            $this->resourceUrl(),
+            ResourceRegistrar::KEYWORD_RELATIONSHIPS,
+            Str::dasherize($relationship)
         );
     }
 

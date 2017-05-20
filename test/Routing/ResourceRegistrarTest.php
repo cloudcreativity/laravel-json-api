@@ -24,7 +24,6 @@ use CloudCreativity\LaravelJsonApi\Api\ApiResources;
 use CloudCreativity\LaravelJsonApi\Api\Definition;
 use CloudCreativity\LaravelJsonApi\Api\Repository;
 use CloudCreativity\LaravelJsonApi\Api\ResourceProviders;
-use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use CloudCreativity\LaravelJsonApi\Routing\ApiGroup as Api;
 use CloudCreativity\LaravelJsonApi\TestCase;
 use Illuminate\Contracts\Events\Dispatcher;
@@ -122,9 +121,9 @@ class ResourceRegistrarTest extends TestCase
     public function testOnlyOption()
     {
         $this->registrar->api('v1', ['namespace' => 'App\Http\Controllers'], function (Api $api) {
-           $api->resource('posts', [
-               'only' => ['index', 'read'],
-           ]);
+            $api->resource('posts', [
+                'only' => ['index', 'read'],
+            ]);
         });
 
         $this->assertIndex('posts');
@@ -553,7 +552,8 @@ class ResourceRegistrarTest extends TestCase
      */
     private function assertNotUpdate($resourceType, $id, $notFound = true)
     {
-        $this->assertNotRoute(Request::create("/{$resourceType}/{$id}", 'PATCH'), $notFound, "update {$resourceType}:{$id}");
+        $this->assertNotRoute(Request::create("/{$resourceType}/{$id}", 'PATCH'), $notFound,
+            "update {$resourceType}:{$id}");
     }
 
     /**
@@ -578,7 +578,8 @@ class ResourceRegistrarTest extends TestCase
      */
     private function assertNotDelete($resourceType, $id, $notFound = true)
     {
-        $this->assertNotRoute(Request::create("/{$resourceType}/{$id}", 'DELETE'), $notFound, "delete {$resourceType}:{$id}");
+        $this->assertNotRoute(Request::create("/{$resourceType}/{$id}", 'DELETE'), $notFound,
+            "delete {$resourceType}:{$id}");
     }
 
     /**

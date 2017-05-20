@@ -24,6 +24,7 @@ use CloudCreativity\JsonApi\Contracts\Validators\ValidatorFactoryInterface as Ba
 
 /**
  * Interface ValidatorFactoryInterface
+ *
  * @package CloudCreativity\LaravelJsonApi
  */
 interface ValidatorFactoryInterface extends BaseInterface

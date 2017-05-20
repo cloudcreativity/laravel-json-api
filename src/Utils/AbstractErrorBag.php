@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2016 Cloud Creativity Limited
+ * Copyright 2017 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
 
 /**
  * Class AbstractErrorBag
+ *
  * @package CloudCreativity\LaravelJsonApi
  */
 abstract class AbstractErrorBag implements Countable, IteratorAggregate, MessageProvider, Arrayable
@@ -50,6 +51,7 @@ abstract class AbstractErrorBag implements Countable, IteratorAggregate, Message
 
     /**
      * AbstractErrorBag constructor.
+     *
      * @param MessageBag $messages
      */
     public function __construct(MessageBag $messages)

@@ -44,6 +44,7 @@ class ValidatorFactory extends BaseFactory implements ValidatorFactoryInterface
 
     /**
      * ValidatorFactory constructor.
+     *
      * @param ValidatorErrorFactoryInterface $validationErrors
      * @param StoreInterface $store
      * @param Factory $validatorFactory

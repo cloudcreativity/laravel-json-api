@@ -26,7 +26,7 @@ use Illuminate\Support\Fluent;
 /**
  * Class ApiGroup
  *
- * @package CloudCreativity\LaravelJsonApi\Routing
+ * @package CloudCreativity\LaravelJsonApi
  */
 class ApiGroup
 {

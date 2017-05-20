@@ -40,6 +40,7 @@ class LinkFactory implements LinkFactoryInterface
 
     /**
      * LinkFactory constructor.
+     *
      * @param UrlGenerator $generator
      */
     public function __construct(UrlGenerator $generator)
