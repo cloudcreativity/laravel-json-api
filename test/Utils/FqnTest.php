@@ -207,4 +207,49 @@ class FqnTest extends TestCase
     {
         $this->assertEquals($expected, Fqn::validators($resourceType, $rootNamespace, $byResource));
     }
+
+    /**
+     * @return array
+     */
+    public function hydratorProvider()
+    {
+        return [
+            [
+                'App\JsonApi\Posts\Hydrator',
+                'posts',
+                'App\JsonApi',
+                true,
+            ],
+            [
+                'App\JsonApi\Hydrators\Post',
+                'posts',
+                'App\JsonApi',
+                false,
+            ],
+            [
+                'App\JsonApi\DanceEvents\Hydrator',
+                'dance-events',
+                'App\JsonApi',
+                true,
+            ],
+            [
+                'App\JsonApi\Hydrators\DanceEvent',
+                'dance-events',
+                'App\JsonApi',
+                false,
+            ],
+        ];
+    }
+
+    /**
+     * @param $expected
+     * @param $resourceType
+     * @param $rootNamespace
+     * @param $byResource
+     * @dataProvider hydratorProvider
+     */
+    public function testHydrator($expected, $resourceType, $rootNamespace, $byResource)
+    {
+        $this->assertEquals($expected, Fqn::hydrator($resourceType, $rootNamespace, $byResource));
+    }
 }
