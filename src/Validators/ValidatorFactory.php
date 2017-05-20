@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2016 Cloud Creativity Limited
+ * Copyright 2017 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,10 +26,16 @@ use Illuminate\Contracts\Validation\Factory;
 
 /**
  * Class ValidatorFactory
+ *
  * @package CloudCreativity\LaravelJsonApi
  */
 class ValidatorFactory extends BaseFactory implements ValidatorFactoryInterface
 {
+
+    /**
+     * @var ValidatorErrorFactoryInterface
+     */
+    protected $validationErrors;
 
     /**
      * @var Factory
@@ -38,6 +44,7 @@ class ValidatorFactory extends BaseFactory implements ValidatorFactoryInterface
 
     /**
      * ValidatorFactory constructor.
+     *
      * @param ValidatorErrorFactoryInterface $validationErrors
      * @param StoreInterface $store
      * @param Factory $validatorFactory
@@ -61,12 +68,9 @@ class ValidatorFactory extends BaseFactory implements ValidatorFactoryInterface
         callable $callback = null,
         callable $extractor = null
     ) {
-        /** @var ValidatorErrorFactoryInterface $validationErrors */
-        $validationErrors = $this->validationErrors;
-
         return new AttributesValidator(
             $this->validatorFactory,
-            $validationErrors,
+            $this->validationErrors,
             $rules,
             $messages,
             $customAttributes,
@@ -78,18 +82,15 @@ class ValidatorFactory extends BaseFactory implements ValidatorFactoryInterface
     /**
      * @inheritdoc
      */
-    public function filterParams(
+    public function queryParameters(
         array $rules,
         array $messages = [],
         array $customAttributes = [],
         callable $callback = null
     ) {
-        /** @var ValidatorErrorFactoryInterface $validationErrors */
-        $validationErrors = $this->validationErrors;
-
-        return new FilterValidator(
+        return new QueryValidator(
             $this->validatorFactory,
-            $validationErrors,
+            $this->validationErrors,
             $rules,
             $messages,
             $customAttributes,

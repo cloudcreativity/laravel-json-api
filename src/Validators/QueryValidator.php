@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2016 Cloud Creativity Limited
+ * Copyright 2017 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,16 +18,19 @@
 
 namespace CloudCreativity\LaravelJsonApi\Validators;
 
-use CloudCreativity\JsonApi\Contracts\Validators\FilterValidatorInterface;
+use CloudCreativity\JsonApi\Contracts\Validators\QueryValidatorInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorErrorFactoryInterface;
 use Illuminate\Contracts\Validation\Factory;
 use Illuminate\Contracts\Validation\Validator;
+use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
+use Neomerx\JsonApi\Contracts\Http\Query\QueryParametersParserInterface;
 
 /**
- * Class FilterValidator
+ * Class QueryValidator
+ *
  * @package CloudCreativity\LaravelJsonApi
  */
-class FilterValidator extends AbstractValidator implements FilterValidatorInterface
+class QueryValidator extends AbstractValidator implements QueryValidatorInterface
 {
 
     /**
@@ -57,6 +60,7 @@ class FilterValidator extends AbstractValidator implements FilterValidatorInterf
 
     /**
      * AttributesValidator constructor.
+     *
      * @param Factory $validatorFactory
      * @param ValidatorErrorFactoryInterface $errorFactory
      * @param array $rules
@@ -81,12 +85,11 @@ class FilterValidator extends AbstractValidator implements FilterValidatorInterf
     }
 
     /**
-     * @param array $filters
-     * @return bool
+     * @inheritdoc
      */
-    public function isValid(array $filters)
+    public function isValid(EncodingParametersInterface $parameters)
     {
-        $validator = $this->make($filters);
+        $validator = $this->make($this->extract($parameters));
 
         if ($validator->fails()) {
             $this->addValidatorErrors($validator);
@@ -134,12 +137,25 @@ class FilterValidator extends AbstractValidator implements FilterValidatorInterf
     }
 
     /**
+     * @param EncodingParametersInterface $parameters
+     * @return array
+     */
+    protected function extract(EncodingParametersInterface $parameters)
+    {
+        $data = (array) $parameters->getUnrecognizedParameters();
+        $data[QueryParametersParserInterface::PARAM_FILTER] = (array) $parameters->getFilteringParameters();
+        $data[QueryParametersParserInterface::PARAM_PAGE] = (array) $parameters->getPaginationParameters();
+
+        return $data;
+    }
+
+    /**
      * @param Validator $validator
      */
     protected function addValidatorErrors(Validator $validator)
     {
         $messages = $validator->getMessageBag();
-        $this->addErrors($this->errorFactory->filterParametersMessages($messages));
+        $this->addErrors($this->errorFactory->queryParametersMessages($messages));
     }
 
 }

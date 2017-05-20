@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2016 Cloud Creativity Limited
+ * Copyright 2017 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,11 @@
 namespace CloudCreativity\LaravelJsonApi\Console\Commands;
 
 /**
- * Class SchemaMakeCommand
+ * Class HydratorMakeCommand
  *
  * @package CloudCreativity\LaravelJsonApi
  */
-class SchemaMakeCommand extends AbstractGeneratorCommand
+class MakeHydratorCommand extends AbstractGeneratorCommand
 {
 
     /**
@@ -31,19 +31,19 @@ class SchemaMakeCommand extends AbstractGeneratorCommand
      *
      * @var string
      */
-    protected $name = 'make:json-api:schema';
+    protected $name = 'make:json-api:hydrator';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Create a new JSON API resource schema';
+    protected $description = 'Create a new JSON API resource hydrator';
 
     /**
      * The type of class being generated.
      *
      * @var string
      */
-    protected $type = 'Schema';
+    protected $type = 'Hydrator';
 }

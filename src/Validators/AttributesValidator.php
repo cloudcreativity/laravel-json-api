@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2016 Cloud Creativity Limited
+ * Copyright 2017 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ use Illuminate\Contracts\Validation\Validator;
 
 /**
  * Class AttributesValidator
+ *
  * @package CloudCreativity\LaravelJsonApi
  */
 class AttributesValidator extends AbstractValidator implements AttributesValidatorInterface
@@ -63,6 +64,7 @@ class AttributesValidator extends AbstractValidator implements AttributesValidat
 
     /**
      * AttributesValidator constructor.
+     *
      * @param Factory $validatorFactory
      * @param ValidatorErrorFactoryInterface $errorFactory
      * @param array $rules

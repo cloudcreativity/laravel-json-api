@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2016 Cloud Creativity Limited
+ * Copyright 2017 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,18 +20,18 @@ namespace CloudCreativity\LaravelJsonApi\Document;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Document\LinkFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Routing\ResourceRegistrar;
+use CloudCreativity\LaravelJsonApi\Routing\RouteName;
 use Illuminate\Contracts\Routing\UrlGenerator;
 use Neomerx\JsonApi\Contracts\Document\LinkInterface;
 use Neomerx\JsonApi\Document\Link;
 
 /**
  * Class LinkFactory
+ *
  * @package CloudCreativity\LaravelJsonApi
  */
 class LinkFactory implements LinkFactoryInterface
 {
-
-    use GeneratesRouteNames;
 
     /**
      * @var UrlGenerator
@@ -40,6 +40,7 @@ class LinkFactory implements LinkFactoryInterface
 
     /**
      * LinkFactory constructor.
+     *
      * @param UrlGenerator $generator
      */
     public function __construct(UrlGenerator $generator)
@@ -48,9 +49,7 @@ class LinkFactory implements LinkFactoryInterface
     }
 
     /**
-     * @param array $queryParams
-     * @param array|object|null $meta
-     * @return Link
+     * @inheritdoc
      */
     public function current(array $queryParams = [], $meta = null)
     {
@@ -64,56 +63,56 @@ class LinkFactory implements LinkFactoryInterface
     }
 
     /**
-     * Get a link to the index of a resource type.
-     *
-     * @param $resourceType
-     * @param array $queryParams
-     * @param array|object|null
-     *      meta to attach to the link object.
-     * @return LinkInterface
+     * @inheritdoc
      */
-    public function index(
-        $resourceType,
-        array $queryParams = [],
-        $meta = null
-    ) {
-        $name = $this->indexRouteName($resourceType);
-
-        return $this->route($name, $queryParams, $meta);
+    public function create($resourceType, array $queryParams = [], $meta = null)
+    {
+        return $this->route(RouteName::create($resourceType), $queryParams, $meta);
     }
 
     /**
-     * Get a link to a resource object.
-     *
-     * @param $resourceType
-     * @param $id
-     * @param array $queryParams
-     * @param array|object|null
-     *      meta to attach to the link object.
-     * @return LinkInterface
+     * @inheritdoc
      */
-    public function resource(
-        $resourceType,
-        $id,
-        array $queryParams = [],
-        $meta = null
-    ) {
+    public function index($resourceType, array $queryParams = [], $meta = null)
+    {
+        return $this->route(RouteName::index($resourceType), $queryParams, $meta);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function read($resourceType, $id, array $queryParams = [], $meta = null)
+    {
         $queryParams[ResourceRegistrar::PARAM_RESOURCE_ID] = $id;
-        $name = $this->resourceRouteName($resourceType);
+        $name = RouteName::read($resourceType);
 
         return $this->route($name, $queryParams, $meta);
     }
 
     /**
-     * Get a link to a resource object's related resource.
-     *
-     * @param $resourceType
-     * @param $id
-     * @param $relationshipKey
-     * @param array $queryParams
-     * @param array|object|null
-     *      meta to attach to the link object.
-     * @return LinkInterface
+     * @inheritDoc
+     */
+    public function update($resourceType, $id, array $queryParams = [], $meta = null)
+    {
+        $queryParams[ResourceRegistrar::PARAM_RESOURCE_ID] = $id;
+        $name = RouteName::update($resourceType);
+
+        return $this->route($name, $queryParams, $meta);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function delete($resourceType, $id, array $queryParams = [], $meta = null)
+    {
+        $queryParams[ResourceRegistrar::PARAM_RESOURCE_ID] = $id;
+        $name = RouteName::delete($resourceType);
+
+        return $this->route($name, $queryParams, $meta);
+    }
+
+    /**
+     * @inheritdoc
      */
     public function relatedResource(
         $resourceType,
@@ -122,52 +121,95 @@ class LinkFactory implements LinkFactoryInterface
         array $queryParams = [],
         $meta = null
     ) {
-        $queryParams[ResourceRegistrar::PARAM_RESOURCE_ID] = $id;
-        $queryParams[ResourceRegistrar::PARAM_RELATIONSHIP_NAME] = $relationshipKey;
-        $name = $this->relatedResourceRouteName($resourceType);
+        $name = RouteName::related($resourceType, $relationshipKey);
 
-        return $this->route($name, $queryParams, $meta);
+        return $this->relationshipRoute($name, $id, $relationshipKey, $queryParams, $meta);
     }
 
     /**
-     * Get a link to a resource object's relationship.
-     *
-     * @param $resourceType
-     * @param $id
-     * @param $relationshipKey
-     * @param array $queryParams
-     * @param array|object|null
-     *      meta to attach to the link object.
-     * @return LinkInterface
+     * @inheritdoc
      */
-    public function relationship(
+    public function readRelationship(
         $resourceType,
         $id,
         $relationshipKey,
         array $queryParams = [],
         $meta = null
     ) {
-        $queryParams[ResourceRegistrar::PARAM_RESOURCE_ID] = $id;
-        $queryParams[ResourceRegistrar::PARAM_RELATIONSHIP_NAME] = $relationshipKey;
-        $name = $this->relationshipRouteName($resourceType);
+        $name = RouteName::readRelationship($resourceType, $relationshipKey);
 
-        return $this->route($name, $queryParams, $meta);
+        return $this->relationshipRoute($name, $id, $relationshipKey, $queryParams, $meta);
     }
 
     /**
-     * Get a JSON API link to a named route within your application.
-     *
-     * @param $name
-     * @param array $parameters
-     * @param array|object|null
-     *      meta to attach to the link object.
-     * @return LinkInterface
+     * @inheritdoc
+     */
+    public function replaceRelationship(
+        $resourceType,
+        $id,
+        $relationshipKey,
+        array $queryParams = [],
+        $meta = null
+    ) {
+        $name = RouteName::replaceRelationship($resourceType, $relationshipKey);
+
+        return $this->relationshipRoute($name, $id, $relationshipKey, $queryParams, $meta);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function addRelationship(
+        $resourceType,
+        $id,
+        $relationshipKey,
+        array $queryParams = [],
+        $meta = null
+    ) {
+        $name = RouteName::addRelationship($resourceType, $relationshipKey);
+
+        return $this->relationshipRoute($name, $id, $relationshipKey, $queryParams, $meta);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function removeRelationship(
+        $resourceType,
+        $id,
+        $relationshipKey,
+        array $queryParams = [],
+        $meta = null
+    ) {
+        $name = RouteName::removeRelationship($resourceType, $relationshipKey);
+
+        return $this->relationshipRoute($name, $id, $relationshipKey, $queryParams, $meta);
+    }
+
+    /**
+     * @inheritdoc
      */
     public function route($name, $parameters = [], $meta = null)
     {
         $uri = $this->generator->route($name, $parameters);
 
         return new Link($uri, $meta, true);
+    }
+
+    /**
+     * @param $name
+     * @param $id
+     * @param $relationshipKey
+     * @param array $queryParams
+     * @param $meta
+     * @return LinkInterface|Link
+     */
+    private function relationshipRoute($name, $id, $relationshipKey, array $queryParams, $meta)
+    {
+        $queryParams[ResourceRegistrar::PARAM_RESOURCE_ID] = $id;
+        $queryParams[ResourceRegistrar::PARAM_RELATIONSHIP_NAME] = $relationshipKey;
+
+        return $this->route($name, $queryParams, $meta);
     }
 
 }

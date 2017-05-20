@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2016 Cloud Creativity Limited
+ * Copyright 2017 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ use Neomerx\JsonApi\Contracts\Http\Query\QueryParametersParserInterface as Param
 
 /**
  * Class InteractsWithResources
+ *
  * @package CloudCreativity\LaravelJsonApi
  *
  * This trait MUST be used on a class that uses this trait:
@@ -119,7 +120,7 @@ trait InteractsWithResources
     {
         $params = $this->addDefaultRouteParams($params);
         $route = $this->resolveRouteName();
-        $uri = $this->linkTo()->resource($route, $resourceId, $params);
+        $uri = $this->linkTo()->read($route, $resourceId, $params);
 
         return $this->jsonApi('GET', $uri, $headers);
     }
@@ -140,7 +141,7 @@ trait InteractsWithResources
 
         $params = $this->addDefaultRouteParams($params);
         $route = $this->resolveRouteName();
-        $uri = $this->linkTo()->resource($route, $id, $params);
+        $uri = $this->linkTo()->read($route, $id, $params);
 
         return $this->jsonApi('PATCH', $uri, ['data' => $data], $headers);
     }
@@ -155,7 +156,7 @@ trait InteractsWithResources
     {
         $params = $this->addDefaultRouteParams($params);
         $route = $this->resolveRouteName();
-        $uri = $this->linkTo()->resource($route, $resourceId, $params);
+        $uri = $this->linkTo()->read($route, $resourceId, $params);
 
         return $this->jsonApi('DELETE', $uri, [], $headers);
     }

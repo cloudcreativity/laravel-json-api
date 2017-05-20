@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2016 Cloud Creativity Limited
+ * Copyright 2017 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,35 +19,36 @@
 namespace CloudCreativity\LaravelJsonApi\Http\Controllers;
 
 use Closure;
+use CloudCreativity\JsonApi\Contracts\Http\ApiInterface;
 use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface as JsonApiRequest;
 use CloudCreativity\JsonApi\Contracts\Hydrator\HydratesRelatedInterface;
 use CloudCreativity\JsonApi\Contracts\Hydrator\HydratorInterface;
 use CloudCreativity\JsonApi\Contracts\Object\ResourceInterface;
+use CloudCreativity\JsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\JsonApi\Exceptions\RuntimeException;
-use CloudCreativity\LaravelJsonApi\Contracts\Search\SearchInterface;
+use CloudCreativity\LaravelJsonApi\Document\GeneratesLinks;
+use CloudCreativity\LaravelJsonApi\Http\Responses\ReplyTrait;
 use CloudCreativity\LaravelJsonApi\Utils\Str;
 use Exception;
-use Illuminate\Contracts\Pagination\Paginator;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Response;
+use Illuminate\Routing\Controller;
 
 /**
  * Class EloquentController
+ *
  * @package CloudCreativity\LaravelJsonApi
  */
-abstract class EloquentController extends JsonApiController
+class EloquentController extends Controller
 {
+
+    use ReplyTrait,
+        GeneratesLinks;
 
     /**
      * @var HydratorInterface
      */
     protected $hydrator;
-
-    /**
-     * @var SearchInterface
-     */
-    protected $search;
 
     /**
      * Map of URI relationship names to model relationship keys.
@@ -68,28 +69,24 @@ abstract class EloquentController extends JsonApiController
 
     /**
      * EloquentController constructor.
+     *
      * @param Model $model
      * @param HydratorInterface|null $hydrator
-     * @param SearchInterface|null $search
      */
-    public function __construct(
-        Model $model,
-        HydratorInterface $hydrator = null,
-        SearchInterface $search = null
-    ) {
-        parent::__construct();
+    public function __construct(Model $model, HydratorInterface $hydrator = null)
+    {
         $this->model = $model;
         $this->hydrator = $hydrator;
-        $this->search = $search;
     }
 
     /**
+     * @param ApiInterface $api
      * @param JsonApiRequest $request
      * @return Response
      */
-    public function index(JsonApiRequest $request)
+    public function index(ApiInterface $api, JsonApiRequest $request)
     {
-        $result = $this->search($request);
+        $result = $this->search($api->getStore(), $request);
 
         if ($result instanceof Response) {
             return $result;
@@ -203,17 +200,11 @@ abstract class EloquentController extends JsonApiController
 
     /**
      * @param JsonApiRequest $request
-     * @return Paginator|Collection|Model|Response|null
+     * @return mixed
      */
-    protected function search(JsonApiRequest $request)
+    protected function search(StoreInterface $store, JsonApiRequest $request)
     {
-        if (!$this->search) {
-            return $this->notImplemented();
-        }
-
-        $builder = $this->model->newQuery();
-
-        return $this->search->search($builder, $request->getParameters());
+        return $store->query($request->getResourceType(), $request->getParameters());
     }
 
     /**
@@ -420,6 +411,16 @@ abstract class EloquentController extends JsonApiController
         }
 
         return $record;
+    }
+
+    /**
+     * @return Response
+     */
+    protected function notImplemented()
+    {
+        return $this
+            ->reply()
+            ->statusCode(Response::HTTP_NOT_IMPLEMENTED);
     }
 
     /**

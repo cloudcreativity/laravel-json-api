@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2016 Cloud Creativity Limited
+ * Copyright 2017 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,11 @@
 namespace CloudCreativity\LaravelJsonApi\Console\Commands;
 
 /**
- * Class RequestMakeCommand
+ * Class SchemaMakeCommand
  *
  * @package CloudCreativity\LaravelJsonApi
  */
-class RequestMakeCommand extends AbstractGeneratorCommand
+class MakeSchemaCommand extends AbstractGeneratorCommand
 {
 
     /**
@@ -31,26 +31,19 @@ class RequestMakeCommand extends AbstractGeneratorCommand
      *
      * @var string
      */
-    protected $name = 'make:json-api:request';
+    protected $name = 'make:json-api:schema';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Create a new JSON API resource request';
+    protected $description = 'Create a new JSON API resource schema';
 
     /**
      * The type of class being generated.
      *
      * @var string
      */
-    protected $type = 'Request';
-
-    /**
-     * Whether the resource type is non-dependent on eloquent
-     *
-     * @var mixed
-     */
-    protected $isIndependent = true;
+    protected $type = 'Schema';
 }

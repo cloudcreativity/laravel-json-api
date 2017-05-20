@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2016 Cloud Creativity Limited
+ * Copyright 2017 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,34 +16,24 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\LaravelJsonApi\Console\Commands;
+namespace CloudCreativity\LaravelJsonApi\Contracts\Pagination;
+
+use CloudCreativity\JsonApi\Contracts\Pagination\PageInterface;
+use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 /**
- * Class HydratorMakeCommand
+ * Interface PagingStrategyInterface
  *
  * @package CloudCreativity\LaravelJsonApi
  */
-class HydratorMakeCommand extends AbstractGeneratorCommand
+interface PagingStrategyInterface
 {
 
     /**
-     * The console command name.
-     *
-     * @var string
+     * @param mixed $query
+     * @param EncodingParametersInterface $pagingParameters
+     * @return PageInterface
      */
-    protected $name = 'make:json-api:hydrator';
+    public function paginate($query, EncodingParametersInterface $pagingParameters);
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Create a new JSON API resource hydrator';
-
-    /**
-     * The type of class being generated.
-     *
-     * @var string
-     */
-    protected $type = 'Hydrator';
 }

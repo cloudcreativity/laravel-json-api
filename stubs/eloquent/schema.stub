@@ -10,19 +10,12 @@ class Schema extends EloquentSchema
     /**
      * @var string
      */
-    const RESOURCE_TYPE = 'dummyResourceType';
+    protected $resourceType = 'dummyResourceType';
 
     /**
      * @var array|null
      */
     protected $attributes = null;
 
-    /**
-     * @return string
-     */
-    public function getResourceType()
-    {
-        return self::RESOURCE_TYPE;
-    }
 }
 

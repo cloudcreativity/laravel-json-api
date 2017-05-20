@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2016 Cloud Creativity Limited
+ * Copyright 2017 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,33 +16,34 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\LaravelJsonApi\Search;
-
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Collection;
+namespace CloudCreativity\LaravelJsonApi\Console\Commands;
 
 /**
- * Class UnfilteredFilter
+ * Class SearchMakeCommand
+ *
  * @package CloudCreativity\LaravelJsonApi
  */
-final class SearchAll extends AbstractSearch
+class MakeAdapterCommand extends AbstractGeneratorCommand
 {
 
     /**
-     * @param Builder $builder
-     * @param Collection $filters
+     * The console command name.
+     *
+     * @var string
      */
-    protected function filter(Builder $builder, Collection $filters)
-    {
-
-    }
+    protected $name = 'make:json-api:adapter';
 
     /**
-     * @param Collection $filters
-     * @return bool
+     * The console command description.
+     *
+     * @var string
      */
-    protected function isSearchOne(Collection $filters)
-    {
-        return false;
-    }
+    protected $description = 'Create a new JSON API resource adapter';
+
+    /**
+     * The type of class being generated.
+     *
+     * @var string
+     */
+    protected $type = 'Adapter';
 }

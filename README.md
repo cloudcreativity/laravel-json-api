@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/cloudcreativity/laravel-json-api.svg?branch=master)](https://travis-ci.org/cloudcreativity/laravel-json-api)
+
 # cloudcreativity/laravel-json-api
 
 Add [jsonapi.org](http://jsonapi.org) compliant APIs to your Laravel 5 application. 
@@ -14,20 +16,35 @@ From [jsonapi.org](http://jsonapi.org)
 
 For full information on the spec, plus examples, see http://jsonapi.org
 
+## Demo
+
+A demo application is available at [here](https://github.com/cloudcreativity/demo-laravel-json-api).
+
+## Laravel Versions
+
+We use semantic versioning but Laravel does not. This table will help...
+
+| Laravel | This Package |
+| --- | --- |
+| 5.3.* | ^0.8 |
+| 5.4.* | ^0.8 |
+
+## Lumen
+
+Currently we have not integrated the package with Lumen. If you use Lumen and can help, please let us know on
+[this issue](https://github.com/cloudcreativity/laravel-json-api/issues/61).
+
 ## Documentation
 
-We're in the process of adding full documentation to the wiki. We'll also be adding a demo app.
+We're in the process of adding full documentation to the wiki.
 
 ## Status
 
 This repository is under development. We have production applications that are using the package and extensive test
 coverage of these applications.
 
-The reason we have not tagged the package as `1.0` is because some features require refinement. You'll see from the
-issues that there are plenty of suggestions from users of the package as to how to improve it. We might therefore
-need to introduce breaking changes as we work on these improvements.
-
-We are committed to providing [upgrade notes](UPGRADE.md) on each breaking change as we develop the package.
+> We are aiming for v1.0 as soon as possible. See 
+[this issue](https://github.com/cloudcreativity/laravel-json-api/issues/60) for progress.
 
 ## License
 
@@ -36,3 +53,13 @@ Apache License (Version 2.0). Please see [License File](LICENSE) for more inform
 ## Installation
 
 Installation is via `composer`. See the wiki for complete instructions.
+
+## Contributing
+
+Contributions are absolutely welcome. Ideally submit a pull request, even more ideally with unit tests. 
+Please note the following:
+
+* **Bug Fixes** - submit a pull request against the `master` branch.
+* **Enhancements / New Features** - submit a pull request against the `develop` branch.
+
+We'd recommend submitting an issue before taking the time to put together a pull request.

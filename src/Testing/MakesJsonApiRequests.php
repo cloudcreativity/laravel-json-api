@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2016 Cloud Creativity Limited
+ * Copyright 2017 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ use PHPUnit_Framework_Assert as PHPUnit;
 
 /**
  * Class MakesJsonApiRequests
+ *
  * @package CloudCreativity\LaravelJsonApi\Testing
  *
  * This trait MUST be used on a class that uses this trait:
