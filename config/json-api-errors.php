@@ -1,7 +1,7 @@
 <?php
 
-use CloudCreativity\JsonApi\Document\Error;
-use CloudCreativity\LaravelJsonApi\Validators\ValidatorErrorFactory as V;
+use CloudCreativity\JsonApi\Contracts\Document\MutableErrorInterface as Error;
+use CloudCreativity\JsonApi\Validators\ValidatorErrorFactory as V;
 
 return [
 
@@ -66,6 +66,7 @@ return [
      */
     V::RESOURCE_INVALID_ATTRIBUTES_MESSAGES => [
         Error::TITLE => 'Invalid Attribute',
+        Error::STATUS => 422,
     ],
 
     /**
@@ -147,6 +148,7 @@ return [
      */
     V::QUERY_PARAMETERS_MESSAGES => [
         Error::TITLE => 'Invalid Query Parameter',
+        Error::STATUS => 400,
     ],
 
     /**

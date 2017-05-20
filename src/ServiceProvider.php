@@ -26,11 +26,11 @@ use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterpreterInterface;
 use CloudCreativity\JsonApi\Contracts\Http\Responses\ResponseFactoryInterface;
 use CloudCreativity\JsonApi\Contracts\Repositories\ErrorRepositoryInterface;
 use CloudCreativity\JsonApi\Contracts\Store\StoreInterface;
+use CloudCreativity\JsonApi\Contracts\Validators\ValidatorErrorFactoryInterface;
 use CloudCreativity\JsonApi\Http\Responses\ResponseFactory;
 use CloudCreativity\LaravelJsonApi\Api\Repository;
 use CloudCreativity\LaravelJsonApi\Console\Commands;
 use CloudCreativity\LaravelJsonApi\Contracts\Document\LinkFactoryInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorErrorFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Document\LinkFactory;
 use CloudCreativity\LaravelJsonApi\Exceptions\ExceptionParser;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
@@ -213,17 +213,10 @@ class ServiceProvider extends BaseServiceProvider
         });
 
         $this->app->bind(ValidatorErrorFactoryInterface::class, function (Application $app) {
-            /** @var Factory $factory */
-            $factory = $app->make(Factory::class);
             $errors = $app->make(ErrorRepositoryInterface::class);
 
             return new ValidatorErrorFactory($errors);
         });
-
-        $this->app->alias(
-            ValidatorErrorFactoryInterface::class,
-            \CloudCreativity\JsonApi\Contracts\Validators\ValidatorErrorFactoryInterface::class
-        );
     }
 
     /**

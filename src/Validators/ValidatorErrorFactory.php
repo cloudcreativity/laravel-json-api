@@ -19,9 +19,9 @@
 namespace CloudCreativity\LaravelJsonApi\Validators;
 
 use CloudCreativity\JsonApi\Document\Error;
+use CloudCreativity\JsonApi\Exceptions\MutableErrorCollection;
 use CloudCreativity\JsonApi\Utils\Pointer as P;
 use CloudCreativity\JsonApi\Validators\ValidatorErrorFactory as BaseFactory;
-use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorErrorFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Utils\ErrorBag;
 use Illuminate\Contracts\Support\MessageBag;
 
@@ -30,41 +30,38 @@ use Illuminate\Contracts\Support\MessageBag;
  *
  * @package CloudCreativity\LaravelJsonApi
  */
-class ValidatorErrorFactory extends BaseFactory implements ValidatorErrorFactoryInterface
+class ValidatorErrorFactory extends BaseFactory
 {
 
-    const RESOURCE_INVALID_ATTRIBUTES_MESSAGES = 'validation:resource-invalid-attributes-messages';
-    const QUERY_PARAMETERS_MESSAGES = 'validation:query-parameters-messages';
-
     /**
-     * @inheritdoc
+     * @param MessageBag $messages
+     * @param string|null $attributePrefix
+     * @param int $statusCode
+     * @return MutableErrorCollection
      */
-    public function resourceInvalidAttributesMessages(
-        MessageBag $messageBag,
-        $attributePrefix = null,
-        $statusCode = self::STATUS_INVALID_ATTRIBUTES
-    ) {
+    public function resourceInvalidAttributesMessages($messages, $attributePrefix = null, $statusCode = 422)
+    {
         $prototype = $this->repository->error(self::RESOURCE_INVALID_ATTRIBUTES_MESSAGES);
         $prototype = Error::cast($prototype)->setStatus($statusCode);
         $prefix = $attributePrefix ? P::attribute($attributePrefix) : P::attributes();
-        $errors = new ErrorBag($messageBag, $prototype, $prefix);
+        $errorBag = new ErrorBag($messages, $prototype, $prefix);
 
-        return $errors->toArray();
+        return $errorBag->getErrors();
     }
 
     /**
-     * @inheritdoc
+     * @param MessageBag $messages
+     * @param string|null $prefix
+     * @param int $statusCode
+     * @return MutableErrorCollection
      */
-    public function queryParametersMessages(
-        MessageBag $messages,
-        $prefix = null,
-        $statusCode = self::STATUS_INVALID_PARAMETERS
-    ) {
+    public function queryParametersMessages($messages, $prefix = null, $statusCode = 400)
+    {
         $prototype = $this->repository->error(self::QUERY_PARAMETERS_MESSAGES);
         $prototype = Error::cast($prototype)->setStatus($statusCode);
-        $errors = new ErrorBag($messages, $prototype, $prefix, true);
+        $errorBag = new ErrorBag($messages, $prototype, $prefix, true);
 
-        return $errors->toArray();
+        return $errorBag->getErrors();
     }
 
 }

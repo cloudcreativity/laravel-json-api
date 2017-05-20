@@ -2,6 +2,14 @@
 
 This file provides notes on how to upgrade between versions.
 
+## v0.8 to v0.9 (Unreleased)
+
+### Validation Error Factory
+
+The `CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorErrorFactoryInterface` has been removed. Change
+any type-hints or implementations of this to use the
+`CloudCreativity\JsonApi\Contracts\Validators\ValidatorErrorFactoryInterface` instead.
+
 ## v0.7 to v0.8
 
 Refer to the [UPGRADE-0.8.md](UPGRADE-0.8.md) file for instructions.
