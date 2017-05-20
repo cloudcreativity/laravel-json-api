@@ -1,6 +1,10 @@
+[![Build Status](https://travis-ci.org/cloudcreativity/laravel-json-api.svg?branch=master)](https://travis-ci.org/cloudcreativity/laravel-json-api)
+
 # cloudcreativity/laravel-json-api
 
-Add [jsonapi.org](http://jsonapi.org) compliant APIs to your Laravel 5 application. Based on the framework agnostic packages [neomerx/json-api](https://github.com/neomerx/json-api) and [cloudcreativity/json-api](https://github.com/cloudcreativity/json-api).
+Add [jsonapi.org](http://jsonapi.org) compliant APIs to your Laravel 5 application. 
+Based on the framework agnostic packages [neomerx/json-api](https://github.com/neomerx/json-api) 
+and [cloudcreativity/json-api](https://github.com/cloudcreativity/json-api).
 
 ## What is JSON API?
 
@@ -12,18 +16,35 @@ From [jsonapi.org](http://jsonapi.org)
 
 For full information on the spec, plus examples, see http://jsonapi.org
 
+## Demo
+
+A demo application is available at [here](https://github.com/cloudcreativity/demo-laravel-json-api).
+
+## Laravel Versions
+
+We use semantic versioning but Laravel does not. This table will help...
+
+| Laravel | This Package |
+| --- | --- |
+| 5.3.* | ^0.8 |
+| 5.4.* | ^0.8 |
+
+## Lumen
+
+Currently we have not integrated the package with Lumen. If you use Lumen and can help, please let us know on
+[this issue](https://github.com/cloudcreativity/laravel-json-api/issues/61).
+
 ## Documentation
 
-We're in the process of adding full documentation to the wiki. We'll also be adding a demo app.
+We're in the process of adding full documentation to the wiki.
 
 ## Status
 
 This repository is under development but is considered relatively stable. Tagged versions exist and we have live
 applications that are using the repository.
 
-> We want to get to v1.0 as soon as is possible. However, one of the base packages that
-we use - `neomerx/json-api` - is not yet on at 1.*. As they could in theory make breaking changes to their package,
-we can't yet tag this package as 1.0.
+> We are aiming for v1.0 as soon as possible. See 
+[this issue](https://github.com/cloudcreativity/laravel-json-api/issues/60) for progress.
 
 ## License
 

@@ -2,6 +2,36 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## [0.8.0] - 2017-05-20
+
+### Added
+- Generator for API config - `php artisan make:json-api <name>`
+- All routes registered now have route names.
+- Support for packages providing resources into an API via a `ResourceProvider` class. Note that this is currently
+experimental.
+
+### Changed
+- Route registration has been refactored so that only the JSON API routes that are required for a specific resource
+type are registered.
+- Config is now defined on a per-API basis. E.g. for an API named `v1`, config is stored in a `json-api-v1.php` file.
+- Store adapters now relate to a specific resource type, and also contain all filtering/pagination logic for an
+index HTTP request.
+- The validators class now provides query parameter validation rules rather than rules specifically for the filter
+query parameter.
+- Pagination is now implemented via a pagination strategy that is injected into the `EloquentAdapter`. This allows
+for pagination strategies to be changed on a per-resource type basis. The package includes a `StandardStrategy` that
+integrates with the default Laravel page number/size pagination.
+
+### Removed
+- A resource's `Request` class has been removed as its functionality is now handled by middleware, and query parameter
+checking has been moved to the `Validators` class.
+- `Search` classes have been removed in favour of the new store adapters.
+- Package no longer supports Laravel 5.1 and 5.2.
+
+### Fixed
+- Shortcut for non-Eloquent generation on generator commands has been changed to `-N` (was previously `-ne` which
+did not work).
+
 ## [0.7.0] - 2017-03-16
 
 ### Added

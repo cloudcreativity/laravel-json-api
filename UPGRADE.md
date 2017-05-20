@@ -2,6 +2,10 @@
 
 This file provides notes on how to upgrade between versions.
 
+## v0.7 to v0.8
+
+Refer to the [UPGRADE-0.8.md](UPGRADE-0.8.md) file for instructions.
+
 ## v0.6 to v0.7
 
 ### Eloquent Hydrator
