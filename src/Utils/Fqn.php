@@ -23,7 +23,7 @@ use CloudCreativity\JsonApi\Utils\Str;
 /**
  * Class Fqn
  *
- * @package CloudCreativity\LaravelJsonApi\Utils
+ * @package CloudCreativity\LaravelJsonApi
  */
 class Fqn
 {

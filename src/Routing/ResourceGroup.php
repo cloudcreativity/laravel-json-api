@@ -120,7 +120,7 @@ class ResourceGroup
      */
     protected function addResourceRoutes(Registrar $router)
     {
-        foreach($this->resourceActions() as $action) {
+        foreach ($this->resourceActions() as $action) {
             $this->resourceRoute($router, $action);
         }
     }

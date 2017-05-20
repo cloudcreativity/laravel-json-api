@@ -302,6 +302,7 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
     /**
      * Get a validator for the resource relationships member.
      *.
+     *
      * @param object|null $record
      *      the record being updated, or null if it is a create request.
      * @return RelationshipsValidatorInterface

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2016 Cloud Creativity Limited
+ * Copyright 2017 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,9 +25,10 @@ use Illuminate\Http\Request;
 
 /**
  * Class RequestInterpreter
+ *
  * @package CloudCreativity\LaravelJsonApi
  */
-final class RequestInterpreter extends AbstractRequestInterpreter
+class RequestInterpreter extends AbstractRequestInterpreter
 {
 
     /**
@@ -37,6 +38,7 @@ final class RequestInterpreter extends AbstractRequestInterpreter
 
     /**
      * RequestInterpreter constructor.
+     *
      * @param Request $request
      */
     public function __construct(Request $request)
@@ -53,7 +55,7 @@ final class RequestInterpreter extends AbstractRequestInterpreter
     }
 
     /**
-     * @return string
+     * @inheritdoc
      */
     public function getResourceType()
     {

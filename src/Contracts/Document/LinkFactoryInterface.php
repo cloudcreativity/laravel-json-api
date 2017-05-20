@@ -22,6 +22,7 @@ use Neomerx\JsonApi\Contracts\Document\LinkInterface;
 
 /**
  * Interface LinkFactoryInterface
+ *
  * @package CloudCreativity\LaravelJsonApi
  */
 interface LinkFactoryInterface

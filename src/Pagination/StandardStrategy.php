@@ -32,6 +32,11 @@ use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\SortParameterInterface;
 use Neomerx\JsonApi\Contracts\Http\Query\QueryParametersParserInterface;
 
+/**
+ * Class StandardStrategy
+ *
+ * @package CloudCreativity\LaravelJsonApi
+ */
 class StandardStrategy implements PagingStrategyInterface
 {
 

@@ -60,6 +60,7 @@ class QueryValidator extends AbstractValidator implements QueryValidatorInterfac
 
     /**
      * AttributesValidator constructor.
+     *
      * @param Factory $validatorFactory
      * @param ValidatorErrorFactoryInterface $errorFactory
      * @param array $rules

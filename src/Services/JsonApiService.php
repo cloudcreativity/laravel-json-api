@@ -32,6 +32,7 @@ use Illuminate\Contracts\Container\Container;
 
 /**
  * Class JsonApiService
+ *
  * @package CloudCreativity\LaravelJsonApi
  */
 class JsonApiService implements HttpServiceInterface, ErrorReporterInterface
@@ -44,6 +45,7 @@ class JsonApiService implements HttpServiceInterface, ErrorReporterInterface
 
     /**
      * JsonApiService constructor.
+     *
      * @param Container $container
      */
     public function __construct(Container $container)
