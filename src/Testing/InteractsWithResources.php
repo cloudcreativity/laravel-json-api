@@ -18,8 +18,8 @@
 
 namespace CloudCreativity\LaravelJsonApi\Testing;
 
-use CloudCreativity\JsonApi\Testing\ResourcesTester;
-use CloudCreativity\JsonApi\Testing\ResourceTester;
+use CloudCreativity\JsonApi\Testing\ResourceObjectsTester;
+use CloudCreativity\JsonApi\Testing\ResourceObjectTester;
 use Illuminate\Contracts\Routing\UrlRoutable;
 use Illuminate\Http\Response;
 use Illuminate\Support\Collection;
@@ -165,7 +165,7 @@ trait InteractsWithResources
      * Assert that a search response is a collection only containing the expected resource type.
      *
      * @param string $contentType
-     * @return ResourcesTester
+     * @return ResourceObjectsTester
      */
     protected function assertSearchResponse($contentType = MediaTypeInterface::JSON_API_MEDIA_TYPE)
     {
@@ -182,7 +182,7 @@ trait InteractsWithResources
      *
      * @param string|int|UrlRoutable $expectedId
      * @param string $contentType
-     * @return ResourceTester
+     * @return ResourceObjectTester
      * @todo needs to support `null` responses
      */
     protected function assertSearchOneResponse($expectedId, $contentType = MediaTypeInterface::JSON_API_MEDIA_TYPE)
@@ -205,7 +205,7 @@ trait InteractsWithResources
      * @param array|Collection|UrlRoutable $expectedIds
      *      the ids - may contain UrlRoutable objects (e.g. Models)
      * @param string $contentType
-     * @return ResourcesTester
+     * @return ResourceObjectsTester
      */
     protected function assertSearchByIdResponse($expectedIds, $contentType = MediaTypeInterface::JSON_API_MEDIA_TYPE)
     {

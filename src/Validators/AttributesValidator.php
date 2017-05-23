@@ -18,7 +18,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Validators;
 
-use CloudCreativity\JsonApi\Contracts\Object\ResourceInterface;
+use CloudCreativity\JsonApi\Contracts\Object\ResourceObjectInterface;
 use CloudCreativity\JsonApi\Contracts\Validators\AttributesValidatorInterface;
 use CloudCreativity\JsonApi\Contracts\Validators\ValidatorErrorFactoryInterface;
 use Illuminate\Contracts\Validation\Factory;
@@ -94,7 +94,7 @@ class AttributesValidator extends AbstractValidator implements AttributesValidat
     /**
      * @inheritdoc
      */
-    public function isValid(ResourceInterface $resource, $record = null)
+    public function isValid(ResourceObjectInterface $resource, $record = null)
     {
         $attributes = $this->extractAttributes($resource, $record);
         $validator = $this->make($attributes);
@@ -145,11 +145,11 @@ class AttributesValidator extends AbstractValidator implements AttributesValidat
     }
 
     /**
-     * @param ResourceInterface $resource
+     * @param ResourceObjectInterface $resource
      * @param object|null $record
      * @return array
      */
-    protected function extractAttributes(ResourceInterface $resource, $record = null)
+    protected function extractAttributes(ResourceObjectInterface $resource, $record = null)
     {
         $extractor = $this->extractor;
         $attributes = ($extractor) ? $extractor($resource, $record) : null;

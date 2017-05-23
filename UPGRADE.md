@@ -4,11 +4,24 @@ This file provides notes on how to upgrade between versions.
 
 ## v0.8 to v0.9 (Unreleased)
 
+### Class Name Changes
+
+You will need to rename the following:
+
+- `CloudCreativity\JsonApi\Contracts\Object\ResourceInterface` to `ResourceObjectInterface` (same namespace). 
+This will affect controllers, hydrators and validators.
+- `CloudCreativity\JsonApi\Contracts\Object\StandardObjectInterface` to 
+`CloudCreativity\Utils\Object\StandardObjectInterface`. This will affect hydrators.
+
+If you have extended any of the internals of this package, you will need to check the full list of namespace changes
+in the `cloudcreativity/json-api` upgrade guide (v0.8 to v0.9).
+
 ### Validation Error Factory
 
-The `CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorErrorFactoryInterface` has been removed. Change
-any type-hints or implementations of this to use the
-`CloudCreativity\JsonApi\Contracts\Validators\ValidatorErrorFactoryInterface` instead.
+The `CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorErrorFactoryInterface` has been removed. 
+This is only likely to affect applications that have extended the internals of this package.
+Change any type-hints or implementations of this to use the
+`CloudCreativity\JsonApi\Contracts\Validators\ValidatorErrorFactoryInterface` instead. 
 
 ## v0.7 to v0.8
 
