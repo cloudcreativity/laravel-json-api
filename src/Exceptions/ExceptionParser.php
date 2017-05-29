@@ -22,10 +22,10 @@ use CloudCreativity\JsonApi\Contracts\Document\MutableErrorInterface;
 use CloudCreativity\JsonApi\Contracts\Exceptions\ErrorIdAllocatorInterface;
 use CloudCreativity\JsonApi\Contracts\Exceptions\ExceptionParserInterface;
 use CloudCreativity\JsonApi\Contracts\Factories\FactoryInterface;
-use CloudCreativity\JsonApi\Contracts\Http\HttpServiceInterface;
 use CloudCreativity\JsonApi\Contracts\Repositories\ErrorRepositoryInterface;
 use CloudCreativity\JsonApi\Exceptions\MutableErrorCollection as Errors;
 use CloudCreativity\JsonApi\Http\Responses\ErrorResponse;
+use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
 use Exception;
 use Illuminate\Http\Response;
 use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
@@ -44,9 +44,9 @@ class ExceptionParser implements ExceptionParserInterface
 {
 
     /**
-     * @var HttpServiceInterface
+     * @var JsonApiService
      */
-    private $httpService;
+    private $service;
 
     /**
      * @var FactoryInterface
@@ -61,16 +61,16 @@ class ExceptionParser implements ExceptionParserInterface
     /**
      * ExceptionParser constructor.
      *
-     * @param HttpServiceInterface $httpService
+     * @param JsonApiService $service
      * @param FactoryInterface $factory
      * @param ErrorIdAllocatorInterface|null $idAllocator
      */
     public function __construct(
-        HttpServiceInterface $httpService,
+        JsonApiService $service,
         FactoryInterface $factory,
         ErrorIdAllocatorInterface $idAllocator = null
     ) {
-        $this->httpService = $httpService;
+        $this->service = $service;
         $this->factory = $factory;
         $this->idAllocator = $idAllocator;
     }
@@ -184,8 +184,8 @@ class ExceptionParser implements ExceptionParserInterface
      */
     protected function getErrorRepository()
     {
-        if ($this->httpService->hasApi()) {
-            return $this->httpService->getApi()->getErrors();
+        if ($this->service->hasApi()) {
+            return $this->service->getApi()->getErrors();
         }
 
         return $this->factory->createErrorRepository([]);

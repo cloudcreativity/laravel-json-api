@@ -16,6 +16,14 @@ This will affect controllers, hydrators and validators.
 If you have extended any of the internals of this package, you will need to check the full list of namespace changes
 in the `cloudcreativity/json-api` upgrade guide (v0.8 to v0.9).
 
+### HTTP Service / JSON API Service
+
+The `CloudCreativity\JsonApi\Contracts\Http\HttpServiceInterface` has been removed. Use the `JsonApi` facade or
+inject the `CloudCreativity\JsonApi\Services\JsonApiService` instance.
+
+Note the deprecated `isActive` method has been removed from the JSON API service (facade). Use the `hasApi()` method
+instead.
+
 ### Validation Error Factory
 
 The `CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorErrorFactoryInterface` has been removed. 

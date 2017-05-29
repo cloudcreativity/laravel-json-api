@@ -19,7 +19,6 @@
 namespace CloudCreativity\LaravelJsonApi\Hydrator;
 
 use Carbon\Carbon;
-use CloudCreativity\JsonApi\Contracts\Http\HttpServiceInterface;
 use CloudCreativity\JsonApi\Contracts\Hydrator\HydratesRelatedInterface;
 use CloudCreativity\JsonApi\Contracts\Object\RelationshipInterface;
 use CloudCreativity\JsonApi\Contracts\Object\RelationshipsInterface;
@@ -29,6 +28,7 @@ use CloudCreativity\JsonApi\Exceptions\InvalidArgumentException;
 use CloudCreativity\JsonApi\Exceptions\RuntimeException;
 use CloudCreativity\JsonApi\Hydrator\AbstractHydrator;
 use CloudCreativity\JsonApi\Hydrator\RelatedHydratorTrait;
+use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
 use CloudCreativity\LaravelJsonApi\Utils\Str;
 use CloudCreativity\Utils\Object\StandardObjectInterface;
 use Illuminate\Database\Eloquent\Model;
@@ -109,7 +109,7 @@ class EloquentHydrator extends AbstractHydrator implements HydratesRelatedInterf
     protected $relationships = [];
 
     /**
-     * @var HttpServiceInterface
+     * @var JsonApiService
      */
     protected $service;
 
@@ -121,9 +121,9 @@ class EloquentHydrator extends AbstractHydrator implements HydratesRelatedInterf
     /**
      * EloquentHydrator constructor.
      *
-     * @param HttpServiceInterface $service
+     * @param JsonApiService $service
      */
-    public function __construct(HttpServiceInterface $service)
+    public function __construct(JsonApiService $service)
     {
         $this->service = $service;
     }
