@@ -19,10 +19,12 @@
 namespace CloudCreativity\LaravelJsonApi\Api;
 
 use CloudCreativity\JsonApi\Contracts\Http\ApiInterface;
+use CloudCreativity\JsonApi\Encoder\Encoder;
 use CloudCreativity\JsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use Illuminate\Contracts\Config\Repository as Config;
 use Illuminate\Support\Arr;
+use Neomerx\JsonApi\Encoder\EncoderOptions;
 
 /**
  * Class Repository
@@ -95,6 +97,22 @@ class Repository
         $this->createProviders($config)->registerAll($definition);
 
         return $this->definitions[$apiName] = $definition;
+    }
+
+    /**
+     * @param $apiName
+     * @param string|null $host
+     * @param int $options
+     * @param int $depth
+     * @return Encoder
+     */
+    public function retrieveEncoder($apiName, $host = null, $options = 0, $depth = 512)
+    {
+        $definition = $this->retrieveDefinition($apiName);
+        $schemas = $this->factory->createContainer($definition->getResources()->getSchemas());
+        $url = $this->mergeHostAndUrlPrefix($host, $definition->getUrlPrefix());
+
+        return $this->factory->createEncoder($schemas, new EncoderOptions($options, $url, $depth));
     }
 
     /**

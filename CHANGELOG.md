@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file. This projec
 
 ## Unreleased
 
+### Added
+- An encoder can now be obtained for a named API via the JSON API service `encoder` method.
+
 ### Removed
 - Removed the validator error factory interface from this library as the one provided by `cloudcreativity/json-api`
 has the additional methods on it.

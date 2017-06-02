@@ -24,7 +24,9 @@ use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface;
 use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterpreterInterface;
 use CloudCreativity\JsonApi\Contracts\Http\Responses\ErrorResponseInterface;
 use CloudCreativity\JsonApi\Contracts\Utils\ErrorReporterInterface;
+use CloudCreativity\JsonApi\Encoder\Encoder;
 use CloudCreativity\JsonApi\Exceptions\RuntimeException;
+use CloudCreativity\LaravelJsonApi\Api\Repository;
 use CloudCreativity\LaravelJsonApi\Routing\ResourceRegistrar;
 use Exception;
 use Illuminate\Contracts\Container\Container;
@@ -63,6 +65,21 @@ class JsonApiService implements ErrorReporterInterface
         /** @var ResourceRegistrar $registrar */
         $registrar = $this->container->make(ResourceRegistrar::class);
         $registrar->api($apiName, $options, $routes);
+    }
+
+    /**
+     * @param $apiName
+     * @param string|null $host
+     * @param int $options
+     * @param int $depth
+     * @return Encoder
+     */
+    public function encoder($apiName, $host = null, $options = 0, $depth = 512)
+    {
+        /** @var Repository $repository */
+        $repository = $this->container->make(Repository::class);
+
+        return $repository->retrieveEncoder($apiName, $host, $options, $depth);
     }
 
     /**
