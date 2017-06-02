@@ -40,10 +40,12 @@ use CloudCreativity\LaravelJsonApi\Http\Requests\RequestInterpreter;
 use CloudCreativity\LaravelJsonApi\Http\Responses\Responses;
 use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
 use CloudCreativity\LaravelJsonApi\Validators\ValidatorErrorFactory;
+use CloudCreativity\LaravelJsonApi\View\Renderer;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\Routing\ResponseFactory as ResponseFactoryContract;
 use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
+use Illuminate\View\Compilers\BladeCompiler;
 use Neomerx\JsonApi\Contracts\Document\DocumentFactoryInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Handlers\HandlerFactoryInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Parser\ParserFactoryInterface;
@@ -89,6 +91,7 @@ class ServiceProvider extends BaseServiceProvider
     ) {
         $this->bootMiddleware($router);
         $this->bootResponseMacro($responses);
+        $this->bootBladeDirectives();
     }
 
     /**
@@ -106,6 +109,7 @@ class ServiceProvider extends BaseServiceProvider
         $this->bindExceptionParser();
         $this->bindResponses();
         $this->bindLinkFactory();
+        $this->bindRenderer();
         $this->registerArtisanCommands();
         $this->mergePackageConfig();
     }
@@ -142,6 +146,17 @@ class ServiceProvider extends BaseServiceProvider
                 return app(ResponseFactoryInterface::class);
             });
         }
+    }
+
+    /**
+     * Register Blade directives.
+     */
+    protected function bootBladeDirectives()
+    {
+        /** @var BladeCompiler $compiler */
+        $compiler = $this->app->make(BladeCompiler::class);
+        $compiler->directive('jsonapi', Renderer::class . '::compileEncoder');
+        $compiler->directive('encode', Renderer::class . '::compileData');
     }
 
     /**
@@ -250,6 +265,14 @@ class ServiceProvider extends BaseServiceProvider
     {
         $this->app->singleton(LinkFactoryInterface::class, LinkFactory::class);
         $this->app->alias(LinkFactoryInterface::class, 'json-api.links');
+    }
+
+    /**
+     * Bind the view renderer into the service container.
+     */
+    protected function bindRenderer()
+    {
+        $this->app->singleton(Renderer::class);
     }
 
     /**

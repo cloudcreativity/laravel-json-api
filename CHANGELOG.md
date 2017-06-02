@@ -6,6 +6,10 @@ All notable changes to this project will be documented in this file. This projec
 
 ### Added
 - An encoder can now be obtained for a named API via the JSON API service `encoder` method.
+- New Blade directives for outputting encoded JSON API data in templates:
+  - `@jsonapi($apiName)` for configuring the encoder to use. Optionally takes `$host`, `$options` and `$depth`
+  arguments.
+  - `@encode($data)` for encoding data. Optionally takes `$includePaths` and `$fieldSets` arguments.
 
 ### Removed
 - Removed the validator error factory interface from this library as the one provided by `cloudcreativity/json-api`
