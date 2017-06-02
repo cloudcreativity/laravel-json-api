@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file. This projec
   - `@jsonapi($apiName)` for configuring the encoder to use. Optionally takes `$host`, `$options` and `$depth`
   arguments.
   - `@encode($data)` for encoding data. Optionally takes `$includePaths` and `$fieldSets` arguments.
+- Added a broadcasting helper trait (`Broadcasting\BroadcastsData`) to aid broadcasting of JSON API data.
 
 ### Removed
 - Removed the validator error factory interface from this library as the one provided by `cloudcreativity/json-api`
