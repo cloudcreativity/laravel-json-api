@@ -24,6 +24,25 @@ return [
     ],
 
     /**
+     * A non-string has been provided for a member that must be a string.
+     * E.g. the spec says that a resource's `type` and `id` keys MUST be strings.
+     */
+    V::MEMBER_STRING_EXPECTED => [
+        Error::TITLE => 'String Expected',
+        Error::DETAIL => "The member '{member}' must be a string.",
+        Error::STATUS => 400,
+    ],
+
+    /**
+     * A value was provided but it was empty, which is not allowed.
+     */
+    V::MEMBER_EMPTY_NOT_ALLOWED => [
+        Error::TITLE => 'Value Expected',
+        Error::DETAIL => "The member '{member}' cannot be empty.",
+        Error::STATUS => 400,
+    ],
+
+    /**
      * A member that is expected to be a relationship is not an object, array or null value.
      */
     V::MEMBER_RELATIONSHIP_EXPECTED => [
