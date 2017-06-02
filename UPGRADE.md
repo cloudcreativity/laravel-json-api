@@ -4,6 +4,54 @@ This file provides notes on how to upgrade between versions.
 
 ## v0.8 to v0.9 (Unreleased)
 
+### Resource IDs
+
+The JSON API spec states that the `id` member for a resource MUST be a string. Previous versions of this package
+were allowing integers as well as strings.
+
+This has now been corrected, and validators will reject any resource objects or resource identfiers that have an
+`id` member that is not a string. The JSON API error object generated clearly identifies the problem.
+
+When upgrading, you might find that some of your tests will fail if you were writing a test for a model that
+has an integer primary key. For example if you were doing this in your test:
+
+```php
+$data = [
+  'type' => 'posts',
+  'id' => $model->getKey(),
+  'attributes' => [
+    'title' => 'My First Post',    
+  ],
+  'relationships' => [
+    'author' => [
+      'data' => ['type' => 'users', 'id' => $model->author_id],
+    ],
+  ],
+];
+```
+
+You will need to change it to this:
+
+```php
+$data = [
+  'type' => 'posts',
+  'id' => (string) $model->getKey(),
+  'attributes' => [
+    'title' => 'My First Post',    
+  ],
+  'relationships' => [
+    'author' => [
+      'data' => ['type' => 'users', 'id' => (string) $model->author_id],
+    ],
+  ],
+];
+```
+
+If you have clients connecting to your server that have been following the JSON API spec, this change will not
+affect them. For example, we use Ember and it always sends `id` members as strings. However, if you have
+clients connecting that are not following the spec, they may start receiving `HTTP 400` responses if they 
+send non-string `id` members.
+
 ### Class Name Changes
 
 You will need to rename the following:
