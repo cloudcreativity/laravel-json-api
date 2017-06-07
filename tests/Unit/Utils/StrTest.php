@@ -16,9 +16,10 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\LaravelJsonApi\Utils;
+namespace CloudCreativity\LaravelJsonApi\Tests\Unit\Utils;
 
-use CloudCreativity\LaravelJsonApi\TestCase;
+use CloudCreativity\LaravelJsonApi\Utils\Str;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Class StrTest

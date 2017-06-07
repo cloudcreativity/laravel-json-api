@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\LaravelJsonApi\Routing;
+namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Routing;
 
 use App\Http\Controllers\PostsController;
 use CloudCreativity\LaravelJsonApi\Api\ApiResource;
@@ -25,11 +25,12 @@ use CloudCreativity\LaravelJsonApi\Api\Definition;
 use CloudCreativity\LaravelJsonApi\Api\Repository;
 use CloudCreativity\LaravelJsonApi\Api\ResourceProviders;
 use CloudCreativity\LaravelJsonApi\Routing\ApiGroup as Api;
-use CloudCreativity\LaravelJsonApi\TestCase;
+use CloudCreativity\LaravelJsonApi\Routing\ResourceRegistrar;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
 use Illuminate\Routing\Router;
+use PHPUnit\Framework\TestCase;
 use PHPUnit_Framework_MockObject_MockObject as Mock;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
