@@ -57,7 +57,7 @@ send non-string `id` members.
 You will need to rename the following:
 
 - `CloudCreativity\JsonApi\Contracts\Object\ResourceInterface` to `ResourceObjectInterface` (same namespace). 
-This will affect controllers, hydrators and validators.
+This may affect your controllers, hydrators and validators.
 - `CloudCreativity\JsonApi\Contracts\Object\StandardObjectInterface` to 
 `CloudCreativity\Utils\Object\StandardObjectInterface`. This will affect hydrators.
 
