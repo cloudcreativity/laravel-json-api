@@ -26,8 +26,8 @@ We use semantic versioning but Laravel does not. This table will help...
 
 | Laravel | This Package |
 | --- | --- |
-| 5.3.* | ^0.8 |
-| 5.4.* | ^0.8 |
+| 5.3.* | ^0.9 |
+| 5.4.* | ^0.9 |
 
 ## Lumen
 
