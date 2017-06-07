@@ -2,6 +2,25 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## [0.9.0] - 2017-06-07
+
+### Added
+- An encoder can now be obtained for a named API via the JSON API service `encoder` method.
+- New Blade directives for outputting encoded JSON API data in templates:
+  - `@jsonapi($apiName)` for configuring the encoder to use. Optionally takes `$host`, `$options` and `$depth`
+  arguments.
+  - `@encode($data)` for encoding data. Optionally takes `$includePaths` and `$fieldSets` arguments.
+- Added a broadcasting helper trait (`Broadcasting\BroadcastsData`) to aid broadcasting of JSON API data.
+
+### Changed
+- Changes to import statements for resource object and standard object interfaces, to reflect changes in the 
+`cloudcreativity/json-api` package.
+
+### Removed
+- Removed the validator error factory interface from this library as the one provided by `cloudcreativity/json-api`
+has the additional methods on it.
+- The deprecated `isActive` method on the JSON API service (available via the facade) has been removed.
+
 ## [0.8.0] - 2017-05-20
 
 ### Added

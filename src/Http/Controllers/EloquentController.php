@@ -23,7 +23,7 @@ use CloudCreativity\JsonApi\Contracts\Http\ApiInterface;
 use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface as JsonApiRequest;
 use CloudCreativity\JsonApi\Contracts\Hydrator\HydratesRelatedInterface;
 use CloudCreativity\JsonApi\Contracts\Hydrator\HydratorInterface;
-use CloudCreativity\JsonApi\Contracts\Object\ResourceInterface;
+use CloudCreativity\JsonApi\Contracts\Object\ResourceObjectInterface;
 use CloudCreativity\JsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\JsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Document\GeneratesLinks;
@@ -213,11 +213,11 @@ class EloquentController extends Controller
      * Child classes can overload this method if they need to do any logic pre- or
      * post- hydration.
      *
-     * @param ResourceInterface $resource
+     * @param ResourceObjectInterface $resource
      * @param Model $model
      * @return Response|Model
      */
-    protected function hydrate(ResourceInterface $resource, Model $model)
+    protected function hydrate(ResourceObjectInterface $resource, Model $model)
     {
         /** If there is no hydrator, the method cannot be allowed. */
         if (!$this->hydrator) {
@@ -231,10 +231,10 @@ class EloquentController extends Controller
      * Commit the model to the database.
      *
      * @param Model $model
-     * @param ResourceInterface $resource
+     * @param ResourceObjectInterface $resource
      * @return bool|Response
      */
-    protected function commit(Model $model, ResourceInterface $resource)
+    protected function commit(Model $model, ResourceObjectInterface $resource)
     {
         $isUpdating = $model->exists;
 
@@ -257,10 +257,10 @@ class EloquentController extends Controller
      * to the database after the primary model is saved if creating that model.
      *
      * @param Model $model
-     * @param ResourceInterface $resource
+     * @param ResourceObjectInterface $resource
      * @return bool
      */
-    protected function save(Model $model, ResourceInterface $resource)
+    protected function save(Model $model, ResourceObjectInterface $resource)
     {
         /** We save the primary model */
         if (!$model->save()) {
@@ -301,10 +301,10 @@ class EloquentController extends Controller
      * Determines which callback to use before creating or updating a model.
      *
      * @param Model $model
-     * @param ResourceInterface $resource
+     * @param ResourceObjectInterface $resource
      * @param bool $isUpdating
      */
-    protected function beforeCommit(Model $model, ResourceInterface $resource, $isUpdating)
+    protected function beforeCommit(Model $model, ResourceObjectInterface $resource, $isUpdating)
     {
         /** Trigger the saving hook if it is implemented */
         if (method_exists($this, 'saving')) {
@@ -323,10 +323,10 @@ class EloquentController extends Controller
      * Determines which callback to use after a model is updated or created.
      *
      * @param Model $model
-     * @param ResourceInterface $resource
+     * @param ResourceObjectInterface $resource
      * @param bool $isUpdating
      */
-    protected function afterCommit(Model $model, ResourceInterface $resource, $isUpdating)
+    protected function afterCommit(Model $model, ResourceObjectInterface $resource, $isUpdating)
     {
         $fn = $isUpdating ? 'updated' : 'created';
 
@@ -443,10 +443,10 @@ class EloquentController extends Controller
      * Perform the commit task within a transaction.
      *
      * @param Model $model
-     * @param ResourceInterface $resource
+     * @param ResourceObjectInterface $resource
      * @return bool|Response
      */
-    private function doCommit(Model $model, ResourceInterface $resource)
+    private function doCommit(Model $model, ResourceObjectInterface $resource)
     {
         return $this->transaction(function () use ($model, $resource) {
             return $this->commit($model, $resource);

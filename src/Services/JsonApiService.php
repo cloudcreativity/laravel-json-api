@@ -20,12 +20,13 @@ namespace CloudCreativity\LaravelJsonApi\Services;
 
 use Closure;
 use CloudCreativity\JsonApi\Contracts\Http\ApiInterface;
-use CloudCreativity\JsonApi\Contracts\Http\HttpServiceInterface;
 use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface;
 use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterpreterInterface;
 use CloudCreativity\JsonApi\Contracts\Http\Responses\ErrorResponseInterface;
 use CloudCreativity\JsonApi\Contracts\Utils\ErrorReporterInterface;
+use CloudCreativity\JsonApi\Encoder\Encoder;
 use CloudCreativity\JsonApi\Exceptions\RuntimeException;
+use CloudCreativity\LaravelJsonApi\Api\Repository;
 use CloudCreativity\LaravelJsonApi\Routing\ResourceRegistrar;
 use Exception;
 use Illuminate\Contracts\Container\Container;
@@ -35,7 +36,7 @@ use Illuminate\Contracts\Container\Container;
  *
  * @package CloudCreativity\LaravelJsonApi
  */
-class JsonApiService implements HttpServiceInterface, ErrorReporterInterface
+class JsonApiService implements ErrorReporterInterface
 {
 
     /**
@@ -67,6 +68,21 @@ class JsonApiService implements HttpServiceInterface, ErrorReporterInterface
     }
 
     /**
+     * @param $apiName
+     * @param string|null $host
+     * @param int $options
+     * @param int $depth
+     * @return Encoder
+     */
+    public function encoder($apiName, $host = null, $options = 0, $depth = 512)
+    {
+        /** @var Repository $repository */
+        $repository = $this->container->make(Repository::class);
+
+        return $repository->retrieveEncoder($apiName, $host, $options, $depth);
+    }
+
+    /**
      * @inheritdoc
      */
     public function report(ErrorResponseInterface $response, Exception $e = null)
@@ -76,12 +92,14 @@ class JsonApiService implements HttpServiceInterface, ErrorReporterInterface
         }
 
         /** @var ErrorReporterInterface $reporter */
-        $reporter = app(ErrorReporterInterface::class);
+        $reporter = $this->container->make(ErrorReporterInterface::class);
         $reporter->report($response, $e);
     }
 
     /**
-     * @inheritdoc
+     * Get a request interpreter instance.
+     *
+     * @return RequestInterpreterInterface
      */
     public function getRequestInterpreter()
     {
@@ -89,18 +107,9 @@ class JsonApiService implements HttpServiceInterface, ErrorReporterInterface
     }
 
     /**
-     * Has JSON API support been started?
+     * Get the current API, if one has been bound into the container.
      *
-     * @return bool
-     * @deprecated use `hasApi()`
-     */
-    public function isActive()
-    {
-        return $this->hasApi();
-    }
-
-    /**
-     * @inheritdoc
+     * @return ApiInterface
      */
     public function getApi()
     {
@@ -112,7 +121,9 @@ class JsonApiService implements HttpServiceInterface, ErrorReporterInterface
     }
 
     /**
-     * @inheritdoc
+     * Has an API been bound into the container?
+     *
+     * @return bool
      */
     public function hasApi()
     {
@@ -120,7 +131,9 @@ class JsonApiService implements HttpServiceInterface, ErrorReporterInterface
     }
 
     /**
-     * @inheritdoc
+     * Get the current JSON API request, if one has been bound into the container.
+     *
+     * @return RequestInterface
      */
     public function getRequest()
     {
@@ -132,7 +145,9 @@ class JsonApiService implements HttpServiceInterface, ErrorReporterInterface
     }
 
     /**
-     * @inheritdoc
+     * Has a JSON API request been bound into the container?
+     *
+     * @return bool
      */
     public function hasRequest()
     {

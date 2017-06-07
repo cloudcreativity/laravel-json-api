@@ -41,7 +41,7 @@ trait HandlesErrors
         /** @var JsonApiService $service */
         $service = app(JsonApiService::class);
 
-        return $service->isActive();
+        return $service->hasApi();
     }
 
     /**

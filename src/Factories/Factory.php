@@ -81,12 +81,10 @@ class Factory extends BaseFactory
      */
     public function createValidatorFactory(ErrorRepositoryInterface $errors, StoreInterface $store)
     {
-        $errors = new ValidatorErrorFactory($errors);
-
         /** @var ValidatorFactoryContract $laravelFactory */
         $laravelFactory = $this->container->make(ValidatorFactoryContract::class);
 
-        return new ValidatorFactory($errors, $store, $laravelFactory);
+        return new ValidatorFactory($this->createValidatorErrorFactory($errors), $store, $laravelFactory);
     }
 
     /**
@@ -102,5 +100,14 @@ class Factory extends BaseFactory
         }
 
         return $provider;
+    }
+
+    /**
+     * @param ErrorRepositoryInterface $errors
+     * @return ValidatorErrorFactory
+     */
+    protected function createValidatorErrorFactory(ErrorRepositoryInterface $errors)
+    {
+        return new ValidatorErrorFactory($errors);
     }
 }

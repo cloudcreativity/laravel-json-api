@@ -19,18 +19,18 @@
 namespace CloudCreativity\LaravelJsonApi\Hydrator;
 
 use Carbon\Carbon;
-use CloudCreativity\JsonApi\Contracts\Http\HttpServiceInterface;
 use CloudCreativity\JsonApi\Contracts\Hydrator\HydratesRelatedInterface;
 use CloudCreativity\JsonApi\Contracts\Object\RelationshipInterface;
 use CloudCreativity\JsonApi\Contracts\Object\RelationshipsInterface;
 use CloudCreativity\JsonApi\Contracts\Object\ResourceIdentifierInterface;
-use CloudCreativity\JsonApi\Contracts\Object\ResourceInterface;
-use CloudCreativity\JsonApi\Contracts\Object\StandardObjectInterface;
+use CloudCreativity\JsonApi\Contracts\Object\ResourceObjectInterface;
 use CloudCreativity\JsonApi\Exceptions\InvalidArgumentException;
 use CloudCreativity\JsonApi\Exceptions\RuntimeException;
 use CloudCreativity\JsonApi\Hydrator\AbstractHydrator;
 use CloudCreativity\JsonApi\Hydrator\RelatedHydratorTrait;
+use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
 use CloudCreativity\LaravelJsonApi\Utils\Str;
+use CloudCreativity\Utils\Object\StandardObjectInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -109,7 +109,7 @@ class EloquentHydrator extends AbstractHydrator implements HydratesRelatedInterf
     protected $relationships = [];
 
     /**
-     * @var HttpServiceInterface
+     * @var JsonApiService
      */
     protected $service;
 
@@ -121,9 +121,9 @@ class EloquentHydrator extends AbstractHydrator implements HydratesRelatedInterf
     /**
      * EloquentHydrator constructor.
      *
-     * @param HttpServiceInterface $service
+     * @param JsonApiService $service
      */
-    public function __construct(HttpServiceInterface $service)
+    public function __construct(JsonApiService $service)
     {
         $this->service = $service;
     }
@@ -199,7 +199,7 @@ class EloquentHydrator extends AbstractHydrator implements HydratesRelatedInterf
     /**
      * @inheritDoc
      */
-    public function hydrateRelated(ResourceInterface $resource, $record)
+    public function hydrateRelated(ResourceObjectInterface $resource, $record)
     {
         $results = (array) $this->hydratingRelated($resource, $record);
 
@@ -388,11 +388,11 @@ class EloquentHydrator extends AbstractHydrator implements HydratesRelatedInterf
      *
      * Child classes can overload this method if they need to do any logic pre-hydration.
      *
-     * @param ResourceInterface $resource
+     * @param ResourceObjectInterface $resource
      * @param $record
      * @return array|null
      */
-    protected function hydratingRelated(ResourceInterface $resource, $record)
+    protected function hydratingRelated(ResourceObjectInterface $resource, $record)
     {
         return null;
     }
@@ -402,11 +402,11 @@ class EloquentHydrator extends AbstractHydrator implements HydratesRelatedInterf
      *
      * Child classes can overload this method if they need to do any logic post-hydration.
      *
-     * @param ResourceInterface $resource
+     * @param ResourceObjectInterface $resource
      * @param $record
      * @return array|null
      */
-    protected function hydratedRelated(ResourceInterface $resource, $record)
+    protected function hydratedRelated(ResourceObjectInterface $resource, $record)
     {
         return null;
     }

@@ -1,7 +1,7 @@
 <?php
 
-use CloudCreativity\JsonApi\Document\Error;
-use CloudCreativity\LaravelJsonApi\Validators\ValidatorErrorFactory as V;
+use CloudCreativity\JsonApi\Contracts\Document\MutableErrorInterface as Error;
+use CloudCreativity\JsonApi\Validators\ValidatorErrorFactory as V;
 
 return [
 
@@ -20,6 +20,25 @@ return [
     V::MEMBER_OBJECT_EXPECTED => [
         Error::TITLE => 'Object Expected',
         Error::DETAIL => "The member '{member}' must be an object.",
+        Error::STATUS => 400,
+    ],
+
+    /**
+     * A non-string has been provided for a member that must be a string.
+     * E.g. the spec says that a resource's `type` and `id` keys MUST be strings.
+     */
+    V::MEMBER_STRING_EXPECTED => [
+        Error::TITLE => 'String Expected',
+        Error::DETAIL => "The member '{member}' must be a string.",
+        Error::STATUS => 400,
+    ],
+
+    /**
+     * A value was provided but it was empty, which is not allowed.
+     */
+    V::MEMBER_EMPTY_NOT_ALLOWED => [
+        Error::TITLE => 'Value Expected',
+        Error::DETAIL => "The member '{member}' cannot be empty.",
         Error::STATUS => 400,
     ],
 
@@ -66,6 +85,7 @@ return [
      */
     V::RESOURCE_INVALID_ATTRIBUTES_MESSAGES => [
         Error::TITLE => 'Invalid Attribute',
+        Error::STATUS => 422,
     ],
 
     /**
@@ -147,6 +167,7 @@ return [
      */
     V::QUERY_PARAMETERS_MESSAGES => [
         Error::TITLE => 'Invalid Query Parameter',
+        Error::STATUS => 400,
     ],
 
     /**

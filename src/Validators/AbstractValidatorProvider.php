@@ -20,7 +20,7 @@ namespace CloudCreativity\LaravelJsonApi\Validators;
 
 use CloudCreativity\JsonApi\Contracts\Factories\FactoryInterface;
 use CloudCreativity\JsonApi\Contracts\Http\ApiInterface;
-use CloudCreativity\JsonApi\Contracts\Object\ResourceInterface;
+use CloudCreativity\JsonApi\Contracts\Object\ResourceObjectInterface;
 use CloudCreativity\JsonApi\Contracts\Validators\AttributesValidatorInterface;
 use CloudCreativity\JsonApi\Contracts\Validators\QueryValidatorInterface;
 use CloudCreativity\JsonApi\Contracts\Validators\RelationshipsValidatorInterface;
@@ -235,11 +235,11 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
      * the validator will extract the attributes itself. If you are customising the
      * extraction of attributes, you MUST return an array from this method.
      *
-     * @param ResourceInterface $resource
+     * @param ResourceObjectInterface $resource
      * @param object|null $record
      * @return array|null
      */
-    protected function extractAttributes(ResourceInterface $resource, $record = null)
+    protected function extractAttributes(ResourceObjectInterface $resource, $record = null)
     {
         return null;
     }
@@ -275,7 +275,7 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
             function (Validator $validator) use ($record) {
                 return $this->conditionalAttributes($validator, $record);
             },
-            function (ResourceInterface $resource, $record) {
+            function (ResourceObjectInterface $resource, $record) {
                 return $this->extractAttributes($resource, $record);
             }
         );
