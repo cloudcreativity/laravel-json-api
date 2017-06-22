@@ -2,9 +2,10 @@ site_name: Laravel JSON API
 site_description: JSON API (jsonapi.org) support for Laravel applications.
 site_author: Cloud Creativity Ltd
 repo_url: https://github.com/cloudcreativity/laravel-json-api
+theme: readthedocs
 
 pages:
-  - Home: intro.md
+  - Home: index.md
   - Installation: installation.md
   - API Setup: api.md
   - Routing: routing.md

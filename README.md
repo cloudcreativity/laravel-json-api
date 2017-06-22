@@ -36,7 +36,7 @@ Currently we have not integrated the package with Lumen. If you use Lumen and ca
 
 ## Documentation
 
-We're in the process of adding full documentation to the wiki.
+Documentation is available on [Read the Docs](http://laravel-json-api.readthedocs.io/en/latest/).
 
 ## Status
 
