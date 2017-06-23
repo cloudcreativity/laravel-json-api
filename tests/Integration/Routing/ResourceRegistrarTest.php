@@ -26,11 +26,11 @@ use CloudCreativity\LaravelJsonApi\Api\Repository;
 use CloudCreativity\LaravelJsonApi\Api\ResourceProviders;
 use CloudCreativity\LaravelJsonApi\Routing\ApiGroup as Api;
 use CloudCreativity\LaravelJsonApi\Routing\ResourceRegistrar;
+use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
 use Illuminate\Routing\Router;
-use PHPUnit\Framework\TestCase;
 use PHPUnit_Framework_MockObject_MockObject as Mock;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -64,7 +64,7 @@ class ResourceRegistrarTest extends TestCase
      */
     private $resources;
 
-    protected function setUp()
+    public function setUp()
     {
         $this->definition = $this->getMockBuilder(Definition::class)->disableOriginalConstructor()->getMock();
         $this->definition

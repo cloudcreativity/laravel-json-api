@@ -36,6 +36,7 @@
     },
     "require-dev": {
         "illuminate/routing": "5.4.*",
+        "orchestra/testbench": "~3.0",
         "phpunit/phpunit": "^5.7"
     },
     "autoload": {
