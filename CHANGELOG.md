@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file. This projec
 
 ## Unreleased
 
+### Fixed
+- [#66] Content negotiation no longer sends a `415` response if a request does not have body content.
+
 ### Removed
 - This package no longer supports Laravel 5.3
 
