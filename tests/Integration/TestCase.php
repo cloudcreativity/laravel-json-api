@@ -149,8 +149,9 @@ abstract class TestCase extends BaseTestCase
      */
     protected function withRoutes(\Closure $closure)
     {
-        \Route::namespace('\\CloudCreativity\\LaravelJsonApi\\Tests\\Http\\Controllers')
-            ->group($closure);
+        \Route::group([
+            'namespace' => '\\CloudCreativity\\LaravelJsonApi\\Tests\\Http\\Controllers',
+        ], $closure);
     }
 
     /**

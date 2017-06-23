@@ -4,23 +4,12 @@ namespace CloudCreativity\LaravelJsonApi\Tests\Exceptions;
 
 use CloudCreativity\LaravelJsonApi\Exceptions\HandlesErrors;
 use Exception;
-use Illuminate\Contracts\Container\Container;
 use Orchestra\Testbench\Exceptions\Handler as BaseHandler;
 
 class Handler extends BaseHandler
 {
 
     use HandlesErrors;
-
-    /**
-     * Handler constructor.
-     *
-     * @param Container $container
-     */
-    public function __construct(Container $container)
-    {
-        parent::__construct($container);
-    }
 
     /**
      * @param Exception $e
