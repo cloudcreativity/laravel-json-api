@@ -2,6 +2,11 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## [0.9.1] - 2017-06-26
+
+### Fixed
+- [#70] Url prefix was not being passed to encoder leading to invalid links in JSON API documents.
+
 ## [0.9.0] - 2017-06-07
 
 ### Added
