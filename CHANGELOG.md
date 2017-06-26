@@ -10,6 +10,11 @@ All notable changes to this project will be documented in this file. This projec
 ### Removed
 - This package no longer supports Laravel 5.3
 
+## [0.9.1] - 2017-06-26
+
+### Fixed
+- [#70] Url prefix was not being passed to encoder leading to invalid links in JSON API documents.
+
 ## [0.9.0] - 2017-06-07
 
 ### Added

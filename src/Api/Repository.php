@@ -139,7 +139,7 @@ class Repository
 
         return $this->factory->createApi(
             $definition->getName(),
-            $this->factory->createConfiguredCodecMatcher($schemas, $definition->getCodecs()),
+            $this->factory->createConfiguredCodecMatcher($schemas, $definition->getCodecs(), $urlPrefix),
             $schemas,
             $this->factory->createStore($adapters),
             $this->factory->createErrorRepository($definition->getErrors()),
