@@ -9,3 +9,4 @@ pages:
   - Installation: installation.md
   - API Setup: api.md
   - Routing: routing.md
+    - Custom Controller: custom-controller.md
