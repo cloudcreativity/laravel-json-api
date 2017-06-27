@@ -32,7 +32,7 @@ class UsersController extends Controller
      *
      * @param Users\Hydrator $hydrator
      */
-    public function __construct(Sites\Hydrator $hydrator)
+    public function __construct(Users\Hydrator $hydrator)
     {
         $this->hydrator = $hydrator;
     }
@@ -125,7 +125,7 @@ The following are examples covering these functions. Do take note that you will 
      */
     public function delete(JsonApiRequest $request)
     {
-        /** @var Site $record */
+        /** @var User $record */
         $record = $request->getRecord();
         $record->delete();
         return $this->reply()->noContent();
