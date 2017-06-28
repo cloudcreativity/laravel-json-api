@@ -1,4 +1,4 @@
-# Custom Controllers
+# Controllers
 
 Sometimes, we might need to customize what happens within a controller and still be able to make full use of this package.
 
