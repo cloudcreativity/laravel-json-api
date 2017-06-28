@@ -41,7 +41,7 @@ class UsersController extends Controller
 
 ## Structure
 
-As mentioned before, there are mainly five functions: `index()`, `create()`, `read()`, `update()`, `delete()`. They are able to accept a few parameters and must make use of the reply trait to return a response.
+As mentioned before, there are mainly five functions: `index()`, `create()`, `read()`, `update()`, `delete()`. There are also other functions that are listed below. They are able to accept a few parameters and must make use of the reply trait to return a response.
 
 The following are examples covering these functions. Do take note that you will need to import the namespaces correctly.
 
@@ -131,5 +131,40 @@ The following are examples covering these functions. Do take note that you will 
         $record = $request->getRecord();
         $record->delete();
         return $this->reply()->noContent();
+    }
+```
+
+### Read Related Resource
+If you link one resource to another through relationship, you'll need this to read the related resource.
+
+```php
+    /**
+     * @param JsonApiRequest $request
+     * @return mixed
+     */
+    public function readRelatedResource(JsonApiRequest $request)
+    {
+        $model = $request->getRecord();
+        $key = $request->getRelationshipName();
+        return $this
+            ->reply()
+            ->content($model->{$key});
+    }
+```
+
+### Read Relationship
+This is for reading the relationship between two resources.
+```php
+    /**
+     * @param JsonApiRequest $request
+     * @return mixed
+     */
+    public function readRelationship(JsonApiRequest $request)
+    {
+        $model = $request->getRecord();
+        $key = $request->getRelationshipName();
+        return $this
+            ->reply()
+            ->relationship($model->{$key});
     }
 ```
