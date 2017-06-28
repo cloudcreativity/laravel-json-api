@@ -110,8 +110,9 @@ The following are examples covering these functions. Do take note that you will 
         $resource = $request->getDocument()->getResource();
         $this->hydrator->hydrate($resource, $record);
         // Check if password has changed
-        if ($old_password !== $record->password) {
-          $record->password = Hash::make($record->password);
+        $new_password = $resource->getAttributes()->get('password');
+        if (!Hash::check($new_password, $old_password)) {
+            $record->password = Hash::make($new_password);
         }
         $record->save();
         return $this->reply()->content($record);
