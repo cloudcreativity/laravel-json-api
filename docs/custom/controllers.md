@@ -1,134 +1,146 @@
 # Controllers
 
-Sometimes, we might need to customize what happens within a controller and still be able to make full use of this package.
+This chapter describes how to implement your own controller for processing JSON API requests and returning JSON API
+responses.
 
-## ReplyTrait
+## Setup
 
-In order to customize the controller's responses, we must first include the `use ReplyTrait` in the controller.
+In order to send JSON API responses, you will need to apply the `ReplyTrait` to your controller. If your resource
+has a hydrator, you can also inject it via the constructor.
+
+Here is an example controller:
 
 ```php
 namespace App\Http\Controllers\Api;
  
 use App\JsonApi\Users;
-use App\User;
-use CloudCreativity\JsonApi\Contracts\Http\ApiInterface;
-use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface as JsonApiRequest;
 use CloudCreativity\LaravelJsonApi\Http\Responses\ReplyTrait;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Routing\Controller;
  
 class UsersController extends Controller
 {
+
     use ReplyTrait;
-    
-    /**
-     * @var Users\Hydrator
-     */
+
     private $hydrator;
     
-    /**
-     * UsersController constructor.
-     *
-     * @param Users\Hydrator $hydrator
-     */
     public function __construct(Users\Hydrator $hydrator)
     {
         $this->hydrator = $hydrator;
     }
+    
+    // Methods as per below...
 }
 ```
 
-## Structure
+## Resource Actions
 
-As mentioned before, there are mainly five functions: `index()`, `create()`, `read()`, `update()`, `delete()`. They are able to accept a few parameters and must make use of the reply trait to return a response.
+As described in the [routing](../routing.md) chapter, there are five resource actions for which you need to implement
+methods:
 
-The following are examples covering these functions. Do take note that you will need to import the namespaces correctly.
+1. `index()`
+2. `create()`
+3. `read()` 
+4. `update()`
+5. `delete()`
+
+They are able to accept a few parameters and must make use of the reply trait to return a response.
+
+The following are examples covering these functions. Do take note that you will need to import the namespaces 
+correctly.
 
 ### Index
 
 ```php
-    /**
-     * @param ApiInterface $api
-     * @param JsonApiRequest $request
-     * @return mixed
-     */
-    public function index(ApiInterface $api, JsonApiRequest $request)
-    {
-        $store = $api->getStore();
-        return $this->reply()->content($store->query(
-            $request->getResourceType(),
-            $request->getParameters()
-        ));
-    }
+/**
+ * @param \CloudCreativity\JsonApi\Contracts\Http\ApiInterface $api
+ * @param \CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface $request
+ * @return \Illuminate\Http\Response
+ */
+public function index(ApiInterface $api, RequestInterface $request)
+{
+    $result = $api->getStore()->query(
+        $request->getResourceType(),
+        $request->getParameters()
+    );
+    
+    return $this->reply()->content($result);
+}
 ```
 
 ### Create
 
 ```php
-    /**
-     * @param JsonApiRequest $request
-     * @return mixed
-     */
-    public function create(JsonApiRequest $request)
-    {
-        $resource = $request->getDocument()->getResource();
-        $record = null;
-        // Add custom DB transaction & password hashing
-        DB::transaction(function () use (&$resource, &$request, &$record) {
-            $record = new User;
-            $this->hydrator->hydrate($request->getDocument()->getResource(), $record);
-            $record->password = Hash::make($record->password);
-            $record->save();
-        });
-        return $this->reply()->created($record);
-    }
+/**
+ * @param \CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface $request
+ * @return \Illuminate\Http\Response
+ */
+public function create(RequestInterface $request)
+{
+    $resource = $request->getDocument()->getResource();
+    // As an example, if we wanted to wrap the change in a transaction...
+    $record = \DB::transaction(function () use ($resource, $request) {
+        $record = new User();
+        $this->hydrator->hydrate($request->getDocument()->getResource(), $record);
+        $record->save();
+        
+        return $record;
+    });
+    
+    return $this->reply()->created($record);
+}
 ```
 
 ### Read
+
 ```php
-    /**
-     * @param JsonApiRequest $request
-     * @return mixed
-     */
-    public function read(JsonApiRequest $request)
-    {
-        return $this->reply()->content($request->getRecord());
-    }
+/**
+ * @param \CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface $request
+ * @return \Illuminate\Http\Response
+ */
+public function read(RequestInterface $request)
+{
+    return $this->reply()->content($request->getRecord());
+}
 ```
 ### Update
+
 ```php
-    /**
-     * @param JsonApiRequest $request
-     * @return mixed
-     */
-    public function update(JsonApiRequest $request)
-    {
-        /** @var User $record */
-        $record = $request->getRecord();
-        $old_password = $record->password;
-        $resource = $request->getDocument()->getResource();
-        $this->hydrator->hydrate($resource, $record);
-        // Check if password has changed
-        if ($old_password !== $record->password) {
-          $record->password = Hash::make($record->password);
-        }
-        $record->save();
-        return $this->reply()->content($record);
+/**
+ * @param \CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface $request
+ * @return \Illuminate\Http\Response
+ */
+public function update(RequestInterface $request)
+{
+    /** @var User $record */
+    $record = $request->getRecord();
+    $resource = $request->getDocument()->getResource();
+    $this->hydrator->hydrate($resource, $record);
+    $passwordChanged = $record->hasPasswordChanged();
+    $record->save();
+    
+    // for example, if we wanted to fire an event...
+    if ($passwordChanged) {
+      event(new UserChangedPassword($record));
     }
+    
+    return $this->reply()->content($record);
+}
 ```
 
 ### Delete
+
 ```php
-    /**
-     * @param JsonApiRequest $request
-     * @return mixed
-     */
-    public function delete(JsonApiRequest $request)
-    {
-        /** @var User $record */
-        $record = $request->getRecord();
-        $record->delete();
-        return $this->reply()->noContent();
-    }
+/**
+ * @param \CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface $request
+ * @return \Illuminate\Http\Response
+ */
+public function delete(RequestInterface $request)
+{
+    /** @var User $record */
+    $record = $request->getRecord();
+    $record->delete();
+    
+    return $this->reply()->noContent();
+}
 ```
