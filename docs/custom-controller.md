@@ -73,12 +73,13 @@ The following are examples covering these functions. Do take note that you will 
     public function create(JsonApiRequest $request)
     {
         $resource = $request->getDocument()->getResource();
+        $record = null;
         // Add custom DB transaction & password hashing
-        DB::transaction(function () {
-          $record = new User($resource->getId()); // client generated id.
-          $this->hydrator->hydrate($request->getDocument()->getResource(), $record);
-          $record->password = Hash::make($record->password);
-          $record->save();
+        DB::transaction(function () use (&$resource, &$request, &$record) {
+            $record = new User;
+            $this->hydrator->hydrate($request->getDocument()->getResource(), $record);
+            $record->password = Hash::make($record->password);
+            $record->save();
         });
         return $this->reply()->created($record);
     }
