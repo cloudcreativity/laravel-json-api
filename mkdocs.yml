@@ -9,4 +9,7 @@ pages:
   - Installation: installation.md
   - API Setup: api.md
   - Routing: routing.md
-    - Custom Controller: custom-controller.md
+  - Eloquent:
+    - Controllers: eloquent/controllers.md
+  - Non-Eloquent:
+    - Controllers: custom/controllers.md
