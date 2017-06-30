@@ -144,3 +144,44 @@ public function delete(RequestInterface $request)
     return $this->reply()->noContent();
 }
 ```
+
+## Relationship
+If you have defined relationships in the schema of a resource, you would then need to state the following in your controller too:
+
+1. `readRelatedResource()`
+2. `readRelationship()`
+
+### Read Related Resource
+If you link one resource to another through relationship, you'll need this to read the related resource.
+
+```php
+    /**
+     * @param JsonApiRequest $request
+     * @return mixed
+     */
+    public function readRelatedResource(JsonApiRequest $request)
+    {
+        $model = $request->getRecord();
+        $key = $request->getRelationshipName();
+        return $this
+            ->reply()
+            ->content($model->{$key});
+    }
+```
+
+### Read Relationship
+This is for reading the relationship between two resources.
+```php
+    /**
+     * @param JsonApiRequest $request
+     * @return mixed
+     */
+    public function readRelationship(JsonApiRequest $request)
+    {
+        $model = $request->getRecord();
+        $key = $request->getRelationshipName();
+        return $this
+            ->reply()
+            ->relationship($model->{$key});
+    }
+```
