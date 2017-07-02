@@ -122,7 +122,7 @@ class BootJsonApi
         /** @var RequestInterpreterInterface $interpreter */
         $interpreter = $this->container->make(RequestInterpreterInterface::class);
 
-        $request = $factory->createRequest($serverRequest, $interpreter, $api);
+        $request = $factory->createRequest($serverRequest, $interpreter, $api->getStore());
         $this->container->instance(RequestInterface::class, $request);
 
         return $request;
