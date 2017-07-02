@@ -4,6 +4,7 @@ namespace CloudCreativity\LaravelJsonApi\Tests\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User;
 
@@ -16,7 +17,7 @@ class Post extends Model
     protected $fillable = [
         'title',
         'slug',
-        'content,'
+        'content',
     ];
 
     /**
@@ -33,5 +34,13 @@ class Post extends Model
     public function comments()
     {
         return $this->hasMany(Comment::class);
+    }
+
+    /**
+     * @return BelongsToMany
+     */
+    public function tags()
+    {
+        return $this->belongsToMany(Tag::class);
     }
 }

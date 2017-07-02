@@ -18,8 +18,10 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration;
 
+use Closure;
 use CloudCreativity\LaravelJsonApi\Facade;
 use CloudCreativity\LaravelJsonApi\ServiceProvider;
+use CloudCreativity\LaravelJsonApi\Testing\MakesJsonApiRequests;
 use CloudCreativity\LaravelJsonApi\Tests\Exceptions\Handler;
 use CloudCreativity\LaravelJsonApi\Tests\Models;
 use Illuminate\Contracts\Config\Repository;
@@ -37,6 +39,8 @@ use Orchestra\Testbench\TestCase as BaseTestCase;
  */
 abstract class TestCase extends BaseTestCase
 {
+
+    use MakesJsonApiRequests;
 
     /**
      * @return void
@@ -89,7 +93,8 @@ abstract class TestCase extends BaseTestCase
         $config->set('json-api-default.resources', [
             'posts' => Models\Post::class,
             'comments' => Models\Comment::class,
-            'user' => User::class,
+            'tags' => Models\Tag::class,
+            'users' => User::class,
         ]);
     }
 
@@ -103,6 +108,7 @@ abstract class TestCase extends BaseTestCase
         $schema = $app->make('db')->connection()->getSchemaBuilder();
         $this->createPostsTable($schema);
         $this->createCommentsTable($schema);
+        $this->createTagsTables($schema);
         $this->withFactories(__DIR__ . '/../factories');
 
         return $schema;
@@ -133,6 +139,28 @@ abstract class TestCase extends BaseTestCase
             $table->timestamps();
             $table->text('content');
             $table->unsignedInteger('post_id');
+            $table->unsignedInteger('user_id');
+        });
+    }
+
+    /**
+     * @param Schema $schema
+     */
+    protected function createTagsTables(Schema $schema)
+    {
+        $schema->create('tags', function (Blueprint $table) {
+            $table->increments('id');
+            $table->timestamps();
+            $table->string('name');
+        });
+
+        $schema->create('post_tag', function (Blueprint $table) {
+            $table->increments('id');
+            $table->integer('post_id')->unsigned();
+            $table->integer('tag_id')->unsigned();
+
+            $table->foreign('post_id')->references('id')->on('posts')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreign('tag_id')->references('id')->on('tags')->onDelete('cascade')->onUpdate('cascade');
         });
     }
 
@@ -145,9 +173,9 @@ abstract class TestCase extends BaseTestCase
     }
 
     /**
-     * @param \Closure $closure
+     * @param Closure $closure
      */
-    protected function withRoutes(\Closure $closure)
+    protected function withRoutes(Closure $closure)
     {
         \Route::group([
             'namespace' => '\\CloudCreativity\\LaravelJsonApi\\Tests\\Http\\Controllers',
@@ -155,12 +183,12 @@ abstract class TestCase extends BaseTestCase
     }
 
     /**
-     * @param \Closure $closure
+     * @param Closure $closure
      * @param array $options
      */
-    protected function withDefaultApi(\Closure $closure, array $options = [])
+    protected function withDefaultApi(array $options, Closure $closure)
     {
-        $this->withRoutes(function () use ($closure, $options) {
+        $this->withRoutes(function () use ($options, $closure) {
             \JsonApi::api('default', $options, $closure);
         });
     }

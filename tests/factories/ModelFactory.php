@@ -32,6 +32,13 @@ $factory->define(Models\Post::class, function (Faker $faker) {
     ];
 });
 
+/** Tag */
+$factory->define(Models\Tag::class, function (Faker $faker) {
+    return [
+        'name' => $faker->country,
+    ];
+});
+
 /** User */
 $factory->define(User::class, function (Faker $faker) {
     return [

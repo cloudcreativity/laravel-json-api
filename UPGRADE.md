@@ -2,7 +2,71 @@
 
 This file provides notes on how to upgrade between versions.
 
-## v0.8 to v0.9 (Unreleased)
+## v0.9 to v0.10
+
+### Testing
+
+We have upgraded the testing helpers to remove the dependency with `laravel/browser-kit-testing`. All the test
+assertions have been moved to `CloudCreativity\LaravelJsonApi\TestResponse` (that extends the Illuminate class).
+We have merged our `InteractsWithResources` trait into `MakesJsonApiRequests` because there were so few methods 
+remaining. We have also removed the abstract methods and replaced with properties.
+
+For example, this:
+
+```php
+use CloudCreativity\LaravelJsonApi\Testing\InteractsWithResources;
+
+class PostsTest extends TestCase
+{
+
+  use InteractsWithResources;
+  
+  protected function getResourceType()
+  {
+      return 'posts';
+  }
+  
+  protected function getRoutePrefix()
+  {
+      return 'api-v1::';
+  }
+}
+```
+
+Must be changed to this:
+
+```php
+use CloudCreativity\LaravelJsonApi\Testing\MakesJsonApiRequests;
+
+class PostsTest extends TestCase
+{
+
+  use InteractsWithResources;
+  
+  protected $resourceType = 'posts';
+  
+  protected $routePrefix = 'api-v1::';
+}
+```
+
+When you call the following methods, they will return an instance of our `TestResponse`, rather than `$this`. The
+test response is no longer assigned to a `$response` property on the test case (i.e. we made the same change as
+Laravel):
+
+- `jsonApi()`
+- `doSearch()`
+- `doCreate()`
+- `doRead()`
+- `doUpdate()`
+- `doDelete()`
+
+The same assertion methods have been moved to the `TestResponse`, with the following modifications:
+
+- `assertIndexResponse`: use either `assertResourceResponse` or `assertResourcesResponse` to check whether the
+`data` member has either a singular resource of the expected type, or a collection of resources.
+- All methods starting `see...` have been deprecated and replaced with `assert...`. 
+
+## v0.8 to v0.9
 
 ### Resource IDs
 

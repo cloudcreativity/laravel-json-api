@@ -15,26 +15,21 @@ class ContentNegotiationTest extends TestCase
     {
         parent::setUp();
 
-        $this->withDefaultApi(function (ApiGroup $api) {
+        $this->withDefaultApi([], function (ApiGroup $api) {
             $api->resource('posts');
         });
     }
 
     public function testOkWithoutBody()
     {
-        $this->get('/posts', [
-            'Accept' => 'application/vnd.api+json',
-        ])->assertStatus(200);
+        $this->getJsonApi('/posts')->assertStatusCode(200);
     }
 
     public function testOkWithBody()
     {
         $data = $this->willPatch();
 
-        $this->patchJson("/posts/{$data['id']}", ['data' => $data], [
-            'Accept' => 'application/vnd.api+json',
-            'Content-Type' => 'application/vnd.api+json',
-        ])->assertStatus(200);
+        $this->patchJsonApi("/posts/{$data['id']}", ['data' => $data])->assertStatusCode(200);
     }
 
     public function testNotOkWithoutBody()
@@ -79,7 +74,7 @@ class ContentNegotiationTest extends TestCase
 
         return [
             'type' => 'posts',
-            'id' => $post->getKey(),
+            'id' => (string) $post->getKey(),
             'attributes' => [
                 'title' => 'Hello World',
             ],
