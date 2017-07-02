@@ -22,6 +22,7 @@ use Closure;
 use CloudCreativity\LaravelJsonApi\Facade;
 use CloudCreativity\LaravelJsonApi\ServiceProvider;
 use CloudCreativity\LaravelJsonApi\Testing\MakesJsonApiRequests;
+use CloudCreativity\LaravelJsonApi\Tests\Entities;
 use CloudCreativity\LaravelJsonApi\Tests\Exceptions\Handler;
 use CloudCreativity\LaravelJsonApi\Tests\Models;
 use Illuminate\Contracts\Config\Repository;
@@ -50,6 +51,7 @@ abstract class TestCase extends BaseTestCase
         parent::setUp();
         $this->setUpDatabase($this->app);
         $this->artisan('migrate');
+        $this->app->singleton(Entities\SiteRepository::class);
     }
 
     /**
@@ -93,6 +95,7 @@ abstract class TestCase extends BaseTestCase
         $config->set('json-api-default.resources', [
             'posts' => Models\Post::class,
             'comments' => Models\Comment::class,
+            'sites' => Entities\Site::class,
             'tags' => Models\Tag::class,
             'users' => User::class,
         ]);

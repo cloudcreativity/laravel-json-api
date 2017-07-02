@@ -32,14 +32,4 @@ abstract class TestCase extends BaseTestCase
             $api->resource('users');
         });
     }
-
-    /**
-     * Return the prefix for route names for the resources we're testing...
-     *
-     * @return string
-     */
-    protected function getRoutePrefix()
-    {
-        return 'api-v1::';
-    }
 }
