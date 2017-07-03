@@ -9,6 +9,19 @@ $ composer require cloudcreativity/laravel-json-api:^0.10 --upgrade-with-depende
 
 ## Upgrading to 0.10 from 0.9
 
+### Facade
+
+If you are using the facade, you will need to change you `app.aliases` config to this:
+
+```php
+'aliases' => [
+    // ...
+    'JsonApi' => CloudCreativity\LaravelJsonApi\Facades\JsonApi::class,
+],
+```
+
+We made this change so that you can import the class name as `JsonApi` via a `use` statement.
+
 ### Config
 
 In each JSON API config file you will need to remove the `url-prefix` option and replace with this:

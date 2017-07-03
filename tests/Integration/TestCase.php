@@ -19,7 +19,7 @@
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration;
 
 use Closure;
-use CloudCreativity\LaravelJsonApi\Facade;
+use CloudCreativity\LaravelJsonApi\Facades\JsonApi;
 use CloudCreativity\LaravelJsonApi\ServiceProvider;
 use CloudCreativity\LaravelJsonApi\Testing\MakesJsonApiRequests;
 use CloudCreativity\LaravelJsonApi\Tests\Entities;
@@ -72,7 +72,7 @@ abstract class TestCase extends BaseTestCase
     protected function getPackageAliases($app)
     {
         return [
-            'JsonApi' => Facade::class,
+            'JsonApi' => JsonApi::class,
         ];
     }
 

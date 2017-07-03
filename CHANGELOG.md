@@ -9,6 +9,8 @@ All notable changes to this project will be documented in this file. This projec
 the standard Laravel test response.
 - The `InteractsWithResources` test helper trait has been merged into `MakesJsonApiRequests`.
 - The `ReplyTrait` has been moved to the `Http\Controllers` namespace and renamed `CreatesResponses`.
+- Moved the facade into the `Facades` namespace and renamed it `JsonApi`. This means it can now be imported with
+a `use` statement.
 
 ### Fixed
 - [#66] Content negotiation no longer sends a `415` response if a request does not have body content.

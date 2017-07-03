@@ -16,9 +16,8 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\LaravelJsonApi;
+namespace CloudCreativity\LaravelJsonApi\Facades;
 
-use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
 use Illuminate\Support\Facades\Facade as BaseFacade;
 
 /**
@@ -26,7 +25,7 @@ use Illuminate\Support\Facades\Facade as BaseFacade;
  *
  * @package CloudCreativity\LaravelJsonApi
  */
-class Facade extends BaseFacade
+class JsonApi extends BaseFacade
 {
 
     /**
@@ -34,6 +33,6 @@ class Facade extends BaseFacade
      */
     protected static function getFacadeAccessor()
     {
-        return JsonApiService::class;
+        return 'json-api.service';
     }
 }
