@@ -18,7 +18,6 @@
 
 namespace CloudCreativity\LaravelJsonApi\Http\Controllers;
 
-use CloudCreativity\JsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\LaravelJsonApi\Api\Api;
 use CloudCreativity\LaravelJsonApi\Http\Responses\Responses;
 use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
@@ -28,16 +27,8 @@ use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
  *
  * @package CloudCreativity\LaravelJsonApi
  */
-trait HandlesResourceRequests
+trait CreatesResponses
 {
-
-    /**
-     * @return JsonApiService
-     */
-    protected function jsonApi()
-    {
-        return app('json-api.service');
-    }
 
     /**
      * Get the API instance.
@@ -50,23 +41,16 @@ trait HandlesResourceRequests
      */
     protected function api()
     {
-        if ($api = $this->jsonApi()->requestApi()) {
+        /** @var JsonApiService $service */
+        $service = app('json-api.service');
+
+        if ($api = $service->requestApi()) {
             return $api;
         }
 
         $name = property_exists($this, 'api') ? $this->api : null;
 
-        return $this->jsonApi()->retrieve($name);
-    }
-
-    /**
-     * Get the store for the current API.
-     *
-     * @return StoreInterface
-     */
-    protected function store()
-    {
-        return $this->api()->getStore();
+        return $service->retrieve($name);
     }
 
     /**
@@ -74,10 +58,8 @@ trait HandlesResourceRequests
      */
     protected function reply()
     {
-        $request = $this->jsonApi()->request();
+        $name = property_exists($this, 'api') ? $this->api : null;
 
-        return $this->api()->createResponse(
-            $request ? $request->getParameters() : null
-        );
+        return response()->jsonApi($name);
     }
 }

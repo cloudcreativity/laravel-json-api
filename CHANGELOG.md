@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file. This projec
 - Tests helpers are no longer in the Browser Kit testing style, and instead use a `TestResponse` class that extends
 the standard Laravel test response.
 - The `InteractsWithResources` test helper trait has been merged into `MakesJsonApiRequests`.
+- The `ReplyTrait` has been moved to the `Http\Controllers` namespace and renamed `CreatesResponses`.
 
 ### Fixed
 - [#66] Content negotiation no longer sends a `415` response if a request does not have body content.

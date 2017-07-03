@@ -135,8 +135,8 @@ class ServiceProvider extends BaseServiceProvider
      */
     protected function bootResponseMacro()
     {
-        Response::macro('jsonApi', function ($parameters = null, $extensions = null, $api = null) {
-            return app('json-api.service')->response($parameters, $extensions, $api);
+        Response::macro('jsonApi', function ($api = null) {
+            return Responses::create($api);
         });
     }
 

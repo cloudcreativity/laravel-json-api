@@ -14,13 +14,13 @@ Here is an example controller:
 namespace App\Http\Controllers\Api;
  
 use App\JsonApi\Users;
-use CloudCreativity\LaravelJsonApi\Http\Responses\ReplyTrait;
+use CloudCreativity\LaravelJsonApi\Http\Controllers\CreatesResponses;
 use Illuminate\Routing\Controller;
  
 class UsersController extends Controller
 {
 
-    use ReplyTrait;
+    use CreatesResponses;
 
     private $hydrator;
     
@@ -53,18 +53,17 @@ correctly.
 
 ```php
 /**
- * @param \CloudCreativity\JsonApi\Contracts\Http\ApiInterface $api
  * @param \CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface $request
  * @return \Illuminate\Http\Response
  */
-public function index(ApiInterface $api, RequestInterface $request)
+public function index(RequestInterface $request)
 {
-    $result = $api->getStore()->query(
+    $records = $this->api()->getStore()->query(
         $request->getResourceType(),
         $request->getParameters()
     );
     
-    return $this->reply()->content($result);
+    return $this->reply()->content($records);
 }
 ```
 

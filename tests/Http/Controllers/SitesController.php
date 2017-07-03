@@ -2,8 +2,8 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Http\Controllers;
 
-use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface as JsonApiRequest;
-use CloudCreativity\LaravelJsonApi\Http\Controllers\HandlesResourceRequests;
+use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface;
+use CloudCreativity\LaravelJsonApi\Http\Controllers\CreatesResponses;
 use CloudCreativity\LaravelJsonApi\Tests\Entities\Site;
 use CloudCreativity\LaravelJsonApi\Tests\JsonApi\Sites;
 use Illuminate\Routing\Controller;
@@ -11,7 +11,7 @@ use Illuminate\Routing\Controller;
 class SitesController extends Controller
 {
 
-    use HandlesResourceRequests;
+    use CreatesResponses;
 
     /**
      * @var Sites\Hydrator
@@ -29,22 +29,24 @@ class SitesController extends Controller
     }
 
     /**
-     * @param JsonApiRequest $request
+     * @param RequestInterface $request
      * @return mixed
      */
-    public function index(JsonApiRequest $request)
+    public function index(RequestInterface $request)
     {
-        return $this->reply()->content($this->store()->query(
+        $results = $this->api()->getStore()->query(
             $request->getResourceType(),
             $request->getParameters()
-        ));
+        );
+
+        return $this->reply()->content($results);
     }
 
     /**
-     * @param JsonApiRequest $request
+     * @param RequestInterface $request
      * @return mixed
      */
-    public function create(JsonApiRequest $request)
+    public function create(RequestInterface $request)
     {
         $resource = $request->getDocument()->getResource();
         $record = new Site($resource->getId()); // client generated id.
@@ -55,19 +57,19 @@ class SitesController extends Controller
     }
 
     /**
-     * @param JsonApiRequest $request
+     * @param RequestInterface $request
      * @return mixed
      */
-    public function read(JsonApiRequest $request)
+    public function read(RequestInterface $request)
     {
         return $this->reply()->content($request->getRecord());
     }
 
     /**
-     * @param JsonApiRequest $request
+     * @param RequestInterface $request
      * @return mixed
      */
-    public function update(JsonApiRequest $request)
+    public function update(RequestInterface $request)
     {
         /** @var Site $record */
         $record = $request->getRecord();
@@ -79,10 +81,10 @@ class SitesController extends Controller
     }
 
     /**
-     * @param JsonApiRequest $request
+     * @param RequestInterface $request
      * @return mixed
      */
-    public function delete(JsonApiRequest $request)
+    public function delete(RequestInterface $request)
     {
         /** @var Site $record */
         $record = $request->getRecord();

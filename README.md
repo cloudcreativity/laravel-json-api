@@ -29,6 +29,8 @@ We use semantic versioning but Laravel does not. This table will help...
 | 5.3.* | ^0.9 |
 | 5.4.* | ^0.9 |
 
+Make sure you consult the [Upgrade Guide](http://laravel-json-api.readthedocs.io/en/latest/upgrade/) when upgrading.
+
 ## Lumen
 
 Currently we have not integrated the package with Lumen. If you use Lumen and can help, please let us know on

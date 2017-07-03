@@ -39,7 +39,7 @@ use Illuminate\Routing\Controller;
 class EloquentController extends Controller
 {
 
-    use HandlesResourceRequests,
+    use CreatesResponses,
         GeneratesLinks;
 
     /**
@@ -198,7 +198,7 @@ class EloquentController extends Controller
      */
     protected function search(RequestInterface $request)
     {
-        return $this->store()->query(
+        return $this->api()->getStore()->query(
             $request->getResourceType(),
             $request->getParameters()
         );

@@ -32,7 +32,7 @@ use Illuminate\Routing\Controller;
 class JsonApiController extends Controller
 {
 
-    use HandlesResourceRequests,
+    use CreatesResponses,
         GeneratesLinks;
 
     /**
