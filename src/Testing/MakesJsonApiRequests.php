@@ -178,7 +178,7 @@ trait MakesJsonApiRequests
     {
         $params = $this->addDefaultRouteParams($params);
         $route = $this->resolveRouteName();
-        $uri = $this->linkTo()->index($route, $params);
+        $uri = $this->linkTo()->create($route, $params);
 
         return $this->jsonApi('POST', $uri, ['data' => $data], $headers);
     }
