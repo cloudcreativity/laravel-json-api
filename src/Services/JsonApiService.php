@@ -27,12 +27,9 @@ use CloudCreativity\JsonApi\Contracts\Utils\ErrorReporterInterface;
 use CloudCreativity\JsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Api\Api;
 use CloudCreativity\LaravelJsonApi\Api\Repository;
-use CloudCreativity\LaravelJsonApi\Http\Responses\Responses;
 use CloudCreativity\LaravelJsonApi\Routing\ResourceRegistrar;
 use Exception;
 use Illuminate\Contracts\Container\Container;
-use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
-use Neomerx\JsonApi\Contracts\Http\Headers\SupportedExtensionsInterface;
 
 /**
  * Class JsonApiService
@@ -55,27 +52,6 @@ class JsonApiService implements ErrorReporterInterface
     public function __construct(Container $container)
     {
         $this->container = $container;
-    }
-
-    /**
-     * Get the responses helper.
-     *
-     * @param EncodingParametersInterface|null $parameters
-     * @param SupportedExtensionsInterface|null $extensions
-     * @param string|null $apiName
-     *      the API name to use if there is no inbound JSON API request.
-     * @return Responses
-     */
-    public function response(
-        EncodingParametersInterface $parameters = null,
-        SupportedExtensionsInterface $extensions = null,
-        $apiName = null
-    ) {
-        if ($inbound = $this->requestApi()) {
-            return $inbound->createResponse($parameters, $extensions);
-        }
-
-        return $this->retrieve($apiName)->createResponse($parameters, $extensions);
     }
 
     /**

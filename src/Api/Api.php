@@ -331,7 +331,7 @@ class Api
             $this->getErrors(),
             null,
             $parameters,
-            $extensions,
+            $extensions ?: $this->getSupportedExtensions(),
             (string) $this->getUrl()
         );
     }

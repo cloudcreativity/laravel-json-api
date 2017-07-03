@@ -63,7 +63,10 @@ trait HandlesErrors
             return response('', Response::HTTP_NOT_ACCEPTABLE);
         }
 
-        return $service->response()->errors($response);
+        return $service
+            ->requestApi()
+            ->createResponse()
+            ->errors($response);
     }
 
 }

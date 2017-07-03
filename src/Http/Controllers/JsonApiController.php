@@ -20,7 +20,6 @@ namespace CloudCreativity\LaravelJsonApi\Http\Controllers;
 
 use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface as JsonApiRequest;
 use CloudCreativity\LaravelJsonApi\Document\GeneratesLinks;
-use CloudCreativity\LaravelJsonApi\Http\Responses\ReplyTrait;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 
@@ -28,11 +27,12 @@ use Illuminate\Routing\Controller;
  * Class JsonApiController
  *
  * @package CloudCreativity\LaravelJsonApi
+ * @deprecated
  */
 class JsonApiController extends Controller
 {
 
-    use ReplyTrait,
+    use HandlesResourceRequests,
         GeneratesLinks;
 
     /**

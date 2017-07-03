@@ -2,9 +2,8 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Http\Controllers;
 
-use CloudCreativity\JsonApi\Contracts\Http\ApiInterface;
 use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface as JsonApiRequest;
-use CloudCreativity\LaravelJsonApi\Http\Responses\ReplyTrait;
+use CloudCreativity\LaravelJsonApi\Http\Controllers\HandlesResourceRequests;
 use CloudCreativity\LaravelJsonApi\Tests\Entities\Site;
 use CloudCreativity\LaravelJsonApi\Tests\JsonApi\Sites;
 use Illuminate\Routing\Controller;
@@ -12,7 +11,7 @@ use Illuminate\Routing\Controller;
 class SitesController extends Controller
 {
 
-    use ReplyTrait;
+    use HandlesResourceRequests;
 
     /**
      * @var Sites\Hydrator
@@ -30,15 +29,12 @@ class SitesController extends Controller
     }
 
     /**
-     * @param ApiInterface $api
      * @param JsonApiRequest $request
      * @return mixed
      */
-    public function index(ApiInterface $api, JsonApiRequest $request)
+    public function index(JsonApiRequest $request)
     {
-        $store = $api->getStore();
-
-        return $this->reply()->content($store->query(
+        return $this->reply()->content($this->store()->query(
             $request->getResourceType(),
             $request->getParameters()
         ));
