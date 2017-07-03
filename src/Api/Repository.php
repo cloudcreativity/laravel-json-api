@@ -18,13 +18,9 @@
 
 namespace CloudCreativity\LaravelJsonApi\Api;
 
-use CloudCreativity\JsonApi\Contracts\Http\ApiInterface;
-use CloudCreativity\JsonApi\Encoder\Encoder;
 use CloudCreativity\JsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use Illuminate\Contracts\Config\Repository as Config;
-use Illuminate\Support\Arr;
-use Neomerx\JsonApi\Encoder\EncoderOptions;
 
 /**
  * Class Repository
@@ -45,147 +41,79 @@ class Repository
     private $factory;
 
     /**
-     * @var array
-     */
-    private $definitions = [];
-
-    /**
      * Repository constructor.
      *
-     * @param Config $config
      * @param Factory $factory
+     * @param Config $config
      */
-    public function __construct(Config $config, Factory $factory)
+    public function __construct(Factory $factory, Config $config)
     {
-        $this->config = $config;
         $this->factory = $factory;
+        $this->config = $config;
     }
 
     /**
      * @param $apiName
      * @return bool
      */
-    public function isApi($apiName)
+    public function exists($apiName)
     {
-        return !empty($this->retrieveConfig($apiName));
+        return $this->config->has($this->configKey($apiName));
     }
 
     /**
      * @param $apiName
      * @param string|null $host
-     * @return ApiInterface
+     * @return Api
      */
-    public function retrieveApi($apiName, $host = null)
+    public function createApi($apiName, $host = null)
     {
-        $definition = $this->retrieveDefinition($apiName);
-
-        return $this->createApi($definition, $host);
-    }
-
-    /**
-     * @param $apiName
-     * @return Definition
-     */
-    public function retrieveDefinition($apiName)
-    {
-        if (isset($this->definitions[$apiName])) {
-            return $this->definitions[$apiName];
-        }
-
         $config = $this->configFor($apiName);
-        $definition = $this->createDefinition($apiName, $config);
-        $this->createProviders($config)->registerAll($definition);
+        $rootNamespace = $this->normalizeRootNamespace(array_get($config, 'namespace'));
+        $byResource = (bool) array_get($config, 'by-resource', true);
+        $resources = (array) array_get($config, 'resources');
+        $resources = ResourceMap::create($rootNamespace, $resources, $byResource)->all();
 
-        return $this->definitions[$apiName] = $definition;
-    }
-
-    /**
-     * @param $apiName
-     * @param string|null $host
-     * @param int $options
-     * @param int $depth
-     * @return Encoder
-     */
-    public function retrieveEncoder($apiName, $host = null, $options = 0, $depth = 512)
-    {
-        $definition = $this->retrieveDefinition($apiName);
-        $schemas = $this->factory->createContainer($definition->getResources()->getSchemas());
-        $url = $this->mergeHostAndUrlPrefix($host, $definition->getUrlPrefix());
-
-        return $this->factory->createEncoder($schemas, new EncoderOptions($options, $url, $depth));
-    }
-
-    /**
-     * @param $apiName
-     * @return ResourceProviders
-     */
-    public function retrieveProviders($apiName)
-    {
-        return $this->createProviders($this->configFor($apiName));
-    }
-
-    /**
-     * @param Definition $definition
-     * @param $host
-     * @return ApiInterface
-     */
-    protected function createApi(Definition $definition, $host)
-    {
-        $resources = $definition->getResources();
-        $schemas = $this->factory->createContainer($resources->getSchemas());
-        $adapters = $this->factory->createAdapterContainer($resources->getAdapters());
-        $urlPrefix = $this->mergeHostAndUrlPrefix($host, $definition->getUrlPrefix());
-        $extensions = $definition->getSupportedExt();
-
-        return $this->factory->createApi(
-            $definition->getName(),
-            $this->factory->createConfiguredCodecMatcher($schemas, $definition->getCodecs(), $urlPrefix),
-            $schemas,
-            $this->factory->createStore($adapters),
-            $this->factory->createErrorRepository($definition->getErrors()),
-            $extensions ? $this->factory->createSupportedExtensions($extensions) : null,
-            $urlPrefix
-        );
-    }
-
-    /**
-     * @param $apiName
-     * @param array $config
-     * @return Definition
-     */
-    protected function createDefinition($apiName, array $config)
-    {
-        return new Definition(
+        $api = new Api(
+            $this->factory,
             $apiName,
-            $this->normalizeRootNamespace(Arr::get($config, 'namespace')),
-            (array) Arr::get($config, 'resources'),
-            (array) Arr::get($config, 'codecs'),
-            (bool) Arr::get($config, 'by-resource', true),
-            (bool) Arr::get($config, 'use-eloquent', true),
-            Arr::get($config, 'url-prefix'),
-            Arr::get($config, 'supported-ext'),
-            $this->mergeErrors((array) Arr::get($config, 'errors'))
+            $rootNamespace,
+            $resources,
+            (array) array_get($config, 'codecs'),
+            $this->normalizeUrl((array) array_get($config, 'url')),
+            $byResource,
+            (bool) array_get($config, 'use-eloquent', true),
+            array_get($config, 'supported-ext'),
+            $this->mergeErrors((array) array_get($config, 'errors'))
         );
+
+        /** Attach resource providers to the API. */
+        $this->createProviders($apiName)->registerAll($api);
+
+        return $api;
     }
 
     /**
-     * @param array $apiConfig
+     * @param $apiName
      * @return ResourceProviders
      */
-    protected function createProviders(array $apiConfig)
+    public function createProviders($apiName)
     {
-        $providers = (array) Arr::get($apiConfig, 'providers');
-
-        return new ResourceProviders($this->factory, $providers);
+        return new ResourceProviders(
+            $this->factory,
+            $this->config->get($this->configKey($apiName, 'providers'))
+        );
     }
 
     /**
      * @param $apiName
      * @return array
      */
-    protected function configFor($apiName)
+    private function configFor($apiName)
     {
-        if (empty($config = $this->retrieveConfig($apiName))) {
+        $config = (array) $this->config->get($this->configKey($apiName));
+
+        if (empty($config)) {
             throw new RuntimeException("JSON API '$apiName' does not exist.");
         }
 
@@ -193,27 +121,21 @@ class Repository
     }
 
     /**
-     * @param $apiName
-     * @return array
-     */
-    protected function retrieveConfig($apiName)
-    {
-        return (array) $this->config->get($this->configKey($apiName));
-    }
-
-    /**
-     * @param $apiName
+     * @param string $apiName
+     * @param string|null $path
      * @return string
      */
-    protected function configKey($apiName)
+    private function configKey($apiName, $path = null)
     {
-        return "json-api-$apiName";
+        $key = "json-api-$apiName";
+
+        return $path ? "$key.$path" : $key;
     }
 
     /**
      * @return array
      */
-    protected function defaultErrors()
+    private function defaultErrors()
     {
         return (array) $this->config->get('json-api-errors');
     }
@@ -222,32 +144,35 @@ class Repository
      * @param array $errors
      * @return array
      */
-    protected function mergeErrors(array $errors)
+    private function mergeErrors(array $errors)
     {
         return array_replace($this->defaultErrors(), $errors);
-    }
-
-    /**
-     * @param string|null $host
-     * @param string $urlPrefix
-     * @return string|null
-     */
-    protected function mergeHostAndUrlPrefix($host, $urlPrefix)
-    {
-        if ($host) {
-            $host = rtrim($host, '/');
-            $urlPrefix = $host . $urlPrefix;
-        }
-
-        return $urlPrefix ? $urlPrefix : null;
     }
 
     /**
      * @param $namespace
      * @return string
      */
-    protected function normalizeRootNamespace($namespace)
+    private function normalizeRootNamespace($namespace)
     {
         return $namespace ?: rtrim(app()->getNamespace(), '\\') . '\\JsonApi';
+    }
+
+    /**
+     * @param array $url
+     * @param string|null $host
+     * @return Url
+     */
+    private function normalizeUrl(array $url, $host = null)
+    {
+        if ($host) {
+            $url['host'] = $host;
+        }
+
+        if (!array_get($url, 'host')) {
+            $url['host'] = $this->config->get('app.url');
+        }
+
+        return new Url((string) $url['host'], (string) array_get($url, 'namespace'));
     }
 }

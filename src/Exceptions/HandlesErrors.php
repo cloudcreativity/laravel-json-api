@@ -19,7 +19,6 @@
 namespace CloudCreativity\LaravelJsonApi\Exceptions;
 
 use CloudCreativity\JsonApi\Contracts\Exceptions\ExceptionParserInterface;
-use CloudCreativity\JsonApi\Contracts\Http\Responses\ResponseFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
 use Exception;
 use Illuminate\Http\Request;
@@ -41,7 +40,7 @@ trait HandlesErrors
         /** @var JsonApiService $service */
         $service = app(JsonApiService::class);
 
-        return $service->hasApi();
+        return !is_null($service->requestApi());
     }
 
     /**
@@ -53,30 +52,18 @@ trait HandlesErrors
     {
         /** @var JsonApiService $service */
         $service = app(JsonApiService::class);
-
-        if (!$service->getApi()->hasEncoder()) {
-            return $this->renderWithoutEncoder($e);
-        }
-
         /** @var ExceptionParserInterface $handler */
         $handler = app(ExceptionParserInterface::class);
-        /** @var ResponseFactoryInterface $responses */
-        $responses = response()->jsonApi();
 
         $response = $handler->parse($e);
         $service->report($response, $e);
 
-        return $responses->errors($response);
+        /** Client does not accept a JSON API response. */
+        if (Response::HTTP_NOT_ACCEPTABLE === $response->getHttpCode()) {
+            return response('', Response::HTTP_NOT_ACCEPTABLE);
+        }
+
+        return $service->response()->errors($response);
     }
 
-    /**
-     * Send a response if no JSON API encoder is available.
-     *
-     * @param Exception $e
-     * @return Response
-     */
-    protected function renderWithoutEncoder(Exception $e)
-    {
-        return response('', Response::HTTP_NOT_ACCEPTABLE);
-    }
 }

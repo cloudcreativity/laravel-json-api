@@ -25,7 +25,7 @@ use IteratorAggregate;
  *
  * @package CloudCreativity\LaravelJsonApi
  */
-class ResourceMap implements IteratorAggregate
+final class ResourceMap implements IteratorAggregate
 {
 
     /**
@@ -42,6 +42,19 @@ class ResourceMap implements IteratorAggregate
      * @var bool
      */
     private $byResource;
+
+    /**
+     * Fluent constructor.
+     *
+     * @param $rootNamespace
+     * @param array $resources
+     * @param bool $byResource
+     * @return ResourceMap
+     */
+    public static function create($rootNamespace, array $resources, $byResource = true)
+    {
+        return new self($rootNamespace, $resources, $byResource);
+    }
 
     /**
      * ResourceMap constructor.

@@ -98,7 +98,7 @@ class ResourceRegistrar
      */
     protected function apiGroup($apiName, array $options)
     {
-        $definition = $this->apiRepository->retrieveDefinition($apiName);
+        $definition = $this->apiRepository->createApi($apiName);
 
         return new ApiGroup($this->router, $definition, $options);
     }
@@ -109,6 +109,6 @@ class ResourceRegistrar
      */
     protected function apiProviders($apiName)
     {
-        return $this->apiRepository->retrieveProviders($apiName);
+        return $this->apiRepository->createProviders($apiName);
     }
 }

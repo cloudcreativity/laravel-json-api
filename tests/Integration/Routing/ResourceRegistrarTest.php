@@ -19,12 +19,12 @@
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Routing;
 
 use App\Http\Controllers\PostsController;
+use CloudCreativity\LaravelJsonApi\Api\Api;
 use CloudCreativity\LaravelJsonApi\Api\ApiResource;
 use CloudCreativity\LaravelJsonApi\Api\ApiResources;
-use CloudCreativity\LaravelJsonApi\Api\Definition;
 use CloudCreativity\LaravelJsonApi\Api\Repository;
 use CloudCreativity\LaravelJsonApi\Api\ResourceProviders;
-use CloudCreativity\LaravelJsonApi\Routing\ApiGroup as Api;
+use CloudCreativity\LaravelJsonApi\Routing\ApiGroup;
 use CloudCreativity\LaravelJsonApi\Routing\ResourceRegistrar;
 use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
 use Illuminate\Contracts\Events\Dispatcher;
@@ -66,19 +66,18 @@ class ResourceRegistrarTest extends TestCase
 
     public function setUp()
     {
-        $this->definition = $this->getMockBuilder(Definition::class)->disableOriginalConstructor()->getMock();
+        $this->definition = $this->createMock(Api::class);
         $this->definition
             ->method('getResources')
             ->willReturn($this->resources = new ApiResources());
 
-        $providers = $this->getMockBuilder(ResourceProviders::class)->disableOriginalConstructor()->getMock();
-
-        $repository = $this->getMockBuilder(Repository::class)->disableOriginalConstructor()->getMock();
-        $repository->method('retrieveDefinition')->with('v1')->willReturn($this->definition);
-        $repository->method('retrieveProviders')->with('v1')->willReturn($providers);
+        $providers = $this->createMock(ResourceProviders::class);
+        $repository = $this->createMock(Repository::class);
+        $repository->method('createApi')->with('v1')->willReturn($this->definition);
+        $repository->method('createProviders')->with('v1')->willReturn($providers);
 
         /** @var Dispatcher $events */
-        $events = $this->getMockBuilder(Dispatcher::class)->getMock();
+        $events = $this->createMock(Dispatcher::class);
         $this->router = new Router($events);
 
         /** @var Repository $repository */
@@ -90,7 +89,7 @@ class ResourceRegistrarTest extends TestCase
 
     public function testApi()
     {
-        $this->registrar->api('v1', ['namespace' => 'App\Http\Controllers'], function (Api $api) {
+        $this->registrar->api('v1', ['namespace' => 'App\Http\Controllers'], function (ApiGroup $api) {
             $api->resource('posts');
         });
 
@@ -100,7 +99,7 @@ class ResourceRegistrarTest extends TestCase
 
     public function testResources()
     {
-        $this->registrar->api('v1', ['namespace' => 'App\Http\Controllers'], function (Api $api) {
+        $this->registrar->api('v1', ['namespace' => 'App\Http\Controllers'], function (ApiGroup $api) {
             $api->resource('posts');
             $api->resource('comments');
         });
@@ -111,7 +110,7 @@ class ResourceRegistrarTest extends TestCase
 
     public function testNotAResource()
     {
-        $this->registrar->api('v1', ['namespace' => 'App\Http\Controllers'], function (Api $api) {
+        $this->registrar->api('v1', ['namespace' => 'App\Http\Controllers'], function (ApiGroup $api) {
             $api->resource('posts');
             $api->resource('comments');
         });
@@ -121,7 +120,7 @@ class ResourceRegistrarTest extends TestCase
 
     public function testOnlyOption()
     {
-        $this->registrar->api('v1', ['namespace' => 'App\Http\Controllers'], function (Api $api) {
+        $this->registrar->api('v1', ['namespace' => 'App\Http\Controllers'], function (ApiGroup $api) {
             $api->resource('posts', [
                 'only' => ['index', 'read'],
             ]);
@@ -137,7 +136,7 @@ class ResourceRegistrarTest extends TestCase
 
     public function testExceptOption()
     {
-        $this->registrar->api('v1', ['namespace' => 'App\Http\Controllers'], function (Api $api) {
+        $this->registrar->api('v1', ['namespace' => 'App\Http\Controllers'], function (ApiGroup $api) {
             $api->resource('posts', [
                 'except' => ['create', 'delete'],
             ]);
@@ -153,7 +152,7 @@ class ResourceRegistrarTest extends TestCase
 
     public function testRelationships()
     {
-        $this->registrar->api('v1', ['namespace' => 'App\Http\Controllers'], function (Api $api) {
+        $this->registrar->api('v1', ['namespace' => 'App\Http\Controllers'], function (ApiGroup $api) {
             $api->resource('posts', [
                 'has-one' => 'author',
                 'has-many' => ['comments', 'tags'],
@@ -176,7 +175,7 @@ class ResourceRegistrarTest extends TestCase
 
     public function testDasherizedRelationships()
     {
-        $this->registrar->api('v1', ['namespace' => 'App\Http\Controllers'], function (Api $api) {
+        $this->registrar->api('v1', ['namespace' => 'App\Http\Controllers'], function (ApiGroup $api) {
             $api->resource('posts', [
                 'has-one' => ['last-comment'],
                 'has-many' => ['recent-comments'],
@@ -189,7 +188,7 @@ class ResourceRegistrarTest extends TestCase
 
     public function testNotARelationship()
     {
-        $this->registrar->api('v1', ['namespace' => 'App\Http\Controllers'], function (Api $api) {
+        $this->registrar->api('v1', ['namespace' => 'App\Http\Controllers'], function (ApiGroup $api) {
             $api->resource('posts', [
                 'has-one' => 'author',
                 'has-many' => ['comments', 'tags'],
@@ -201,7 +200,7 @@ class ResourceRegistrarTest extends TestCase
 
     public function testRelationshipsOnlyOption()
     {
-        $this->registrar->api('v1', ['namespace' => 'App\Http\Controllers'], function (Api $api) {
+        $this->registrar->api('v1', ['namespace' => 'App\Http\Controllers'], function (ApiGroup $api) {
             $api->resource('posts', [
                 'has-one' => [
                     'author' => ['only' => 'related'],
@@ -230,7 +229,7 @@ class ResourceRegistrarTest extends TestCase
 
     public function testRelationshipsExceptOption()
     {
-        $this->registrar->api('v1', ['namespace' => 'App\Http\Controllers'], function (Api $api) {
+        $this->registrar->api('v1', ['namespace' => 'App\Http\Controllers'], function (ApiGroup $api) {
             $api->resource('posts', [
                 'has-one' => [
                     'author' => ['except' => 'replace'],
@@ -259,7 +258,7 @@ class ResourceRegistrarTest extends TestCase
 
     public function testSpecifiedController()
     {
-        $this->registrar->api('v1', [], function (Api $api) {
+        $this->registrar->api('v1', [], function (ApiGroup $api) {
             $api->resource('posts', [
                 'controller' => PostsController::class,
                 'has-one' => 'author',
@@ -274,7 +273,7 @@ class ResourceRegistrarTest extends TestCase
 
     public function testControllerInDifferentNamespace()
     {
-        $this->registrar->api('v1', ['namespace' => 'Foo\Bar'], function (Api $api) {
+        $this->registrar->api('v1', ['namespace' => 'Foo\Bar'], function (ApiGroup $api) {
             $api->resource('posts', [
                 'controller' => '\\' . PostsController::class,
                 'has-one' => 'author',
@@ -289,7 +288,7 @@ class ResourceRegistrarTest extends TestCase
 
     public function testSpecifiedAuthorizer()
     {
-        $this->registrar->api('v1', ['namespace' => 'App\Http\Controllers'], function (Api $api) {
+        $this->registrar->api('v1', ['namespace' => 'App\Http\Controllers'], function (ApiGroup $api) {
             $api->resource('posts', [
                 'authorizer' => 'App\JsonApi\GenericAuthorizer',
             ]);
@@ -306,7 +305,7 @@ class ResourceRegistrarTest extends TestCase
         $this->registrar->api('v1', [
             'namespace' => 'App\Http\Controllers',
             'authorizer' => 'App\JsonApi\GenericAuthorizer',
-        ], function (Api $api) {
+        ], function (ApiGroup $api) {
             $api->resource('posts');
             $api->resource('comments');
         });
@@ -325,7 +324,7 @@ class ResourceRegistrarTest extends TestCase
         $this->withResource('posts', 'PostsAuthorizer')
             ->withResource('comments', 'CommentsAuthorizer');
 
-        $this->registrar->api('v1', ['namespace' => 'App\Http\Controllers'], function (Api $api) {
+        $this->registrar->api('v1', ['namespace' => 'App\Http\Controllers'], function (ApiGroup $api) {
             $api->resource('posts');
             $api->resource('comments');
             $api->resource('tags', ['authorizer' => 'SomeOtherAuthorizer']);
@@ -343,7 +342,7 @@ class ResourceRegistrarTest extends TestCase
 
     public function testSpecifiedValidators()
     {
-        $this->registrar->api('v1', ['namespace' => 'App\Http\Controllers'], function (Api $api) {
+        $this->registrar->api('v1', ['namespace' => 'App\Http\Controllers'], function (ApiGroup $api) {
             $api->resource('posts', [
                 'validators' => 'App\JsonApi\GenericValidator',
             ]);
@@ -358,7 +357,7 @@ class ResourceRegistrarTest extends TestCase
         $this->withResource('posts', null, 'PostsValidators')
             ->withResource('comments', null, 'CommentsValidators');
 
-        $this->registrar->api('v1', ['namespace' => 'App\Http\Controllers'], function (Api $api) {
+        $this->registrar->api('v1', ['namespace' => 'App\Http\Controllers'], function (ApiGroup $api) {
             $api->resource('posts');
             $api->resource('comments');
             $api->resource('tags', ['validators' => 'SomeOtherValidators']);
@@ -376,7 +375,7 @@ class ResourceRegistrarTest extends TestCase
 
     public function testWithIdConstraint()
     {
-        $this->registrar->api('v1', ['namespace' => 'App\Http\Controllers'], function (Api $api) {
+        $this->registrar->api('v1', ['namespace' => 'App\Http\Controllers'], function (ApiGroup $api) {
             $api->resource('posts', [
                 'has-one' => 'author',
                 'has-many' => 'comments',

@@ -93,7 +93,7 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
      */
     public function fire()
     {
-        if (!$this->apiRepository->isApi($api = $this->argument('api'))) {
+        if (!$this->apiRepository->exists($api = $this->argument('api'))) {
             $this->error("JSON API '$api' does not exist.");
             return 1;
         }

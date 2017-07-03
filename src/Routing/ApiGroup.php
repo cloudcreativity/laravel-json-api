@@ -18,8 +18,8 @@
 
 namespace CloudCreativity\LaravelJsonApi\Routing;
 
+use CloudCreativity\LaravelJsonApi\Api\Api;
 use CloudCreativity\LaravelJsonApi\Api\ApiResource;
-use CloudCreativity\LaravelJsonApi\Api\Definition;
 use Illuminate\Contracts\Routing\Registrar;
 use Illuminate\Support\Fluent;
 
@@ -37,9 +37,9 @@ class ApiGroup
     private $router;
 
     /**
-     * @var Definition
+     * @var Api
      */
-    private $apiDefinition;
+    private $api;
 
     /**
      * @var Fluent
@@ -50,13 +50,13 @@ class ApiGroup
      * ApiGroup constructor.
      *
      * @param Registrar $router
-     * @param Definition $apiDefinition
+     * @param Api $api
      * @param array $options
      */
-    public function __construct(Registrar $router, Definition $apiDefinition, array $options)
+    public function __construct(Registrar $router, Api $api, array $options)
     {
         $this->router = $router;
-        $this->apiDefinition = $apiDefinition;
+        $this->api = $api;
         $this->options = new Fluent($options);
     }
 
@@ -109,6 +109,6 @@ class ApiGroup
      */
     protected function apiResource($resourceType)
     {
-        return $this->apiDefinition->getResources()->get($resourceType);
+        return $this->api->getResources()->get($resourceType);
     }
 }

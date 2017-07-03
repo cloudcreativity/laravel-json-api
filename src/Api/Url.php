@@ -16,44 +16,61 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\LaravelJsonApi\Http\Responses;
-
-use CloudCreativity\JsonApi\Contracts\Store\StoreInterface;
-use CloudCreativity\LaravelJsonApi\Api\Api;
+namespace CloudCreativity\LaravelJsonApi\Api;
 
 /**
- * Class ReplyTrait
+ * Class Url
  *
  * @package CloudCreativity\LaravelJsonApi
  */
-trait ReplyTrait
+class Url
 {
 
     /**
-     * Get the API that is handling the inbound request.
-     *
-     * @return Api
+     * @var string
      */
-    public function api()
+    private $host;
+
+    /**
+     * @var string
+     */
+    private $namespace;
+
+    /**
+     * Url constructor.
+     *
+     * @param string $host
+     * @param string $namespace
+     */
+    public function __construct($host, $namespace)
     {
-        return app('json-api.inbound');
+        $this->host = rtrim($host, '/');
+        $this->namespace = '/' . ltrim($namespace, '/');
     }
 
     /**
-     * Get the store for the current API.
-     *
-     * @return StoreInterface
+     * @return string
      */
-    public function store()
+    public function __toString()
     {
-        return $this->api()->getStore();
+        return $this->host . $this->namespace;
     }
 
     /**
-     * @return Responses
+     * @return string
      */
-    public function reply()
+    public function getHost()
     {
-        return $this->api()->createResponse();
+        return $this->host;
     }
+
+    /**
+     * @return string
+     */
+    public function getNamespace()
+    {
+        return $this->namespace;
+    }
+
+
 }

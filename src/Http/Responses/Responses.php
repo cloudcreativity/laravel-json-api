@@ -19,7 +19,6 @@
 namespace CloudCreativity\LaravelJsonApi\Http\Responses;
 
 use CloudCreativity\JsonApi\Http\Responses\AbstractResponses;
-use Illuminate\Http\Response;
 
 /**
  * Class Responses
@@ -30,14 +29,11 @@ class Responses extends AbstractResponses
 {
 
     /**
-     * @param null|string $content
-     * @param int $statusCode
-     * @param array $headers
-     * @return Response
+     * @inheritdoc
      */
     protected function createResponse($content, $statusCode, array $headers)
     {
-        return new Response($content, $statusCode, $headers);
+        return response($content, $statusCode, $headers);
     }
 
 }

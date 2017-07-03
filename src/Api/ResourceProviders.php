@@ -27,6 +27,7 @@ use IteratorAggregate;
  * Class ResourceProviders
  *
  * @package CloudCreativity\LaravelJsonApi
+ * @todo make final as this is not meant to be extended.
  */
 class ResourceProviders implements IteratorAggregate
 {
@@ -54,14 +55,14 @@ class ResourceProviders implements IteratorAggregate
     }
 
     /**
-     * @param Definition $definition
+     * @param Api $api
      * @return void
      */
-    public function registerAll(Definition $definition)
+    public function registerAll(Api $api)
     {
         /** @var ResourceProvider $provider */
         foreach ($this as $provider) {
-            $definition->register($provider);
+            $api->register($provider);
         }
     }
 
