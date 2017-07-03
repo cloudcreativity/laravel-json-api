@@ -46,6 +46,37 @@ In each JSON API config file you will need to remove the `url-prefix` option and
 ],
 ```
 
+### Routing
+
+You now need to use `JsonApi::register()` to register routes for an API. This is because the `api()` method
+is now used to get an API instance.
+
+The `register()` method will also now automatically apply the URL prefix from your config file 
+when registering routes.
+
+For example, this:
+
+```php
+JsonApi::api('v1', ['prefix' => '/api/v1', 'as' => 'api-v1::', 'namespace' => 'ApiV1'], function ($api) {
+    $api->resource('posts');
+    $api->resource('comments');
+});
+```
+
+Is now:
+
+```php
+JsonApi::register('v1', ['as' => 'api-v1::', 'namespace' => 'ApiV1'], function ($api) {
+    $api->resource('posts');
+    $api->resource('comments');
+});
+```
+
+> The URL prefix in your JSON API config is **always** relative to the root URL on a host, i.e. from `/`. 
+This means when registering your routes, you need to ensure that no prefix has already been applied. The default
+Laravel installation has an `api` prefix for API routes and you will need to remove this from your `mapApiRoutes()`
+method in your `RouteServiceProvider` if your JSON API routes are being registered in your `routes/api.php` file.
+
 ### Non-Eloquent Controllers
 
 The `ReplyTrait` has been renamed to:

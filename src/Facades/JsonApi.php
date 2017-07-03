@@ -33,6 +33,7 @@ class JsonApi extends BaseFacade
      */
     protected static function getFacadeAccessor()
     {
-        return 'json-api.service';
+        return 'json-api';
     }
+
 }

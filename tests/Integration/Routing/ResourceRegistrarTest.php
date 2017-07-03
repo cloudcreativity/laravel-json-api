@@ -24,6 +24,7 @@ use CloudCreativity\LaravelJsonApi\Api\ApiResource;
 use CloudCreativity\LaravelJsonApi\Api\ApiResources;
 use CloudCreativity\LaravelJsonApi\Api\Repository;
 use CloudCreativity\LaravelJsonApi\Api\ResourceProviders;
+use CloudCreativity\LaravelJsonApi\Api\Url;
 use CloudCreativity\LaravelJsonApi\Routing\ApiGroup;
 use CloudCreativity\LaravelJsonApi\Routing\ResourceRegistrar;
 use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
@@ -57,7 +58,7 @@ class ResourceRegistrarTest extends TestCase
     /**
      * @var Mock
      */
-    private $definition;
+    private $api;
 
     /**
      * @var ApiResources
@@ -66,14 +67,13 @@ class ResourceRegistrarTest extends TestCase
 
     public function setUp()
     {
-        $this->definition = $this->createMock(Api::class);
-        $this->definition
-            ->method('getResources')
-            ->willReturn($this->resources = new ApiResources());
+        $this->api = $this->createMock(Api::class);
+        $this->api->method('getResources')->willReturn($this->resources = new ApiResources());
+        $this->api->method('getUrl')->willReturn(new Url('http://localhost', '/api/v1'));
 
         $providers = $this->createMock(ResourceProviders::class);
         $repository = $this->createMock(Repository::class);
-        $repository->method('createApi')->with('v1')->willReturn($this->definition);
+        $repository->method('createApi')->with('v1')->willReturn($this->api);
         $repository->method('createProviders')->with('v1')->willReturn($providers);
 
         /** @var Dispatcher $events */

@@ -41,8 +41,8 @@ class Responses extends AbstractResponses
     public static function create($apiName = null)
     {
         /** @var JsonApiService $service */
-        $service = app('json-api.service');
-        $api = $service->requestApi() ?: $service->retrieve($apiName);
+        $service = app('json-api');
+        $api = $service->requestApi() ?: $service->api($apiName);
         $request = $service->request();
 
         return $api->createResponse($request ? $request->getParameters() : null);

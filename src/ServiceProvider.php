@@ -21,9 +21,6 @@ namespace CloudCreativity\LaravelJsonApi;
 use CloudCreativity\JsonApi\Contracts\Exceptions\ExceptionParserInterface;
 use CloudCreativity\JsonApi\Contracts\Factories\FactoryInterface;
 use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterpreterInterface;
-use CloudCreativity\JsonApi\Contracts\Repositories\ErrorRepositoryInterface;
-use CloudCreativity\JsonApi\Contracts\Store\StoreInterface;
-use CloudCreativity\JsonApi\Contracts\Validators\ValidatorErrorFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Api\Repository;
 use CloudCreativity\LaravelJsonApi\Console\Commands;
 use CloudCreativity\LaravelJsonApi\Contracts\Document\LinkFactoryInterface;
@@ -35,8 +32,8 @@ use CloudCreativity\LaravelJsonApi\Http\Middleware\BootJsonApi;
 use CloudCreativity\LaravelJsonApi\Http\Middleware\ValidateRequest;
 use CloudCreativity\LaravelJsonApi\Http\Requests\RequestInterpreter;
 use CloudCreativity\LaravelJsonApi\Http\Responses\Responses;
+use CloudCreativity\LaravelJsonApi\Routing\ResourceRegistrar;
 use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
-use CloudCreativity\LaravelJsonApi\Validators\ValidatorErrorFactory;
 use CloudCreativity\LaravelJsonApi\View\Renderer;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Routing\Router;
@@ -49,7 +46,6 @@ use Neomerx\JsonApi\Contracts\Encoder\Parser\ParserFactoryInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Stack\StackFactoryInterface;
 use Neomerx\JsonApi\Contracts\Factories\FactoryInterface as NeomerxFactoryInterface;
 use Neomerx\JsonApi\Contracts\Http\HttpFactoryInterface;
-use Neomerx\JsonApi\Contracts\Http\ResponsesInterface;
 use Neomerx\JsonApi\Contracts\Schema\SchemaFactoryInterface;
 use Psr\Log\LoggerInterface;
 
@@ -60,11 +56,6 @@ use Psr\Log\LoggerInterface;
  */
 class ServiceProvider extends BaseServiceProvider
 {
-
-    /**
-     * @var bool
-     */
-    protected $defer = false;
 
     /**
      * @var array
@@ -98,10 +89,9 @@ class ServiceProvider extends BaseServiceProvider
         $this->bindNeomerx();
         $this->bindService();
         $this->bindRequestInterpreter();
+        $this->bindRouteRegistrar();
         $this->bindApiRepository();
-        $this->bindApiServices();
         $this->bindExceptionParser();
-        $this->bindResponses();
         $this->bindLinkFactory();
         $this->bindRenderer();
         $this->registerArtisanCommands();
@@ -184,12 +174,21 @@ class ServiceProvider extends BaseServiceProvider
     }
 
     /**
-     * Bind an alias for the JSON API service.
+     * Bind the JSON API service as a singleton.
      */
     protected function bindService()
     {
         $this->app->singleton(JsonApiService::class);
+        $this->app->alias(JsonApiService::class, 'json-api');
         $this->app->alias(JsonApiService::class, 'json-api.service');
+    }
+
+    /**
+     * Bind an alias for the route registrar.
+     */
+    protected function bindRouteRegistrar()
+    {
+        $this->app->alias(ResourceRegistrar::class, 'json-api.registrar');
     }
 
     /**
@@ -201,44 +200,11 @@ class ServiceProvider extends BaseServiceProvider
     }
 
     /**
-     * Bind services that are resolved from the active API.
-     */
-    protected function bindApiServices()
-    {
-        $this->app->bind(StoreInterface::class, function (Application $app) {
-            /** @var ApiInterface $api */
-            $api = $app->make(ApiInterface::class);
-            return $api->getStore();
-        });
-
-        $this->app->bind(ErrorRepositoryInterface::class, function (Application $app) {
-            /** @var ApiInterface $api */
-            $api = $app->make(ApiInterface::class);
-            return $api->getErrors();
-        });
-
-        $this->app->bind(ValidatorErrorFactoryInterface::class, function (Application $app) {
-            $errors = $app->make(ErrorRepositoryInterface::class);
-
-            return new ValidatorErrorFactory($errors);
-        });
-    }
-
-    /**
      * Bind the API repository as a singleton.
      */
     protected function bindApiRepository()
     {
         $this->app->singleton(Repository::class);
-    }
-
-    /**
-     * Bind the responses instance into the service container.
-     */
-    protected function bindResponses()
-    {
-        $this->app->singleton(ResponsesInterface::class, Responses::class);
-        $this->app->singleton(ResponseFactoryInterface::class, ResponseFactory::class);
     }
 
     /**

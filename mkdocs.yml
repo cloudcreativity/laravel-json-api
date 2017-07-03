@@ -8,9 +8,12 @@ pages:
   - Home: index.md
   - Installation: installation.md
   - Upgrading: upgrade.md
-  - API Setup: api.md
-  - Routing: routing.md
+  - The Basics:
+    - API Setup: api.md
+    - Routing: routing.md
   - Eloquent:
     - Controllers: eloquent/controllers.md
   - Non-Eloquent:
     - Controllers: custom/controllers.md
+  - Digging Deeper:
+    - Sending Requests: features/sending-requests.md

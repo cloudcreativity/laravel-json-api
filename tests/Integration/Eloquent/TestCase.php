@@ -23,7 +23,7 @@ abstract class TestCase extends BaseTestCase
     {
         parent::setUp();
 
-        $this->withDefaultApi(['prefix' => '/api/v1', 'as' => $this->routePrefix], function (ApiGroup $api) {
+        $this->withDefaultApi(['as' => $this->routePrefix], function (ApiGroup $api) {
             $api->resource('comments');
             $api->resource('posts', [
                 'has-one' => 'author',

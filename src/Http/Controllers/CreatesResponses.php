@@ -42,7 +42,7 @@ trait CreatesResponses
     protected function api()
     {
         /** @var JsonApiService $service */
-        $service = app('json-api.service');
+        $service = app('json-api');
 
         if ($api = $service->requestApi()) {
             return $api;
@@ -50,7 +50,7 @@ trait CreatesResponses
 
         $name = property_exists($this, 'api') ? $this->api : null;
 
-        return $service->retrieve($name);
+        return $service->api($name);
     }
 
     /**

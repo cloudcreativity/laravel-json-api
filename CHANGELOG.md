@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. This projec
 
 ## Unreleased
 
+### Added
+- The resource registrar now automatically adds a JSON API's route prefix.
+- Can now send JSON API requests using a Guzzle client.
+
 ### Changed
 - Tests helpers are no longer in the Browser Kit testing style, and instead use a `TestResponse` class that extends
 the standard Laravel test response.
@@ -11,6 +15,7 @@ the standard Laravel test response.
 - The `ReplyTrait` has been moved to the `Http\Controllers` namespace and renamed `CreatesResponses`.
 - Moved the facade into the `Facades` namespace and renamed it `JsonApi`. This means it can now be imported with
 a `use` statement.
+- The `register()` method must now be used to register routes.
 
 ### Fixed
 - [#66] Content negotiation no longer sends a `415` response if a request does not have body content.

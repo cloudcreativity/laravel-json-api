@@ -20,6 +20,7 @@ namespace CloudCreativity\LaravelJsonApi\Services;
 
 use Closure;
 use CloudCreativity\JsonApi\Contracts\Encoder\SerializerInterface;
+use CloudCreativity\JsonApi\Contracts\Http\Client\ClientInterface;
 use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface;
 use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterpreterInterface;
 use CloudCreativity\JsonApi\Contracts\Http\Responses\ErrorResponseInterface;
@@ -55,10 +56,12 @@ class JsonApiService implements ErrorReporterInterface
     }
 
     /**
-     * @param string|null $apiName
+     * Get an API by name.
+     *
+     * @param string $apiName
      * @return Api
      */
-    public function retrieve($apiName = null)
+    public function api($apiName = 'default')
     {
         /** @var Repository $repo */
         $repo = $this->container->make(Repository::class);
@@ -73,11 +76,11 @@ class JsonApiService implements ErrorReporterInterface
      */
     public function request()
     {
-        if (!$this->container->bound(RequestInterface::class)) {
+        if (!$this->container->bound('json-api.request')) {
             return null;
         }
 
-        return $this->container->make(RequestInterface::class);
+        return $this->container->make('json-api.request');
     }
 
     /**
@@ -103,10 +106,10 @@ class JsonApiService implements ErrorReporterInterface
      * @param Closure $routes
      * @return void
      */
-    public function api($apiName, array $options, Closure $routes)
+    public function register($apiName, array $options, Closure $routes)
     {
         /** @var ResourceRegistrar $registrar */
-        $registrar = $this->container->make(ResourceRegistrar::class);
+        $registrar = $this->container->make('json-api.registrar');
         $registrar->api($apiName, $options, $routes);
     }
 
@@ -116,9 +119,23 @@ class JsonApiService implements ErrorReporterInterface
      * @param int $depth
      * @return SerializerInterface
      */
-    public function encoder($apiName, $options = 0, $depth = 512)
+    public function encoder($apiName = null, $options = 0, $depth = 512)
     {
-        return $this->retrieve($apiName)->createEncoder($options, $depth);
+        $api = $this->requestApi() ?: $this->api($apiName);
+
+        return $api->createEncoder($options, $depth);
+    }
+
+    /**
+     * @param $httpClient
+     * @param null $apiName
+     * @return ClientInterface
+     */
+    public function client($httpClient, $apiName = null)
+    {
+        $api = $this->requestApi() ?: $this->api($apiName);
+
+        return $api->createClient($httpClient);
     }
 
     /**

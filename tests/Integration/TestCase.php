@@ -31,6 +31,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Schema\Builder as Schema;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Auth\User;
+use Illuminate\Support\Facades\Route;
 use Orchestra\Testbench\TestCase as BaseTestCase;
 
 /**
@@ -180,7 +181,7 @@ abstract class TestCase extends BaseTestCase
      */
     protected function withRoutes(Closure $closure)
     {
-        \Route::group([
+        Route::group([
             'namespace' => '\\CloudCreativity\\LaravelJsonApi\\Tests\\Http\\Controllers',
         ], $closure);
     }
@@ -192,7 +193,7 @@ abstract class TestCase extends BaseTestCase
     protected function withDefaultApi(array $options, Closure $closure)
     {
         $this->withRoutes(function () use ($options, $closure) {
-            \JsonApi::api('default', $options, $closure);
+            JsonApi::register('default', $options, $closure);
         });
     }
 }
