@@ -57,7 +57,7 @@ echo json_api('v1')->encoder(JSON_PRETTY_PRINT)->encodeData($post);
 
 ### `client()`
 
-This helper returns a HTTP client for [sending JSON API requests](./sending-requests/) to remote servers. You
+This helper returns a HTTP client for [sending JSON API requests](./http-clients/) to remote servers. You
 must provide a Guzzle client as the first argument:
 
 ```php

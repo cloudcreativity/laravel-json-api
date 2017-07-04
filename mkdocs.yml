@@ -17,5 +17,5 @@ pages:
     - Controllers: custom/controllers.md
   - Digging Deeper:
     - Helpers: features/helpers.md
-    - HTTP Clients: features/sending-requests.md
+    - HTTP Clients: features/http-clients.md
     - Views: features/views.md
