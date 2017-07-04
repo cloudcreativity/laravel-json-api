@@ -34,7 +34,7 @@ trait BroadcastsData
      */
     protected function broadcastApi()
     {
-        return property_exists($this, 'broadcastApi') ? $this->broadCastApi : 'default';
+        return property_exists($this, 'broadcastApi') ? $this->broadcastApi : 'default';
     }
 
     /**
@@ -42,7 +42,7 @@ trait BroadcastsData
      */
     protected function broadcastEncoder()
     {
-        return app('json-api')->encoder($this->broadcastApi());
+        return json_api($this->broadcastApi())->encoder();
     }
 
     /**

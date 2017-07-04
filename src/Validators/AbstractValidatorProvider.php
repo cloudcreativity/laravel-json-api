@@ -396,7 +396,7 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
     protected function validatorFactory()
     {
         if (!$this->validatorFactory) {
-            $this->validatorFactory = $this->api->createValidators();
+            $this->validatorFactory = $this->api->validators();
         }
 
         return $this->validatorFactory;

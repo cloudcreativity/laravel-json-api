@@ -65,7 +65,7 @@ trait HandlesErrors
 
         return $service
             ->requestApi()
-            ->createResponse()
+            ->response()
             ->errors($response);
     }
 

@@ -35,21 +35,15 @@ within your own application. You can fully control where requests are sent using
 
 ## Creating Clients
 
-You can create a JSON API client using the `client()` method as follows:
+You can create a JSON API client using via the `json_api()` helper method as follows: 
 
 ```php
 $guzzleClient = new GuzzleHttp\Client(['base_uri' => 'http://example.com/api/']);
-$client = JsonApi::client($guzzleClient);
+$client = json_api('v1')->client($guzzleClient);
 ```
 
-This will create a client for the `default` API. You can create a client for a specific API using:
-
-```php
-$client = JsonApi::client($guzzleClient, 'external');
-```
-
-The Guzzle client **must** be provided with a `base_uri` option, as the JSON API client submits requests relative to
-the base URI.
+This creates a client based on the configuration for your `v1` JSON API. The Guzzle client **must** be provided 
+with a `base_uri` option, as the JSON API client submits requests relative to the base URI.
 
 ## Resource Requests
 

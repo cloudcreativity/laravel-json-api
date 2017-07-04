@@ -20,8 +20,6 @@ namespace CloudCreativity\LaravelJsonApi\View;
 
 use CloudCreativity\JsonApi\Encoder\Encoder;
 use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
-use Illuminate\Http\Request;
-use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use Neomerx\JsonApi\Encoder\Parameters\EncodingParameters;
 
 /**
@@ -38,11 +36,6 @@ class Renderer
     private $service;
 
     /**
-     * @var Request
-     */
-    private $request;
-
-    /**
      * @var Encoder|null
      */
     private $encoder;
@@ -51,47 +44,38 @@ class Renderer
      * @param $expression
      * @return string
      */
-    public static function compileEncoder($expression)
+    public static function compileWith($expression)
     {
-        $class = self::class;
-
-        return "<?php app('$class')->encoder($expression); ?>";
+        return "<?php app('json-api.renderer')->with($expression); ?>";
     }
 
     /**
      * @param $expression
      * @return string
      */
-    public static function compileData($expression)
+    public static function compileEncode($expression)
     {
-        $class = self::class;
-
-        return "<?php echo app('$class')->encodeData($expression); ?>";
+        return "<?php echo app('json-api.renderer')->encode($expression); ?>";
     }
 
     /**
      * Directive constructor.
      *
      * @param JsonApiService $service
-     * @param Request $request
      */
-    public function __construct(JsonApiService $service, Request $request)
+    public function __construct(JsonApiService $service)
     {
         $this->service = $service;
-        $this->request = $request;
     }
 
     /**
      * @param $apiName
-     * @param string|null $host
      * @param int $options
      * @param int $depth
      */
-    public function encoder($apiName, $host = null, $options = 0, $depth = 512)
+    public function with($apiName, $options = 0, $depth = 512)
     {
-        $host = $host ?: $this->request->getSchemeAndHttpHost();
-
-        $this->encoder = $this->service->encoder($apiName, $host, $options, $depth);
+        $this->encoder = $this->service->api($apiName)->encoder($options, $depth);
     }
 
     /**
@@ -100,16 +84,20 @@ class Renderer
      * @param array|null $fieldSets
      * @return string
      */
-    public function encodeData($data, $includePaths = null, $fieldSets = null)
+    public function encode($data, $includePaths = null, $fieldSets = null)
     {
         if (!$this->encoder) {
-            $this->encoder('default');
+            $this->with('default');
         }
 
-        $params = new EncodingParameters(
-            $includePaths ? (array) $includePaths : $includePaths,
-            $fieldSets
-        );
+        $params = null;
+
+        if ($includePaths || $fieldSets) {
+            $params = new EncodingParameters(
+                $includePaths ? (array) $includePaths : $includePaths,
+                $fieldSets
+            );
+        }
 
         return $this->encoder->encodeData($data, $params);
     }

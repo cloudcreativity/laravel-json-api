@@ -37,7 +37,6 @@ use Neomerx\JsonApi\Encoder\EncoderOptions;
  * Class Api
  *
  * @package CloudCreativity\LaravelJsonApi
- * @todo make this final as it is not intended to be overwritten.
  */
 class Api
 {
@@ -288,7 +287,7 @@ class Api
             return $encoder;
         }
 
-        $this->getCodecMatcher()->setEncoder($encoder = $this->createEncoder());
+        $this->getCodecMatcher()->setEncoder($encoder = $this->encoder());
 
         return $encoder;
     }
@@ -298,22 +297,11 @@ class Api
      * @param int $depth
      * @return SerializerInterface
      */
-    public function createEncoder($options = 0, $depth = 512)
+    public function encoder($options = 0, $depth = 512)
     {
         $options = new EncoderOptions($options, (string) $this->getUrl(), $depth);
 
         return $this->factory->createEncoder($this->getSchemas(), $options);
-    }
-
-    /**
-     * @return ValidatorFactoryInterface
-     */
-    public function createValidators()
-    {
-        return $this->factory->createValidatorFactory(
-            $this->getErrors(),
-            $this->getStore()
-        );
     }
 
     /**
@@ -323,7 +311,7 @@ class Api
      * @param SupportedExtensionsInterface|null $extensions
      * @return Responses
      */
-    public function createResponse(
+    public function response(
         EncodingParametersInterface $parameters = null,
         SupportedExtensionsInterface $extensions = null
     ) {
@@ -341,9 +329,20 @@ class Api
      * @param $httpClient
      * @return ClientInterface
      */
-    public function createClient($httpClient)
+    public function client($httpClient)
     {
-        return $this->factory->createClient($httpClient, $this->getSchemas(), $this->createEncoder());
+        return $this->factory->createClient($httpClient, $this->getSchemas(), $this->encoder());
+    }
+
+    /**
+     * @return ValidatorFactoryInterface
+     */
+    public function validators()
+    {
+        return $this->factory->createValidatorFactory(
+            $this->getErrors(),
+            $this->getStore()
+        );
     }
 
     /**

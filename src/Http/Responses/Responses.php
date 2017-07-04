@@ -19,7 +19,6 @@
 namespace CloudCreativity\LaravelJsonApi\Http\Responses;
 
 use CloudCreativity\JsonApi\Http\Responses\AbstractResponses;
-use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
 
 /**
  * Class Responses
@@ -32,20 +31,17 @@ class Responses extends AbstractResponses
     /**
      * Statically create the responses.
      *
-     * If there is an API handling the inbound request, this method will return that API.
-     * If not, then it will use the provided API name, or the default API if no name is provided.
+     * If no API name is provided, the API handling the inbound HTTP request will be used.
      *
      * @param string|null $apiName
      * @return Responses
      */
     public static function create($apiName = null)
     {
-        /** @var JsonApiService $service */
-        $service = app('json-api');
-        $api = $service->requestApi() ?: $service->api($apiName);
-        $request = $service->request();
+        $api = json_api($apiName);
+        $request = json_api_request();
 
-        return $api->createResponse($request ? $request->getParameters() : null);
+        return $api->response($request ? $request->getParameters() : null);
     }
 
     /**

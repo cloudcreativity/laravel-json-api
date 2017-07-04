@@ -137,8 +137,8 @@ class ServiceProvider extends BaseServiceProvider
     {
         /** @var BladeCompiler $compiler */
         $compiler = $this->app->make(BladeCompiler::class);
-        $compiler->directive('jsonapi', Renderer::class . '::compileEncoder');
-        $compiler->directive('encode', Renderer::class . '::compileData');
+        $compiler->directive('jsonapi', Renderer::class . '::compileWith');
+        $compiler->directive('encode', Renderer::class . '::compileEncode');
     }
 
     /**
@@ -231,6 +231,7 @@ class ServiceProvider extends BaseServiceProvider
     protected function bindRenderer()
     {
         $this->app->singleton(Renderer::class);
+        $this->app->alias(Renderer::class, 'json-api.renderer');
     }
 
     /**

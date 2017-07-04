@@ -33,24 +33,17 @@ trait CreatesResponses
     /**
      * Get the API instance.
      *
-     * If there is an API handling the inbound request, this method will return that API.
-     * If not, then it will return the default API or the API that specified on the `$api` property of the
-     * implementing class.
+     * This will return the API handling the inbound HTTP request. If you are using this
+     * trait in a context where there is no API handling the inbound HTTP request, you
+     * can specify the API to use by setting the `api` property on the implementing class.
      *
      * @return Api
      */
     protected function api()
     {
-        /** @var JsonApiService $service */
-        $service = app('json-api');
-
-        if ($api = $service->requestApi()) {
-            return $api;
-        }
-
         $name = property_exists($this, 'api') ? $this->api : null;
 
-        return $service->api($name);
+        return json_api($name);
     }
 
     /**

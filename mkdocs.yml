@@ -16,4 +16,6 @@ pages:
   - Non-Eloquent:
     - Controllers: custom/controllers.md
   - Digging Deeper:
-    - Sending Requests: features/sending-requests.md
+    - Helpers: features/helpers.md
+    - HTTP Clients: features/sending-requests.md
+    - Views: features/views.md

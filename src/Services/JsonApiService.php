@@ -19,8 +19,6 @@
 namespace CloudCreativity\LaravelJsonApi\Services;
 
 use Closure;
-use CloudCreativity\JsonApi\Contracts\Encoder\SerializerInterface;
-use CloudCreativity\JsonApi\Contracts\Http\Client\ClientInterface;
 use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface;
 use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterpreterInterface;
 use CloudCreativity\JsonApi\Contracts\Http\Responses\ErrorResponseInterface;
@@ -60,6 +58,8 @@ class JsonApiService implements ErrorReporterInterface
      *
      * @param string $apiName
      * @return Api
+     * @throws RuntimeException
+     *      if the API name is invalid.
      */
     public function api($apiName = 'default')
     {
@@ -99,6 +99,20 @@ class JsonApiService implements ErrorReporterInterface
     }
 
     /**
+     * @return Api
+     * @throws RuntimeException
+     *      if there is no JSON API handling the inbound request.
+     */
+    public function requestApiOrFail()
+    {
+        if (!$api = $this->requestApi()) {
+            throw new RuntimeException('No JSON API handling the inbound request.');
+        }
+
+        return $api;
+    }
+
+    /**
      * Register the routes for an API.
      *
      * @param $apiName
@@ -111,31 +125,6 @@ class JsonApiService implements ErrorReporterInterface
         /** @var ResourceRegistrar $registrar */
         $registrar = $this->container->make('json-api.registrar');
         $registrar->api($apiName, $options, $routes);
-    }
-
-    /**
-     * @param $apiName
-     * @param int $options
-     * @param int $depth
-     * @return SerializerInterface
-     */
-    public function encoder($apiName = null, $options = 0, $depth = 512)
-    {
-        $api = $this->requestApi() ?: $this->api($apiName);
-
-        return $api->createEncoder($options, $depth);
-    }
-
-    /**
-     * @param $httpClient
-     * @param null $apiName
-     * @return ClientInterface
-     */
-    public function client($httpClient, $apiName = null)
-    {
-        $api = $this->requestApi() ?: $this->api($apiName);
-
-        return $api->createClient($httpClient);
     }
 
     /**
