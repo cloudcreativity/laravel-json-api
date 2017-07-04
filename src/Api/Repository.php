@@ -173,6 +173,10 @@ class Repository
             $url['host'] = $this->config->get('app.url');
         }
 
-        return new Url((string) $url['host'], (string) array_get($url, 'namespace'));
+        return new Url(
+            (string) $url['host'],
+            (string) array_get($url, 'namespace'),
+            (string) array_get($url, 'name')
+        );
     }
 }

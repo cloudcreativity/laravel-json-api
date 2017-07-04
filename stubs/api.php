@@ -61,17 +61,20 @@ return [
     | URL
     |--------------------------------------------------------------------------
     |
-    | The API's url, made up of a host and API namespace.
+    | The API's url, made up of a host, URL namespace and route name prefix.
     |
     | If a JSON API is handling an inbound request, the host will always be
-    | detected from the request. In other circumstances (e.g. broadcasting),
-    | the host will be taken from the setting here. If it is `null`, the
-    | `app.url` config setting is used as the default.
+    | detected from the inbound HTTP request. In other circumstances
+    | (e.g. broadcasting), the host will be taken from the setting here.
+    | If it is `null`, the `app.url` config setting is used as the default.
+    |
+    | The name setting is the prefix for route names within this API.
     |
     */
     'url' => [
         'host' => null,
         'namespace' => '/api/v1',
+        'name' => 'api:v1:',
     ],
 
     /*

@@ -12,18 +12,13 @@ abstract class TestCase extends BaseTestCase
     use InteractsWithModels;
 
     /**
-     * @var string
-     */
-    protected $routePrefix = 'api-v1::';
-
-    /**
      * @return void
      */
     protected function setUp()
     {
         parent::setUp();
 
-        $this->withDefaultApi(['as' => $this->routePrefix], function (ApiGroup $api) {
+        $this->withDefaultApi([], function (ApiGroup $api) {
             $api->resource('comments');
             $api->resource('posts', [
                 'has-one' => 'author',

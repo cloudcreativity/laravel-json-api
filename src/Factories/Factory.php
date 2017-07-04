@@ -23,12 +23,15 @@ use CloudCreativity\JsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\JsonApi\Exceptions\RuntimeException;
 use CloudCreativity\JsonApi\Factories\Factory as BaseFactory;
 use CloudCreativity\LaravelJsonApi\Api\ResourceProvider;
+use CloudCreativity\LaravelJsonApi\Api\Url;
+use CloudCreativity\LaravelJsonApi\Api\UrlGenerator;
 use CloudCreativity\LaravelJsonApi\Http\Responses\Responses;
 use CloudCreativity\LaravelJsonApi\Schema\Container as SchemaContainer;
 use CloudCreativity\LaravelJsonApi\Store\Container as AdapterContainer;
 use CloudCreativity\LaravelJsonApi\Validators\ValidatorErrorFactory;
 use CloudCreativity\LaravelJsonApi\Validators\ValidatorFactory;
 use Illuminate\Contracts\Container\Container;
+use Illuminate\Contracts\Routing\UrlGenerator as IlluminateUrlGenerator;
 use Illuminate\Contracts\Validation\Factory as ValidatorFactoryContract;
 use Neomerx\JsonApi\Contracts\Codec\CodecMatcherInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
@@ -125,6 +128,17 @@ class Factory extends BaseFactory
         $urlPrefix = null
     ) {
         return new Responses($this, $schemas, $errors, $codecs, $parameters, $extensions, $urlPrefix);
+    }
+
+    /**
+     * @param Url $url
+     * @return UrlGenerator
+     */
+    public function createUrlGenerator(Url $url)
+    {
+        $generator = $this->container->make(IlluminateUrlGenerator::class);
+
+        return new UrlGenerator($generator, $url);
     }
 
     /**

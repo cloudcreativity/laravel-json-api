@@ -22,14 +22,14 @@ class ContentNegotiationTest extends TestCase
 
     public function testOkWithoutBody()
     {
-        $this->getJsonApi('/posts')->assertStatusCode(200);
+        $this->getJsonApi('/api/v1/posts')->assertStatusCode(200);
     }
 
     public function testOkWithBody()
     {
         $data = $this->willPatch();
 
-        $this->patchJsonApi("/posts/{$data['id']}", ['data' => $data])->assertStatusCode(200);
+        $this->patchJsonApi("/api/v1/posts/{$data['id']}", ['data' => $data])->assertStatusCode(200);
     }
 
     public function testNotOkWithoutBody()
@@ -37,7 +37,7 @@ class ContentNegotiationTest extends TestCase
         $data = $this->willPatch();
 
         $headers = $this->transformHeadersToServerVars(['Accept' => 'application/vnd.api+json']);
-        $this->call('PATCH', "/posts/{$data['id']}", [], [], [], $headers)->assertStatus(400);
+        $this->call('PATCH', "/api/v1/posts/{$data['id']}", [], [], [], $headers)->assertStatus(400);
     }
 
     /**
@@ -46,7 +46,7 @@ class ContentNegotiationTest extends TestCase
     public function testDeleteWithoutBody()
     {
         $post = factory(Post::class)->create();
-        $response = $this->delete("/posts/{$post->getKey()}");
+        $response = $this->delete("/api/v1/posts/{$post->getKey()}");
         $response->assertStatus(204);
     }
 
@@ -54,7 +54,7 @@ class ContentNegotiationTest extends TestCase
     {
         $data = $this->willPatch();
 
-        $this->patchJson("/posts/{$data['id']}", ['data' => $data], [
+        $this->patchJson("/api/v1/posts/{$data['id']}", ['data' => $data], [
             'Accept' => 'application/vnd.api+json',
             'Content-Type' => 'text/plain',
         ])->assertStatus(415);
@@ -62,7 +62,7 @@ class ContentNegotiationTest extends TestCase
 
     public function testNotAcceptable()
     {
-        $this->get('/posts', ['Accept' => 'text/html'])->assertStatus(406);
+        $this->get('/api/v1/posts', ['Accept' => 'text/html'])->assertStatus(406);
     }
 
     /**

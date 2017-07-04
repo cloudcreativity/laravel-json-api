@@ -18,6 +18,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Testing;
 
+use CloudCreativity\LaravelJsonApi\Api\Api;
 use CloudCreativity\LaravelJsonApi\Document\GeneratesLinks;
 use Illuminate\Contracts\Routing\UrlRoutable;
 use Illuminate\Foundation\Testing\Concerns\MakesHttpRequests;
@@ -36,7 +37,7 @@ use PHPUnit_Framework_Assert as PHPUnit;
 trait MakesJsonApiRequests
 {
 
-    use GeneratesLinks, MakesHttpRequests;
+    use MakesHttpRequests;
 
     /**
      * Visit the given URI with a JSON API request.
@@ -144,8 +145,7 @@ trait MakesJsonApiRequests
     protected function doSearch(array $params = [], array $headers = [])
     {
         $params = $this->addDefaultRouteParams($params);
-        $route = $this->resolveRouteName();
-        $uri = $this->linkTo()->index($route, $params);
+        $uri = $this->api()->url()->index($this->resourceType(), $params);
 
         return $this->jsonApi('GET', $uri, [], $headers);
     }
@@ -177,8 +177,7 @@ trait MakesJsonApiRequests
     protected function doCreate(array $data, array $params = [], array $headers = [])
     {
         $params = $this->addDefaultRouteParams($params);
-        $route = $this->resolveRouteName();
-        $uri = $this->linkTo()->create($route, $params);
+        $uri = $this->api()->url()->create($this->resourceType(), $params);
 
         return $this->jsonApi('POST', $uri, ['data' => $data], $headers);
     }
@@ -192,8 +191,7 @@ trait MakesJsonApiRequests
     protected function doRead($resourceId, array $params = [], array $headers = [])
     {
         $params = $this->addDefaultRouteParams($params);
-        $route = $this->resolveRouteName();
-        $uri = $this->linkTo()->read($route, $resourceId, $params);
+        $uri = $this->api()->url()->read($this->resourceType(), $resourceId, $params);
 
         return $this->jsonApi('GET', $uri, $headers);
     }
@@ -213,8 +211,7 @@ trait MakesJsonApiRequests
         }
 
         $params = $this->addDefaultRouteParams($params);
-        $route = $this->resolveRouteName();
-        $uri = $this->linkTo()->read($route, $id, $params);
+        $uri = $this->api()->url()->update($this->resourceType(), $id, $params);
 
         return $this->jsonApi('PATCH', $uri, ['data' => $data], $headers);
     }
@@ -228,8 +225,7 @@ trait MakesJsonApiRequests
     protected function doDelete($resourceId, array $params = [], array $headers = [])
     {
         $params = $this->addDefaultRouteParams($params);
-        $route = $this->resolveRouteName();
-        $uri = $this->linkTo()->read($route, $resourceId, $params);
+        $uri = $this->api()->url()->delete($this->resourceType(), $resourceId, $params);
 
         return $this->jsonApi('DELETE', $uri, [], $headers);
     }
@@ -249,22 +245,13 @@ trait MakesJsonApiRequests
     }
 
     /**
-     * @return string
+     * @return Api
      */
-    protected function resourceRouteName()
+    protected function api()
     {
-        $prefix = property_exists($this, 'routePrefix') ? $this->routePrefix : '';
+        $api = property_exists($this, 'api') ? $this->api : 'default';
 
-        return $prefix . $this->resourceType();
-    }
-
-    /**
-     * @return string
-     * @deprecated use `resourceRouteName`
-     */
-    protected function resolveRouteName()
-    {
-        return $this->resourceRouteName();
+        return json_api($api);
     }
 
     /**

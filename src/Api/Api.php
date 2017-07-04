@@ -335,6 +335,14 @@ class Api
     }
 
     /**
+     * @return UrlGenerator
+     */
+    public function url()
+    {
+        return $this->factory->createUrlGenerator($this->url);
+    }
+
+    /**
      * @return ValidatorFactoryInterface
      */
     public function validators()

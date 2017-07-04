@@ -32,17 +32,20 @@ In each JSON API config file you will need to remove the `url-prefix` option and
 | URL
 |--------------------------------------------------------------------------
 |
-| The API's url, made up of a host and API namespace.
+| The API's url, made up of a host, URL namespace and route name prefix.
 |
 | If a JSON API is handling an inbound request, the host will always be
-| detected from the request. In other circumstances (e.g. broadcasting),
-| the host will be taken from the setting here. If it is `null`, the
-| `app.url` config setting is used as the default.
+| detected from the inbound HTTP request. In other circumstances
+| (e.g. broadcasting), the host will be taken from the setting here.
+| If it is `null`, the `app.url` config setting is used as the default.
+|
+| The name setting is the prefix for route names within this API.
 |
 */
 'url' => [
     'host' => null,
     'namespace' => '/api/v1',
+    'name' => 'api:v1:',
 ],
 ```
 
@@ -51,8 +54,8 @@ In each JSON API config file you will need to remove the `url-prefix` option and
 You now need to use `JsonApi::register()` to register routes for an API. This is because the `api()` method
 is now used to get an API instance.
 
-The `register()` method will also now automatically apply the URL prefix from your config file 
-when registering routes.
+The `register()` method will also now automatically apply the URL prefix and route name prefix from your config 
+file when registering routes.
 
 For example, this:
 
@@ -66,7 +69,7 @@ JsonApi::api('v1', ['prefix' => '/api/v1', 'as' => 'api-v1::', 'namespace' => 'A
 Is now:
 
 ```php
-JsonApi::register('v1', ['as' => 'api-v1::', 'namespace' => 'ApiV1'], function ($api) {
+JsonApi::register('v1', ['namespace' => 'ApiV1'], function ($api) {
     $api->resource('posts');
     $api->resource('comments');
 });

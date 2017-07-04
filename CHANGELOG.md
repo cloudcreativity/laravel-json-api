@@ -5,10 +5,11 @@ All notable changes to this project will be documented in this file. This projec
 ## Unreleased
 
 ### Added
-- The resource registrar now automatically adds a JSON API's route prefix.
+- The resource registrar now automatically adds a JSON API's route URL and name prefixes.
 - Can now send JSON API requests using a Guzzle client.
 - Can now obtain a JSON API instance using the `json_api()` global helper.
 - Can now obtain the JSON API request instance using the `json_api_request()` global helper.
+- Added an api `url()` helper for generating URLs to resources within an API.
 
 ### Changed
 - Tests helpers are no longer in the Browser Kit testing style, and instead use a `TestResponse` class that extends

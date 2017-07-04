@@ -37,15 +37,22 @@ class Url
     private $namespace;
 
     /**
+     * @var string
+     */
+    private $name;
+
+    /**
      * Url constructor.
      *
      * @param string $host
      * @param string $namespace
+     * @param string $name
      */
-    public function __construct($host, $namespace)
+    public function __construct($host, $namespace, $name)
     {
         $this->host = rtrim($host, '/');
         $this->namespace = '/' . ltrim($namespace, '/');
+        $this->name = $name;
     }
 
     /**
@@ -70,6 +77,14 @@ class Url
     public function getNamespace()
     {
         return $this->namespace;
+    }
+
+    /**
+     * @return string
+     */
+    public function getName()
+    {
+        return $this->name;
     }
 
 
