@@ -34,7 +34,7 @@ class ResourceRegistrar
 
     const KEYWORD_RELATIONSHIPS = 'relationships';
     const PARAM_RESOURCE_TYPE = 'resource_type';
-    const PARAM_RESOURCE_ID = 'resource_id';
+    const PARAM_RESOURCE_ID = 'resource';
     const PARAM_RELATIONSHIP_NAME = 'relationship_name';
 
     /**

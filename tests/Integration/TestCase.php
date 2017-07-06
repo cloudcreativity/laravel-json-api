@@ -177,6 +177,8 @@ abstract class TestCase extends BaseTestCase
     }
 
     /**
+     * Wrap route definitions in the correct namespace.
+     *
      * @param Closure $closure
      */
     protected function withRoutes(Closure $closure)

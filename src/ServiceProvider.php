@@ -21,6 +21,11 @@ namespace CloudCreativity\LaravelJsonApi;
 use CloudCreativity\JsonApi\Contracts\Exceptions\ExceptionParserInterface;
 use CloudCreativity\JsonApi\Contracts\Factories\FactoryInterface;
 use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterpreterInterface;
+use CloudCreativity\JsonApi\Contracts\Object\DocumentInterface;
+use CloudCreativity\JsonApi\Contracts\Object\RelationshipInterface;
+use CloudCreativity\JsonApi\Contracts\Object\ResourceObjectInterface;
+use CloudCreativity\JsonApi\Contracts\Store\StoreInterface;
+use CloudCreativity\JsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Api\Repository;
 use CloudCreativity\LaravelJsonApi\Console\Commands;
 use CloudCreativity\LaravelJsonApi\Contracts\Document\LinkFactoryInterface;
@@ -29,6 +34,7 @@ use CloudCreativity\LaravelJsonApi\Exceptions\ExceptionParser;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use CloudCreativity\LaravelJsonApi\Http\Middleware\AuthorizeRequest;
 use CloudCreativity\LaravelJsonApi\Http\Middleware\BootJsonApi;
+use CloudCreativity\LaravelJsonApi\Http\Middleware\SubstituteBindings;
 use CloudCreativity\LaravelJsonApi\Http\Middleware\ValidateRequest;
 use CloudCreativity\LaravelJsonApi\Http\Requests\RequestInterpreter;
 use CloudCreativity\LaravelJsonApi\Http\Responses\Responses;
@@ -89,6 +95,7 @@ class ServiceProvider extends BaseServiceProvider
         $this->bindNeomerx();
         $this->bindService();
         $this->bindRequestInterpreter();
+        $this->bindInboundRequest();
         $this->bindRouteRegistrar();
         $this->bindApiRepository();
         $this->bindExceptionParser();
@@ -105,17 +112,10 @@ class ServiceProvider extends BaseServiceProvider
      */
     protected function bootMiddleware(Router $router)
     {
-        /** Laravel 5.4 */
-        if (method_exists($router, 'aliasMiddleware')) {
-            $router->aliasMiddleware('json-api', BootJsonApi::class);
-            $router->aliasMiddleware('json-api.authorize', AuthorizeRequest::class);
-            $router->aliasMiddleware('json-api.validate', ValidateRequest::class);
-        } /** Laravel 5.1|5.2|5.3 */
-        else {
-            $router->middleware('json-api', BootJsonApi::class);
-            $router->middleware('json-api.authorize', AuthorizeRequest::class);
-            $router->middleware('json-api.validate', ValidateRequest::class);
-        }
+        $router->aliasMiddleware('json-api', BootJsonApi::class);
+        $router->aliasMiddleware('json-api.authorize', AuthorizeRequest::class);
+        $router->aliasMiddleware('json-api.validate', ValidateRequest::class);
+        $router->aliasMiddleware('json-api.bindings', SubstituteBindings::class);
     }
 
     /**
@@ -197,6 +197,34 @@ class ServiceProvider extends BaseServiceProvider
     protected function bindRequestInterpreter()
     {
         $this->app->singleton(RequestInterpreterInterface::class, RequestInterpreter::class);
+    }
+
+    /**
+     * Bind the inbound request services so they can be type-hinted in controllers.
+     *
+     * @return void
+     */
+    protected function bindInboundRequest()
+    {
+        $this->app->bind(StoreInterface::class, function () {
+            return json_api()->getStore();
+        });
+
+        $this->app->bind(DocumentInterface::class, function () {
+            if (!$document = json_api_request()->getDocument()) {
+                throw new RuntimeException('No request document on inbound JSON API request.');
+            }
+
+            return $document;
+        });
+
+        $this->app->bind(ResourceObjectInterface::class, function (Application $app) {
+            return $app->make(DocumentInterface::class)->getResource();
+        });
+
+        $this->app->bind(RelationshipInterface::class, function (Application $app) {
+            return $app->make(DocumentInterface::class)->getRelationship();
+        });
     }
 
     /**

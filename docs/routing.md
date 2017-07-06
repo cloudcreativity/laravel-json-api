@@ -5,7 +5,7 @@
 To define the routes available in an API, register the API in your `routes/api.php` file as follows:
 
 ```php
-JsonApi::api('default', ['as' => 'api.'], function ($api, $router) {
+JsonApi::api('default', ['namespace' => 'Api'], function ($api, $router) {
     $api->resource('posts');
     $api->resource('comments');
 });
@@ -21,12 +21,12 @@ the service container instead.
 
 ## Controller
 
-By default, routing will assume that the controller for a resource type is the resource type name suffixed with `Controller`. E.g. for a `posts` resource type, the controller will be `PostsController`. The options array to the `JsonApi::api` method takes the same options as a route group, so you can set the namespace using the `namespace` option.
+By default, routing will assume that the controller for a resource type is the resource type name suffixed with `Controller`. E.g. for a `posts` resource type, the controller will be `PostsController`. The options array to the `JsonApi::register` method takes the same options as a route group, so you can set the namespace using the `namespace` option.
 
 If you need to override the default name for a resource type's controller, use the `controller` option as follows:
 
 ```php
-JsonApi::api('default', ['as' => 'api.', 'namespace' => 'My\Api'], function ($api, $router) {
+JsonApi::register('default', ['namespace' => 'Api'], function ($api, $router) {
     $api->resource('posts', ['controller' => 'CustomPostsController']);
     $api->resource('comments');
 });
@@ -48,7 +48,7 @@ register the following routes:
 To register only some of these routes, use the `only` or `except` options as follows:
 
 ```php
-JsonApi::api('default', ['as' => 'api.'], function ($api, $router) {
+JsonApi::register('default', ['namespace' => 'Api'], function ($api, $router) {
     $api->resource('posts', [
         'only' => ['index', 'read']
     ]);
@@ -70,7 +70,7 @@ resource identifiers (and the array may be empty).
 Relationship routes can be registered as follows:
 
 ```php
-JsonApi::api('default', ['as' => 'api.'], function ($api, $router) {
+JsonApi::register('default', ['namespace' => 'Api'], function ($api, $router) {
     $api->resource('posts', [
         'has-one' => 'author',
         'has-many' => ['comments', 'likes'],
@@ -97,7 +97,7 @@ The following has-one routes are registered (using the `author` relationship on 
 To register only some of these, use the `only` or `except` options with the relationship. E.g.
 
 ```php
-JsonApi::api('default', ['as' => 'api.'], function ($api, $router) {
+JsonApi::register('default', ['namespace' => 'Api'], function ($api, $router) {
     $api->resource('posts', [
         'has-one' => [
             'author' => ['only' => ['related', 'read']],
@@ -122,7 +122,7 @@ The following has-one routes are registered (using the `comments` relationship o
 To register only some of these, use the `only` or `except` options with the relationship. E.g.
 
 ```php
-JsonApi::api('default', ['as' => 'api.'], function ($api, $router) {
+JsonApi::register('default', ['namespace' => 'Api'], function ($api, $router) {
     $api->resource('posts', [
         'has-many' => [
             'comments' => ['only' => ['related', 'read'],
@@ -137,7 +137,7 @@ JsonApi::api('default', ['as' => 'api.'], function ($api, $router) {
 To constrain the `{resource_id}` route parameter for a specific resource, use the `id` option as follows:
 
 ```php
-JsonApi::api('default', ['as' => 'api.'], function ($api, $router) {
+JsonApi::register('default', ['namespace' => 'Api'], function ($api, $router) {
     $api->resource('posts', ['id' => '[\d]+');
 });
 ```

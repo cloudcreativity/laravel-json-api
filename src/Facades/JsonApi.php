@@ -24,6 +24,7 @@ use Illuminate\Support\Facades\Facade as BaseFacade;
  * Class Facade
  *
  * @package CloudCreativity\LaravelJsonApi
+ * @method static void register(string $apiName, array $options, \Closure $callback)
  */
 class JsonApi extends BaseFacade
 {

@@ -144,9 +144,12 @@ class PostsTest extends TestCase
   
   protected $resourceType = 'posts';
   
-  protected $routePrefix = 'api-v1::';
+  protected $api = null;
 }
 ```
+
+The new `$api` property specifies the API you are testing. If you do not define the property or set it to `null`, 
+the `default` API will be used.
 
 When you call the following methods, they will return an instance of our `TestResponse`, rather than `$this`. The
 test response is no longer assigned to a `$response` property on the test case (i.e. we made the same change as

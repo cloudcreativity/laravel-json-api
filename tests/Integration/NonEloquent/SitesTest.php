@@ -27,6 +27,12 @@ class SitesTest extends TestCase
         });
     }
 
+    public function testSearchAll()
+    {
+        $this->createSite(); // ensure there is at least one site.
+        $this->doSearch()->assertSearchResponse();
+    }
+
     public function testCreate()
     {
         $data = [

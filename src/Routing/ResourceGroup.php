@@ -88,6 +88,7 @@ class ResourceGroup
         return array_merge($middleware, array_filter([
             $authorizer ? "json-api.authorize:$authorizer" : null,
             $validators ? "json-api.validate:$validators" : null,
+            'json-api.bindings',
         ]));
     }
 
