@@ -41,6 +41,19 @@ class RoutingTest extends TestCase
     }
 
     /**
+     * Provider of all routes that relate to a specific record, i.e. have an id in them.
+     *
+     * @return array
+     */
+    public function recordProvider()
+    {
+        $args = $this->defaults;
+        unset($args['index'], $args['create']);
+
+        return $args;
+    }
+
+    /**
      * @param $method
      * @param $url
      * @param $action
@@ -176,44 +189,298 @@ class RoutingTest extends TestCase
         $this->assertRoutes($matches);
     }
 
-    public function testHasOne()
+    /**
+     * @return array
+     */
+    public function hasOneOnlyProvider()
     {
-        $this->markTestIncomplete('@todo');
+        return [
+            ['related', [
+                ['GET', '/api/v1/posts/1/author', 200],
+                ['GET', '/api/v1/posts/1/relationships/author', 404],
+                ['PATCH', '/api/v1/posts/1/relationships/author', 404],
+            ]],
+            [['related', 'read'], [
+                ['GET', '/api/v1/posts/1/author', 200],
+                ['GET', '/api/v1/posts/1/relationships/author', 200],
+                ['PATCH', '/api/v1/posts/1/relationships/author', 405],
+            ]],
+            ['replace', [
+                ['GET', '/api/v1/posts/1/author', 404],
+                ['GET', '/api/v1/posts/1/relationships/author', 405],
+                ['PATCH', '/api/v1/posts/1/relationships/author', 200],
+            ]],
+        ];
     }
 
-    public function testHasOneOnly()
+    /**
+     * @param $only
+     * @param array $matches
+     * @dataProvider hasOneOnlyProvider
+     */
+    public function testHasOneOnly($only, array $matches)
     {
-        $this->markTestIncomplete('@todo');
+        $this->withRoutes(function () use ($only) {
+            JsonApi::register('default', [], function (ApiGroup $api) use ($only) {
+                $api->resource('posts', [
+                    'has-one' => [
+                        'author' => [
+                            'only' => $only,
+                        ],
+                    ],
+                ]);
+            });
+        });
+
+        $this->assertRoutes($matches);
     }
 
-    public function testHasOneExcept()
+    /**
+     * @return array
+     */
+    public function hasOneExceptProvider()
     {
-        $this->markTestIncomplete('@todo');
+        return [
+            ['related', [
+                ['GET', '/api/v1/posts/1/author', 404],
+                ['GET', '/api/v1/posts/1/relationships/author', 200],
+                ['PATCH', '/api/v1/posts/1/relationships/author', 200],
+            ]],
+            [['related', 'read'], [
+                ['GET', '/api/v1/posts/1/author', 404],
+                ['GET', '/api/v1/posts/1/relationships/author', 405],
+                ['PATCH', '/api/v1/posts/1/relationships/author', 200],
+            ]],
+            ['replace', [
+                ['GET', '/api/v1/posts/1/author', 200],
+                ['GET', '/api/v1/posts/1/relationships/author', 200],
+                ['PATCH', '/api/v1/posts/1/relationships/author', 405],
+            ]],
+        ];
     }
 
-    public function testHasMany()
+    /**
+     * @param $except
+     * @param array $matches
+     * @dataProvider hasOneExceptProvider
+     */
+    public function testHasOneExcept($except, array $matches)
     {
-        $this->markTestIncomplete('@todo');
+        $this->withRoutes(function () use ($except) {
+            JsonApi::register('default', [], function (ApiGroup $api) use ($except) {
+                $api->resource('posts', [
+                    'has-one' => [
+                        'author' => [
+                            'except' => $except,
+                        ],
+                    ],
+                ]);
+            });
+        });
+
+        $this->assertRoutes($matches);
     }
 
-    public function testHasManyOnly()
+    /**
+     * @return array
+     */
+    public function hasManyOnlyProvider()
     {
-        $this->markTestIncomplete('@todo');
+        return [
+            ['related', [
+                ['GET', '/api/v1/posts/1/tags', 200],
+                ['GET', '/api/v1/posts/1/relationships/tags', 404],
+                ['PATCH', '/api/v1/posts/1/relationships/tags', 404],
+                ['POST', '/api/v1/posts/1/relationships/tags', 404],
+                ['DELETE', '/api/v1/posts/1/relationships/tags', 404],
+            ]],
+            [['related', 'read'], [
+                ['GET', '/api/v1/posts/1/tags', 200],
+                ['GET', '/api/v1/posts/1/relationships/tags', 200],
+                ['PATCH', '/api/v1/posts/1/relationships/tags', 405],
+                ['POST', '/api/v1/posts/1/relationships/tags', 405],
+                ['DELETE', '/api/v1/posts/1/relationships/tags', 405],
+            ]],
+            ['replace', [
+                ['GET', '/api/v1/posts/1/tags', 404],
+                ['GET', '/api/v1/posts/1/relationships/tags', 405],
+                ['PATCH', '/api/v1/posts/1/relationships/tags', 200],
+                ['POST', '/api/v1/posts/1/relationships/tags', 405],
+                ['DELETE', '/api/v1/posts/1/relationships/tags', 405],
+            ]],
+            [['add', 'remove'], [
+                ['GET', '/api/v1/posts/1/tags', 404],
+                ['GET', '/api/v1/posts/1/relationships/tags', 405],
+                ['PATCH', '/api/v1/posts/1/relationships/tags', 405],
+                ['POST', '/api/v1/posts/1/relationships/tags', 200],
+                ['DELETE', '/api/v1/posts/1/relationships/tags', 200],
+            ]],
+        ];
     }
 
-    public function testHasManyExcept()
+    /**
+     * @param $only
+     * @param array $matches
+     * @dataProvider hasManyOnlyProvider
+     */
+    public function testHasManyOnly($only, array $matches)
     {
-        $this->markTestIncomplete('@todo');
+        $this->withRoutes(function () use ($only) {
+            JsonApi::register('default', [], function (ApiGroup $api) use ($only) {
+                $api->resource('posts', [
+                    'has-many' => [
+                        'tags' => [
+                            'only' => $only,
+                        ],
+                    ],
+                ]);
+            });
+        });
+
+        $this->assertRoutes($matches);
     }
 
-    public function testResourceIdConstraint()
+
+    /**
+     * @return array
+     */
+    public function hasManyExceptProvider()
     {
-        $this->markTestIncomplete('@todo');
+        return [
+            ['related', [
+                ['GET', '/api/v1/posts/1/tags', 404],
+                ['GET', '/api/v1/posts/1/relationships/tags', 200],
+                ['PATCH', '/api/v1/posts/1/relationships/tags', 200],
+                ['POST', '/api/v1/posts/1/relationships/tags', 200],
+                ['DELETE', '/api/v1/posts/1/relationships/tags', 200],
+            ]],
+            [['related', 'read'], [
+                ['GET', '/api/v1/posts/1/tags', 404],
+                ['GET', '/api/v1/posts/1/relationships/tags', 405],
+                ['PATCH', '/api/v1/posts/1/relationships/tags', 200],
+                ['POST', '/api/v1/posts/1/relationships/tags', 200],
+                ['DELETE', '/api/v1/posts/1/relationships/tags', 200],
+            ]],
+            ['replace', [
+                ['GET', '/api/v1/posts/1/tags', 200],
+                ['GET', '/api/v1/posts/1/relationships/tags', 200],
+                ['PATCH', '/api/v1/posts/1/relationships/tags', 405],
+                ['POST', '/api/v1/posts/1/relationships/tags', 200],
+                ['DELETE', '/api/v1/posts/1/relationships/tags', 200],
+            ]],
+            [['add', 'remove'], [
+                ['GET', '/api/v1/posts/1/tags', 200],
+                ['GET', '/api/v1/posts/1/relationships/tags', 200],
+                ['PATCH', '/api/v1/posts/1/relationships/tags', 200],
+                ['POST', '/api/v1/posts/1/relationships/tags', 405],
+                ['DELETE', '/api/v1/posts/1/relationships/tags', 405],
+            ]],
+        ];
     }
 
-    public function testDefaultIdConstraint()
+    /**
+     * @param $except
+     * @param array $matches
+     * @dataProvider hasManyExceptProvider
+     */
+    public function testHasManyExcept($except, array $matches)
     {
-        $this->markTestIncomplete('@todo');
+        $this->withRoutes(function () use ($except) {
+            JsonApi::register('default', [], function (ApiGroup $api) use ($except) {
+                $api->resource('posts', [
+                    'has-many' => [
+                        'tags' => [
+                            'except' => $except,
+                        ],
+                    ],
+                ]);
+            });
+        });
+
+        $this->assertRoutes($matches);
+    }
+
+    /**
+     * @param $method
+     * @param $url
+     * @dataProvider recordProvider
+     */
+    public function testResourceIdConstraint($method, $url)
+    {
+        $this->withRoutes(function () {
+            JsonApi::register('default', [], function (ApiGroup $api) {
+                $api->resource('posts', [
+                    'has-one' => ['author'],
+                    'has-many' => ['tags', 'comments'],
+                    'id' => '[A-Z]+',
+                ]);
+            });
+        });
+
+        $this->assertNotFound($method, $url);
+    }
+
+    /**
+     * @param $method
+     * @param $url
+     * @dataProvider recordProvider
+     */
+    public function testDefaultIdConstraint($method, $url)
+    {
+        $this->withRoutes(function () {
+            JsonApi::register('default', ['id' => '[A-Z]+'], function (ApiGroup $api) {
+                $api->resource('posts', [
+                    'has-one' => ['author'],
+                    'has-many' => ['tags', 'comments'],
+                ]);
+            });
+        });
+
+        $this->assertNotFound($method, $url);
+    }
+
+    /**
+     * If there is a default ID constraint, it can be removed using `null` on a resource.
+     *
+     * @param $method
+     * @param $url
+     * @dataProvider recordProvider
+     */
+    public function testDefaultIdConstraintCanBeIgnoredByResource($method, $url)
+    {
+        $this->withRoutes(function () {
+            JsonApi::register('default', ['id' => '[A-Z]+'], function (ApiGroup $api) {
+                $api->resource('posts', [
+                    'has-one' => ['author'],
+                    'has-many' => ['tags', 'comments'],
+                    'id' => null,
+                ]);
+            });
+        });
+
+        $this->assertMatch($method, $url);
+    }
+
+    /**
+     * If there is a default and a resource ID constraint, the resource ID constraint is used.
+     *
+     * @param $method
+     * @param $url
+     * @dataProvider recordProvider
+     */
+    public function testResourceIdConstraintOverridesDefaultIdConstraint($method, $url)
+    {
+        $this->withRoutes(function () {
+            JsonApi::register('default', ['id' => '[0-9]+'], function (ApiGroup $api) {
+                $api->resource('posts', [
+                    'has-one' => ['author'],
+                    'has-many' => ['tags', 'comments'],
+                    'id' => '[A-Z]+',
+                ]);
+            });
+        });
+
+        $this->assertNotFound($method, $url);
     }
 
     /**

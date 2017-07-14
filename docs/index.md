@@ -37,18 +37,6 @@ Optionally you can also add an **Authorizer** instance to authorize incoming JSO
 
 This may sound like a lot of units, but we believe the single purpose approach makes these highly testable and easy to reason about! 
 
-### Namespacing
-
-JSON API units are expected to be stored in a root namespace, which defaults to the `JsonApi` namespace in your application - e.g. `App\JsonApi`.
-
-We expect you to store units within this namespace in one of two ways:
-
-1. **By Resource**: You have a namespace per resource type and the units for the type are stored in this namespace. E.g. for a `posts` resource you would have `App\JsonApi\Posts\{Adapter,Schema...}`
-
-2. **By Unit**: You have a namespace per JSON API unit, with the classes named according to the the resource type. E.g. for a `posts` resource you would have `App\JsonApi\{Adapters,Schemas...}\Post`
-
-For both, note that the namespace is plural, and the class name is singular. The package includes generator Artisan commands to keep this simple.
-
 ### Why *Records* not *Models*?
 
 In Laravel the phrase *model* is potentially confusing with Eloquent models. While some applications might solely encode Eloquent models to JSON API resources, others will use a mixture of Eloquent models and other PHP classes, or might not even be using Eloquent models.

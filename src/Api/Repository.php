@@ -80,7 +80,7 @@ class Repository
             $rootNamespace,
             $resources,
             (array) array_get($config, 'codecs'),
-            $this->normalizeUrl((array) array_get($config, 'url')),
+            $this->normalizeUrl((array) array_get($config, 'url'), $host),
             $byResource,
             (bool) array_get($config, 'use-eloquent', true),
             array_get($config, 'supported-ext'),

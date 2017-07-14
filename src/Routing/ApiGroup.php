@@ -101,6 +101,7 @@ class ApiGroup
         return [
             'default-authorizer' => $this->options->get('authorizer'),
             'prefix' => $this->api->getUrl()->getNamespace(),
+            'id' => $this->options->get('id'),
         ];
     }
 

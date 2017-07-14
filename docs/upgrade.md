@@ -51,6 +51,8 @@ In each JSON API config file you will need to remove the `url-prefix` option and
 
 ### Routing
 
+#### Registering APIs
+
 You now need to use `JsonApi::register()` to register routes for an API. This is because the `api()` method
 is now used to get an API instance.
 
@@ -79,6 +81,11 @@ JsonApi::register('v1', ['namespace' => 'ApiV1'], function ($api) {
 This means when registering your routes, you need to ensure that no prefix has already been applied. The default
 Laravel installation has an `api` prefix for API routes and you will need to remove this from your `mapApiRoutes()`
 method in your `RouteServiceProvider` if your JSON API routes are being registered in your `routes/api.php` file.
+
+#### Route Parameters
+
+The `resource_id` route parameter has been renamed to `resource`. This is because we are now substituting bindings
+so that the `$resource` variable passed to controller actions is the actual record (object), rather than the id.
 
 ### Non-Eloquent Controllers
 
