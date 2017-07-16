@@ -145,8 +145,10 @@ public function delete(RequestInterface $request)
 }
 ```
 
-## Relationship
-If you have defined relationships in the schema of a resource, you would then need to state the following in your controller too:
+## Relationships
+
+If you have defined relationships in the schema of a resource, you would then need to add the following actions to your 
+controller:
 
 1. `readRelatedResource()`
 2. `readRelationship()`
@@ -155,33 +157,39 @@ If you have defined relationships in the schema of a resource, you would then ne
 If you link one resource to another through relationship, you'll need this to read the related resource.
 
 ```php
-    /**
-     * @param JsonApiRequest $request
-     * @return mixed
-     */
-    public function readRelatedResource(JsonApiRequest $request)
-    {
-        $model = $request->getRecord();
-        $key = $request->getRelationshipName();
-        return $this
-            ->reply()
-            ->content($model->{$key});
-    }
+/**
+ * @param \CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface $request
+ * @return \Illuminate\Http\Response
+ */
+public function readRelatedResource(RequestInterface $request)
+{
+    $record = $request->getRecord();
+    $key = $request->getRelationshipName();
+    $method = 'get' . ucfirst($key);
+
+    return $this
+        ->reply()
+        ->content(call_user_func([$record, $method]));
+}
 ```
 
 ### Read Relationship
+
 This is for reading the relationship between two resources.
+
 ```php
-    /**
-     * @param JsonApiRequest $request
-     * @return mixed
-     */
-    public function readRelationship(JsonApiRequest $request)
-    {
-        $model = $request->getRecord();
-        $key = $request->getRelationshipName();
-        return $this
-            ->reply()
-            ->relationship($model->{$key});
-    }
+/**
+ * @param \CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface $request
+ * @return \Illuminate\Http\Response
+ */
+public function readRelationship(RequestInterface $request)
+{
+    $record = $request->getRecord();
+    $key = $request->getRelationshipName();
+    $method = 'get' . ucfirst($key);
+    
+    return $this
+        ->reply()
+        ->relationship(call_user_func([$record, $method]));
+}
 ```
