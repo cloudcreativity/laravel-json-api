@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file. This projec
 - Can now obtain a JSON API instance using the `json_api()` global helper.
 - Can now obtain the JSON API request instance using the `json_api_request()` global helper.
 - Added an api `url()` helper for generating URLs to resources within an API.
+- Can now map a single JSON API resource to multiple record classes. 
 
 ### Changed
 - Tests helpers are no longer in the Browser Kit testing style, and instead use a `TestResponse` class that extends
@@ -22,6 +23,7 @@ a `use` statement.
 
 ### Fixed
 - [#66] Content negotiation no longer sends a `415` response if a request does not have body content.
+- Fixed merging API resources objects.
 
 ### Removed
 - This package no longer supports Laravel 5.3

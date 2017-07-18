@@ -107,6 +107,15 @@ For example, if your application had two Eloquent models - `Post` and `Comment` 
 ]
 ```
 
+You can also map a resource type to multiple PHP classes as follows:
+
+```php
+'resources' => [
+    // ...
+    'tags' => [\App\UserTag::class, \App\SystemTag::class],
+]
+```
+
 ## URL
 
 Each JSON API is expected to have a root URL under which all its routes are nested. This is configured in your API's

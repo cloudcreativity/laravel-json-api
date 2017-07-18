@@ -35,9 +35,9 @@ class ApiResource
     private $resourceType;
 
     /**
-     * @var string
+     * @var string[]
      */
-    private $recordFqn;
+    private $recordFqns;
 
     /**
      * @var string
@@ -53,14 +53,14 @@ class ApiResource
      * ApiResource constructor.
      *
      * @param string $resourceType
-     * @param string $recordFqn
+     * @param string|string[] $recordFqns
      * @param string $rootNamespace
      * @param bool $byResource
      */
-    public function __construct($resourceType, $recordFqn, $rootNamespace, $byResource = true)
+    public function __construct($resourceType, $recordFqns, $rootNamespace, $byResource = true)
     {
         $this->resourceType = $resourceType;
-        $this->recordFqn = $recordFqn;
+        $this->recordFqns = (array) $recordFqns;
         $this->rootNamespace = $rootNamespace;
         $this->byResource = $byResource;
     }
@@ -76,13 +76,13 @@ class ApiResource
     }
 
     /**
-     * Get the fully-qualified class name of the record (model/entity) the resource represents.
+     * Get the fully-qualified class name(s) of the record(s) (model/entity) the resource represents.
      *
-     * @return string
+     * @return string[]
      */
-    public function getRecordFqn()
+    public function getRecordFqns()
     {
-        return $this->recordFqn;
+        return $this->recordFqns;
     }
 
     /**

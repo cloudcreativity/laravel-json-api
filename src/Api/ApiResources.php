@@ -38,12 +38,12 @@ final class ApiResources implements IteratorAggregate
     /**
      * ApiResources constructor.
      *
-     * @param array $resources
+     * @param iterable $resources
      */
-    public function __construct(array $resources = [])
+    public function __construct($resources)
     {
-        $this->resources = new Collection();
-        $this->addMany($resources);
+        $this->resources = collect();
+        $this->add(...$resources);
     }
 
     /**
@@ -55,24 +55,13 @@ final class ApiResources implements IteratorAggregate
     }
 
     /**
-     * @param ApiResource $resource
+     * @param ApiResource[] ...$resources
      * @return $this
      */
-    public function add(ApiResource $resource)
-    {
-        $this->resources[$resource->getResourceType()] = $resource;
-
-        return $this;
-    }
-
-    /**
-     * @param array $resources
-     * @return $this
-     */
-    public function addMany(array $resources)
+    public function add(ApiResource ...$resources)
     {
         foreach ($resources as $resource) {
-            $this->add($resource);
+            $this->resources[$resource->getResourceType()] = $resource;
         }
 
         return $this;
@@ -105,14 +94,11 @@ final class ApiResources implements IteratorAggregate
      */
     public function getSchemas()
     {
-        $schemas = [];
-
-        /** @var ApiResource $resource */
-        foreach ($this as $resource) {
-            $schemas[$resource->getRecordFqn()] = $resource->getSchemaFqn();
-        }
-
-        return $schemas;
+        return $this->resources->mapWithKeys(function (ApiResource $resource) {
+            return collect($resource->getRecordFqns())->mapWithKeys(function ($fqn) use ($resource) {
+                return [$fqn => $resource->getSchemaFqn()];
+            });
+        })->all();
     }
 
     /**
@@ -131,10 +117,10 @@ final class ApiResources implements IteratorAggregate
      */
     public function merge(self $other)
     {
-        $resources = clone $this;
-        $resources->merge($other);
+        $copy = clone $this;
+        $copy->resources = $copy->resources->merge($other);
 
-        return $resources;
+        return $copy;
     }
 
     /**
