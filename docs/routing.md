@@ -28,7 +28,10 @@ you need to ensure that no prefix has already been applied.
 
 ## Controller
 
-By default, routing will assume that the controller for a resource type is the resource type name suffixed with `Controller`. E.g. for a `posts` resource type, the controller will be `PostsController`. The options array to the `JsonApi::register` method takes the same options as a route group, so you can set the namespace using the `namespace` option.
+By default, routing will assume that the controller for a resource type is the resource type name suffixed with 
+`Controller`. E.g. for a `posts` resource type, the controller will be `PostsController`. The options array to 
+the `JsonApi::register` method takes the same options as a route group, so you can set the namespace using the 
+`namespace` option.
 
 If you need to override the default name for a resource type's controller, use the `controller` option as follows:
 
@@ -48,9 +51,9 @@ register the following routes:
 | :-- | :-- | :-- |
 | `GET /posts` | `posts.index` | `index` |
 | `POST /posts` | `posts.create` | `create` |
-| `GET /posts/{resource}` | `posts.read` | `read` |
-| `PATCH /posts/{resource}` | `posts.update` | `update` |
-| `DELETE /posts/{resource}` | `posts.delete` | `delete` |
+| `GET /posts/{record}` | `posts.read` | `read` |
+| `PATCH /posts/{record}` | `posts.update` | `update` |
+| `DELETE /posts/{record}` | `posts.delete` | `delete` |
 
 To register only some of these routes, use the `only` or `except` options as follows:
 
@@ -97,9 +100,9 @@ The following has-one routes are registered (using the `author` relationship on 
 
 | URL | Route Name | Controller Action |
 | :-- | :-- | :-- |
-| `GET /posts/{resource}/author` | `posts.relationships.author` | `readRelatedResource` |
-| `GET /posts/{resource}/relationships/author` | `posts.relationships.author.read` | `readRelationship` |
-| `PATCH /posts/{resource}/relationships/author` | `posts.relationships.author.replace` | `replaceRelationship` |
+| `GET /posts/{record}/author` | `posts.relationships.author` | `readRelatedResource` |
+| `GET /posts/{record}/relationships/author` | `posts.relationships.author.read` | `readRelationship` |
+| `PATCH /posts/{record}/relationships/author` | `posts.relationships.author.replace` | `replaceRelationship` |
 
 To register only some of these, use the `only` or `except` options with the relationship. E.g.
 
@@ -120,11 +123,11 @@ The following has-one routes are registered (using the `comments` relationship o
 
 | URL | Route Name | Controller Action |
 | :-- | :-- | :-- |
-| `GET /posts/{resource}/comments` | `posts.relationships.comments` | `readRelatedResource` |
-| `GET /posts/{resource}/relationships/comments` | `posts.relationships.comments.read` | `readRelationship` |
-| `PATCH /posts/{resource}/relationships/comments` | `posts.relationships.comments.replace` | `replaceRelationship` |
-| `POST /posts/{resource}/relationships/comments` | `posts.relationships.comments.add` | `addToRelationship` |
-| `DELETE /posts/{resource}/relationships/comments` | `posts.relationships.comments.remove` | `removeFromRelationship` |
+| `GET /posts/{record}/comments` | `posts.relationships.comments` | `readRelatedResource` |
+| `GET /posts/{record}/relationships/comments` | `posts.relationships.comments.read` | `readRelationship` |
+| `PATCH /posts/{record}/relationships/comments` | `posts.relationships.comments.replace` | `replaceRelationship` |
+| `POST /posts/{record}/relationships/comments` | `posts.relationships.comments.add` | `addToRelationship` |
+| `DELETE /posts/{record}/relationships/comments` | `posts.relationships.comments.remove` | `removeFromRelationship` |
 
 To register only some of these, use the `only` or `except` options with the relationship. E.g.
 
@@ -141,7 +144,7 @@ JsonApi::register('default', ['namespace' => 'Api'], function ($api, $router) {
 
 ## Id Constraints
 
-To constrain the `{resource}` route parameter for a specific resource, use the `id` option as follows:
+To constrain the `{record}` route parameter for a specific resource, use the `id` option as follows:
 
 ```php
 JsonApi::register('default', ['namespace' => 'Api'], function ($api, $router) {

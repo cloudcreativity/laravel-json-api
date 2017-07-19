@@ -3,6 +3,7 @@
 namespace CloudCreativity\LaravelJsonApi\Http\Middleware;
 
 use Closure;
+use CloudCreativity\LaravelJsonApi\Routing\ResourceRegistrar;
 use Illuminate\Http\Request;
 
 class SubstituteBindings
@@ -16,7 +17,7 @@ class SubstituteBindings
     public function handle($request, Closure $next)
     {
         if ($record = json_api_request()->getRecord()) {
-            $request->route()->setParameter('resource', $record);
+            $request->route()->setParameter(ResourceRegistrar::PARAM_RESOURCE_ID, $record);
         }
 
         return $next($request);

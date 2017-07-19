@@ -84,8 +84,8 @@ method in your `RouteServiceProvider` if your JSON API routes are being register
 
 #### Route Parameters
 
-The `resource_id` route parameter has been renamed to `resource`. This is because we are now substituting bindings
-so that the `$resource` variable passed to controller actions is the actual record (object), rather than the id.
+The `resource_id` route parameter has been renamed to `record`. This is because we are now substituting bindings
+so that the `$record` variable passed to controller actions is the actual record (object), rather than the id.
 
 ### Non-Eloquent Controllers
 
