@@ -19,4 +19,5 @@ pages:
     - Broadcasting: features/broadcasting.md
     - Helpers: features/helpers.md
     - HTTP Clients: features/http-clients.md
+    - Pagination: features/pagination.md
     - Views: features/views.md
