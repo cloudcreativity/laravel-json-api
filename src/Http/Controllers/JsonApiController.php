@@ -19,7 +19,6 @@
 namespace CloudCreativity\LaravelJsonApi\Http\Controllers;
 
 use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface as JsonApiRequest;
-use CloudCreativity\LaravelJsonApi\Document\GeneratesLinks;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 
@@ -32,8 +31,7 @@ use Illuminate\Routing\Controller;
 class JsonApiController extends Controller
 {
 
-    use CreatesResponses,
-        GeneratesLinks;
+    use CreatesResponses;
 
     /**
      * @param JsonApiRequest $request

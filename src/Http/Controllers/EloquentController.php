@@ -24,7 +24,6 @@ use CloudCreativity\JsonApi\Contracts\Hydrator\HydratesRelatedInterface;
 use CloudCreativity\JsonApi\Contracts\Hydrator\HydratorInterface;
 use CloudCreativity\JsonApi\Contracts\Object\ResourceObjectInterface;
 use CloudCreativity\JsonApi\Exceptions\RuntimeException;
-use CloudCreativity\LaravelJsonApi\Document\GeneratesLinks;
 use CloudCreativity\LaravelJsonApi\Utils\Str;
 use Exception;
 use Illuminate\Database\Eloquent\Model;
@@ -39,8 +38,7 @@ use Illuminate\Routing\Controller;
 class EloquentController extends Controller
 {
 
-    use CreatesResponses,
-        GeneratesLinks;
+    use CreatesResponses;
 
     /**
      * @var HydratorInterface

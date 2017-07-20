@@ -19,7 +19,6 @@
 namespace CloudCreativity\LaravelJsonApi\Testing;
 
 use CloudCreativity\LaravelJsonApi\Api\Api;
-use CloudCreativity\LaravelJsonApi\Document\GeneratesLinks;
 use Illuminate\Contracts\Routing\UrlRoutable;
 use Illuminate\Foundation\Testing\Concerns\MakesHttpRequests;
 use Illuminate\Support\Collection;

@@ -26,7 +26,9 @@ a `use` statement.
 - Fixed merging API resources objects.
 
 ### Removed
-- This package no longer supports Laravel 5.3
+- This package no longer supports Laravel 5.3.
+- The `Document\GeneratesLink` trait was removed.
+- The `Document\LinkFactory` was removed and the API `links()` helper must be used instead.
 
 ## [0.9.1] - 2017-06-26
 

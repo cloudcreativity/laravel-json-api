@@ -343,6 +343,14 @@ class Api
     }
 
     /**
+     * @return LinkGenerator
+     */
+    public function links()
+    {
+        return $this->factory->createLinkGenerator($this->url());
+    }
+
+    /**
      * @return ValidatorFactoryInterface
      */
     public function validators()

@@ -18,7 +18,6 @@
 
 namespace CloudCreativity\LaravelJsonApi\Schema;
 
-use CloudCreativity\LaravelJsonApi\Document\GeneratesLinks;
 use Neomerx\JsonApi\Schema\SchemaProvider;
 
 /**
@@ -29,7 +28,18 @@ use Neomerx\JsonApi\Schema\SchemaProvider;
 abstract class AbstractSchema extends SchemaProvider
 {
 
-    use GeneratesLinks,
-        CreatesEloquentIdentities;
+    use CreatesEloquentIdentities,
+        CreatesLinks;
 
+    /**
+     * The API this schema relates to.
+     *
+     * If this is not set, then the API handling the HTTP request is the default. If you are
+     * encoding JSON API resources outside of a HTTP request - e.g. queued broadcasting -
+     * you must specify the API that the schema belongs to if using the `links()` helper
+     * method.
+     *
+     * @var string|null
+     */
+    protected $api;
 }

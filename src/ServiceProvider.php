@@ -28,8 +28,6 @@ use CloudCreativity\JsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\JsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Api\Repository;
 use CloudCreativity\LaravelJsonApi\Console\Commands;
-use CloudCreativity\LaravelJsonApi\Contracts\Document\LinkFactoryInterface;
-use CloudCreativity\LaravelJsonApi\Document\LinkFactory;
 use CloudCreativity\LaravelJsonApi\Exceptions\ExceptionParser;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use CloudCreativity\LaravelJsonApi\Http\Middleware\AuthorizeRequest;
@@ -99,7 +97,6 @@ class ServiceProvider extends BaseServiceProvider
         $this->bindRouteRegistrar();
         $this->bindApiRepository();
         $this->bindExceptionParser();
-        $this->bindLinkFactory();
         $this->bindRenderer();
         $this->registerArtisanCommands();
         $this->mergePackageConfig();
@@ -145,7 +142,7 @@ class ServiceProvider extends BaseServiceProvider
      * Bind parts of the neomerx/json-api dependency into the service container.
      *
      * For this Laravel JSON API package, we use our extended JSON API factory.
-     * This ensures that we can override any parts of the Neomerx JSON API pacakge
+     * This ensures that we can override any parts of the Neomerx JSON API package
      * that we want.
      *
      * As the Neomerx package splits the factories into multiple interfaces, we
@@ -154,6 +151,8 @@ class ServiceProvider extends BaseServiceProvider
      * The Neomerx package allows a logger to be injected into the factory. This
      * enables the Neomerx package to log messages. When creating the factory, we
      * therefore set the logger as our application's logger.
+     *
+     * @return void
      */
     protected function bindNeomerx()
     {
@@ -242,15 +241,6 @@ class ServiceProvider extends BaseServiceProvider
     {
         $this->app->singleton(ExceptionParserInterface::class, ExceptionParser::class);
         $this->app->alias(ExceptionParserInterface::class, 'json-api.exceptions');
-    }
-
-    /**
-     * Bind the link factory into the service container.
-     */
-    protected function bindLinkFactory()
-    {
-        $this->app->singleton(LinkFactoryInterface::class, LinkFactory::class);
-        $this->app->alias(LinkFactoryInterface::class, 'json-api.links');
     }
 
     /**

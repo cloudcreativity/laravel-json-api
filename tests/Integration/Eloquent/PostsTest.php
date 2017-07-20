@@ -14,19 +14,6 @@ class PostsTest extends TestCase
     protected $resourceType = 'posts';
 
     /**
-     * Test the search route
-     */
-    public function testSearch()
-    {
-        // ensure there is at least one model in the database
-        $this->createPost();
-
-        $this->doSearch([
-            'page' => ['number' => 1, 'size' => 10],
-        ])->assertSearchResponse();
-    }
-
-    /**
      * Test that we can search posts for specific ids
      */
     public function testSearchById()

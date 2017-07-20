@@ -102,22 +102,19 @@ class Adapter extends EloquentAdapter
 
 ### Default Customisation
 
-If you want to override the defaults for many resource types, bind a strategy to your service container in
-your `AppServiceProvider`:
+If you want to override the defaults for many resource types, then you can extend the standard strategy and inject
+your child class into your adapters. For example:
 
 ```php
 use CloudCreativity\LaravelJsonApi\Pagination\StandardStrategy;
 
-class AppServiceProvider extends ServiceProvider
+class CustomStrategy extends StandardStrategy
 {
 
-    public function register()
+    public function __construct()
     {
-        $this->app->bind('my-paging-strategy', function ($app) {
-            $strategy = $app->make(StandardStrategy::class);
-            $strategy->withPageKey('page')->withPerPageKey('limit');
-            return $strategy;
-        });
+        parent::__construct();
+        $this->withPageKey('page')->withPerPageKey('limit');
     }
 }
 ```
@@ -128,9 +125,9 @@ Then in your adapter:
 class Adapter extends EloquentAdapter
 {
 
-    public function __construct()
+    public function __construct(CustomStrategy $paging)
     {
-        parent::__construct(new Post(), app('my-paging-strategy'));
+        parent::__construct(new Post(), $paging);
     }
 
     // ...
@@ -296,9 +293,6 @@ class DateRangeStrategy implements PagingStrategyInterface
 ```
 
 We recommend you look through the code for our `StandardStrategy` to see how to implement a strategy.
-
-> We plan to extract as much as the functionality of the `StandardStrategy` as possible into traits, but have not 
-got to this yet. If you are writing your own strategy and feel like submitting a PR, that would be great!
 
 You can then inject your new strategy into your adapters as follows:
 

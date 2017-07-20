@@ -22,6 +22,7 @@ use CloudCreativity\JsonApi\Contracts\Repositories\ErrorRepositoryInterface;
 use CloudCreativity\JsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\JsonApi\Exceptions\RuntimeException;
 use CloudCreativity\JsonApi\Factories\Factory as BaseFactory;
+use CloudCreativity\LaravelJsonApi\Api\LinkGenerator;
 use CloudCreativity\LaravelJsonApi\Api\ResourceProvider;
 use CloudCreativity\LaravelJsonApi\Api\Url;
 use CloudCreativity\LaravelJsonApi\Api\UrlGenerator;
@@ -139,6 +140,17 @@ class Factory extends BaseFactory
         $generator = $this->container->make(IlluminateUrlGenerator::class);
 
         return new UrlGenerator($generator, $url);
+    }
+
+    /**
+     * @param UrlGenerator $urls
+     * @return LinkGenerator
+     */
+    public function createLinkGenerator(UrlGenerator $urls)
+    {
+        $generator = $this->container->make(IlluminateUrlGenerator::class);
+
+        return new LinkGenerator($this, $urls, $generator);
     }
 
     /**
