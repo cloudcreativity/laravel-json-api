@@ -75,7 +75,7 @@ JsonApi::api('default', [
   'namespace' => 'Api',
   'middleware' => ['my-middleware'],
 ], function ($api, $router) {
-  $api->resource('posts', ['has-many' => ['comments', 'tags']);
+  $api->resource('posts', ['has-many' => ['comments', 'tags']]);
   $api->resource('comments', ['has-one' => 'post']);
 });
 ```
