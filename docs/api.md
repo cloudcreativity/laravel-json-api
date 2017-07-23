@@ -20,6 +20,14 @@ $ php artisan make:json-api v1
 
 Will create the `json-api-v1.php` file.
 
+### Clear your cache
+
+Once you've generated your APIs you'll need to re-cache your config.
+
+``` bash
+$ php artisan config:cache
+```
+
 ## Defining Resources
 
 Your API must be configured to understand how a JSON API resource type maps to a PHP class within your application. This is defined in the `resources` setting in the API's configuration file.
