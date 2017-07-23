@@ -33,6 +33,12 @@ Then publish the package config file:
 $ php artisan vendor:publish --provider="CloudCreativity\LaravelJsonApi\ServiceProvider"
 ```
 
+You may then need to clear the cache config:
+
+``` bash
+$ php artisan cache:clear
+```
+
 ## Exception Handling
 
 Parts of the package throw exceptions to abort execution and render JSON API errors. Your will therefore need to
