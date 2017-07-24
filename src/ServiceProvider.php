@@ -24,6 +24,7 @@ use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterpreterInterface;
 use CloudCreativity\JsonApi\Contracts\Object\DocumentInterface;
 use CloudCreativity\JsonApi\Contracts\Object\RelationshipInterface;
 use CloudCreativity\JsonApi\Contracts\Object\ResourceObjectInterface;
+use CloudCreativity\JsonApi\Contracts\Repositories\ErrorRepositoryInterface;
 use CloudCreativity\JsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\JsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Api\Repository;
@@ -199,7 +200,7 @@ class ServiceProvider extends BaseServiceProvider
     }
 
     /**
-     * Bind the inbound request services so they can be type-hinted in controllers.
+     * Bind the inbound request services so they can be type-hinted in controllers and authorizers.
      *
      * @return void
      */
@@ -207,6 +208,10 @@ class ServiceProvider extends BaseServiceProvider
     {
         $this->app->bind(StoreInterface::class, function () {
             return json_api()->getStore();
+        });
+
+        $this->app->bind(ErrorRepositoryInterface::class, function (Application $app) {
+            return json_api()->getErrors();
         });
 
         $this->app->bind(DocumentInterface::class, function () {

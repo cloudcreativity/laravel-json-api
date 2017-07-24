@@ -30,7 +30,7 @@ class TestResponse extends BaseTestResponse
      * @param Response $response
      * @param string|null $expectedResourceType
      */
-    public function __construct(Response $response, $expectedResourceType = null)
+    public function __construct($response, $expectedResourceType = null)
     {
         parent::__construct($response);
         $this->expectedResourceType = $expectedResourceType;
