@@ -173,9 +173,11 @@ The generated API file contains a sensible default, for example:
 ### Encoders
 
 In the example, the config tells the codec matcher that the `application/vnd.api+json` and
-`text/plain` are valid `Accept` headers, along with how to encode responses for each type. If the client sends an `Accept` media type that is not recognised, a `406 Not Acceptable` response will be sent.
+`text/plain` are valid `Accept` headers, along with how to encode responses for each type. If the client sends an 
+`Accept` media type that is not recognised, a `406 Not Acceptable` response will be sent.
 
-> The options for how to encode responses for each media type are the same as the options for PHP's `json_encode()` function.
+> The options for how to encode responses for each media type are the same as the options for PHP's `json_encode()` 
+function.
 
 ### Decoders
 

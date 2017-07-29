@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
-## Unreleased
+## [0.10.0] - 2017-07-29
 
 ### Added
 - The resource registrar now automatically adds a JSON API's route URL and name prefixes.
