@@ -41,6 +41,17 @@ class ContentNegotiationTest extends TestCase
     }
 
     /**
+     * Have observed browsers sending a "Content-Length" header with an empty string on GET
+     * requests. If no content is expected, this should be interpreted as not having
+     * any content.
+     */
+    public function testEmptyContentLengthHeader()
+    {
+        $headers = $this->transformHeadersToServerVars(['Content-Length' => '']);
+        $this->call('GET', "/api/v1/posts", [], [], [], $headers)->assertStatus(200);
+    }
+
+    /**
      * @see Issue #66
      */
     public function testDeleteWithoutBody()
