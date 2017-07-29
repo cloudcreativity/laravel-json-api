@@ -5,29 +5,19 @@ responses.
 
 ## Setup
 
-In order to send JSON API responses, you will need to apply the `ReplyTrait` to your controller. If your resource
-has a hydrator, you can also inject it via the constructor.
-
-Here is an example controller:
+In order to send JSON API responses, you will need to apply the `CreatesResponses` trait to your controller. Here is 
+an example controller:
 
 ```php
 namespace App\Http\Controllers\Api;
- 
-use App\JsonApi\Users;
-use CloudCreativity\LaravelJsonApi\Http\Responses\ReplyTrait;
+
+use CloudCreativity\LaravelJsonApi\Http\Controllers\CreatesResponses;
 use Illuminate\Routing\Controller;
  
 class UsersController extends Controller
 {
 
-    use ReplyTrait;
-
-    private $hydrator;
-    
-    public function __construct(Users\Hydrator $hydrator)
-    {
-        $this->hydrator = $hydrator;
-    }
+    use CreatesResponses;
     
     // Methods as per below...
 }
@@ -53,18 +43,18 @@ correctly.
 
 ```php
 /**
- * @param \CloudCreativity\JsonApi\Contracts\Http\ApiInterface $api
+ * @param \CloudCreativity\JsonApi\Contracts\Store\StoreInterface $store
  * @param \CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface $request
  * @return \Illuminate\Http\Response
  */
-public function index(ApiInterface $api, RequestInterface $request)
+public function index(StoreInterface $store, RequestInterface $request)
 {
-    $result = $api->getStore()->query(
+    $records = $store->query(
         $request->getResourceType(),
         $request->getParameters()
     );
     
-    return $this->reply()->content($result);
+    return $this->reply()->content($records);
 }
 ```
 
@@ -72,21 +62,20 @@ public function index(ApiInterface $api, RequestInterface $request)
 
 ```php
 /**
- * @param \CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface $request
+ * @param \App\JsonApi\Users\Hydrator $hydrator
+ * @param \CloudCreativity\JsonApi\Contracts\Object\ResourceObjectInterface $resource
  * @return \Illuminate\Http\Response
  */
-public function create(RequestInterface $request)
+public function create(Hydrator $hydrator, ResourceObjectInterface $resource)
 {
-    $resource = $request->getDocument()->getResource();
+    $record = new User();
+    $hydrator->hydrate($resource, $record);
+
     // As an example, if we wanted to wrap the change in a transaction...
-    $record = \DB::transaction(function () use ($resource, $request) {
-        $record = new User();
-        $this->hydrator->hydrate($request->getDocument()->getResource(), $record);
+    \DB::transaction(function () use ($record) {
         $record->save();
-        
-        return $record;
     });
-    
+
     return $this->reply()->created($record);
 }
 ```
@@ -95,27 +84,27 @@ public function create(RequestInterface $request)
 
 ```php
 /**
- * @param \CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface $request
+ * @param \App\User $record
  * @return \Illuminate\Http\Response
  */
-public function read(RequestInterface $request)
+public function read(User $record)
 {
-    return $this->reply()->content($request->getRecord());
+    return $this->reply()->content($record);
 }
 ```
+
 ### Update
 
 ```php
 /**
- * @param \CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface $request
+ * @param \App\JsonApi\Users\Hydrator $hydrator
+ * @param \CloudCreativity\JsonApi\Contracts\Object\ResourceObjectInterface $resource
+ * @param \App\User $record
  * @return \Illuminate\Http\Response
  */
-public function update(RequestInterface $request)
+public function update(Hydrator $hydrator, ResourceObjectInterface $resource, User $record)
 {
-    /** @var User $record */
-    $record = $request->getRecord();
-    $resource = $request->getDocument()->getResource();
-    $this->hydrator->hydrate($resource, $record);
+    $hydrator->hydrate($resource, $record);
     $passwordChanged = $record->hasPasswordChanged();
     $record->save();
     
@@ -132,13 +121,11 @@ public function update(RequestInterface $request)
 
 ```php
 /**
- * @param \CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface $request
+ * @param \App\User $record
  * @return \Illuminate\Http\Response
  */
-public function delete(RequestInterface $request)
+public function delete(User $record)
 {
-    /** @var User $record */
-    $record = $request->getRecord();
     $record->delete();
     
     return $this->reply()->noContent();
@@ -160,11 +147,11 @@ If you link one resource to another through relationship, you'll need this to re
 ```php
 /**
  * @param \CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface $request
+ * @param \App\User $record
  * @return \Illuminate\Http\Response
  */
-public function readRelatedResource(RequestInterface $request)
+public function readRelatedResource(RequestInterface $request, User $record)
 {
-    $record = $request->getRecord();
     $key = $request->getRelationshipName();
     $method = 'get' . ucfirst($key);
 
@@ -181,11 +168,11 @@ This is for reading the relationship between two resources.
 ```php
 /**
  * @param \CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface $request
+ * @param \App\User $record
  * @return \Illuminate\Http\Response
  */
-public function readRelationship(RequestInterface $request)
+public function readRelationship(RequestInterface $request, User $record)
 {
-    $record = $request->getRecord();
     $key = $request->getRelationshipName();
     $method = 'get' . ucfirst($key);
     

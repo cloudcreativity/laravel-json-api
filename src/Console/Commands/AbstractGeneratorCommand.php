@@ -19,7 +19,7 @@
 namespace CloudCreativity\LaravelJsonApi\Console\Commands;
 
 use CloudCreativity\JsonApi\Utils\Str;
-use CloudCreativity\LaravelJsonApi\Api\Definition;
+use CloudCreativity\LaravelJsonApi\Api\Api;
 use CloudCreativity\LaravelJsonApi\Api\Repository;
 use CloudCreativity\LaravelJsonApi\Utils\Fqn;
 use Illuminate\Console\GeneratorCommand;
@@ -93,7 +93,7 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
      */
     public function fire()
     {
-        if (!$this->apiRepository->isApi($api = $this->argument('api'))) {
+        if (!$this->apiRepository->exists($api = $this->argument('api'))) {
             $this->error("JSON API '$api' does not exist.");
             return 1;
         }
@@ -116,20 +116,6 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
     }
 
     /**
-     * Laravel 5.3 name parsing.
-     *
-     * @param $name
-     * @return string
-     * @todo remove when dropping support for Laravel 5.3
-     */
-    protected function parseName($name)
-    {
-        return $this->qualifyClass($name);
-    }
-
-    /**
-     * Laravel 5.4 name parsing.
-     *
      * @param string $name
      * @return string
      */
@@ -283,7 +269,7 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
      */
     private function isByResource()
     {
-        return $this->getApiDefinition()->isByResource();
+        return $this->getApi()->isByResource();
     }
 
     /**
@@ -291,7 +277,7 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
      */
     private function getRootNamespace()
     {
-        return $this->getApiDefinition()->getRootNamespace();
+        return $this->getApi()->getRootNamespace();
     }
 
     /**
@@ -309,14 +295,14 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
             return false;
         }
 
-        return $this->option('eloquent') ?: $this->getApiDefinition()->isEloquent();
+        return $this->option('eloquent') ?: $this->getApi()->isEloquent();
     }
 
     /**
-     * @return Definition
+     * @return Api
      */
-    private function getApiDefinition()
+    private function getApi()
     {
-        return $this->apiRepository->retrieveDefinition($this->argument('api'));
+        return $this->apiRepository->createApi($this->argument('api'));
     }
 }

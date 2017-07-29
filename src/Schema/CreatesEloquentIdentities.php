@@ -23,7 +23,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * Class CreatesEloquentIdentities
+ * Trait CreatesEloquentIdentities
  *
  * @package CloudCreativity\LaravelJsonApi
  */

@@ -20,10 +20,10 @@ namespace CloudCreativity\LaravelJsonApi\Http\Middleware;
 
 use Closure;
 use CloudCreativity\JsonApi\Contracts\Factories\FactoryInterface;
-use CloudCreativity\JsonApi\Contracts\Http\ApiInterface;
 use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface;
 use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterpreterInterface;
 use CloudCreativity\JsonApi\Http\Middleware\NegotiatesContent;
+use CloudCreativity\LaravelJsonApi\Api\Api;
 use CloudCreativity\LaravelJsonApi\Api\Repository;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use Illuminate\Contracts\Container\Container;
@@ -95,15 +95,16 @@ class BootJsonApi
      *
      * @param $namespace
      * @param $host
-     * @return ApiInterface
+     * @return Api
      */
     protected function bindApi($namespace, $host)
     {
         /** @var Repository $repository */
         $repository = $this->container->make(Repository::class);
 
-        $api = $repository->retrieveApi($namespace, $host);
-        $this->container->instance(ApiInterface::class, $api);
+        $api = $repository->createApi($namespace, $host);
+        $this->container->instance(Api::class, $api);
+        $this->container->alias(Api::class, 'json-api.inbound');
 
         return $api;
     }
@@ -111,19 +112,17 @@ class BootJsonApi
     /**
      * @param FactoryInterface $factory
      * @param ServerRequestInterface $serverRequest
-     * @param ApiInterface $api
+     * @param Api $api
      * @return RequestInterface
      */
-    protected function bindRequest(
-        FactoryInterface $factory,
-        ServerRequestInterface $serverRequest,
-        ApiInterface $api
-    ) {
+    protected function bindRequest(FactoryInterface $factory, ServerRequestInterface $serverRequest, Api $api)
+    {
         /** @var RequestInterpreterInterface $interpreter */
         $interpreter = $this->container->make(RequestInterpreterInterface::class);
 
-        $request = $factory->createRequest($serverRequest, $interpreter, $api);
+        $request = $factory->createRequest($serverRequest, $interpreter, $api->getStore());
         $this->container->instance(RequestInterface::class, $request);
+        $this->container->alias(RequestInterface::class, 'json-api.request');
 
         return $request;
     }

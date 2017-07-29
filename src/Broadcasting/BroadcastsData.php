@@ -18,8 +18,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Broadcasting;
 
-use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
-use CloudCreativity\JsonApi\Encoder\Encoder;
+use CloudCreativity\JsonApi\Contracts\Encoder\SerializerInterface;
 use Neomerx\JsonApi\Encoder\Parameters\EncodingParameters;
 
 /**
@@ -35,34 +34,15 @@ trait BroadcastsData
      */
     protected function broadcastApi()
     {
-        if (property_exists($this, 'broadcastApi')) {
-            return $this->broadcastApi;
-        }
-
-        return 'default';
+        return property_exists($this, 'broadcastApi') ? $this->broadcastApi : 'default';
     }
 
     /**
-     * @return string|null
-     */
-    protected function broadcastApiHost()
-    {
-        if (property_exists($this, 'broadcastApiHost')) {
-            return $this->broadcastApiHost;
-        }
-
-        return null;
-    }
-
-    /**
-     * @return Encoder
+     * @return SerializerInterface
      */
     protected function broadcastEncoder()
     {
-        /** @var JsonApiService $service */
-        $service = app(JsonApiService::class);
-
-        return $service->encoder($this->broadcastApi(), $this->broadcastApiHost());
+        return json_api($this->broadcastApi())->encoder();
     }
 
     /**

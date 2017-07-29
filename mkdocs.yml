@@ -7,9 +7,17 @@ theme: readthedocs
 pages:
   - Home: index.md
   - Installation: installation.md
-  - API Setup: api.md
-  - Routing: routing.md
+  - Upgrading: upgrade.md
+  - The Basics:
+    - API Setup: api.md
+    - Routing: routing.md
   - Eloquent:
     - Controllers: eloquent/controllers.md
   - Non-Eloquent:
     - Controllers: custom/controllers.md
+  - Digging Deeper:
+    - Broadcasting: features/broadcasting.md
+    - Helpers: features/helpers.md
+    - HTTP Clients: features/http-clients.md
+    - Pagination: features/pagination.md
+    - Views: features/views.md

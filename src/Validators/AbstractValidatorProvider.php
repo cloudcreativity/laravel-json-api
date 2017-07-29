@@ -19,7 +19,6 @@
 namespace CloudCreativity\LaravelJsonApi\Validators;
 
 use CloudCreativity\JsonApi\Contracts\Factories\FactoryInterface;
-use CloudCreativity\JsonApi\Contracts\Http\ApiInterface;
 use CloudCreativity\JsonApi\Contracts\Object\ResourceObjectInterface;
 use CloudCreativity\JsonApi\Contracts\Validators\AttributesValidatorInterface;
 use CloudCreativity\JsonApi\Contracts\Validators\QueryValidatorInterface;
@@ -28,6 +27,7 @@ use CloudCreativity\JsonApi\Contracts\Validators\ResourceValidatorInterface;
 use CloudCreativity\JsonApi\Contracts\Validators\ValidatorProviderInterface;
 use CloudCreativity\JsonApi\Exceptions\RuntimeException;
 use CloudCreativity\JsonApi\Http\Query\ChecksQueryParameters;
+use CloudCreativity\LaravelJsonApi\Api\Api;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Http\Requests\RequestInterpreter;
 use Illuminate\Contracts\Validation\Validator;
@@ -112,7 +112,7 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
     protected $requestInterpreter;
 
     /**
-     * @var ApiInterface
+     * @var Api
      */
     private $api;
 
@@ -148,11 +148,11 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
     /**
      * AbstractValidatorProvider constructor.
      *
-     * @param ApiInterface $api
+     * @param Api $api
      * @param RequestInterpreter $interpreter
      * @param FactoryInterface $factory
      */
-    public function __construct(ApiInterface $api, RequestInterpreter $interpreter, FactoryInterface $factory)
+    public function __construct(Api $api, RequestInterpreter $interpreter, FactoryInterface $factory)
     {
         $this->api = $api;
         $this->requestInterpreter = $interpreter;
@@ -396,10 +396,7 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
     protected function validatorFactory()
     {
         if (!$this->validatorFactory) {
-            $this->validatorFactory = $this->factory->createValidatorFactory(
-                $this->api->getErrors(),
-                $this->api->getStore()
-            );
+            $this->validatorFactory = $this->api->validators();
         }
 
         return $this->validatorFactory;

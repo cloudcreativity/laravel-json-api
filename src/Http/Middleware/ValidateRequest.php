@@ -19,10 +19,11 @@
 namespace CloudCreativity\LaravelJsonApi\Http\Middleware;
 
 use Closure;
+use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface;
+use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterpreterInterface;
 use CloudCreativity\JsonApi\Contracts\Validators\ValidatorProviderInterface;
 use CloudCreativity\JsonApi\Exceptions\RuntimeException;
 use CloudCreativity\JsonApi\Http\Middleware\ValidatesRequests;
-use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
 use Illuminate\Container\Container;
 use Illuminate\Http\Request;
 
@@ -59,12 +60,9 @@ class ValidateRequest
      */
     public function handle($request, Closure $next, $validators)
     {
-        /** @var JsonApiService $service */
-        $service = $this->container->make(JsonApiService::class);
-
         $this->validate(
-            $service->getRequestInterpreter(),
-            $service->getRequest(),
+            $this->container->make(RequestInterpreterInterface::class),
+            $this->container->make(RequestInterface::class),
             $this->resolveValidators($validators)
         );
 

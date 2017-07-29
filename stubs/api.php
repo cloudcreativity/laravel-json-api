@@ -58,17 +58,24 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | URL Prefix
+    | URL
     |--------------------------------------------------------------------------
     |
-    | The URL prefix to be used when encoding responses. Use this if
-    | your API is hosted within a URL namespace, e.g. `/api/v1`.
+    | The API's url, made up of a host, URL namespace and route name prefix.
     |
-    | Although we could detect this for HTTP requests, we need it defined here
-    | for when we are encoding outside of HTTP requests, e.g. broadcasting.
+    | If a JSON API is handling an inbound request, the host will always be
+    | detected from the inbound HTTP request. In other circumstances
+    | (e.g. broadcasting), the host will be taken from the setting here.
+    | If it is `null`, the `app.url` config setting is used as the default.
+    |
+    | The name setting is the prefix for route names within this API.
     |
     */
-    'url-prefix' => '/api/v1',
+    'url' => [
+        'host' => null,
+        'namespace' => '/api/v1',
+        'name' => 'api:v1:',
+    ],
 
     /*
     |--------------------------------------------------------------------------
