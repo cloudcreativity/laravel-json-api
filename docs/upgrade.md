@@ -94,21 +94,9 @@ The `ReplyTrait` has been renamed to:
 
 This new trait has the same method `reply()` so you will not need to make any changes to your controllers.
 
-The new trait also adds a handy `api()` method. This will return the API instance that is handling the inbound request.
-This means if you were accessing the API's store in your controller, you can now access the store via this method. 
-For example, in your `index()` action:
-
-```php
-public function index(RequestInterface $request)
-{
-    $records = $this->api()->getStore()->query(
-        $request->getResourceType(),
-        $request->getParameters()
-    );
-
-    return $this->reply()->content($records);
-}
-```
+We have massively improved the injection of dependencies into controller actions. There should be no breaking changes
+to your current controller action methods, but you may want to consult the chapter on non-Eloquent controllers to
+see how we now recommend implementing controller methods.
 
 ### Testing
 

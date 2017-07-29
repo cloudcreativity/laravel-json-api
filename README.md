@@ -10,9 +10,12 @@ and [cloudcreativity/json-api](https://github.com/cloudcreativity/json-api).
 
 From [jsonapi.org](http://jsonapi.org)
 
-> If you've ever argued with your team about the way your JSON responses should be formatted, JSON API is your anti-bikeshedding weapon.
+> If you've ever argued with your team about the way your JSON responses should be formatted, JSON API is your 
+anti-bikeshedding weapon.
 >
-> By following shared conventions, you can increase productivity, take advantage of generalized tooling, and focus on what matters: your application. Clients built around JSON API are able to take advantage of its features around efficiently caching responses, sometimes eliminating network requests entirely.
+> By following shared conventions, you can increase productivity, take advantage of generalized tooling, and focus 
+on what matters: your application. Clients built around JSON API are able to take advantage of its features around 
+efficiently caching responses, sometimes eliminating network requests entirely.
 
 For full information on the spec, plus examples, see http://jsonapi.org
 
@@ -27,7 +30,7 @@ We use semantic versioning but Laravel does not. This table will help...
 | Laravel | This Package |
 | --- | --- |
 | 5.3.* | ^0.9 |
-| 5.4.* | ^0.9 |
+| 5.4.* | ^0.10 |
 
 Make sure you consult the [Upgrade Guide](http://laravel-json-api.readthedocs.io/en/latest/upgrade/) when upgrading.
 
@@ -64,4 +67,4 @@ Please note the following:
 * **Bug Fixes** - submit a pull request against the `master` branch.
 * **Enhancements / New Features** - submit a pull request against the `develop` branch.
 
-We'd recommend submitting an issue before taking the time to put together a pull request.
+We recommend submitting an issue before taking the time to put together a pull request.

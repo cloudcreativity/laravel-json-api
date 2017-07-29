@@ -21,17 +21,11 @@ If you would like to use the `JsonApi` facade, add the following to the list of 
 ``` php
 'aliases' => [
   // ... existing aliases
-  'JsonApi' => 'CloudCreativity\LaravelJsonApi\Facade'
+  'JsonApi' => CloudCreativity\LaravelJsonApi\Facades\JsonApi::class,
 ]
 ```
 
 > The `JsonApi` facade maps to the `CloudCreativity\LaravelJsonApi\Services\JsonApiService` class.
-
-Then publish the package config file:
-
-``` bash
-$ php artisan vendor:publish --provider="CloudCreativity\LaravelJsonApi\ServiceProvider"
-```
 
 ## Exception Handling
 
