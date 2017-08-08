@@ -10,6 +10,7 @@ use CloudCreativity\LaravelJsonApi\Tests\Models;
 /** Comment */
 $factory->define(Models\Comment::class, function (Faker $faker) {
     return [
+        'id' => $faker->unique()->uuid,
         'content' => $faker->paragraph,
         'post_id' => function () {
             return factory(Models\Post::class)->create()->getKey();

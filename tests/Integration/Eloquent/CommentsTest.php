@@ -12,6 +12,36 @@ class CommentsTest extends TestCase
      */
     protected $resourceType = 'comments';
 
+    public function testCreate()
+    {
+        $model = $this->createComment(false);
+
+        $data = [
+            'type' => 'comments',
+            'id' => $id = $model->getKey(), // client generated id.
+            'attributes' => [
+                'content' => $model->content,
+            ],
+            'relationships' => [
+                'post' => [
+                    'data' => [
+                        'type' => 'posts',
+                        'id' => (string) $model->post_id,
+                    ],
+                ],
+            ],
+        ];
+
+        $this->actingAs($model->user);
+        $this->doCreate($data)->assertCreateResponse($data);
+        $this->assertNotNull(Comment::find($id));
+    }
+
+    public function testCreateWithInvalidClientId()
+    {
+        $this->markTestIncomplete('@todo when it is possible to validate client ids.');
+    }
+
     public function testRead()
     {
         $model = $this->createComment();

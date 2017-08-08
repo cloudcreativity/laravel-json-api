@@ -10,6 +10,13 @@ class Comment extends Model
 {
 
     /**
+     * For test purposes, our Comment model has client supplied ids.
+     *
+     * @var bool
+     */
+    public $incrementing = false;
+
+    /**
      * @var array
      */
     protected $fillable = [

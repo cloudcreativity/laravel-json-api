@@ -139,7 +139,7 @@ abstract class TestCase extends BaseTestCase
     protected function createCommentsTable(Schema $schema)
     {
         $schema->create('comments', function (Blueprint $table) {
-            $table->increments('id');
+            $table->uuid('id');
             $table->timestamps();
             $table->text('content');
             $table->unsignedInteger('post_id');

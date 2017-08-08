@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## Unreleased
+
+### Added
+- Client supplied ids will now be hydrated into Eloquent models, configurable via the `$clientId` property
+on the Eloquent hydrator.
+
 ## [0.10.0] - 2017-07-29
 
 ### Added
