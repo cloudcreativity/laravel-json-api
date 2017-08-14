@@ -4,7 +4,7 @@ As we are currently on pre-1.0 releases, when you upgrade you will also need to 
 dependencies need to be upgraded. Use the following command:
 
 ```bash
-$ composer require cloudcreativity/laravel-json-api:^0.10 --upgrade-with-dependencies
+$ composer require cloudcreativity/laravel-json-api:^0.10 --update-with-dependencies
 ```
 
 ## Upgrading to 0.10 from 0.9
