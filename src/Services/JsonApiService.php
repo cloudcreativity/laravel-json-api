@@ -84,6 +84,18 @@ class JsonApiService implements ErrorReporterInterface
     }
 
     /**
+     * @return RequestInterface
+     */
+    public function requestOrFail()
+    {
+        if (!$request = $this->request()) {
+            throw new RuntimeException('No inbound JSON API request.');
+        }
+
+        return $request;
+    }
+
+    /**
      * Get the API that is handling the inbound HTTP request.
      *
      * @return Api|null
