@@ -24,7 +24,7 @@ class Adapter extends EloquentAdapter
     /**
      * @param Builder $query
      * @param Collection $filters
-     * @return mixed
+     * @return void
      */
     protected function filter(Builder $query, Collection $filters)
     {
