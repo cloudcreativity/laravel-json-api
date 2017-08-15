@@ -8,6 +8,12 @@ All notable changes to this project will be documented in this file. This projec
 - Client supplied ids will now be hydrated into Eloquent models, configurable via the `$clientId` property
 on the Eloquent hydrator.
 
+## [0.10.1] - 2017-08-15
+
+### Fixed
+- [#88] Fixed fatal error caused when resolving request objects out of the service container when there was no 
+inbound request bound in the service container.
+
 ## [0.10.0] - 2017-07-29
 
 ### Added
