@@ -215,7 +215,11 @@ class ServiceProvider extends BaseServiceProvider
         });
 
         $this->app->bind(DocumentInterface::class, function () {
-            if (!$document = json_api_request()->getDocument()) {
+            if (!$request = json_api_request()) {
+                throw new RuntimeException('No inbound JSON API request.');
+            }
+
+            if (!$document = $request->getDocument()) {
                 throw new RuntimeException('No request document on inbound JSON API request.');
             }
 
