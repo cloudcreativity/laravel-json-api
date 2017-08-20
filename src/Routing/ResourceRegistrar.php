@@ -19,6 +19,7 @@
 namespace CloudCreativity\LaravelJsonApi\Routing;
 
 use Closure;
+use CloudCreativity\LaravelJsonApi\Api\Api;
 use CloudCreativity\LaravelJsonApi\Api\Repository;
 use CloudCreativity\LaravelJsonApi\Api\ResourceProviders;
 use Illuminate\Contracts\Routing\Registrar;
@@ -33,7 +34,7 @@ class ResourceRegistrar
 
     const KEYWORD_RELATIONSHIPS = 'relationships';
     const PARAM_RESOURCE_TYPE = 'resource_type';
-    const PARAM_RESOURCE_ID = 'resource_id';
+    const PARAM_RESOURCE_ID = 'record';
     const PARAM_RELATIONSHIP_NAME = 'relationship_name';
 
     /**
@@ -66,29 +67,32 @@ class ResourceRegistrar
      */
     public function api($apiName, array $options, Closure $routes)
     {
-        $options = $this->pushMiddleware($apiName, $options);
-        $api = $this->apiGroup($apiName, $options);
-        $providers = $this->apiProviders($apiName);
+        $api = $this->apiRepository->createApi($apiName);
+        $groupOptions = $this->groupOptions($api);
 
-        $this->router->group($options, function () use ($api, $routes, $providers) {
-            $routes($api, $this->router);
-            $providers->mountAll($api, $this->router);
+        $this->router->group($groupOptions, function () use ($api, $options, $routes) {
+            $group = new ApiGroup($this->router, $api, $options);
+
+            $this->router->group($options, function () use ($group, $routes) {
+                $routes($group, $this->router);
+            });
+
+            $providers = $this->apiProviders($api->getName());
+            $providers->mountAll($group, $this->router);
         });
     }
 
     /**
-     * @param $apiName
-     * @param array $options
+     * @param Api $api
      * @return array
      */
-    protected function pushMiddleware($apiName, array $options)
+    protected function groupOptions(Api $api)
     {
-        $middleware = (array) array_get($options, 'middleware');
-        array_unshift($middleware, "json-api:$apiName");
-
-        $options['middleware'] = $middleware;
-
-        return $options;
+        return [
+            'middleware' => 'json-api:' . $api->getName(),
+            'as' => $api->getUrl()->getName(),
+            'prefix' => $api->getUrl()->getNamespace(),
+        ];
     }
 
     /**
@@ -98,7 +102,7 @@ class ResourceRegistrar
      */
     protected function apiGroup($apiName, array $options)
     {
-        $definition = $this->apiRepository->retrieveDefinition($apiName);
+        $definition = $this->apiRepository->createApi($apiName);
 
         return new ApiGroup($this->router, $definition, $options);
     }
@@ -109,6 +113,6 @@ class ResourceRegistrar
      */
     protected function apiProviders($apiName)
     {
-        return $this->apiRepository->retrieveProviders($apiName);
+        return $this->apiRepository->createProviders($apiName);
     }
 }

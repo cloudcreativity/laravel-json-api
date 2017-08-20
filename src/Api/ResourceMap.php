@@ -25,7 +25,7 @@ use IteratorAggregate;
  *
  * @package CloudCreativity\LaravelJsonApi
  */
-class ResourceMap implements IteratorAggregate
+final class ResourceMap implements IteratorAggregate
 {
 
     /**
@@ -42,6 +42,19 @@ class ResourceMap implements IteratorAggregate
      * @var bool
      */
     private $byResource;
+
+    /**
+     * Fluent constructor.
+     *
+     * @param $rootNamespace
+     * @param array $resources
+     * @param bool $byResource
+     * @return ResourceMap
+     */
+    public static function create($rootNamespace, array $resources, $byResource = true)
+    {
+        return new self($rootNamespace, $resources, $byResource);
+    }
 
     /**
      * ResourceMap constructor.
@@ -78,7 +91,7 @@ class ResourceMap implements IteratorAggregate
      */
     public function all()
     {
-        return new ApiResources(iterator_to_array($this));
+        return new ApiResources($this);
     }
 
     /**
@@ -87,7 +100,7 @@ class ResourceMap implements IteratorAggregate
     public function getIterator()
     {
         foreach ($this->resources as $type => $fqn) {
-            yield $type => new ApiResource($type, $fqn, $this->rootNamespace, $this->byResource);
+            yield new ApiResource($type, $fqn, $this->rootNamespace, $this->byResource);
         }
     }
 }

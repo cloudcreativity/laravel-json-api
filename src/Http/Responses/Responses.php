@@ -19,7 +19,6 @@
 namespace CloudCreativity\LaravelJsonApi\Http\Responses;
 
 use CloudCreativity\JsonApi\Http\Responses\AbstractResponses;
-use Illuminate\Http\Response;
 
 /**
  * Class Responses
@@ -30,14 +29,27 @@ class Responses extends AbstractResponses
 {
 
     /**
-     * @param null|string $content
-     * @param int $statusCode
-     * @param array $headers
-     * @return Response
+     * Statically create the responses.
+     *
+     * If no API name is provided, the API handling the inbound HTTP request will be used.
+     *
+     * @param string|null $apiName
+     * @return Responses
+     */
+    public static function create($apiName = null)
+    {
+        $api = json_api($apiName);
+        $request = json_api_request();
+
+        return $api->response($request ? $request->getParameters() : null);
+    }
+
+    /**
+     * @inheritdoc
      */
     protected function createResponse($content, $statusCode, array $headers)
     {
-        return new Response($content, $statusCode, $headers);
+        return response($content, $statusCode, $headers);
     }
 
 }

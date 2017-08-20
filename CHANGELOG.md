@@ -2,6 +2,40 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## [0.10.1] - 2017-08-15
+
+### Fixed
+- [#88] Fixed fatal error caused when resolving request objects out of the service container when there was no 
+inbound request bound in the service container.
+
+## [0.10.0] - 2017-07-29
+
+### Added
+- The resource registrar now automatically adds a JSON API's route URL and name prefixes.
+- Can now send JSON API requests using a Guzzle client.
+- Can now obtain a JSON API instance using the `json_api()` global helper.
+- Can now obtain the JSON API request instance using the `json_api_request()` global helper.
+- Added an api `url()` helper for generating URLs to resources within an API.
+- Can now map a single JSON API resource to multiple record classes. 
+
+### Changed
+- Tests helpers are no longer in the Browser Kit testing style, and instead use a `TestResponse` class that extends
+the standard Laravel test response.
+- The `InteractsWithResources` test helper trait has been merged into `MakesJsonApiRequests`.
+- The `ReplyTrait` has been moved to the `Http\Controllers` namespace and renamed `CreatesResponses`.
+- Moved the facade into the `Facades` namespace and renamed it `JsonApi`. This means it can now be imported with
+a `use` statement.
+- The `register()` method must now be used to register routes.
+
+### Fixed
+- [#66] Content negotiation no longer sends a `415` response if a request does not have body content.
+- Fixed merging API resources objects.
+
+### Removed
+- This package no longer supports Laravel 5.3.
+- The `Document\GeneratesLink` trait was removed.
+- The `Document\LinkFactory` was removed and the API `links()` helper must be used instead.
+
 ## [0.9.1] - 2017-06-26
 
 ### Fixed
