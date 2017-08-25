@@ -8,6 +8,11 @@ All notable changes to this project will be documented in this file. This projec
 - Client supplied ids will now be hydrated into Eloquent models, configurable via the `$clientId` property
 on the Eloquent hydrator.
 
+## [0.10.2] - 2017-08-25
+
+### Added
+- Test assertions to check that resource routes have not been registered.
+
 ## [0.10.1] - 2017-08-15
 
 ### Fixed
