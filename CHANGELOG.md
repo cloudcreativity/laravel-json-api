@@ -2,6 +2,11 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## [0.10.2] - 2017-08-25
+
+### Added
+- Test assertions to check that resource routes have not been registered.
+
 ## [0.10.1] - 2017-08-15
 
 ### Fixed
