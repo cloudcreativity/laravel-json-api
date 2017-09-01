@@ -364,7 +364,7 @@ abstract class EloquentAdapter implements AdapterInterface
     {
         $key = $this->columnForField($field, $query->getModel());
 
-        if (!str_contains('.', $key)) {
+        if (!str_contains($key, '.')) {
             $key = sprintf('%s.%s', $query->getModel()->getTable(), $key);
         }
 
