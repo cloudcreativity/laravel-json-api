@@ -12,7 +12,7 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Collection;
 use Neomerx\JsonApi\Contracts\Document\DocumentInterface as Keys;
 use Neomerx\JsonApi\Contracts\Http\Headers\MediaTypeInterface;
-use PHPUnit_Framework_Assert as PHPUnit;
+use RuntimeException;
 
 class TestResponse extends BaseTestResponse
 {
@@ -47,7 +47,7 @@ class TestResponse extends BaseTestResponse
         $statusCode = Response::HTTP_OK,
         $contentType = MediaTypeInterface::JSON_API_MEDIA_TYPE
     ) {
-        $this->assertStatusCode($statusCode);
+        $this->assertStatus($statusCode);
 
         if ($contentType) {
             $this->assertHeader('Content-Type', $contentType);
@@ -213,7 +213,7 @@ class TestResponse extends BaseTestResponse
         $contentType = MediaTypeInterface::JSON_API_MEDIA_TYPE
     ) {
         if (Response::HTTP_NO_CONTENT == $statusCode) {
-            $this->assertStatusCode(Response::HTTP_NO_CONTENT);
+            $this->assertStatus(Response::HTTP_NO_CONTENT);
         } else {
             $this->assertJsonApiResponse($statusCode, $contentType);
         }
@@ -262,30 +262,13 @@ class TestResponse extends BaseTestResponse
      *
      * @param $expected
      * @return $this
+     * @deprecated use `assertStatus`
      */
     public function assertStatusCode($expected)
     {
-        $actual = $this->baseResponse->getStatusCode();
-        $message = "Expected status code {$expected}, got {$actual}";
-        $content = (array) json_decode((string) $this->baseResponse->getContent(), true);
-
-        if (isset($content[Keys::KEYWORD_ERRORS])) {
-            $message .= " with errors:\n" . json_encode($content, JSON_PRETTY_PRINT);
-        }
-
-        PHPUnit::assertEquals($expected, $actual, $message);
+        $this->assertStatus($expected);
 
         return $this;
-    }
-
-    /**
-     * @param $expected
-     * @return TestResponse
-     * @deprecated use `assertStatusCode`
-     */
-    public function seeStatusCode($expected)
-    {
-        return $this->assertStatusCode($expected);
     }
 
     /**
@@ -295,51 +278,19 @@ class TestResponse extends BaseTestResponse
      * @param bool $allowEmpty
      * @return $this
      */
-    public function assertDataCollection($resourceType, $allowEmpty = true)
+    public function assertDataCollection($resourceType = null, $allowEmpty = true)
     {
-        $this->assertJsonStructure([
-            Keys::KEYWORD_DATA,
-        ]);
-
-        $collection = $this->decodeResponseJson()[Keys::KEYWORD_DATA];
+        $resources = $this->assertDocument()->assertResourceCollection();
 
         if (!$allowEmpty) {
-            PHPUnit::assertNotEmpty($collection, 'Data collection is empty');
-        } elseif (empty($collection)) {
-            return $this;
+            $resources->assertNotEmpty();
         }
 
-        $expected = array_combine((array) $resourceType, (array) $resourceType);
-        $actual = [];
-
-        /** @var array $resource */
-        foreach ($collection as $resource) {
-
-            if (!isset($resource[Keys::KEYWORD_TYPE])) {
-                PHPUnit::fail('Encountered a resource without a type key.');
-            }
-
-            $type = $resource[Keys::KEYWORD_TYPE];
-
-            if (!isset($actual[$type])) {
-                $actual[$type] = $type;
-            }
+        if (!$resources->isEmpty()) {
+            $resources->assertTypes($resourceType ?: $this->expectedResourceType());
         }
-
-        PHPUnit::assertEquals($expected, $actual, 'Unexpected resource types in data collection.');
 
         return $this;
-    }
-
-    /**
-     * @param $resourceType
-     * @param bool $allowEmpty
-     * @return TestResponse
-     * @deprecated use `assertDataCollection`
-     */
-    public function seeDataCollection($resourceType, $allowEmpty = true)
-    {
-        return $this->assertDataCollection($resourceType, $allowEmpty);
     }
 
     /**
@@ -356,68 +307,9 @@ class TestResponse extends BaseTestResponse
             $expected[Keys::KEYWORD_TYPE] = $this->expectedResourceType();
         }
 
-        $attributes = isset($expected[Keys::KEYWORD_ATTRIBUTES]) ?
-            $expected[Keys::KEYWORD_ATTRIBUTES] : [];
-
-        $relationships = isset($expected[Keys::KEYWORD_RELATIONSHIPS]) ?
-            $this->normalizeResourceRelationships($expected[Keys::KEYWORD_RELATIONSHIPS]) : [];
-
-        /** Check the structure is as expected. */
-        $structure = [
-            Keys::KEYWORD_TYPE,
-            Keys::KEYWORD_ID,
-        ];
-
-        if (!empty($attributes)) {
-            $structure[Keys::KEYWORD_ATTRIBUTES] = array_keys($attributes);
-        }
-
-        if (!empty($relationships)) {
-            $structure[Keys::KEYWORD_RELATIONSHIPS] = array_keys($relationships);
-        }
-
-        $this->assertJsonStructure([
-            Keys::KEYWORD_DATA => $structure,
-        ]);
-
-        $data = $this->decodeResponseJson()[Keys::KEYWORD_DATA];
-
-        /** Have we got the correct resource type? */
-        PHPUnit::assertEquals($expected[Keys::KEYWORD_TYPE], $data[Keys::KEYWORD_TYPE], 'Unexpected resource type');
-
-        /** Have we got the correct resource id? */
-        if (isset($expected[Keys::KEYWORD_ID])) {
-            PHPUnit::assertEquals($expected[Keys::KEYWORD_ID], $data[Keys::KEYWORD_ID], 'Unexpected resource id');
-        }
-
-        /** Have we got the correct attributes? */
-        PHPUnit::assertArraySubset(
-            $attributes,
-            $data[Keys::KEYWORD_ATTRIBUTES],
-            false,
-            "Unexpected resource attributes\n" . json_encode($data[Keys::KEYWORD_ATTRIBUTES])
-        );
-
-        /** Have we got the correct relationships? */
-        $actualRelationships = isset($data[Keys::KEYWORD_RELATIONSHIPS]) ? $data[Keys::KEYWORD_RELATIONSHIPS] : [];
-        PHPUnit::assertArraySubset(
-            $relationships,
-            $actualRelationships,
-            false,
-            "Unexpected resource relationships\n" . json_encode($actualRelationships)
-        );
+        $this->assertDocument()->assertResource()->assertMatches($expected);
 
         return $this;
-    }
-
-    /**
-     * @param array $expected
-     * @return TestResponse
-     * @deprecated use `assertDataResource`
-     */
-    public function seeDataResource(array $expected)
-    {
-        return $this->assertDataResource($expected);
     }
 
     /**
@@ -429,39 +321,15 @@ class TestResponse extends BaseTestResponse
      */
     public function assertDataResourceIdentifier($resourceType = null, $id = null)
     {
-        if (is_null($resourceType)) {
-            $this->expectedResourceType();
-        }
-
-        $this->assertJsonStructure([
-            Keys::KEYWORD_DATA,
-        ]);
-
-        $data = (array) $this->decodeResponseJson()[Keys::KEYWORD_DATA];
+        $document = $this->assertDocument();
 
         if (is_null($id)) {
-            PHPUnit::assertNull($data, 'Expecting data to be null (no identifier present).');
-            return $this;
+            $document->assertDataNull();
+        } else {
+            $document->assertResourceIdentifier()->assertIs($resourceType ?: $this->expectedResourceType(), $id);
         }
 
-        $actualType = isset($data[Keys::KEYWORD_TYPE]) ? $data[Keys::KEYWORD_TYPE] : null;
-        $actualId = isset($data[Keys::KEYWORD_ID]) ? $data[Keys::KEYWORD_ID] : null;
-
-        PHPUnit::assertContains($actualType, (array) $resourceType, 'Unexpected resource type in identifier.');
-        PHPUnit::assertEquals($id, $actualId, 'Unexpected resource id.');
-
         return $this;
-    }
-
-    /**
-     * @param string|null $resourceType
-     * @param string|null $id
-     * @return $this
-     * @deprecated use `assertDataResourceIdentifier`
-     */
-    public function seeDataResourceIdentifier($resourceType = null, $id = null)
-    {
-        return $this->assertDataResourceIdentifier($resourceType, $id);
     }
 
     /**
@@ -493,15 +361,6 @@ class TestResponse extends BaseTestResponse
     }
 
     /**
-     * @return DocumentTester
-     * @deprecated use `assertDocument`
-     */
-    public function seeDocument()
-    {
-        return $this->assertDocument();
-    }
-
-    /**
      * @return ErrorsTester
      */
     public function assertErrors()
@@ -510,21 +369,12 @@ class TestResponse extends BaseTestResponse
     }
 
     /**
-     * @return ErrorsTester
-     * @deprecated use `assertErrors`
-     */
-    public function seeErrors()
-    {
-        return $this->assertErrors();
-    }
-
-    /**
      * @return string
      */
     protected function expectedResourceType()
     {
         if (!$this->expectedResourceType) {
-            PHPUnit::fail('You must have provided the expected resource type to the test resposne helper.');
+            throw new RuntimeException('No expected resource type set on the test response helper.');
         }
 
         return $this->expectedResourceType;
@@ -547,24 +397,4 @@ class TestResponse extends BaseTestResponse
         })->all();
     }
 
-    /**
-     * @param array $relationships
-     * @return array
-     */
-    private function normalizeResourceRelationships(array $relationships)
-    {
-        $normalized = [];
-
-        foreach ($relationships as $key => $value) {
-
-            if (is_numeric($key)) {
-                $key = $value;
-                $value = [];
-            }
-
-            $normalized[$key] = $value;
-        }
-
-        return $normalized;
-    }
 }

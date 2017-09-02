@@ -8,6 +8,20 @@ All notable changes to this project will be documented in this file. This projec
 - Client supplied ids will now be hydrated into Eloquent models, configurable via the `$clientId` property
 on the Eloquent hydrator.
 
+### Removed
+- The following deprecated methods were removed from the `TestResponse` helper:
+  - `seeStatusCode()`: use `assertStatus()`
+  - `seeDataCollection()`: use `assertDataCollection()`
+  - `seeDataResource()`: use `assertDataResource()`
+  - `seeDataResourceIdentifier()`: use `assertDataResourceIdentifier()`
+  - `seeDocument()`: use `assertDocument()`
+  - `seeErrors()`: use `assertErrors()` 
+
+### Deprecated
+- The `TestResponse::assertStatusCode()` method is deprecated in favour of `assertStatus()`.
+- The `InteractsWithModels::seeModelInDatabase()` method is deprecated in favour of `assertDatabaseHasModel()`.
+- The `InteractsWithModels::notSeeModelInDatabase()` method is deprecated in favour of `assertDatabaseMissingModel()`.
+
 ## [0.10.3] - 2017-09-02
 
 ### Fixed
