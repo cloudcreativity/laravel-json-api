@@ -47,6 +47,19 @@ class EloquentHydrator extends AbstractHydrator implements HydratesRelatedInterf
     use RelatedHydratorTrait;
 
     /**
+     * Whether the resource has a client generated id.
+     *
+     * If true, the resource id will be transferred to the Model's id key
+     * (using `getKeyName`) if the model does not exist.
+     *
+     * If `getKeyName` is not the correct model key to transfer the resource
+     * id to, set this property to the string key name.
+     *
+     * @var bool
+     */
+    protected $clientId = false;
+
+    /**
      * The resource attribute keys to hydrate.
      *
      * - Empty array = hydrate no attributes.
@@ -126,6 +139,31 @@ class EloquentHydrator extends AbstractHydrator implements HydratesRelatedInterf
     public function __construct(JsonApiService $service)
     {
         $this->service = $service;
+    }
+
+    /**
+     * @param ResourceObjectInterface $resource
+     * @param Model $record
+     * @return object
+     */
+    public function hydrate(ResourceObjectInterface $resource, $record)
+    {
+        if (!$record->exists && $this->clientId) {
+            $this->clientId($resource->getIdentifier()->getId(), $record);
+        }
+
+        return parent::hydrate($resource, $record);
+    }
+
+    /**
+     * @param $resourceId
+     * @param Model $record
+     * @return void
+     */
+    protected function clientId($resourceId, Model $record)
+    {
+        $key = !is_string($this->clientId) ? $record->getKeyName() : $this->clientId;
+        $record->{$key} = $resourceId;
     }
 
     /**

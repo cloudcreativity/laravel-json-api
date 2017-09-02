@@ -1,13 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit bootstrap="vendor/autoload.php"
+<phpunit backupGlobals="false"
+         backupStaticAttributes="false"
+         beStrictAboutTestsThatDoNotTestAnything="false"
+         bootstrap="vendor/autoload.php"
          colors="true"
-         verbose="true">
+         convertErrorsToExceptions="true"
+         convertNoticesToExceptions="true"
+         convertWarningsToExceptions="true"
+         processIsolation="false"
+         stopOnError="false"
+         stopOnFailure="false"
+         syntaxCheck="true"
+         verbose="true"
+>
     <testsuites>
         <testsuite name="Unit">
-            <directory>./tests/Unit/</directory>
+            <directory suffix="Test.php">./tests/Unit/</directory>
         </testsuite>
         <testsuite name="Integration">
-            <directory>./tests/Integration/</directory>
+            <directory suffix="Test.php">./tests/Integration/</directory>
         </testsuite>
     </testsuites>
 </phpunit>
