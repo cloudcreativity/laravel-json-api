@@ -9,7 +9,13 @@ $ composer require cloudcreativity/laravel-json-api:^0.11 --update-with-dependen
 
 ## Upgrading to 0.11 from 0.10
 
-Version `0.11` now supports Laravel 5.5.
+Version `0.11` now supports Laravel 5.5 in addition to 5.4.
+
+### Package Discovery
+
+If you are on Laravel 5.5, you no longer need to add the service provider and facade to your `app.php` config as
+we have added package discovery configuration. Feel free to remove the service provider and facade from your
+config file.
 
 ### Testing
 
