@@ -4,8 +4,31 @@ As we are currently on pre-1.0 releases, when you upgrade you will also need to 
 dependencies need to be upgraded. Use the following command:
 
 ```bash
-$ composer require cloudcreativity/laravel-json-api:^0.10 --update-with-dependencies
+$ composer require cloudcreativity/laravel-json-api:^0.11 --update-with-dependencies
 ```
+
+## Upgrading to 0.11 from 0.10
+
+Version `0.11` now supports Laravel 5.5.
+
+### Testing
+
+The test helper classes have been extracted to a separate package to allow us to support both PHPUnit 5.7 and 6. 
+The new package can be installed using composer:
+
+```bash
+$ composer require --dev cloudcreativity/json-api-testing
+```
+
+We have removed all test helper methods on the `TestResponse` class that were marked as deprecated in `0.10`. 
+You will need to update your tests if you have not already done so:
+
+  - `seeStatusCode()`: use `assertStatus()`
+  - `seeDataCollection()`: use `assertDataCollection()`
+  - `seeDataResource()`: use `assertDataResource()`
+  - `seeDataResourceIdentifier()`: use `assertDataResourceIdentifier()`
+  - `seeDocument()`: use `assertDocument()`
+  - `seeErrors()`: use `assertErrors()` 
 
 ## Upgrading to 0.10 from 0.9
 
