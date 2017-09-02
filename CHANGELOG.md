@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file. This projec
 ## Unreleased
 
 ### Added
+- Support for Laravel 5.5.
 - Client supplied ids will now be hydrated into Eloquent models, configurable via the `$clientId` property
 on the Eloquent hydrator.
 

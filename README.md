@@ -25,12 +25,10 @@ A demo application is available at [here](https://github.com/cloudcreativity/dem
 
 ## Laravel Versions
 
-We use semantic versioning but Laravel does not. This table will help...
-
 | Laravel | This Package |
 | --- | --- |
-| 5.3.* | ^0.9 |
-| 5.4.* | ^0.10 |
+| 5.4.* | ^0.11 |
+| 5.5.* | ^0.11 |
 
 Make sure you consult the [Upgrade Guide](http://laravel-json-api.readthedocs.io/en/latest/upgrade/) when upgrading.
 
@@ -57,7 +55,7 @@ Apache License (Version 2.0). Please see [License File](LICENSE) for more inform
 
 ## Installation
 
-Installation is via `composer`. See the wiki for complete instructions.
+Installation is via `composer`. See the documentation for complete instructions.
 
 ## Contributing
 

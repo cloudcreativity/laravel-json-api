@@ -21,7 +21,7 @@ namespace CloudCreativity\LaravelJsonApi\Testing;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\Constraints\HasInDatabase;
 use Illuminate\Foundation\Testing\Constraints\SoftDeletedInDatabase;
-use PHPUnit_Framework_Constraint_Not as ReverseConstraint;
+use PHPUnit\Framework\Constraint\LogicalNot;
 
 /**
  * Class InteractsWithModels
@@ -152,12 +152,17 @@ trait InteractsWithModels
      * @param Model $model
      * @param array $data
      * @return $this
+     * @todo update method when dropping support for Laravel 5.4
      */
     protected function assertDatabaseMissingModel(Model $model, array $data)
     {
-        $constraint = new ReverseConstraint(
-            new HasInDatabase($model->getConnection(), $data)
-        );
+        if (class_exists('PHPUnit_Framework_Constraint_Not')) {
+            $constraint = new \PHPUnit_Framework_Constraint_Not(
+                new HasInDatabase($model->getConnection(), $data)
+            );
+        } else {
+            $constraint = new LogicalNot(new HasInDatabase($model->getConnection(), $data));
+        }
 
         $this->assertThat($model->getTable(), $constraint);
 
