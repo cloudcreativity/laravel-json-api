@@ -20,10 +20,18 @@ config file.
 ### Testing
 
 The test helper classes have been extracted to a separate package to allow us to support both PHPUnit 5.7 and 6. 
-The new package can be installed using composer:
+The new package can be installed using composer.
+
+For PHPUnit 5.7:
 
 ```bash
-$ composer require --dev cloudcreativity/json-api-testing
+$ composer require --dev cloudcreativity/json-api-testing:^0.1
+```
+
+For PHPUnit 6:
+
+```bash
+$ composer require --dev cloudcreativity/json-api-testing:^0.2
 ```
 
 We have removed all test helper methods on the `TestResponse` class that were marked as deprecated in `0.10`. 
