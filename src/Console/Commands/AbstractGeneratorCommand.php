@@ -90,6 +90,20 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
 
     /**
      * @return bool|null
+     * @todo this maintains support for Laravel 5.4 - remove when no longer supporting 5.4
+     */
+    public function fire()
+    {
+        if (!$this->apiRepository->exists($api = $this->argument('api'))) {
+            $this->error("JSON API '$api' does not exist.");
+            return 1;
+        }
+
+        return (parent::fire() !== false) ? 0 : 1;
+    }
+
+    /**
+     * @return bool|null
      */
     public function handle()
     {
