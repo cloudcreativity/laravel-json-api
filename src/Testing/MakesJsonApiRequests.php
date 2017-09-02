@@ -27,7 +27,7 @@ use Neomerx\JsonApi\Contracts\Document\DocumentInterface as Keys;
 use Neomerx\JsonApi\Contracts\Document\LinkInterface;
 use Neomerx\JsonApi\Contracts\Http\Headers\MediaTypeInterface;
 use Neomerx\JsonApi\Contracts\Http\Query\QueryParametersParserInterface as Params;
-use PHPUnit_Framework_Assert as PHPUnit;
+use RuntimeException;
 
 /**
  * Class MakesJsonApiRequests
@@ -261,7 +261,7 @@ trait MakesJsonApiRequests
         $id = isset($data[Keys::KEYWORD_ID]) ? $data[Keys::KEYWORD_ID] : null;
 
         if (empty($id)) {
-            PHPUnit::fail('Expecting data to contain a resource id.');
+            throw new InvalidArgumentException('Expecting provided data to contain a resource id.');
         }
 
         $params = $this->addDefaultRouteParams($params);
@@ -328,7 +328,7 @@ trait MakesJsonApiRequests
         $resourceType = property_exists($this, 'resourceType') ? $this->resourceType : null;
 
         if (!$resourceType) {
-            PHPUnit::fail('You must set a resource type property on your test case.');
+            throw new RuntimeException('You must set a resource type property on your test case.');
         }
 
         return $resourceType;
