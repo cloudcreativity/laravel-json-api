@@ -2,6 +2,11 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## [0.10.3] - 2017-09-02
+
+### Fixed
+-[#96] Fixed creation of qualified sorting parameters in the Eloquent adapter. 
+
 ## [0.10.2] - 2017-08-25
 
 ### Added

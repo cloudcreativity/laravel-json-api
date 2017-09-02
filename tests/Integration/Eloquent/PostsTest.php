@@ -13,6 +13,13 @@ class PostsTest extends TestCase
      */
     protected $resourceType = 'posts';
 
+    public function testSearch()
+    {
+        factory(Post::class, 3)->create();
+
+        $this->doSearch(['sort' => '-created-at'])->assertSearchResponse();
+    }
+
     /**
      * Test that we can search posts for specific ids
      */
