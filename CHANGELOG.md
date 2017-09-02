@@ -2,10 +2,10 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
-## Unreleased
+## [0.11.0] - 2017-09-02
 
 ### Added
-- Support for Laravel 5.5.
+- Support for Laravel 5.5, including package discovery.
 - Client supplied ids will now be hydrated into Eloquent models, configurable via the `$clientId` property
 on the Eloquent hydrator.
 
