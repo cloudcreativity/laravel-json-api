@@ -13,11 +13,25 @@ class PostsTest extends TestCase
      */
     protected $resourceType = 'posts';
 
-    public function testSearch()
+    /**
+     * Test searching with a sort parameter.
+     */
+    public function testSortedSearch()
     {
-        factory(Post::class, 3)->create();
+        $a = factory(Post::class)->create([
+            'title' => 'Title A',
+        ]);
 
-        $this->doSearch(['sort' => '-created-at'])->assertSearchResponse();
+        $b = factory(Post::class)->create([
+            'title' => 'Title B',
+        ]);
+
+        $response = $this->doSearch(['sort' => '-title']);
+        $response->assertSearchResponse()->assertContainsOnly(['posts' => [$a->getKey(), $b->getKey()]]);
+
+        $json = $response->decodeResponseJson();
+        $actual = [array_get($json, 'data.0.id'), array_get($json, 'data.1.id')];
+        $this->assertEquals([$b->getKey(), $a->getKey()], $actual);
     }
 
     /**
