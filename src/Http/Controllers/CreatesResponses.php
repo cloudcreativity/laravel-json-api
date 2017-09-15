@@ -18,7 +18,6 @@
 
 namespace CloudCreativity\LaravelJsonApi\Http\Controllers;
 
-use CloudCreativity\LaravelJsonApi\Api\Api;
 use CloudCreativity\LaravelJsonApi\Http\Responses\Responses;
 
 /**
@@ -28,20 +27,6 @@ use CloudCreativity\LaravelJsonApi\Http\Responses\Responses;
  */
 trait CreatesResponses
 {
-
-    /**
-     * Get the API instance.
-     *
-     * This will return the API handling the inbound HTTP request. If you are using this
-     * trait in a context where there is no API handling the inbound HTTP request, you
-     * can specify the API to use by setting the `api` property on the implementing class.
-     *
-     * @return Api
-     */
-    protected function api()
-    {
-        return json_api($this->apiName());
-    }
 
     /**
      * Get the responses factory.

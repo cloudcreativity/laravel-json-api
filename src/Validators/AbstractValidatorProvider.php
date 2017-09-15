@@ -31,6 +31,7 @@ use CloudCreativity\LaravelJsonApi\Api\Api;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Http\Requests\RequestInterpreter;
 use Illuminate\Contracts\Validation\Validator;
+use Neomerx\JsonApi\Contracts\Http\Query\QueryCheckerInterface;
 
 /**
  * Class AbstractValidatorProvider
@@ -192,12 +193,50 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
     }
 
     /**
-     * @inheritdoc
+     * @return QueryCheckerInterface
+     * @todo remove once usages of it below have been properly implemented
      */
     public function queryChecker()
     {
         return $this->createQueryChecker($this->factory, $this->queryValidator());
     }
+
+    /**
+     * @inheritDoc
+     */
+    public function resourceQueryChecker()
+    {
+        // TODO: Implement resourceQueryChecker() method.
+        return $this->queryChecker();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function searchQueryChecker()
+    {
+        // TODO: Implement searchQueryChecker() method.
+        return $this->queryChecker();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function searchRelatedQueryChecker()
+    {
+        // TODO: Implement searchRelatedQueryChecker() method.
+        return $this->queryChecker();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function searchRelationshipQueryChecker()
+    {
+        // TODO: Implement searchRelationshipQueryChecker() method.
+        return $this->queryChecker();
+    }
+
 
     /**
      * @return string

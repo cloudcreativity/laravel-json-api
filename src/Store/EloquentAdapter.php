@@ -138,7 +138,7 @@ abstract class EloquentAdapter implements AdapterInterface
         $this->with($query = $this->newQuery(), $this->extractIncludePaths($parameters));
 
         if ($this->isFindMany($filters)) {
-            return $this->findMany($query, $filters);
+            return $this->findByIds($query, $filters);
         }
 
         $this->filter($query, $filters);
@@ -160,6 +160,32 @@ abstract class EloquentAdapter implements AdapterInterface
     /**
      * @inheritDoc
      */
+    public function queryRecord($resourceId, EncodingParametersInterface $parameters)
+    {
+        $this->with($query = $this->newQuery(), $this->extractIncludePaths($parameters));
+
+        return $query->where($this->getQualifiedKeyName(), $resourceId)->first();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function queryRelated($record, $relationshipName, EncodingParametersInterface $parameters)
+    {
+        // TODO: Implement queryRelated() method.
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function queryRelationship($record, $relationshipName, EncodingParametersInterface $parameters)
+    {
+        // TODO: Implement queryRelationship() method.
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function exists($resourceId)
     {
         return $this->newQuery()->where($this->getQualifiedKeyName(), $resourceId)->exists();
@@ -171,6 +197,22 @@ abstract class EloquentAdapter implements AdapterInterface
     public function find($resourceId)
     {
         return $this->newQuery()->where($this->getQualifiedKeyName(), $resourceId)->first();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function findMany(array $resourceIds)
+    {
+        // TODO: Implement findMany() method.
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function inverse($relationshipName)
+    {
+        // TODO: Implement inverse() method.
     }
 
     /**
@@ -206,7 +248,7 @@ abstract class EloquentAdapter implements AdapterInterface
      * @param Collection $filters
      * @return mixed
      */
-    protected function findMany(Builder $query, Collection $filters)
+    protected function findByIds(Builder $query, Collection $filters)
     {
         return $query
             ->whereIn($this->getQualifiedKeyName(), $this->extractIds($filters))

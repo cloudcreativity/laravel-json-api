@@ -2,7 +2,9 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\JsonApi\Posts;
 
+use CloudCreativity\JsonApi\Contracts\Object\ResourceObjectInterface;
 use CloudCreativity\LaravelJsonApi\Hydrator\EloquentHydrator;
+use CloudCreativity\LaravelJsonApi\Tests\Models\Post;
 
 class Hydrator extends EloquentHydrator
 {
@@ -23,4 +25,13 @@ class Hydrator extends EloquentHydrator
         'author',
         'tags',
     ];
+
+    /**
+     * @inheritDoc
+     */
+    protected function createRecord(ResourceObjectInterface $resource)
+    {
+        return new Post();
+    }
+
 }

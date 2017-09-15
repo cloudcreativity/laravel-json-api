@@ -18,7 +18,12 @@
 
 namespace CloudCreativity\LaravelJsonApi\Http\Controllers;
 
-use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface as JsonApiRequest;
+use Closure;
+use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface;
+use CloudCreativity\JsonApi\Contracts\Hydrator\HydratorInterface;
+use CloudCreativity\JsonApi\Contracts\Object\ResourceObjectInterface;
+use CloudCreativity\JsonApi\Contracts\Store\StoreInterface;
+use CloudCreativity\JsonApi\Exceptions\RuntimeException;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 
@@ -26,111 +31,202 @@ use Illuminate\Routing\Controller;
  * Class JsonApiController
  *
  * @package CloudCreativity\LaravelJsonApi
- * @deprecated
  */
-class JsonApiController extends Controller
+abstract class JsonApiController extends Controller
 {
 
     use CreatesResponses;
 
     /**
-     * @param JsonApiRequest $request
+     * The hydrator fully-qualified class name, or service name.
+     *
+     * @var HydratorInterface|string|null
+     */
+    protected $hydrator;
+
+    /**
+     * The database connection name to use for transactions, or null for the default connection.
+     *
+     * @var string|null
+     */
+    protected $connection;
+
+    /**
+     * Whether database transaction should be used.
+     *
+     * @var bool
+     */
+    protected $useTransactions = true;
+
+    /**
+     * @param $record
+     * @return bool
+     *      whether the record was successfully deleted.
+     */
+    abstract protected function destroyRecord($record);
+
+    /**
+     * @param StoreInterface $store
+     * @param RequestInterface $request
      * @return Response
      */
-    public function index(JsonApiRequest $request)
+    public function index(StoreInterface $store, RequestInterface $request)
     {
-        return $this->notImplemented();
+        return $this->reply()->content(
+            $this->doSearch($store, $request)
+        );
     }
 
     /**
-     * @param JsonApiRequest $request
+     * @param object $record
      * @return Response
      */
-    public function create(JsonApiRequest $request)
+    public function read($record)
     {
-        return $this->notImplemented();
+        return $this->reply()->content($record);
     }
 
     /**
-     * @param JsonApiRequest $request
+     * @param ResourceObjectInterface $resource
      * @return Response
      */
-    public function read(JsonApiRequest $request)
+    public function create(ResourceObjectInterface $resource)
     {
-        return $this->notImplemented();
+        $record = $this->transaction(function () use ($resource) {
+            return $this->doCreate($resource);
+        });
+
+        return $this->reply()->created($record);
     }
 
     /**
-     * @param JsonApiRequest $request
+     * @param ResourceObjectInterface $resource
+     * @param object $record
      * @return Response
      */
-    public function update(JsonApiRequest $request)
+    public function update(ResourceObjectInterface $resource, $record)
     {
-        return $this->notImplemented();
+        $record = $this->transaction(function () use ($resource, $record) {
+            return $this->doUpdate($resource, $record);
+        });
+
+        return $this->reply()->content($record);
     }
 
     /**
-     * @param JsonApiRequest $request
+     * @param $record
      * @return Response
      */
-    public function delete(JsonApiRequest $request)
+    public function delete($record)
     {
-        return $this->notImplemented();
+        $this->transaction(function () use ($record) {
+            $this->doDelete($record);
+        });
+
+        return $this->reply()->noContent();
     }
 
     /**
-     * @param JsonApiRequest $request
-     * @return Response
+     * @param StoreInterface $store
+     * @param RequestInterface $request
+     * @return mixed
      */
-    public function readRelatedResource(JsonApiRequest $request)
+    protected function doSearch(StoreInterface $store, RequestInterface $request)
     {
-        return $this->notImplemented();
+        return $store->query($request->getResourceType(), $request->getParameters());
     }
 
     /**
-     * @param JsonApiRequest $request
-     * @return Response
+     * @param ResourceObjectInterface $resource
+     * @return object
      */
-    public function readRelationship(JsonApiRequest $request)
+    protected function doCreate(ResourceObjectInterface $resource)
     {
-        return $this->notImplemented();
+        if (method_exists($this, 'creating')) {
+            $this->creating($resource);
+        }
+
+        $record = $this->hydrator()->create($resource);
+
+        if (method_exists($this, 'created')) {
+            $this->created($resource, $record);
+        }
+
+        return $record;
     }
 
     /**
-     * @param JsonApiRequest $request
-     * @return Response
+     * @param ResourceObjectInterface $resource
+     * @param $record
+     * @return object
      */
-    public function replaceRelationship(JsonApiRequest $request)
+    protected function doUpdate(ResourceObjectInterface $resource, $record)
     {
-        return $this->notImplemented();
+        if (method_exists($this, 'updating')) {
+            $this->updating($resource, $record);
+        }
+
+        $record = $this->hydrator()->update($resource, $record);
+
+        if (method_exists($this, 'updated')) {
+            $this->updated($resource, $record);
+        }
+
+        return $record;
     }
 
     /**
-     * @param JsonApiRequest $request
-     * @return Response
+     * @param $record
+     * @return void
      */
-    public function addToRelationship(JsonApiRequest $request)
+    protected function doDelete($record)
     {
-        return $this->notImplemented();
+        if (method_exists($this, 'deleting')) {
+            $this->deleting($record);
+        }
+
+        if (!$this->destroyRecord($record)) {
+            throw new RuntimeException('Record was not successfully deleted.');
+        }
+
+        if (method_exists($this, 'deleted')) {
+            $this->deleted($record);
+        }
     }
 
     /**
-     * @param JsonApiRequest $request
-     * @return Response
+     * @param Closure $closure
+     * @return mixed
      */
-    public function removeFromRelationship(JsonApiRequest $request)
+    protected function transaction(Closure $closure)
     {
-        return $this->notImplemented();
+        if (!$this->useTransactions) {
+            return $closure();
+        }
+
+        return app('db')->connection($this->connection)->transaction($closure);
     }
 
     /**
-     * @return Response
+     * @return HydratorInterface
      */
-    protected function notImplemented()
+    protected function hydrator()
     {
-        return $this
-            ->reply()
-            ->statusCode(Response::HTTP_NOT_IMPLEMENTED);
+        if ($this->hydrator instanceof HydratorInterface) {
+            return $this->hydrator;
+        }
+
+        if (!$this->hydrator) {
+            throw new RuntimeException('The hydrator property must be set.');
+        }
+
+        $hydrator = app($this->hydrator);
+
+        if (!$hydrator instanceof HydratorInterface) {
+            throw new RuntimeException("Service $this->hydrator is not a hydrator.");
+        }
+
+        return $hydrator;
     }
 
 }

@@ -19,7 +19,6 @@
 namespace CloudCreativity\LaravelJsonApi\Hydrator;
 
 use Carbon\Carbon;
-use CloudCreativity\JsonApi\Contracts\Hydrator\HydratesRelatedInterface;
 use CloudCreativity\JsonApi\Contracts\Object\RelationshipInterface;
 use CloudCreativity\JsonApi\Contracts\Object\RelationshipsInterface;
 use CloudCreativity\JsonApi\Contracts\Object\ResourceIdentifierInterface;
@@ -27,7 +26,6 @@ use CloudCreativity\JsonApi\Contracts\Object\ResourceObjectInterface;
 use CloudCreativity\JsonApi\Exceptions\InvalidArgumentException;
 use CloudCreativity\JsonApi\Exceptions\RuntimeException;
 use CloudCreativity\JsonApi\Hydrator\AbstractHydrator;
-use CloudCreativity\JsonApi\Hydrator\RelatedHydratorTrait;
 use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
 use CloudCreativity\LaravelJsonApi\Utils\Str;
 use CloudCreativity\Utils\Object\StandardObjectInterface;
@@ -41,23 +39,8 @@ use Illuminate\Database\Eloquent\Relations\Relation;
  *
  * @package CloudCreativity\LaravelJsonApi
  */
-class EloquentHydrator extends AbstractHydrator implements HydratesRelatedInterface
+abstract class EloquentHydrator extends AbstractHydrator
 {
-
-    use RelatedHydratorTrait;
-
-    /**
-     * Whether the resource has a client generated id.
-     *
-     * If true, the resource id will be transferred to the Model's id key
-     * (using `getKeyName`) if the model does not exist.
-     *
-     * If `getKeyName` is not the correct model key to transfer the resource
-     * id to, set this property to the string key name.
-     *
-     * @var bool
-     */
-    protected $clientId = false;
 
     /**
      * The resource attribute keys to hydrate.
@@ -141,29 +124,52 @@ class EloquentHydrator extends AbstractHydrator implements HydratesRelatedInterf
         $this->service = $service;
     }
 
-    /**
-     * @param ResourceObjectInterface $resource
-     * @param Model $record
-     * @return object
-     */
-    public function hydrate(ResourceObjectInterface $resource, $record)
+    public function create(ResourceObjectInterface $resource)
     {
-        if (!$record->exists && $this->clientId) {
-            $this->clientId($resource->getIdentifier()->getId(), $record);
-        }
+        $record = parent::create($resource);
+        $this->hydrateRelated($resource, $record);
 
-        return parent::hydrate($resource, $record);
+        return $record;
+    }
+
+    public function update(ResourceObjectInterface $resource, $record)
+    {
+        $record = parent::update($resource, $record);
+        $this->hydrateRelated($resource, $record);
+
+        return $record;
     }
 
     /**
-     * @param $resourceId
-     * @param Model $record
-     * @return void
+     * @inheritDoc
      */
-    protected function clientId($resourceId, Model $record)
+    public function updateRelationship($relationshipKey, RelationshipInterface $relationship, $record)
     {
-        $key = !is_string($this->clientId) ? $record->getKeyName() : $this->clientId;
-        $record->{$key} = $resourceId;
+        // TODO: Implement updateRelationship() method.
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function addToRelationship($relationshipKey, RelationshipInterface $relationship, $record)
+    {
+        // TODO: Implement addToRelationship() method.
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function removeFromRelationship($relationshipKey, RelationshipInterface $relationship, $record)
+    {
+        // TODO: Implement removeFromRelationship() method.
+    }
+
+    /**
+     * @param Model $record
+     */
+    protected function persist($record)
+    {
+        $record->save();
     }
 
     /**
@@ -212,12 +218,14 @@ class EloquentHydrator extends AbstractHydrator implements HydratesRelatedInterf
     }
 
     /**
-     * @inheritdoc
+     * @param $relationshipKey
+     * @param RelationshipInterface $relationship
+     * @param Model $record
      */
-    public function hydrateRelationship($relationshipKey, RelationshipInterface $relationship, $record)
+    protected function hydrateRelationship($relationshipKey, RelationshipInterface $relationship, $record)
     {
         /** If there's a specific method for the relationship, we'll use that */
-        if ($this->callHydrateRelationship($relationshipKey, $relationship, $record)) {
+        if ($this->callMethodForField($relationshipKey, $relationship, $record)) {
             return;
         }
 
@@ -235,9 +243,11 @@ class EloquentHydrator extends AbstractHydrator implements HydratesRelatedInterf
     }
 
     /**
-     * @inheritDoc
+     * @param ResourceObjectInterface $resource
+     * @param $record
+     * @return array
      */
-    public function hydrateRelated(ResourceObjectInterface $resource, $record)
+    protected function hydrateRelated(ResourceObjectInterface $resource, $record)
     {
         $results = (array) $this->hydratingRelated($resource, $record);
 
@@ -245,7 +255,7 @@ class EloquentHydrator extends AbstractHydrator implements HydratesRelatedInterf
         foreach ($resource->getRelationships()->getAll() as $key => $relationship) {
 
             /** If there is a specific method for this related member, we'll hydrate that */
-            $related = $this->callHydrateRelatedRelationship($key, $relationship, $record);
+            $related = $this->callMethodForField($key, $relationship, $record);
 
             if (false !== $related) {
                 $results = array_merge($results, $related);
@@ -270,7 +280,7 @@ class EloquentHydrator extends AbstractHydrator implements HydratesRelatedInterf
         foreach ($relationships->getAll() as $key => $relationship) {
 
             /** If there is a specific method for this relationship, we'll hydrate that */
-            if ($this->callHydrateRelationship($key, $relationship, $record)) {
+            if ($this->callMethodForField($key, $relationship, $record)) {
                 continue;
             }
 

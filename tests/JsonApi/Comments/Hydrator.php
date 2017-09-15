@@ -11,11 +11,6 @@ class Hydrator extends EloquentHydrator
 {
 
     /**
-     * @var bool
-     */
-    protected $clientId = true;
-
-    /**
      * @var array
      */
     protected $attributes = [
@@ -30,13 +25,15 @@ class Hydrator extends EloquentHydrator
     ];
 
     /**
-     * @param ResourceObjectInterface $resource
-     * @param Comment $record
+     * @inheritDoc
      */
-    protected function hydrating(ResourceObjectInterface $resource, $record)
+    protected function createRecord(ResourceObjectInterface $resource)
     {
-        if (!$record->exists) {
-            $record->user()->associate(Auth::user());
-        }
+        $record = new Comment();
+        $record->{$record->getKeyName()} = $resource->getId();
+        $record->user()->associate(Auth::user());
+
+        return $record;
     }
+
 }
