@@ -33,6 +33,30 @@ class Adapter implements AdapterInterface
     }
 
     /**
+     * @inheritDoc
+     */
+    public function queryRecord($resourceId, EncodingParametersInterface $parameters)
+    {
+        return $this->find($resourceId);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function queryRelated($record, $relationshipName, EncodingParametersInterface $parameters)
+    {
+        // TODO: Implement queryRelated() method.
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function queryRelationship($record, $relationshipName, EncodingParametersInterface $parameters)
+    {
+        // TODO: Implement queryRelationship() method.
+    }
+
+    /**
      * @inheritdoc
      */
     public function exists($resourceId)
@@ -46,6 +70,24 @@ class Adapter implements AdapterInterface
     public function find($resourceId)
     {
         return $this->repository->find($resourceId);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function findMany(array $resourceIds)
+    {
+        return collect($resourceIds)->map(function ($resourceId) {
+            return $this->find($resourceId);
+        })->filter()->all();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function inverse($relationshipName)
+    {
+        // TODO: Implement inverse() method.
     }
 
 }
