@@ -2,6 +2,11 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## [0.11.1] - 2017-09-26
+
+### Fixed
+- [#109] The matched media type is now set as the `Content-Type` header on a response.
+
 ## [0.11.0] - 2017-09-02
 
 ### Added
