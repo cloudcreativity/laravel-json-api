@@ -22,7 +22,9 @@ class ContentNegotiationTest extends TestCase
 
     public function testOkWithoutBody()
     {
-        $this->getJsonApi('/api/v1/posts')->assertStatusCode(200);
+        $this->getJsonApi('/api/v1/posts')
+            ->assertStatus(200)
+            ->assertHeader('Content-Type', 'application/vnd.api+json');
     }
 
     public function testOkWithBody()
@@ -71,9 +73,54 @@ class ContentNegotiationTest extends TestCase
         ])->assertStatus(415);
     }
 
+    /**
+     * Can request an alternative media-type that is in our configuration.
+     * Note that the Symfony response automatically appends the charset to the
+     * content-type header if it starts with `text/`.
+     */
+    public function testAcceptable()
+    {
+        $this->get('/api/v1/posts', ['Accept' => 'text/plain'])
+            ->assertStatus(200)
+            ->assertHeader('Content-Type', 'text/plain; charset=UTF-8');
+    }
+
+    /**
+     * If we request a content type that is not in our codec configuration, we
+     * expect a 406 response.
+     */
     public function testNotAcceptable()
     {
-        $this->get('/api/v1/posts', ['Accept' => 'text/html'])->assertStatus(406);
+        $this->get('/api/v1/posts', ['Accept' => 'application/json'])->assertStatus(406);
+    }
+
+    /**
+     * The codec configuration can be changed.
+     */
+    public function testCanChangeMediaType1()
+    {
+        app('config')->set('json-api-default.codecs', [
+            'encoders' => ['application/json'],
+            'decoders' => ['application/json'],
+        ]);
+
+        $this->get('/api/v1/posts', ['Accept' => 'application/json'])
+            ->assertStatus(200)
+            ->assertHeader('Content-Type', 'application/json');
+    }
+
+    /**
+     * Not including the JSON API media type in our configuration results in a 406 response
+     */
+    public function testCanChangeMediaType2()
+    {
+        app('config')->set('json-api-default.codecs', [
+            'encoders' => ['application/json'],
+            'decoders' => ['application/json'],
+        ]);
+
+        $this->get('/api/v1/posts', ['Accept' => 'application/vnd.api+json'])
+            ->assertStatus(406);
     }
 
     /**
