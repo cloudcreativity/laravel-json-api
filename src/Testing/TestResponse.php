@@ -2,6 +2,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Testing;
 
+use CloudCreativity\JsonApi\Exceptions\InvalidArgumentException;
 use CloudCreativity\JsonApi\Testing\DocumentTester;
 use CloudCreativity\JsonApi\Testing\ErrorsTester;
 use CloudCreativity\JsonApi\Testing\ResourceObjectsTester;
@@ -12,6 +13,7 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Collection;
 use Neomerx\JsonApi\Contracts\Document\DocumentInterface as Keys;
 use Neomerx\JsonApi\Contracts\Http\Headers\MediaTypeInterface;
+use PHPUnit\Framework\Assert as PHPUnit;
 use RuntimeException;
 
 class TestResponse extends BaseTestResponse
@@ -25,15 +27,32 @@ class TestResponse extends BaseTestResponse
     protected $expectedResourceType;
 
     /**
+     * The expected content type when assert the response has a JSON API document.
+     *
+     * @var string
+     */
+    protected $expectedContentType;
+
+    /**
+     * @var DocumentTester|null
+     */
+    private $document;
+
+    /**
      * TestResponse constructor.
      *
      * @param Response $response
      * @param string|null $expectedResourceType
+     * @param string $expectedContentType
      */
-    public function __construct($response, $expectedResourceType = null)
-    {
+    public function __construct(
+        $response,
+        $expectedResourceType = null,
+        $expectedContentType = MediaTypeInterface::JSON_API_MEDIA_TYPE
+    ) {
         parent::__construct($response);
         $this->expectedResourceType = $expectedResourceType;
+        $this->expectedContentType = $expectedContentType;
     }
 
     /**
@@ -42,6 +61,8 @@ class TestResponse extends BaseTestResponse
      * @param int $statusCode
      * @param string|null $contentType
      * @return $this
+     * @deprecated
+     *      `assertDocument` now checks the content type before decoding the response document.
      */
     public function assertJsonApiResponse(
         $statusCode = Response::HTTP_OK,
@@ -57,11 +78,328 @@ class TestResponse extends BaseTestResponse
     }
 
     /**
+     * Assert that the response has the given status code.
+     *
+     * @param int $status
+     * @return $this
+     */
+    public function assertStatus($status)
+    {
+        $actual = $this->getStatusCode();
+        $message = "Expected status code {$status} but received {$actual}";
+        $content = (array) json_decode((string) $this->getContent(), true);
+
+        if (isset($content[Keys::KEYWORD_ERRORS])) {
+            $message .= " with errors:\n" . json_encode($content, JSON_PRETTY_PRINT);
+        }
+
+        PHPUnit::assertSame($status, $actual, $message);
+
+        return $this;
+    }
+
+    /**
+     * Assert that the response content is a JSON API document.
+     *
+     * @return DocumentTester
+     */
+    public function assertDocument()
+    {
+        if ($this->document) {
+            return $this->document;
+        }
+
+        $this->assertHeader('Content-Type', $this->expectedContentType);
+
+        return $this->document = DocumentTester::create($this->getContent());
+    }
+
+    /**
+     * @return $this
+     */
+    public function assertNoContent()
+    {
+        $this->assertStatus(Response::HTTP_NO_CONTENT);
+        PHPUnit::assertEmpty($this->getContent(), 'Expecting empty body content.');
+
+        return $this;
+    }
+
+    /**
+     * Assert that the response content contains JSON API errors.
+     *
+     * @return ErrorsTester
+     */
+    public function assertErrors()
+    {
+        return $this->assertDocument()->assertErrors();
+    }
+
+    /**
+     * Assert the response is the result of searching for many resources of the specified type.
+     *
+     * @param string|null $resourceType
+     *      the expected resource type, or null for the expected type set on this tester.
+     * @return $this
+     */
+    public function assertSearchedMany($resourceType = null)
+    {
+        $this->assertStatus(Response::HTTP_OK)
+            ->assertDocument()
+            ->assertResourceCollection()
+            ->assertTypes($resourceType ?: $this->expectedResourceType());
+
+        return $this;
+    }
+
+    /**
+     * Assert the response is the result of searching for many resources, but none were found.
+     *
+     * @return $this
+     */
+    public function assertSearchedNone()
+    {
+        $this->assertStatus(Response::HTTP_OK)
+            ->assertDocument()
+            ->assertResourceCollection()
+            ->assertEmpty();
+
+        return $this;
+    }
+
+    /**
+     * Assert the data member contains the expected resource, or null.
+     *
+     * @param array|null $expected
+     *      the expected resource, or null.
+     * @return $this
+     */
+    public function assertSearchedOne($expected)
+    {
+        if (!is_null($expected)) {
+            $this->assertRead($expected);
+        } else {
+            $this->assertStatus(Response::HTTP_OK)->assertDocument()->assertDataNull();
+        }
+
+        return $this;
+    }
+
+    /**
+     * Assert the response contains the results of a search by ids for the expected resource type.
+     *
+     * @param mixed $expectedIds
+     *      the ids that are expected to be in the response.
+     * @param string|null $resourceType
+     *      the expected resource type, or null for the expected type set on this tester.
+     * @return $this
+     */
+    public function assertSearchedIds($expectedIds, $resourceType = null)
+    {
+        $resourceType = $resourceType ?: $this->expectedResourceType();
+
+        $this->assertStatus(Response::HTTP_OK)
+            ->assertDocument()
+            ->assertResourceCollection()
+            ->assertContainsOnly([$resourceType => $this->normalizeIds($expectedIds)]);
+
+        return $this;
+    }
+
+    /**
+     * Assert response is a JSON API resource created response.
+     *
+     * @param array $expected
+     *      array representation of the expected attributes of the resource.
+     * @return $this
+     */
+    public function assertCreated(array $expected)
+    {
+        if (!isset($expected['type'])) {
+            $expected['type'] = $this->expectedResourceType();
+        }
+
+        $this->assertStatus(Response::HTTP_CREATED)
+            ->assertHeader('Location')
+            ->assertDocument()
+            ->assertResource()
+            ->assertMatches($expected);
+
+        return $this;
+    }
+
+    /**
+     * Assert response is a JSON API resource created response, and return the created id.
+     *
+     * @param array $expected
+     * @return string
+     */
+    public function assertCreatedWithId(array $expected)
+    {
+        $this->assertCreated($expected);
+        $id = array_get($this->decodeResponseJson(), 'data.id');
+
+        PHPUnit::assertNotEmpty($id, 'Create response does not include a valid id.');
+        PHPUnit::assertInternalType('string', $id);
+
+        return $id;
+    }
+
+    /**
+     * Assert response is a JSON API read resource response.
+     *
+     * @param array $expected
+     *      array representation of the expected attributes of the resource.
+     * @return $this
+     */
+    public function assertRead(array $expected)
+    {
+        if (!isset($expected['type'])) {
+            $expected['type'] = $this->expectedResourceType();
+        }
+
+        $this->assertStatus(Response::HTTP_OK)
+            ->assertDocument()
+            ->assertResource()
+            ->assertMatches($expected);
+
+        return $this;
+    }
+
+    /**
+     * Assert response is a JSON API resource updated response.
+     *
+     * @param array $expected
+     *      array representation of the expected resource, or null for a no-content response
+     * @return $this
+     */
+    public function assertUpdated(array $expected = null)
+    {
+        if (is_null($expected)) {
+            $this->assertNoContent();
+        } else {
+            $this->assertRead($expected);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Assert response is a JSON API resource deleted response.
+     *
+     * The JSON API spec says that:
+     *
+     * - A server MUST return a 204 No Content status code if a deletion request is successful
+     * and no content is returned.
+     * - A server MUST return a 200 OK status code if a deletion request is successful and the server responds
+     * with only top-level meta data.
+     *
+     * @param array|null $expected
+     *      the expected top-level meta, or null for no content response.
+     * @return $this
+     */
+    public function assertDeleted(array $expected = null)
+    {
+        if (is_null($expected)) {
+            $this->assertStatus(Response::HTTP_NO_CONTENT);
+        } else {
+            $this->assertStatus(Response::HTTP_OK);
+            // @todo assert top-level meta
+        }
+
+        return $this;
+    }
+
+    /**
+     * Assert response is a has-one related resource response.
+     *
+     * @param array $expected
+     *      array representation of the expected resource, or null if null is expected.
+     * @return $this
+     */
+    public function assertReadHasOne(array $expected = null)
+    {
+        if (is_array($expected) && !isset($expected['type'])) {
+            throw new InvalidArgumentException('Expected related resource must have a resource type.');
+        }
+
+        return $this->assertSearchedOne($expected);
+    }
+
+    /**
+     * Assert response is a has-one related resource identifier response.
+     *
+     * @param string|null $resourceType
+     *      the resource type, or null if the data member is expected to be null.
+     * @param string|null $resourceId
+     * @return $this
+     */
+    public function assertReadHasOneIdentifier($resourceType, $resourceId = null)
+    {
+        $document = $this->assertStatus(Response::HTTP_OK)->assertDocument();
+
+        if (is_null($resourceType)) {
+            $document->assertDataNull();
+        } else {
+            $document->assertResourceIdentifier()->assertIs($resourceType, $resourceId);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Assert response is a has-many related resource response.
+     *
+     * @param string|null $resourceType
+     *      string expected resource type, or null for an empty relationship.
+     * @param mixed|null $expectedIds
+     *      the expected specific ids.
+     * @return $this
+     */
+    public function assertReadHasMany($resourceType, $expectedIds = null)
+    {
+        if (is_null($resourceType)) {
+            $this->assertSearchedNone();
+        } elseif (!is_null($expectedIds)) {
+            $this->assertSearchedIds($expectedIds, $resourceType);
+        } else {
+            $this->assertSearchedMany($resourceType);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Assert response is a has-many related resource identifiers response.
+     *
+     * @param string|null $resourceType
+     *      string expected resource type, or null for an empty relationship.
+     * @param mixed|null $expectedIds
+     *      the expected specific ids.
+     * @return $this
+     */
+    public function assertReadHasManyIdentifiers($resourceType, $expectedIds = null)
+    {
+        if (is_null($resourceType)) {
+            $this->assertSearchedNone();
+        } elseif (!is_null($expectedIds)) {
+            // @todo this checks for resources, not identifiers.
+            $this->assertSearchedIds($expectedIds, $resourceType);
+        } else {
+            // @todo this checks for resources, not identifiers.
+            $this->assertSearchedMany($resourceType);
+        }
+
+        return $this;
+    }
+
+    /**
      * Assert a response with a singular resource in the `data` member.
      *
      * @param $resourceId
      * @param string $contentType
      * @return $this
+     * @deprecated
      */
     public function assertResourceResponse($resourceId, $contentType = MediaTypeInterface::JSON_API_MEDIA_TYPE)
     {
@@ -83,6 +421,7 @@ class TestResponse extends BaseTestResponse
      *
      * @param string $contentType
      * @return $this
+     * @deprecated
      */
     public function assertResourcesResponse($contentType = MediaTypeInterface::JSON_API_MEDIA_TYPE)
     {
@@ -98,6 +437,7 @@ class TestResponse extends BaseTestResponse
      * @param string|string[]
      * @param string $contentType
      * @return $this
+     * @deprecated
      */
     public function assertRelatedResourcesResponse(
         $expectedTypes,
@@ -114,6 +454,7 @@ class TestResponse extends BaseTestResponse
      *
      * @param string $contentType
      * @return ResourceObjectsTester
+     * @deprecated
      */
     public function assertSearchResponse($contentType = MediaTypeInterface::JSON_API_MEDIA_TYPE)
     {
@@ -131,7 +472,7 @@ class TestResponse extends BaseTestResponse
      * @param string|int|UrlRoutable $expectedId
      * @param string $contentType
      * @return ResourceObjectTester
-     * @todo needs to support `null` responses
+     * @deprecated
      */
     public function assertSearchOneResponse($expectedId, $contentType = MediaTypeInterface::JSON_API_MEDIA_TYPE)
     {
@@ -155,6 +496,7 @@ class TestResponse extends BaseTestResponse
      * @param string $contentType
      * @return string
      *      the id of the created resource.
+     * @deprecated
      */
     public function assertCreateResponse(
         array $expected,
@@ -177,6 +519,7 @@ class TestResponse extends BaseTestResponse
      *      array representation of the expected attributes of the resource.
      * @param string $contentType
      * @return $this
+     * @deprecated
      */
     public function assertReadResponse(array $expected, $contentType = MediaTypeInterface::JSON_API_MEDIA_TYPE)
     {
@@ -192,6 +535,7 @@ class TestResponse extends BaseTestResponse
      *      array representation of the expected attributes of the resource.
      * @param string $contentType
      * @return $this
+     * @deprecated
      */
     public function assertUpdateResponse(array $expected, $contentType = MediaTypeInterface::JSON_API_MEDIA_TYPE)
     {
@@ -207,6 +551,7 @@ class TestResponse extends BaseTestResponse
      * @param string $contentType
      *      the content type if content type is expected (i.e. ignored for 204 responses).
      * @return $this
+     * @deprecated
      */
     public function assertDeleteResponse(
         $statusCode = Response::HTTP_NO_CONTENT,
@@ -228,6 +573,7 @@ class TestResponse extends BaseTestResponse
      *      array representation of the expected attributes of the resource.
      * @param string $contentType
      * @return $this
+     * @deprecated
      */
     public function assertRelatedResourceResponse(
         array $expected,
@@ -245,6 +591,7 @@ class TestResponse extends BaseTestResponse
      *      the id, or null if no identifier is expected in the response.
      * @param string $contentType
      * @return $this
+     * @deprecated
      */
     public function assertHasOneRelationshipResponse(
         $resourceType,
@@ -277,6 +624,7 @@ class TestResponse extends BaseTestResponse
      * @param string|string[] $resourceType
      * @param bool $allowEmpty
      * @return $this
+     * @deprecated
      */
     public function assertDataCollection($resourceType = null, $allowEmpty = true)
     {
@@ -299,6 +647,7 @@ class TestResponse extends BaseTestResponse
      * @param array $expected
      *      the expected array representation of the resource.
      * @return $this
+     * @deprecated
      */
     public function assertDataResource(array $expected)
     {
@@ -318,6 +667,7 @@ class TestResponse extends BaseTestResponse
      * @param mixed $id
      *      the expected id in the identifier, or null if no identifier is expected.
      * @return $this
+     * @deprecated
      */
     public function assertDataResourceIdentifier($resourceType = null, $id = null)
     {
@@ -339,6 +689,7 @@ class TestResponse extends BaseTestResponse
      *      the ids - may contain UrlRoutable objects (e.g. Models)
      * @param string $contentType
      * @return ResourceObjectsTester
+     * @deprecated
      */
     public function assertSearchByIdResponse($expectedIds, $contentType = MediaTypeInterface::JSON_API_MEDIA_TYPE)
     {
@@ -350,22 +701,6 @@ class TestResponse extends BaseTestResponse
             ->assertContainsOnly([
                 $this->expectedResourceType() => $this->normalizeIds($expectedIds),
             ]);
-    }
-
-    /**
-     * @return DocumentTester
-     */
-    public function assertDocument()
-    {
-        return DocumentTester::create($this->baseResponse->getContent());
-    }
-
-    /**
-     * @return ErrorsTester
-     */
-    public function assertErrors()
-    {
-        return $this->assertDocument()->assertErrors();
     }
 
     /**
@@ -393,8 +728,17 @@ class TestResponse extends BaseTestResponse
         }
 
         return collect($ids)->map(function ($id) {
-            return ($id instanceof UrlRoutable) ? $id->getRouteKey() : $id;
+            return $this->normalizeId($id);
         })->all();
+    }
+
+    /**
+     * @param $id
+     * @return mixed
+     */
+    protected function normalizeId($id)
+    {
+        return ($id instanceof UrlRoutable) ? $id->getRouteKey() : $id;
     }
 
 }

@@ -129,6 +129,42 @@ abstract class JsonApiController extends Controller
     /**
      * @param StoreInterface $store
      * @param RequestInterface $request
+     * @param object $record
+     * @return Response
+     */
+    public function readRelatedResource(StoreInterface $store, RequestInterface $request, $record)
+    {
+        $related = $store->queryRelated(
+            $request->getResourceType(),
+            $record,
+            $request->getRelationshipName(),
+            $request->getParameters()
+        );
+
+        return $this->reply()->content($related);
+    }
+
+    /**
+     * @param StoreInterface $store
+     * @param RequestInterface $request
+     * @param $record
+     * @return Response
+     */
+    public function readRelationship(StoreInterface $store, RequestInterface $request, $record)
+    {
+        $related = $store->queryRelationship(
+            $request->getResourceType(),
+            $record,
+            $request->getRelationshipName(),
+            $request->getParameters()
+        );
+
+        return $this->reply()->relationship($related);
+    }
+
+    /**
+     * @param StoreInterface $store
+     * @param RequestInterface $request
      * @return mixed
      */
     protected function doSearch(StoreInterface $store, RequestInterface $request)
@@ -142,15 +178,9 @@ abstract class JsonApiController extends Controller
      */
     protected function doCreate(ResourceObjectInterface $resource)
     {
-        if (method_exists($this, 'creating')) {
-            $this->creating($resource);
-        }
-
+        $this->beforeCommit($resource);
         $record = $this->hydrator()->create($resource);
-
-        if (method_exists($this, 'created')) {
-            $this->created($resource, $record);
-        }
+        $this->afterCommit($resource, $record, false);
 
         return $record;
     }
@@ -162,15 +192,9 @@ abstract class JsonApiController extends Controller
      */
     protected function doUpdate(ResourceObjectInterface $resource, $record)
     {
-        if (method_exists($this, 'updating')) {
-            $this->updating($resource, $record);
-        }
-
+        $this->beforeCommit($resource, $record);
         $record = $this->hydrator()->update($resource, $record);
-
-        if (method_exists($this, 'updated')) {
-            $this->updated($resource, $record);
-        }
+        $this->afterCommit($resource, $record, true);
 
         return $record;
     }
@@ -227,6 +251,41 @@ abstract class JsonApiController extends Controller
         }
 
         return $hydrator;
+    }
+
+    /**
+     * @param ResourceObjectInterface $resource
+     * @param object|null $record
+     */
+    protected function beforeCommit(ResourceObjectInterface $resource, $record = null)
+    {
+        if (method_exists($this, 'saving')) {
+            $this->saving($resource, $record);
+        }
+
+        $fn = is_null($record) ? 'creating' : 'updating';
+
+        if (method_exists($this, $fn)) {
+            $this->{$fn}($resource, $record);
+        }
+    }
+
+    /**
+     * @param ResourceObjectInterface $resource
+     * @param $record
+     * @param $updating
+     */
+    protected function afterCommit(ResourceObjectInterface $resource, $record, $updating)
+    {
+        $fn = !$updating ? 'created' : 'updating';
+
+        if (method_exists($this, $fn)) {
+            $this->{$fn}($resource, $record);
+        }
+
+        if (method_exists($this, 'saved')) {
+            $this->saved($resource, $record);
+        }
     }
 
 }

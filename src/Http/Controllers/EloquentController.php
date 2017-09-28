@@ -65,34 +65,6 @@ class EloquentController extends JsonApiController
     }
 
     /**
-     * @param RequestInterface $request
-     * @return Response
-     */
-    public function readRelatedResource(RequestInterface $request)
-    {
-        $model = $this->getRecord($request);
-        $key = $this->keyForRelationship($request->getRelationshipName());
-
-        return $this
-            ->reply()
-            ->content($model->{$key});
-    }
-
-    /**
-     * @param RequestInterface $request
-     * @return Response
-     */
-    public function readRelationship(RequestInterface $request)
-    {
-        $model = $this->getRecord($request);
-        $key = $this->keyForRelationship($request->getRelationshipName());
-
-        return $this
-            ->reply()
-            ->relationship($model->{$key});
-    }
-
-    /**
      * @param Model $record
      * @return bool
      */

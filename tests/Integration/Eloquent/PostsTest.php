@@ -2,6 +2,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Eloquent;
 
+use CloudCreativity\LaravelJsonApi\Tests\Models\Comment;
 use CloudCreativity\LaravelJsonApi\Tests\Models\Post;
 use CloudCreativity\LaravelJsonApi\Tests\Models\Tag;
 
@@ -141,6 +142,61 @@ class PostsTest extends TestCase
 
         $this->doDelete($model)->assertDeleteResponse();
         $this->assertModelDeleted($model);
+    }
+
+    /**
+     * Test that we can read the related author.
+     */
+    public function testReadAuthor()
+    {
+        $model = $this->createPost();
+        $author = $model->author;
+
+        $data = [
+            'type' => 'users',
+            'id' => $author->getKey(),
+            'attributes' => [
+                'name' => $author->name,
+            ],
+        ];
+
+        $this->doReadRelated($model, 'author')->assertReadHasOne($data);
+    }
+
+    /**
+     * Test that we can read the related comments.
+     */
+    public function testReadComments()
+    {
+        $model = $this->createPost();
+        $comments = factory(Comment::class, 2)->create(['post_id' => $model->getKey()]);
+        /** This comment shouldn't appear in the results... */
+        factory(Comment::class)->create();
+
+        $this->doReadRelated($model, 'comments')->assertReadHasMany('comments', $comments);
+    }
+
+    /**
+     * Test that we can read the resource identifier for the related author.
+     */
+    public function testReadAuthorRelationship()
+    {
+        $model = $this->createPost();
+
+        $this->doReadRelationship($model, 'author')->assertReadHasOneIdentifier('users', $model->author_id);
+    }
+
+    /**
+     * Test that we can read the resource identifiers for the related comments.
+     */
+    public function testReadCommentsRelationship()
+    {
+        $model = $this->createPost();
+        $comments = factory(Comment::class, 2)->create(['post_id' => $model->getKey()]);
+        /** This comment shouldn't appear in the results... */
+        factory(Comment::class)->create();
+
+        $this->doReadRelated($model, 'comments')->assertReadHasManyIdentifiers('comments', $comments);
     }
 
     /**

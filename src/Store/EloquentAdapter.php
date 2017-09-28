@@ -99,6 +99,22 @@ abstract class EloquentAdapter implements AdapterInterface
      */
     protected $sortColumns = [];
 
+    /**
+     * The inverse resource types for the model's relationships.
+     *
+     * By default the Eloquent adapter will return the pluralized form of the relationship name
+     * as the inverse resource type. E.g. if the relationship is called 'user', it will return
+     * 'users'.
+     *
+     * For any relationships that this is not the case, you will need to provide the mapping here.
+     * E.g. if the relationship is 'author' and the resource type is 'users', your array
+     * must be configured as follows:
+     *
+     * `['author' => 'users']`
+     *
+     * @var array
+     */
+    protected $inverse = [];
 
     /**
      * Apply the supplied filters to the builder instance.
@@ -172,7 +188,9 @@ abstract class EloquentAdapter implements AdapterInterface
      */
     public function queryRelated($record, $relationshipName, EncodingParametersInterface $parameters)
     {
-        // TODO: Implement queryRelated() method.
+        $key = Str::camelize($relationshipName);
+
+        return $record->{$key};
     }
 
     /**
@@ -180,7 +198,9 @@ abstract class EloquentAdapter implements AdapterInterface
      */
     public function queryRelationship($record, $relationshipName, EncodingParametersInterface $parameters)
     {
-        // TODO: Implement queryRelationship() method.
+        $key = Str::camelize($relationshipName);
+
+        return $record->{$key};
     }
 
     /**
@@ -212,7 +232,11 @@ abstract class EloquentAdapter implements AdapterInterface
      */
     public function inverse($relationshipName)
     {
-        // TODO: Implement inverse() method.
+        if (isset($this->inverse[$relationshipName])) {
+            return $this->inverse[$relationshipName];
+        }
+
+        return $this->inverse[$relationshipName] = str_plural($relationshipName);
     }
 
     /**

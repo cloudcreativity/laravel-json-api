@@ -11,4 +11,9 @@ class Schema extends EloquentSchema
      * @var string
      */
     protected $resourceType = 'users';
+
+    /**
+     * @var array
+     */
+    protected $attributes = ['name'];
 }

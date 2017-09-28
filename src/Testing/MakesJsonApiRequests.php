@@ -116,11 +116,11 @@ trait MakesJsonApiRequests
      */
     protected function normalizeHeaders(array $headers, $content = null)
     {
-        $defaultHeaders = ['Accept' => MediaTypeInterface::JSON_API_MEDIA_TYPE];
+        $defaultHeaders = ['Accept' => $this->acceptMediaType()];
 
         if (!is_null($content)) {
             $defaultHeaders['CONTENT_LENGTH'] = mb_strlen($content, '8bit');
-            $defaultHeaders['CONTENT_TYPE'] = MediaTypeInterface::JSON_API_MEDIA_TYPE;
+            $defaultHeaders['CONTENT_TYPE'] = $this->contentMediaType();
         }
 
         return array_merge($defaultHeaders, $headers);
@@ -134,7 +134,7 @@ trait MakesJsonApiRequests
     {
         $resourceType = property_exists($this, 'resourceType') ? $this->resourceType : null;
 
-        return new TestResponse($response, $resourceType);
+        return new TestResponse($response, $resourceType, $this->expectedMediaType());
     }
 
     /**
@@ -321,6 +321,84 @@ trait MakesJsonApiRequests
     }
 
     /**
+     * @param $resourceId
+     * @param $relationshipName
+     * @param array $params
+     * @param array $headers
+     * @return TestResponse
+     */
+    protected function doReadRelated($resourceId, $relationshipName, array $params = [], array $headers = [])
+    {
+        $params = $this->addDefaultRouteParams($params);
+        $uri = $this->api()->url()->relatedResource($this->resourceType(), $resourceId, $relationshipName, $params);
+
+        return $this->getJsonApi($uri, [], $headers);
+    }
+
+    /**
+     * Assert that the related resource route has not been registered for the supplied relationship name.
+     *
+     * @param $relationshipName
+     * @return void
+     */
+    protected function assertCannotReadRelated($relationshipName)
+    {
+        $readable = true;
+
+        try {
+            $this->api()->url()->relatedResource(
+                $this->resourceType(),
+                '1',
+                $relationshipName,
+                $this->addDefaultRouteParams([])
+            );
+        } catch (InvalidArgumentException $ex) {
+            $readable = false;
+        }
+
+        $this->assertFalse($readable, "Related resource $relationshipName route exists.");
+    }
+
+    /**
+     * @param $resourceId
+     * @param $relationshipName
+     * @param array $params
+     * @param array $headers
+     * @return TestResponse
+     */
+    protected function doReadRelationship($resourceId, $relationshipName, array $params = [], array $headers = [])
+    {
+        $params = $this->addDefaultRouteParams($params);
+        $uri = $this->api()->url()->readRelationship($this->resourceType(), $resourceId, $relationshipName, $params);
+
+        return $this->getJsonApi($uri, [], $headers);
+    }
+
+    /**
+     * Assert that the read relationship route has not been registered for the supplied relationship name.
+     *
+     * @param $relationshipName
+     * @return void
+     */
+    protected function assertCannotReadRelationship($relationshipName)
+    {
+        $readable = true;
+
+        try {
+            $this->api()->url()->readRelationship(
+                $this->resourceType(),
+                '1',
+                $relationshipName,
+                $this->addDefaultRouteParams([])
+            );
+        } catch (InvalidArgumentException $ex) {
+            $readable = false;
+        }
+
+        $this->assertFalse($readable, "Read relationship $relationshipName route exists.");
+    }
+
+    /**
      * @return mixed
      */
     protected function resourceType()
@@ -332,6 +410,42 @@ trait MakesJsonApiRequests
         }
 
         return $resourceType;
+    }
+
+    /**
+     * Get the media type to use for the Accept header.
+     *
+     * @return string
+     */
+    protected function acceptMediaType()
+    {
+        $mediaType = property_exists($this, 'acceptMediaType') ? $this->acceptMediaType : null;
+
+        return $mediaType ?: MediaTypeInterface::JSON_API_MEDIA_TYPE;
+    }
+
+    /**
+     * Get the media type to use for the Content-Type header.
+     *
+     * @return string
+     */
+    protected function contentMediaType()
+    {
+        $mediaType = property_exists($this, 'contentMediaType') ? $this->contentMediaType : null;
+
+        return $mediaType ?: $this->acceptMediaType();
+    }
+
+    /**
+     * Get the expected media type for a response that contains body.
+     *
+     * @return string
+     */
+    protected function expectedMediaType()
+    {
+        $mediaType = property_exists($this, 'responseMediaType') ? $this->responseMediaType : null;
+
+        return $mediaType ?: $this->acceptMediaType();
     }
 
     /**
