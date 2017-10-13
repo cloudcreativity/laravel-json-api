@@ -192,7 +192,7 @@ abstract class EloquentAdapter implements AdapterInterface
      * @param Builder $query
      * @param Collection $includePaths
      *      the paths for resources that will be included.
-     * @return array
+     * @return void
      */
     protected function with(Builder $query, Collection $includePaths)
     {
@@ -364,7 +364,7 @@ abstract class EloquentAdapter implements AdapterInterface
     {
         $key = $this->columnForField($field, $query->getModel());
 
-        if (!str_contains('.', $key)) {
+        if (!str_contains($key, '.')) {
             $key = sprintf('%s.%s', $query->getModel()->getTable(), $key);
         }
 

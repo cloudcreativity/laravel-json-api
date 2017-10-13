@@ -1,9 +1,24 @@
 # Installation
 
+## Laravel 5.5
+
 Install using [Composer](http://getcomposer.org):
 
 ``` bash
 $ composer require cloudcreativity/laravel-json-api
+$ composer require --dev cloudcreativity/json-api-testing
+```
+
+This package's service provider and facade will be automatically added using package discovery. You will
+need to follow the instructions below for updating your `ExceptionHandler`.
+
+## Laravel 5.4
+
+Install using [Composer](http://getcomposer.org):
+
+``` bash
+$ composer require cloudcreativity/laravel-json-api
+$ composer require --dev cloudcreativity/json-api-testing
 ```
 
 Add the package service provider to your `config/app.php` providers array.
@@ -24,8 +39,6 @@ If you would like to use the `JsonApi` facade, add the following to the list of 
   'JsonApi' => CloudCreativity\LaravelJsonApi\Facades\JsonApi::class,
 ]
 ```
-
-> The `JsonApi` facade maps to the `CloudCreativity\LaravelJsonApi\Services\JsonApiService` class.
 
 ## Exception Handling
 

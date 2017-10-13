@@ -2,6 +2,42 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## [0.11.1] - 2017-09-26
+
+### Fixed
+- [#109] The matched media type is now set as the `Content-Type` header on a response.
+
+## [0.11.0] - 2017-09-02
+
+### Added
+- Support for Laravel 5.5, including package discovery.
+- Client supplied ids will now be hydrated into Eloquent models, configurable via the `$clientId` property
+on the Eloquent hydrator.
+
+### Removed
+- The following deprecated methods were removed from the `TestResponse` helper:
+  - `seeStatusCode()`: use `assertStatus()`
+  - `seeDataCollection()`: use `assertDataCollection()`
+  - `seeDataResource()`: use `assertDataResource()`
+  - `seeDataResourceIdentifier()`: use `assertDataResourceIdentifier()`
+  - `seeDocument()`: use `assertDocument()`
+  - `seeErrors()`: use `assertErrors()` 
+
+### Deprecated
+- The `TestResponse::assertStatusCode()` method is deprecated in favour of `assertStatus()`.
+- The `InteractsWithModels::seeModelInDatabase()` method is deprecated in favour of `assertDatabaseHasModel()`.
+- The `InteractsWithModels::notSeeModelInDatabase()` method is deprecated in favour of `assertDatabaseMissingModel()`.
+
+## [0.10.3] - 2017-09-02
+
+### Fixed
+-[#96] Fixed creation of qualified sorting parameters in the Eloquent adapter. 
+
+## [0.10.2] - 2017-08-25
+
+### Added
+- Test assertions to check that resource routes have not been registered.
+
 ## [0.10.1] - 2017-08-15
 
 ### Fixed

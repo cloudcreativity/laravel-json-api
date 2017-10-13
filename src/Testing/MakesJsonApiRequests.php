@@ -22,11 +22,12 @@ use CloudCreativity\LaravelJsonApi\Api\Api;
 use Illuminate\Contracts\Routing\UrlRoutable;
 use Illuminate\Foundation\Testing\Concerns\MakesHttpRequests;
 use Illuminate\Support\Collection;
+use InvalidArgumentException;
 use Neomerx\JsonApi\Contracts\Document\DocumentInterface as Keys;
 use Neomerx\JsonApi\Contracts\Document\LinkInterface;
 use Neomerx\JsonApi\Contracts\Http\Headers\MediaTypeInterface;
 use Neomerx\JsonApi\Contracts\Http\Query\QueryParametersParserInterface as Params;
-use PHPUnit_Framework_Assert as PHPUnit;
+use RuntimeException;
 
 /**
  * Class MakesJsonApiRequests
@@ -146,7 +147,7 @@ trait MakesJsonApiRequests
         $params = $this->addDefaultRouteParams($params);
         $uri = $this->api()->url()->index($this->resourceType(), $params);
 
-        return $this->jsonApi('GET', $uri, [], $headers);
+        return $this->getJsonApi($uri, [], $headers);
     }
 
     /**
@@ -168,6 +169,24 @@ trait MakesJsonApiRequests
     }
 
     /**
+     * Assert that the resource's search (index) route has not been registered.
+     *
+     * @return void
+     */
+    protected function assertCannotSearch()
+    {
+        $searchable = true;
+
+        try {
+            $this->api()->url()->index($this->resourceType(), $this->addDefaultRouteParams([]));
+        } catch (InvalidArgumentException $ex) {
+            $searchable = false;
+        }
+
+        $this->assertFalse($searchable, 'Resource search route exists.');
+    }
+
+    /**
      * @param array $data
      * @param array $params
      * @param array $headers
@@ -178,7 +197,25 @@ trait MakesJsonApiRequests
         $params = $this->addDefaultRouteParams($params);
         $uri = $this->api()->url()->create($this->resourceType(), $params);
 
-        return $this->jsonApi('POST', $uri, ['data' => $data], $headers);
+        return $this->postJsonApi($uri, ['data' => $data], $headers);
+    }
+
+    /**
+     * Assert that the resource's create route has not been registered.
+     *
+     * @return void
+     */
+    protected function assertCannotCreate()
+    {
+        $creatable = true;
+
+        try {
+            $this->api()->url()->create($this->resourceType(), $this->addDefaultRouteParams([]));
+        } catch (InvalidArgumentException $ex) {
+            $creatable = false;
+        }
+
+        $this->assertFalse($creatable, 'Resource create route exists.');
     }
 
     /**
@@ -192,7 +229,25 @@ trait MakesJsonApiRequests
         $params = $this->addDefaultRouteParams($params);
         $uri = $this->api()->url()->read($this->resourceType(), $resourceId, $params);
 
-        return $this->jsonApi('GET', $uri, $headers);
+        return $this->getJsonApi($uri, [], $headers);
+    }
+
+    /**
+     * Assert that the resource's read route has not been registered.
+     *
+     * @return void
+     */
+    protected function assertCannotRead()
+    {
+        $readable = true;
+
+        try {
+            $this->api()->url()->read($this->resourceType(), '1', $this->addDefaultRouteParams([]));
+        } catch (InvalidArgumentException $ex) {
+            $readable = false;
+        }
+
+        $this->assertFalse($readable, 'Resource read route exists.');
     }
 
     /**
@@ -206,13 +261,31 @@ trait MakesJsonApiRequests
         $id = isset($data[Keys::KEYWORD_ID]) ? $data[Keys::KEYWORD_ID] : null;
 
         if (empty($id)) {
-            PHPUnit::fail('Expecting data to contain a resource id.');
+            throw new InvalidArgumentException('Expecting provided data to contain a resource id.');
         }
 
         $params = $this->addDefaultRouteParams($params);
         $uri = $this->api()->url()->update($this->resourceType(), $id, $params);
 
-        return $this->jsonApi('PATCH', $uri, ['data' => $data], $headers);
+        return $this->patchJsonApi($uri, ['data' => $data], $headers);
+    }
+
+    /**
+     * Assert that the resource's update route has not been registered.
+     *
+     * @return void
+     */
+    protected function assertCannotUpdate()
+    {
+        $exists = true;
+
+        try {
+            $this->api()->url()->update($this->resourceType(), '1', $this->addDefaultRouteParams([]));
+        } catch (InvalidArgumentException $ex) {
+            $exists = false;
+        }
+
+        $this->assertFalse($exists, 'Resource update route exists.');
     }
 
     /**
@@ -226,7 +299,25 @@ trait MakesJsonApiRequests
         $params = $this->addDefaultRouteParams($params);
         $uri = $this->api()->url()->delete($this->resourceType(), $resourceId, $params);
 
-        return $this->jsonApi('DELETE', $uri, [], $headers);
+        return $this->deleteJsonApi($uri, [], $headers);
+    }
+
+    /**
+     * Assert that the resource's delete route has not been registered.
+     *
+     * @return void
+     */
+    protected function assertCannotDelete()
+    {
+        $deletable = true;
+
+        try {
+            $this->api()->url()->delete($this->resourceType(), '1', $this->addDefaultRouteParams([]));
+        } catch (InvalidArgumentException $ex) {
+            $deletable = false;
+        }
+
+        $this->assertFalse($deletable, 'Resource delete route exists.');
     }
 
     /**
@@ -237,7 +328,7 @@ trait MakesJsonApiRequests
         $resourceType = property_exists($this, 'resourceType') ? $this->resourceType : null;
 
         if (!$resourceType) {
-            PHPUnit::fail('You must set a resource type property on your test case.');
+            throw new RuntimeException('You must set a resource type property on your test case.');
         }
 
         return $resourceType;

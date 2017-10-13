@@ -19,7 +19,9 @@
 namespace CloudCreativity\LaravelJsonApi\Testing;
 
 use Illuminate\Database\Eloquent\Model;
-use PHPUnit_Framework_Assert as PHPUnit;
+use Illuminate\Foundation\Testing\Constraints\HasInDatabase;
+use Illuminate\Foundation\Testing\Constraints\SoftDeletedInDatabase;
+use PHPUnit\Framework\Constraint\LogicalNot;
 
 /**
  * Class InteractsWithModels
@@ -64,7 +66,7 @@ trait InteractsWithModels
             $expected[$attr] = isset($attributes[$attr]) ? $attributes[$attr] : null;
         }
 
-        return $this->seeModelInDatabase($model, $expected);
+        return $this->assertDatabaseHasModel($model, $expected);
     }
 
     /**
@@ -90,7 +92,7 @@ trait InteractsWithModels
 
         $expected[$model->getKeyName()] = $model->getKey();
 
-        return $this->seeModelInDatabase($model, $expected);
+        return $this->assertDatabaseHasModel($model, $expected);
     }
 
     /**
@@ -101,7 +103,7 @@ trait InteractsWithModels
      */
     protected function assertModelDeleted(Model $model)
     {
-        return $this->notSeeModelInDatabase($model, [$model->getKeyName() => $model->getKey()]);
+        return $this->assertDatabaseMissingModel($model, [$model->getKeyName() => $model->getKey()]);
     }
 
     /**
@@ -112,29 +114,57 @@ trait InteractsWithModels
      */
     protected function assertModelTrashed(Model $model)
     {
-        /** Cannot use `fresh()` because it is different between 5.2 and 5.3. */
-        $fresh = $model->newQueryWithoutScopes()->where($model->getKeyName(), $model->getKey())->first();
+        $data = [$model->getKeyName() => $model->getKey()];
 
-        PHPUnit::assertNotNull($fresh, 'Model has been removed from the database.');
-        PHPUnit::assertTrue($fresh->trashed(), 'Model is not trashed.');
+        $this->assertThat(
+            $model->getTable(), new SoftDeletedInDatabase($model->getConnection(), $data)
+        );
 
-        return $this->seeModelInDatabase($model, [$model->getKeyName() => $model->getKey()]);
+        return $this;
     }
 
     /**
      * @param Model $model
      * @param array $expected
      * @return $this
+     * @deprecated use `assertDatabaseHasModel`
      */
     protected function seeModelInDatabase(Model $model, array $expected)
     {
-        $message = sprintf(
-            'Unable to find model in database table [%s] that matched attributes [%s].',
-            $model->getTable(),
-            json_encode($expected)
+        return $this->assertDatabaseHasModel($model, $expected);
+    }
+
+    /**
+     * @param Model $model
+     * @param array $data
+     * @return $this
+     */
+    protected function assertDatabaseHasModel(Model $model, array $data)
+    {
+        $this->assertThat(
+            $model->getTable(), new HasInDatabase($model->getConnection(), $data)
         );
 
-        PHPUnit::assertGreaterThan(0, $this->countModels($model, $expected), $message);
+        return $this;
+    }
+
+    /**
+     * @param Model $model
+     * @param array $data
+     * @return $this
+     * @todo update method when dropping support for Laravel 5.4
+     */
+    protected function assertDatabaseMissingModel(Model $model, array $data)
+    {
+        if (class_exists('PHPUnit_Framework_Constraint_Not')) {
+            $constraint = new \PHPUnit_Framework_Constraint_Not(
+                new HasInDatabase($model->getConnection(), $data)
+            );
+        } else {
+            $constraint = new LogicalNot(new HasInDatabase($model->getConnection(), $data));
+        }
+
+        $this->assertThat($model->getTable(), $constraint);
 
         return $this;
     }
@@ -143,31 +173,11 @@ trait InteractsWithModels
      * @param Model $model
      * @param array $expected
      * @return $this
+     * @deprecated use `assertDatabaseMissingModel`
      */
     protected function notSeeModelInDatabase(Model $model, array $expected)
     {
-        $message = sprintf(
-            'Found model in database table [%s] that matched attributes [%s].',
-            $model->getTable(),
-            json_encode($expected)
-        );
-
-        PHPUnit::assertEquals(0, $this->countModels($model, $expected), $message);
-
-        return $this;
+        return $this->assertDatabaseMissingModel($model, $expected);
     }
 
-    /**
-     * @param Model $model
-     * @param array $expected
-     * @return int
-     */
-    private function countModels(Model $model, array $expected)
-    {
-        return $model
-            ->getConnection()
-            ->table($model->getTable())
-            ->where($expected)
-            ->count();
-    }
 }

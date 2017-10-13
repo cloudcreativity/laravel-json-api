@@ -318,7 +318,7 @@ class Api
         return $this->factory->createResponses(
             $this->getSchemas(),
             $this->getErrors(),
-            null,
+            $this->getCodecMatcher(),
             $parameters,
             $extensions ?: $this->getSupportedExtensions(),
             (string) $this->getUrl()
