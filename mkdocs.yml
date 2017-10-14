@@ -16,6 +16,7 @@ pages:
   - Non-Eloquent:
     - Controllers: custom/controllers.md
   - Digging Deeper:
+    - Inclusion: features/inclusion.md
     - Broadcasting: features/broadcasting.md
     - Helpers: features/helpers.md
     - HTTP Clients: features/http-clients.md
