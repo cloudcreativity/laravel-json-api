@@ -141,7 +141,6 @@ controller:
 2. `readRelationship()`
 
 ### Read Related Resource
-
 If you link one resource to another through relationship, you'll need this to read the related resource.
 
 ```php
