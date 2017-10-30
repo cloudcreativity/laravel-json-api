@@ -15,6 +15,5 @@ class BroadcastingTest extends TestCase
 
         $this->assertSame('posts', array_get($data, 'data.type'));
         $this->assertEquals($id = $post->getKey(), array_get($data, 'data.id'));
-        $this->assertEquals("http://localhost/api/v1/posts/$id", array_get($data, 'data.links.self'));
     }
 }
