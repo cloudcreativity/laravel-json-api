@@ -37,9 +37,9 @@ class JsonWebTokensController extends Controller
         } else {
             // Incorrect login details
             return $this->reply()->errors(Error::create([
-            	'status' => 422,
-            	'title' => 'Login failed.',
-            	'detail' => 'These credentials do not match our records.'
+                'status' => 422,
+                'title' => 'Login failed.',
+                'detail' => 'These credentials do not match our records.'
             ]));
 
         }
