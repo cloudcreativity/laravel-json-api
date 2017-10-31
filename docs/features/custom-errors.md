@@ -16,12 +16,9 @@ namespace App\Http\Controllers\Api\V1;
 
 use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface as JsonApiRequest;
 use CloudCreativity\JsonApi\Document\Error;
-use CloudCreativity\JsonApi\Utils\ErrorsAwareTrait;
 
 class JsonWebTokensController extends Controller
 {
-    use ErrorsAwareTrait;
-
     protected function guard()
     {
         return Auth::guard('jwt');
@@ -39,12 +36,12 @@ class JsonWebTokensController extends Controller
             // Success!
         } else {
             // Incorrect login details
-            $this->addError(Error::create([
-                'status' => 422,
-                'title' => 'Login failed.',
-                'detail' => 'These credentials do not match our records.'
+            return $this->reply()->errors(Error::create([
+            	'status' => 422,
+            	'title' => 'Login failed.',
+            	'detail' => 'These credentials do not match our records.'
             ]));
-            return $this->reply()->errors($this->getErrors());
+
         }
     }
 }
