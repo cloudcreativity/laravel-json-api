@@ -258,7 +258,7 @@ abstract class EloquentAdapter implements AdapterInterface
      * @param Builder $query
      * @param Collection $includePaths
      *      the paths for resources that will be included.
-     * @return array
+     * @return void
      */
     protected function with(Builder $query, Collection $includePaths)
     {

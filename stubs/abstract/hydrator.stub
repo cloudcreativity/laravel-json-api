@@ -3,9 +3,9 @@
 namespace DummyNamespace;
 
 use CloudCreativity\JsonApi\Contracts\Hydrator\HydratesRelatedInterface;
-use CloudCreativity\JsonApi\Contracts\Object\StandardObjectInterface;
 use CloudCreativity\JsonApi\Hydrator\AbstractHydrator;
 use CloudCreativity\JsonApi\Hydrator\RelatedHydratorTrait;
+use CloudCreativity\Utils\Object\StandardObjectInterface;
 
 class Hydrator extends AbstractHydrator implements HydratesRelatedInterface
 {

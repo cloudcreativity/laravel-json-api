@@ -2,6 +2,24 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## [0.11.2] - 2017-11-14
+
+### Added
+- The host can now be omitted from encoded URLs if needed.
+
+### Changed
+- The test response `assertStatus` method now outputs the error messages if the response status is
+unexpected and the response has JSON API errors in it. This restores a the behaviour that was present
+in `v0.10`.
+
+### Fixed
+- Corrected invalid import statement in abstract hydrator stub.
+
+## [0.11.1] - 2017-09-26
+
+### Fixed
+- [#109] The matched media type is now set as the `Content-Type` header on a response.
+
 ## [0.11.0] - 2017-09-02
 
 ### Added

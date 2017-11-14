@@ -14,11 +14,25 @@ class PostsTest extends TestCase
      */
     protected $resourceType = 'posts';
 
-    public function testSearch()
+    /**
+     * Test searching with a sort parameter.
+     */
+    public function testSortedSearch()
     {
-        factory(Post::class, 3)->create();
+        $a = factory(Post::class)->create([
+            'title' => 'Title A',
+        ]);
 
-        $this->doSearch(['sort' => '-created-at'])->assertSearchResponse();
+        $b = factory(Post::class)->create([
+            'title' => 'Title B',
+        ]);
+
+        $response = $this->doSearch(['sort' => '-title']);
+        $response->assertSearchResponse()->assertContainsOnly(['posts' => [$a->getKey(), $b->getKey()]]);
+
+        $json = $response->decodeResponseJson();
+        $actual = [array_get($json, 'data.0.id'), array_get($json, 'data.1.id')];
+        $this->assertEquals([$b->getKey(), $a->getKey()], $actual);
     }
 
     /**
@@ -81,36 +95,9 @@ class PostsTest extends TestCase
     public function testRead()
     {
         $model = $this->createPost();
-        /** @var Tag $tag */
-        $tag = $model->tags()->create(['name' => 'Important']);
+        $model->tags()->create(['name' => 'Important']);;
 
-        $data = [
-            'type' => 'posts',
-            'id' => (string) $model->getKey(),
-            'attributes' => [
-                'title' => $model->title,
-                'slug' => $model->slug,
-                'content' => $model->content,
-            ],
-            'relationships' => [
-                'author' => [
-                    'data' => [
-                        'type' => 'users',
-                        'id' => (string) $model->author_id,
-                    ],
-                ],
-                'tags' => [
-                    'data' => [
-                        [
-                            'type' => 'tags',
-                            'id' => (string) $tag->getKey(),
-                        ],
-                    ],
-                ],
-            ],
-        ];
-
-        $this->doRead($model)->assertReadResponse($data);
+        $this->doRead($model)->assertReadResponse($this->serialize($model));
     }
 
     /**
@@ -210,5 +197,43 @@ class PostsTest extends TestCase
         $builder = factory(Post::class);
 
         return $create ? $builder->create() : $builder->make();
+    }
+
+    /**
+     * Get the posts resource that we expect in server responses.
+     *
+     * @param Post $model
+     * @return array
+     */
+    private function serialize(Post $model)
+    {
+        return [
+            'type' => 'posts',
+            'id' => $id = (string) $model->getKey(),
+            'attributes' => [
+                'title' => $model->title,
+                'slug' => $model->slug,
+                'content' => $model->content,
+            ],
+            'relationships' => [
+                'author' => [
+                    'data' => [
+                        'type' => 'users',
+                        'id' => (string) $model->author_id,
+                    ],
+                ],
+                'tags' => [
+                    'data' => $model->tags->map(function (Tag $tag) {
+                        return ['type' => 'tags', 'id' => (string) $tag->getKey()];
+                    })->all(),
+                ],
+                'comments' => [
+                    'links' => [
+                        'self' => "http://localhost/api/v1/posts/$id/relationships/comments",
+                        'related' => "http://localhost/api/v1/posts/$id/comments",
+                    ],
+                ],
+            ],
+        ];
     }
 }

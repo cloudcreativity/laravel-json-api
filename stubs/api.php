@@ -67,6 +67,8 @@ return [
     | detected from the inbound HTTP request. In other circumstances
     | (e.g. broadcasting), the host will be taken from the setting here.
     | If it is `null`, the `app.url` config setting is used as the default.
+    | If you set `host` to `false`, the host will never be appended to URLs
+    | for inbound requests.
     |
     | The name setting is the prefix for route names within this API.
     |

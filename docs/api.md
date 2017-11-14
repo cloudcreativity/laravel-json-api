@@ -134,11 +134,13 @@ register routes for your API.
 
 ### Host
 
-When processing inbound HTTP requests, the current server host will always be used when encoding JSON API documents.
+When processing inbound HTTP requests, the current server host will be used when encoding JSON API documents.
 
 When encoding JSON API documents outside of HTTP requests, we use the `url.host` option from your API's configuration.
 If the value is `null`, we default to Laravel's `app.url` config setting. Otherwise, we'll use the value you've
 provided.
+
+If you do not want the host to be appended to URLs in the encoded document, set `url.host` to `false`.
 
 ### Namespace
 
