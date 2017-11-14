@@ -165,16 +165,16 @@ class Repository
      */
     private function normalizeUrl(array $url, $host = null)
     {
+        $prependHost = false !== array_get($url, 'host');
+
         if ($host) {
             $url['host'] = $host;
-        }
-
-        if (!array_get($url, 'host')) {
+        } elseif (!isset($url['host'])) {
             $url['host'] = $this->config->get('app.url');
         }
 
         return new Url(
-            (string) $url['host'],
+            $prependHost ? (string) $url['host'] : '',
             (string) array_get($url, 'namespace'),
             (string) array_get($url, 'name')
         );
