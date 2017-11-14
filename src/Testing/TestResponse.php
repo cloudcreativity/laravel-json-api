@@ -12,6 +12,7 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Collection;
 use Neomerx\JsonApi\Contracts\Document\DocumentInterface as Keys;
 use Neomerx\JsonApi\Contracts\Http\Headers\MediaTypeInterface;
+use PHPUnit\Framework\Assert as PHPUnit;
 use RuntimeException;
 
 class TestResponse extends BaseTestResponse
@@ -52,6 +53,26 @@ class TestResponse extends BaseTestResponse
         if ($contentType) {
             $this->assertHeader('Content-Type', $contentType);
         }
+
+        return $this;
+    }
+
+    /**
+     * Assert that the response has the given status code.
+     *
+     * @param int $status
+     * @return $this
+     */
+    public function assertStatus($status)
+    {
+        $actual = $this->getStatusCode();
+        $message = "Expected status code {$status} but received {$actual}";
+        $content = (array) json_decode((string) $this->getContent(), true);
+        if (isset($content[Keys::KEYWORD_ERRORS])) {
+            $message .= " with errors:\n" . json_encode($content, JSON_PRETTY_PRINT);
+        }
+
+        PHPUnit::assertSame($status, $actual, $message);
 
         return $this;
     }
