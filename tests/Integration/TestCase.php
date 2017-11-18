@@ -129,7 +129,7 @@ abstract class TestCase extends BaseTestCase
             $table->string('title');
             $table->string('slug');
             $table->text('content');
-            $table->unsignedInteger('author_id');
+            $table->unsignedInteger('author_id')->nullable();
         });
     }
 

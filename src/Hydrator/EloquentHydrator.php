@@ -124,6 +124,9 @@ abstract class EloquentHydrator extends AbstractHydrator
         $this->service = $service;
     }
 
+    /**
+     * @inheritdoc
+     */
     public function create(ResourceObjectInterface $resource)
     {
         $record = parent::create($resource);
@@ -132,6 +135,9 @@ abstract class EloquentHydrator extends AbstractHydrator
         return $record;
     }
 
+    /**
+     * @inheritdoc
+     */
     public function update(ResourceObjectInterface $resource, $record)
     {
         $record = parent::update($resource, $record);
@@ -145,7 +151,11 @@ abstract class EloquentHydrator extends AbstractHydrator
      */
     public function updateRelationship($relationshipKey, RelationshipInterface $relationship, $record)
     {
-        // TODO: Implement updateRelationship() method.
+        /** @var Model $record */
+        $this->hydrateRelationship($relationshipKey, $relationship, $record);
+        $this->persist($record);
+
+        return $record;
     }
 
     /**
@@ -153,7 +163,16 @@ abstract class EloquentHydrator extends AbstractHydrator
      */
     public function addToRelationship($relationshipKey, RelationshipInterface $relationship, $record)
     {
-        // TODO: Implement addToRelationship() method.
+        /** @var Model $record */
+        $relation = $this->getRelation($relationshipKey, $record);
+
+        if (!$relation instanceof BelongsToMany) {
+            throw new RuntimeException("Expecting a belongs-to-many relationship.");
+        }
+
+        $relation->attach($relationship->getIdentifiers()->getIds());
+
+        return $record;
     }
 
     /**
@@ -161,7 +180,16 @@ abstract class EloquentHydrator extends AbstractHydrator
      */
     public function removeFromRelationship($relationshipKey, RelationshipInterface $relationship, $record)
     {
-        // TODO: Implement removeFromRelationship() method.
+        /** @var Model $record */
+        $relation = $this->getRelation($relationshipKey, $record);
+
+        if (!$relation instanceof BelongsToMany) {
+            throw new RuntimeException("Expecting a belongs-to-many relationship.");
+        }
+
+        $relation->detach($relationship->getIdentifiers()->getIds());
+
+        return $record;
     }
 
     /**
@@ -374,7 +402,7 @@ abstract class EloquentHydrator extends AbstractHydrator
     }
 
     /**
-     * Sync a resource has-many relationship
+     * Sync a resource has-many relationship.
      *
      * @param $resourceKey
      * @param RelationshipInterface $relationship

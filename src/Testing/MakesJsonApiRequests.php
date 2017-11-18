@@ -399,6 +399,156 @@ trait MakesJsonApiRequests
     }
 
     /**
+     * @param mixed $resourceId
+     * @param string $relationshipName
+     * @param array|null $data
+     * @param array $params
+     * @param array $headers
+     * @return TestResponse
+     */
+    protected function doReplaceRelationship(
+        $resourceId,
+        $relationshipName,
+        $data,
+        array $params = [],
+        array $headers = []
+    ) {
+        $params = $this->addDefaultRouteParams($params);
+        $uri = $this->api()->url()->replaceRelationship(
+            $this->resourceType(),
+            $resourceId,
+            $relationshipName,
+            $params
+        );
+
+        return $this->patchJsonApi($uri, ['data' => $data], $headers);
+    }
+
+    /**
+     * Assert that the replace relationship route has not been registered for the supplied relationship name.
+     *
+     * @param $relationshipName
+     * @return void
+     */
+    protected function assertCannotReplaceRelationship($relationshipName)
+    {
+        $replaceable = true;
+
+        try {
+            $this->api()->url()->replaceRelationship(
+                $this->resourceType(),
+                '1',
+                $relationshipName,
+                $this->addDefaultRouteParams([])
+            );
+        } catch (InvalidArgumentException $ex) {
+            $replaceable = false;
+        }
+
+        $this->assertFalse($replaceable, "Replace relationship $relationshipName route exists.");
+    }
+
+    /**
+     * @param mixed $resourceId
+     * @param string $relationshipName
+     * @param array|null $data
+     * @param array $params
+     * @param array $headers
+     * @return TestResponse
+     */
+    protected function doAddToRelationship(
+        $resourceId,
+        $relationshipName,
+        $data,
+        array $params = [],
+        array $headers = []
+    ) {
+        $params = $this->addDefaultRouteParams($params);
+        $uri = $this->api()->url()->addRelationship(
+            $this->resourceType(),
+            $resourceId,
+            $relationshipName,
+            $params
+        );
+
+        return $this->postJsonApi($uri, ['data' => $data], $headers);
+    }
+
+    /**
+     * Assert that the add-to relationship route has not been registered for the supplied relationship name.
+     *
+     * @param $relationshipName
+     * @return void
+     */
+    protected function assertCannotAddToRelationship($relationshipName)
+    {
+        $replaceable = true;
+
+        try {
+            $this->api()->url()->addRelationship(
+                $this->resourceType(),
+                '1',
+                $relationshipName,
+                $this->addDefaultRouteParams([])
+            );
+        } catch (InvalidArgumentException $ex) {
+            $replaceable = false;
+        }
+
+        $this->assertFalse($replaceable, "Add to relationship $relationshipName route exists.");
+    }
+
+    /**
+     * @param mixed $resourceId
+     * @param string $relationshipName
+     * @param array|null $data
+     * @param array $params
+     * @param array $headers
+     * @return TestResponse
+     */
+    protected function doRemoveFromRelationship(
+        $resourceId,
+        $relationshipName,
+        $data,
+        array $params = [],
+        array $headers = []
+    ) {
+        $params = $this->addDefaultRouteParams($params);
+        $uri = $this->api()->url()->removeRelationship(
+            $this->resourceType(),
+            $resourceId,
+            $relationshipName,
+            $params
+        );
+
+        return $this->deleteJsonApi($uri, ['data' => $data], $headers);
+    }
+
+    /**
+     * Assert that the remove-from relationship route has not been registered for the supplied relationship name.
+     *
+     * @param $relationshipName
+     * @return void
+     */
+    protected function assertCannotRemoveFromRelationship($relationshipName)
+    {
+        $replaceable = true;
+
+        try {
+            $this->api()->url()->removeRelationship(
+                $this->resourceType(),
+                '1',
+                $relationshipName,
+                $this->addDefaultRouteParams([])
+            );
+        } catch (InvalidArgumentException $ex) {
+            $replaceable = false;
+        }
+
+        $this->assertFalse($replaceable, "Remove from relationship $relationshipName route exists.");
+    }
+
+    /**
      * @return mixed
      */
     protected function resourceType()

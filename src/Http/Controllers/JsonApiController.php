@@ -21,6 +21,7 @@ namespace CloudCreativity\LaravelJsonApi\Http\Controllers;
 use Closure;
 use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface;
 use CloudCreativity\JsonApi\Contracts\Hydrator\HydratorInterface;
+use CloudCreativity\JsonApi\Contracts\Object\RelationshipInterface;
 use CloudCreativity\JsonApi\Contracts\Object\ResourceObjectInterface;
 use CloudCreativity\JsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\JsonApi\Exceptions\RuntimeException;
@@ -160,6 +161,60 @@ abstract class JsonApiController extends Controller
         );
 
         return $this->reply()->relationship($related);
+    }
+
+    /**
+     * @param RequestInterface $request
+     * @param $record
+     * @return Response
+     */
+    public function replaceRelationship(RequestInterface $request, $record)
+    {
+        $this->transaction(function () use ($request, $record) {
+            $this->hydrator()->updateRelationship(
+                $request->getRelationshipName(),
+                $request->getDocument()->getRelationship(),
+                $record
+            );
+        });
+
+        return $this->reply()->noContent();
+    }
+
+    /**
+     * @param RequestInterface $request
+     * @param $record
+     * @return Response
+     */
+    public function addToRelationship(RequestInterface $request, $record)
+    {
+        $this->transaction(function () use ($request, $record) {
+            $this->hydrator()->addToRelationship(
+                $request->getRelationshipName(),
+                $request->getDocument()->getRelationship(),
+                $record
+            );
+        });
+
+        return $this->reply()->noContent();
+    }
+
+    /**
+     * @param RequestInterface $request
+     * @param $record
+     * @return Response
+     */
+    public function removeFromRelationship(RequestInterface $request, $record)
+    {
+        $this->transaction(function () use ($request, $record) {
+            $this->hydrator()->removeFromRelationship(
+                $request->getRelationshipName(),
+                $request->getDocument()->getRelationship(),
+                $record
+            );
+        });
+
+        return $this->reply()->noContent();
     }
 
     /**

@@ -5,6 +5,7 @@ namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Eloquent;
 use CloudCreativity\LaravelJsonApi\Tests\Models\Comment;
 use CloudCreativity\LaravelJsonApi\Tests\Models\Post;
 use CloudCreativity\LaravelJsonApi\Tests\Models\Tag;
+use Illuminate\Foundation\Auth\User;
 
 class PostsTest extends TestCase
 {
@@ -170,7 +171,8 @@ class PostsTest extends TestCase
     {
         $model = $this->createPost();
 
-        $this->doReadRelationship($model, 'author')->assertReadHasOneIdentifier('users', $model->author_id);
+        $this->doReadRelationship($model, 'author')
+            ->assertReadHasOneIdentifier('users', $model->author_id);
     }
 
     /**
@@ -184,6 +186,108 @@ class PostsTest extends TestCase
         factory(Comment::class)->create();
 
         $this->doReadRelated($model, 'comments')->assertReadHasManyIdentifiers('comments', $comments);
+    }
+
+    /**
+     * Test that we can change the related author to a different resource.
+     */
+    public function testReplaceAuthorRelationship()
+    {
+        $post = $this->createPost();
+        /** @var User $author */
+        $author = factory(User::class)->create();
+
+        $data = ['type' => 'users', 'id' => (string) $author->getKey()];
+
+        $this->doReplaceRelationship($post, 'author', $data)
+            ->assertStatus(204);
+
+        $this->assertModelPatched($post, ['author_id' => $author->getKey()]);
+    }
+
+    /**
+     * Test that we can clear the related author relationship.
+     */
+    public function testReplaceAuthorRelationshipWithNull()
+    {
+        $post = $this->createPost();
+
+        $this->doReplaceRelationship($post, 'author', null)
+            ->assertStatus(204);
+
+        $this->assertModelPatched($post, ['author_id' => null]);
+    }
+
+    /**
+     * Test that we can attach related resources to an empty has-many relationship.
+     */
+    public function testReplaceEmptyTagsRelationship()
+    {
+        $post = $this->createPost();
+        $tags = factory(Tag::class, 2)->create();
+
+        $data = $tags->map(function (Tag $tag) {
+            return ['type' => 'tags', 'id' => (string) $tag->getKey()];
+        })->all();
+
+        $this->doReplaceRelationship($post, 'tags', $data)
+            ->assertStatus(204);
+
+        $this->assertSame($post->tags()->count(), 2);
+    }
+
+    /**
+     * Test that we can clear related resources from a has-many relationship.
+     */
+    public function testReplaceTagsRelationshipWithNone()
+    {
+        $post = $this->createPost();
+        $tags = factory(Tag::class, 2)->create();
+        $post->tags()->sync($tags);
+
+        $this->doReplaceRelationship($post, 'tags', [])
+            ->assertStatus(204);
+
+        $this->assertSame($post->tags()->count(), 0);
+    }
+
+    /**
+     * Test that we can add resources to a has-many relationship.
+     */
+    public function testAddToTagsRelationship()
+    {
+        $post = $this->createPost();
+        $existing = factory(Tag::class, 2)->create();
+        $post->tags()->sync($existing);
+
+        $add = factory(Tag::class, 2)->create();
+        $data = $add->map(function (Tag $tag) {
+            return ['type' => 'tags', 'id' => (string) $tag->getKey()];
+        })->all();
+
+        $this->doAddToRelationship($post, 'tags', $data)
+            ->assertStatus(204);
+
+        $this->assertSame($post->tags()->count(), 4);
+    }
+
+    /**
+     * Test that we can remove resources from a has-many relationship.
+     */
+    public function testRemoveFromTagsRelationship()
+    {
+        $post = $this->createPost();
+        $tags = factory(Tag::class, 4)->create();
+        $post->tags()->sync($tags);
+
+        $data = $tags->take(2)->map(function (Tag $tag) {
+            return ['type' => 'tags', 'id' => (string) $tag->getKey()];
+        })->all();
+
+        $this->doRemoveFromRelationship($post, 'tags', $data)
+            ->assertStatus(204);
+
+        $this->assertSame($post->tags()->count(), 2);
     }
 
     /**
