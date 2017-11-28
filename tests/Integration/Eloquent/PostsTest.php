@@ -2,6 +2,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Eloquent;
 
+use CloudCreativity\LaravelJsonApi\Tests\Http\Controllers\PostsController;
 use CloudCreativity\LaravelJsonApi\Tests\Models\Post;
 use CloudCreativity\LaravelJsonApi\Tests\Models\Tag;
 
@@ -86,6 +87,10 @@ class PostsTest extends TestCase
             ->assertCreateResponse($data);
 
         $this->assertModelCreated($model, $id, ['title', 'slug', 'content', 'author_id']);
+        $this->assertDatabaseHas('post_tag', [
+            'post_id' => $id,
+            'tag_id' => $tag->getKey(),
+        ]);
     }
 
     /**
@@ -117,6 +122,49 @@ class PostsTest extends TestCase
 
         $this->doUpdate($data)->assertUpdateResponse($data);
         $this->assertModelPatched($model, $data['attributes'], ['content']);
+    }
+
+    /**
+     * Issue 125.
+     *
+     * If the model caches any of its relationships prior to a hydrator being invoked,
+     * any changes to that relationship will not be serialized when the schema serializes
+     * the model.
+     *
+     * @see https://github.com/cloudcreativity/laravel-json-api/issues/125
+     */
+    public function testUpdateRefreshes()
+    {
+        /** @var PostsController $controller */
+        $controller = $this->app->make(PostsController::class);
+        $this->app->instance(PostsController::class, $controller);
+
+        $controller->on('saving', function ($model) {
+            $model->tags; // causes the model to cache the tags relationship
+        });
+
+        $model = $this->createPost();
+        /** @var Tag $tag */
+        $tag = factory(Tag::class)->create();
+
+        $data = [
+            'type' => 'posts',
+            'id' => (string) $model->getKey(),
+            'relationships' => [
+                'tags' => [
+                    'data' => [
+                        ['type' => 'tags', 'id' => (string) $tag->getKey()],
+                    ],
+                ],
+            ],
+        ];
+
+        $this->doUpdate($data)->assertUpdateResponse($data);
+
+        $this->assertDatabaseHas('post_tag', [
+            'post_id' => $model->getKey(),
+            'tag_id' => $tag->getKey(),
+        ]);
     }
 
     /**

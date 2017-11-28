@@ -236,6 +236,7 @@ class EloquentController extends Controller
         $this->beforeCommit($model, $resource, $isUpdating);
 
         $result = $this->save($model, $resource);
+        $model->refresh();
 
         if ($result) {
             $this->afterCommit($model, $resource, $isUpdating);
