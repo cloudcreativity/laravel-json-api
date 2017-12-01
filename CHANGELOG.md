@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## [0.11.3] - 2017-12-01
+
+### Fixed
+- [#125](https://github.com/cloudcreativity/laravel-json-api/issues/125)
+Refresh the Eloquent model after hydrating so that any cached relationships are reloaded.
+
 ## [0.11.2] - 2017-11-14
 
 ### Added
