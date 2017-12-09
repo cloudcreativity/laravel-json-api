@@ -24,6 +24,23 @@ class MorphHasMany implements RelationshipAdapterInterface
     }
 
     /**
+     * Set the relationship name.
+     *
+     * @param $name
+     * @return $this
+     */
+    public function withRelationshipName($name)
+    {
+        foreach ($this->adapters as $adapter) {
+            if (method_exists($adapter, 'withRelationshipName')) {
+                $adapter->withRelationshipName($name);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
      * @inheritDoc
      */
     public function queryRelated($record, EncodingParametersInterface $parameters)
