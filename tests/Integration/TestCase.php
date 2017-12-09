@@ -94,11 +94,12 @@ abstract class TestCase extends BaseTestCase
         $config->set('json-api-default', require __DIR__ . '/../../stubs/api.php');
         $config->set('json-api-default.namespace', '\\CloudCreativity\\LaravelJsonApi\\Tests\\JsonApi');
         $config->set('json-api-default.resources', [
-            'posts' => Models\Post::class,
             'comments' => Models\Comment::class,
+            'posts' => Models\Post::class,
             'sites' => Entities\Site::class,
             'tags' => Models\Tag::class,
             'users' => User::class,
+            'videos' => Models\Video::class,
         ]);
     }
 
@@ -111,6 +112,7 @@ abstract class TestCase extends BaseTestCase
         $this->loadLaravelMigrations('testbench');
         $schema = $app->make('db')->connection()->getSchemaBuilder();
         $this->createPostsTable($schema);
+        $this->createVideosTable($schema);
         $this->createCommentsTable($schema);
         $this->createTagsTables($schema);
         $this->withFactories(__DIR__ . '/../factories');
@@ -136,13 +138,27 @@ abstract class TestCase extends BaseTestCase
     /**
      * @param Schema $schema
      */
+    protected function createVideosTable(Schema $schema)
+    {
+        $schema->create('videos', function (Blueprint $table) {
+            $table->uuid('uuid');
+            $table->timestamps();
+            $table->string('title');
+            $table->text('description');
+            $table->unsignedInteger('user_id');
+        });
+    }
+
+    /**
+     * @param Schema $schema
+     */
     protected function createCommentsTable(Schema $schema)
     {
         $schema->create('comments', function (Blueprint $table) {
-            $table->uuid('id');
+            $table->increments('id');
             $table->timestamps();
             $table->text('content');
-            $table->unsignedInteger('post_id');
+            $table->morphs('commentable');
             $table->unsignedInteger('user_id');
         });
     }
@@ -174,6 +190,18 @@ abstract class TestCase extends BaseTestCase
     protected function resolveApplicationExceptionHandler($app)
     {
         $app->singleton(ExceptionHandler::class, Handler::class);
+    }
+
+    /**
+     * Expect the request to be a success.
+     *
+     * @return $this
+     */
+    protected function expectSuccess()
+    {
+        $this->app->make(ExceptionHandler::class)->throwExceptions();
+
+        return $this;
     }
 
     /**

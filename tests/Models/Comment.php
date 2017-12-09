@@ -4,17 +4,11 @@ namespace CloudCreativity\LaravelJsonApi\Tests\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Foundation\Auth\User;
 
 class Comment extends Model
 {
-
-    /**
-     * For test purposes, our Comment model has client supplied ids.
-     *
-     * @var bool
-     */
-    public $incrementing = false;
 
     /**
      * @var array
@@ -24,11 +18,11 @@ class Comment extends Model
     ];
 
     /**
-     * @return BelongsTo
+     * @return MorphTo
      */
-    public function post()
+    public function commentable()
     {
-        return $this->belongsTo(Post::class);
+        return $this->morphTo();
     }
 
     /**

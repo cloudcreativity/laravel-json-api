@@ -21,7 +21,7 @@ class Hydrator extends EloquentHydrator
      * @var array
      */
     protected $relationships = [
-        'post',
+        'commentable',
     ];
 
     /**
@@ -30,7 +30,6 @@ class Hydrator extends EloquentHydrator
     protected function createRecord(ResourceObjectInterface $resource)
     {
         $record = new Comment();
-        $record->{$record->getKeyName()} = $resource->getId();
         $record->user()->associate(Auth::user());
 
         return $record;

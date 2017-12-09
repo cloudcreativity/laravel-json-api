@@ -157,11 +157,17 @@ class PostsTest extends TestCase
     public function testReadComments()
     {
         $model = $this->createPost();
-        $comments = factory(Comment::class, 2)->create(['post_id' => $model->getKey()]);
-        /** This comment shouldn't appear in the results... */
-        factory(Comment::class)->create();
+        $comments = factory(Comment::class, 2)->create([
+            'commentable_type' => Post::class,
+            'commentable_id' => $model->getKey(),
+        ]);
 
-        $this->doReadRelated($model, 'comments')->assertReadHasMany('comments', $comments);
+        /** This comment should not appear in the results... */
+        factory(Comment::class)->states('post')->create();
+
+        $this->expectSuccess()
+            ->doReadRelated($model, 'comments')
+            ->assertReadHasMany('comments', $comments);
     }
 
     /**
@@ -181,9 +187,13 @@ class PostsTest extends TestCase
     public function testReadCommentsRelationship()
     {
         $model = $this->createPost();
-        $comments = factory(Comment::class, 2)->create(['post_id' => $model->getKey()]);
-        /** This comment shouldn't appear in the results... */
-        factory(Comment::class)->create();
+        $comments = factory(Comment::class, 2)->create([
+            'commentable_type' => Post::class,
+            'commentable_id' => $model->getKey(),
+        ]);
+
+        /** This comment should not appear in the results... */
+        factory(Comment::class)->states('post')->create();
 
         $this->doReadRelated($model, 'comments')->assertReadHasManyIdentifiers('comments', $comments);
     }

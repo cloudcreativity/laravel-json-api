@@ -25,6 +25,7 @@ abstract class TestCase extends BaseTestCase
                 'has-many' => ['comments', 'tags'],
             ]);
             $api->resource('users');
+            $api->resource('videos');
         });
     }
 }

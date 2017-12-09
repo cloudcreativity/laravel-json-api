@@ -14,37 +14,41 @@ class CommentsTest extends TestCase
 
     public function testCreate()
     {
-        $model = $this->createComment(false);
+        $model = factory(Comment::class)->states('post')->make();
 
         $data = [
             'type' => 'comments',
-            'id' => $id = $model->getKey(), // client generated id.
             'attributes' => [
                 'content' => $model->content,
             ],
             'relationships' => [
-                'post' => [
+                'commentable' => [
                     'data' => [
                         'type' => 'posts',
-                        'id' => (string) $model->post_id,
+                        'id' => (string) $model->commentable_id,
                     ],
                 ],
             ],
         ];
 
         $this->actingAs($model->user);
-        $this->doCreate($data)->assertCreateResponse($data);
-        $this->assertNotNull(Comment::find($id));
-    }
 
-    public function testCreateWithInvalidClientId()
-    {
-        $this->markTestIncomplete('@todo when it is possible to validate client ids.');
+        $expected = $data;
+        $expected['relationships']['created-by'] = [
+            'data' => ['type' => 'users', 'id' => $model->user_id],
+        ];
+
+        $id = $this
+            ->expectSuccess()
+            ->doCreate($data)
+            ->assertCreateResponse($expected);
+
+        $this->assertModelCreated($model, $id);
     }
 
     public function testRead()
     {
-        $model = $this->createComment();
+        $model = factory(Comment::class)->states('post')->create();
 
         $data = [
             'type' => 'comments',
@@ -53,10 +57,10 @@ class CommentsTest extends TestCase
                 'content' => $model->content,
             ],
             'relationships' => [
-                'post' => [
+                'commentable' => [
                     'data' => [
                         'type' => 'posts',
-                        'id' => $model->post_id,
+                        'id' => $model->commentable_id,
                     ],
                 ],
                 'created-by' => [
@@ -68,25 +72,9 @@ class CommentsTest extends TestCase
             ],
         ];
 
-        $this->doRead($model)->assertReadResponse($data);
+        $this->expectSuccess()
+            ->doRead($model)
+            ->assertReadResponse($data);
     }
 
-    /**
-     * @return mixed
-     */
-    protected function getResourceType()
-    {
-        return 'comments';
-    }
-
-    /**
-     * @param bool $create
-     * @return Comment
-     */
-    private function createComment($create = true)
-    {
-        $factory = factory(Comment::class);
-
-        return $create ? $factory->create() : $factory->make();
-    }
 }

@@ -10,14 +10,28 @@ use CloudCreativity\LaravelJsonApi\Tests\Models;
 /** Comment */
 $factory->define(Models\Comment::class, function (Faker $faker) {
     return [
-        'id' => $faker->unique()->uuid,
         'content' => $faker->paragraph,
-        'post_id' => function () {
-            return factory(Models\Post::class)->create()->getKey();
-        },
         'user_id' => function () {
             return factory(User::class)->create()->getKey();
         },
+    ];
+});
+
+$factory->state(Models\Comment::class, 'post', function () {
+    return [
+        'commentable_type' => Models\Post::class,
+        'commentable_id' => function () {
+            return factory(Models\Post::class)->create()->getKey();
+        }
+    ];
+});
+
+$factory->state(Models\Comment::class, 'video', function () {
+    return [
+        'commentable_type' => Models\Video::class,
+        'commentable_id' => function () {
+            return factory(Models\Video::class)->create()->getKey();
+        }
     ];
 });
 
@@ -46,5 +60,17 @@ $factory->define(User::class, function (Faker $faker) {
         'name' => $faker->name,
         'email' => $faker->unique()->email,
         'password' => bcrypt(str_random(10)),
+    ];
+});
+
+/** Video */
+$factory->define(Models\Video::class, function (Faker $faker) {
+    return [
+        'uuid' => $faker->unique()->uuid,
+        'title' => $faker->words(3, true),
+        'description' => $faker->paragraph,
+        'user_id' => function () {
+            return factory(User::class)->create()->getKey();
+        },
     ];
 });
