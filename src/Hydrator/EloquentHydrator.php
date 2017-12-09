@@ -21,14 +21,13 @@ namespace CloudCreativity\LaravelJsonApi\Hydrator;
 use Carbon\Carbon;
 use CloudCreativity\JsonApi\Contracts\Object\RelationshipInterface;
 use CloudCreativity\JsonApi\Contracts\Object\RelationshipsInterface;
-use CloudCreativity\JsonApi\Contracts\Object\ResourceIdentifierInterface;
 use CloudCreativity\JsonApi\Contracts\Object\ResourceObjectInterface;
 use CloudCreativity\JsonApi\Exceptions\InvalidArgumentException;
 use CloudCreativity\JsonApi\Exceptions\RuntimeException;
 use CloudCreativity\JsonApi\Hydrator\AbstractHydrator;
-use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
 use CloudCreativity\LaravelJsonApi\Utils\Str;
 use CloudCreativity\Utils\Object\StandardObjectInterface;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -105,24 +104,9 @@ abstract class EloquentHydrator extends AbstractHydrator
     protected $relationships = [];
 
     /**
-     * @var JsonApiService
-     */
-    protected $service;
-
-    /**
      * @var array|null
      */
     private $normalizedRelationships;
-
-    /**
-     * EloquentHydrator constructor.
-     *
-     * @param JsonApiService $service
-     */
-    public function __construct(JsonApiService $service)
-    {
-        $this->service = $service;
-    }
 
     /**
      * @inheritdoc
@@ -170,7 +154,8 @@ abstract class EloquentHydrator extends AbstractHydrator
             throw new RuntimeException("Expecting a belongs-to-many relationship.");
         }
 
-        $relation->attach($relationship->getIdentifiers()->getIds());
+        $related = $this->store()->findMany($relationship->getIdentifiers());
+        $relation->attach(new Collection($related));
 
         return $record;
     }
@@ -187,7 +172,8 @@ abstract class EloquentHydrator extends AbstractHydrator
             throw new RuntimeException("Expecting a belongs-to-many relationship.");
         }
 
-        $relation->detach($relationship->getIdentifiers()->getIds());
+        $related = $this->store()->findMany($relationship->getIdentifiers());
+        $relation->detach(new Collection($related));
 
         return $record;
     }
@@ -393,7 +379,7 @@ abstract class EloquentHydrator extends AbstractHydrator
         }
 
         if ($relationship->hasIdentifier()) {
-            $relation->associate($this->findRelated($relationship->getIdentifier()));
+            $relation->associate($this->store()->find($relationship->getIdentifier()));
         } else {
             $relation->dissociate();
         }
@@ -417,7 +403,8 @@ abstract class EloquentHydrator extends AbstractHydrator
             return false;
         }
 
-        $relation->sync($relationship->getIdentifiers()->getIds());
+        $related = $this->store()->findMany($relationship->getIdentifiers());
+        $relation->sync(new Collection($related));
 
         return true;
     }
@@ -438,25 +425,6 @@ abstract class EloquentHydrator extends AbstractHydrator
         $relation = $model->{$method}();
 
         return ($relation instanceof Relation) ? $relation : null;
-    }
-
-    /**
-     * @param ResourceIdentifierInterface $identifier
-     * @return Model
-     */
-    protected function findRelated(ResourceIdentifierInterface $identifier)
-    {
-        $model = $this
-            ->service
-            ->getApi()
-            ->getStore()
-            ->find($identifier);
-
-        if (!$model instanceof Model) {
-            throw new RuntimeException('Expecting a related resource to be an Eloquent model');
-        }
-
-        return $model;
     }
 
     /**

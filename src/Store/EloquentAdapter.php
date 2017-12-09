@@ -224,7 +224,7 @@ abstract class EloquentAdapter implements AdapterInterface
      */
     public function findMany(array $resourceIds)
     {
-        // TODO: Implement findMany() method.
+        return $this->newQuery()->whereIn($this->getQualifiedKeyName(), $resourceIds)->get()->all();
     }
 
     /**
