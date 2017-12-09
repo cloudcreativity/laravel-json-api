@@ -12,13 +12,6 @@ class Adapter extends EloquentAdapter
 {
 
     /**
-     * @var array
-     */
-    protected $inverse = [
-        'author' => 'users',
-    ];
-
-    /**
      * Adapter constructor.
      *
      * @param StandardStrategy $paging

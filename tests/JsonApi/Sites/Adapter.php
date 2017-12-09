@@ -3,6 +3,7 @@
 namespace CloudCreativity\LaravelJsonApi\Tests\JsonApi\Sites;
 
 use CloudCreativity\JsonApi\Contracts\Store\AdapterInterface;
+use CloudCreativity\JsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Tests\Entities\SiteRepository;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
@@ -43,17 +44,9 @@ class Adapter implements AdapterInterface
     /**
      * @inheritDoc
      */
-    public function queryRelated($record, $relationshipName, EncodingParametersInterface $parameters)
+    public function related($relationshipName)
     {
-        // TODO: Implement queryRelated() method.
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function queryRelationship($record, $relationshipName, EncodingParametersInterface $parameters)
-    {
-        // TODO: Implement queryRelationship() method.
+        throw new RuntimeException('Not supported');
     }
 
     /**

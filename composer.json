@@ -23,7 +23,7 @@
     ],
     "require": {
         "php": "^5.6|^7.0",
-        "cloudcreativity/json-api": "dev-jj-abrams",
+        "cloudcreativity/json-api": "dev-polymorph",
         "illuminate/console": "5.4.*|5.5.*",
         "illuminate/contracts": "5.4.*|5.5.*",
         "illuminate/database": "5.4.*|5.5.*",

@@ -28,7 +28,7 @@ class PostsTest extends TestCase
             'title' => 'Title B',
         ]);
 
-        $response = $this->doSearch(['sort' => '-title']);
+        $response = $this->expectSuccess()->doSearch(['sort' => '-title']);
         $response->assertSearchResponse()->assertContainsOnly(['posts' => [$a->getKey(), $b->getKey()]]);
 
         $json = $response->decodeResponseJson();
@@ -45,7 +45,8 @@ class PostsTest extends TestCase
         // this model should not be in the search results
         $this->createPost();
 
-        $this->doSearchById($models)
+        $this->expectSuccess()
+            ->doSearchById($models)
             ->assertSearchByIdResponse($models);
     }
 
@@ -84,6 +85,7 @@ class PostsTest extends TestCase
         ];
 
         $id = $this
+            ->expectSuccess()
             ->doCreate($data)
             ->assertCreateResponse($data);
 
@@ -98,7 +100,7 @@ class PostsTest extends TestCase
         $model = $this->createPost();
         $model->tags()->create(['name' => 'Important']);;
 
-        $this->doRead($model)->assertReadResponse($this->serialize($model));
+        $this->expectSuccess()->doRead($model)->assertReadResponse($this->serialize($model));
     }
 
     /**
@@ -117,7 +119,7 @@ class PostsTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data)->assertUpdateResponse($data);
+        $this->expectSuccess()->doUpdate($data)->assertUpdateResponse($data);
         $this->assertModelPatched($model, $data['attributes'], ['content']);
     }
 
@@ -128,7 +130,7 @@ class PostsTest extends TestCase
     {
         $model = $this->createPost();
 
-        $this->doDelete($model)->assertDeleteResponse();
+        $this->expectSuccess()->doDelete($model)->assertDeleteResponse();
         $this->assertModelDeleted($model);
     }
 
@@ -148,7 +150,7 @@ class PostsTest extends TestCase
             ],
         ];
 
-        $this->doReadRelated($model, 'author')->assertReadHasOne($data);
+        $this->expectSuccess()->doReadRelated($model, 'author')->assertReadHasOne($data);
     }
 
     /**
@@ -177,7 +179,8 @@ class PostsTest extends TestCase
     {
         $model = $this->createPost();
 
-        $this->doReadRelationship($model, 'author')
+        $this->expectSuccess()
+            ->doReadRelationship($model, 'author')
             ->assertReadHasOneIdentifier('users', $model->author_id);
     }
 
@@ -195,7 +198,9 @@ class PostsTest extends TestCase
         /** This comment should not appear in the results... */
         factory(Comment::class)->states('post')->create();
 
-        $this->doReadRelated($model, 'comments')->assertReadHasManyIdentifiers('comments', $comments);
+        $this->expectSuccess()
+            ->doReadRelated($model, 'comments')
+            ->assertReadHasManyIdentifiers('comments', $comments);
     }
 
     /**
@@ -209,7 +214,8 @@ class PostsTest extends TestCase
 
         $data = ['type' => 'users', 'id' => (string) $author->getKey()];
 
-        $this->doReplaceRelationship($post, 'author', $data)
+        $this->expectSuccess()
+            ->doReplaceRelationship($post, 'author', $data)
             ->assertStatus(204);
 
         $this->assertModelPatched($post, ['author_id' => $author->getKey()]);
@@ -222,7 +228,8 @@ class PostsTest extends TestCase
     {
         $post = $this->createPost();
 
-        $this->doReplaceRelationship($post, 'author', null)
+        $this->expectSuccess()
+            ->doReplaceRelationship($post, 'author', null)
             ->assertStatus(204);
 
         $this->assertModelPatched($post, ['author_id' => null]);
@@ -240,7 +247,8 @@ class PostsTest extends TestCase
             return ['type' => 'tags', 'id' => (string) $tag->getKey()];
         })->all();
 
-        $this->doReplaceRelationship($post, 'tags', $data)
+        $this->expectSuccess()
+            ->doReplaceRelationship($post, 'tags', $data)
             ->assertStatus(204);
 
         $this->assertSame($post->tags()->count(), 2);
@@ -255,7 +263,8 @@ class PostsTest extends TestCase
         $tags = factory(Tag::class, 2)->create();
         $post->tags()->sync($tags);
 
-        $this->doReplaceRelationship($post, 'tags', [])
+        $this->expectSuccess()
+            ->doReplaceRelationship($post, 'tags', [])
             ->assertStatus(204);
 
         $this->assertSame($post->tags()->count(), 0);
@@ -275,7 +284,8 @@ class PostsTest extends TestCase
             return ['type' => 'tags', 'id' => (string) $tag->getKey()];
         })->all();
 
-        $this->doAddToRelationship($post, 'tags', $data)
+        $this->expectSuccess()
+            ->doAddToRelationship($post, 'tags', $data)
             ->assertStatus(204);
 
         $this->assertSame($post->tags()->count(), 4);
@@ -294,7 +304,8 @@ class PostsTest extends TestCase
             return ['type' => 'tags', 'id' => (string) $tag->getKey()];
         })->all();
 
-        $this->doRemoveFromRelationship($post, 'tags', $data)
+        $this->expectSuccess()
+            ->doRemoveFromRelationship($post, 'tags', $data)
             ->assertStatus(204);
 
         $this->assertSame($post->tags()->count(), 2);
