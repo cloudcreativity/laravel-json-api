@@ -21,21 +21,13 @@ namespace CloudCreativity\LaravelJsonApi\Eloquent;
 use CloudCreativity\JsonApi\Contracts\Pagination\PageInterface;
 use CloudCreativity\JsonApi\Contracts\Store\AdapterInterface;
 use CloudCreativity\JsonApi\Contracts\Store\ContainerInterface;
+use CloudCreativity\JsonApi\Contracts\Store\RelationshipAdapterInterface;
 use CloudCreativity\JsonApi\Exceptions\RuntimeException;
 use CloudCreativity\JsonApi\Utils\Str;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PagingStrategyInterface;
 use CloudCreativity\LaravelJsonApi\Store\FindsManyResources;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasManyThrough;
-use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Database\Eloquent\Relations\HasOneOrMany;
-use Illuminate\Database\Eloquent\Relations\MorphOne;
-use Illuminate\Database\Eloquent\Relations\MorphTo;
-use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Collection;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\SortParameterInterface;
@@ -109,13 +101,6 @@ abstract class Adapter implements AdapterInterface
      * @var array
      */
     protected $sortColumns = [];
-
-    /**
-     * Map of JSON API relationship names to model relationship names.
-     *
-     * @var array
-     */
-    protected $relationships = [];
 
     /**
      * @var ContainerInterface|null
@@ -228,28 +213,17 @@ abstract class Adapter implements AdapterInterface
      */
     public function related($relationshipName)
     {
-        $key = isset($this->relationships[$relationshipName]) ?
-            $this->relationships[$relationshipName] : $relationshipName;
+        $relation = method_exists($this, $relationshipName) ? $this->{$relationshipName}() : null;
 
-        if (is_array($key)) {
-            return $this->morphMany($relationshipName, $key);
+        if (!$relation instanceof RelationshipAdapterInterface) {
+            throw new RuntimeException("Unrecognised relationship name: $relationshipName");
         }
 
-        if (!method_exists($this->model, $key)) {
-            throw new RuntimeException("Did not recognise relationship name: $relationshipName");
+        if (method_exists($relation, 'withRelationshipName')) {
+            $relation->withRelationshipName($relationshipName);
         }
 
-        $relation = $this->model->{$key}();
-
-        if (!$relation instanceof Relation) {
-            throw new RuntimeException("Expecting a relation for relationship: $relationshipName");
-        }
-
-        if ($this->isHasOne($relation)) {
-            return $this->hasOne($relationshipName, $key);
-        }
-
-        return $this->hasMany($relationshipName, $key);
+        return $relation;
     }
 
     /**
@@ -468,34 +442,31 @@ abstract class Adapter implements AdapterInterface
     }
 
     /**
-     * @param $relationshipName
      * @param $modelKey
-     * @return HasOneAdapter
+     * @return HasOne
      */
-    protected function hasOne($relationshipName, $modelKey)
+    protected function hasOne($modelKey = null)
     {
-        return new HasOneAdapter($relationshipName, $modelKey);
+        return new HasOne($this->model, $modelKey ?: $this->guessRelation());
     }
 
     /**
-     * @param $relationshipName
      * @param $modelKey
-     * @return HasManyAdapter
+     * @return HasMany
      */
-    protected function hasMany($relationshipName, $modelKey)
+    protected function hasMany($modelKey = null)
     {
-        return new HasManyAdapter($relationshipName, $modelKey);
+        return new HasMany($this->model, $modelKey ?: $this->guessRelation());
     }
 
     /**
-     * @param $relationshipName
-     * @param array $modelKeys
-     * @return MorphToManyAdapter
+     * @param string[] ...$modelKeys
+     * @return MorphHasMany
      */
-    protected function morphMany($relationshipName, array $modelKeys)
+    protected function morphMany(...$modelKeys)
     {
-        return new MorphToManyAdapter(...collect($modelKeys)->map(function ($key) use ($relationshipName) {
-            return $this->hasMany($relationshipName, $key);
+        return new MorphHasMany(...collect($modelKeys)->map(function ($key) {
+            return $this->hasMany($key);
         }));
     }
 
@@ -512,14 +483,13 @@ abstract class Adapter implements AdapterInterface
     }
 
     /**
-     * @param Relation $relation
-     * @return bool
+     * @return string
      */
-    private function isHasOne($relation)
+    private function guessRelation()
     {
-        return $relation instanceof BelongsTo ||
-            $relation instanceof HasOne ||
-            $relation instanceof MorphOne;
+        list($one, $two, $caller) = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3);
+
+        return $caller['function'];
     }
 
 }

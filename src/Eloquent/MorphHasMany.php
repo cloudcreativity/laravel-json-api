@@ -5,20 +5,20 @@ namespace CloudCreativity\LaravelJsonApi\Eloquent;
 use CloudCreativity\JsonApi\Contracts\Store\RelationshipAdapterInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
-class MorphToManyAdapter implements RelationshipAdapterInterface
+class MorphHasMany implements RelationshipAdapterInterface
 {
 
     /**
-     * @var HasManyAdapter[]
+     * @var HasMany[]
      */
     private $adapters;
 
     /**
      * MorphToManyAdapter constructor.
      *
-     * @param HasManyAdapter[] ...$adapters
+     * @param HasMany[] ...$adapters
      */
-    public function __construct(HasManyAdapter ...$adapters)
+    public function __construct(HasMany ...$adapters)
     {
         $this->adapters = $adapters;
     }

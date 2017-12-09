@@ -2,6 +2,8 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\JsonApi\Posts;
 
+use CloudCreativity\LaravelJsonApi\Eloquent\HasMany;
+use CloudCreativity\LaravelJsonApi\Eloquent\HasOne;
 use CloudCreativity\LaravelJsonApi\Pagination\StandardStrategy;
 use CloudCreativity\LaravelJsonApi\Store\EloquentAdapter;
 use CloudCreativity\LaravelJsonApi\Tests\Models\Post;
@@ -35,6 +37,30 @@ class Adapter extends EloquentAdapter
     protected function isSearchOne(Collection $filters)
     {
         // TODO: Implement isSearchOne() method.
+    }
+
+    /**
+     * @return HasOne
+     */
+    protected function author()
+    {
+        return $this->hasOne();
+    }
+
+    /**
+     * @return HasMany
+     */
+    protected function comments()
+    {
+        return $this->hasMany();
+    }
+
+    /**
+     * @return HasMany
+     */
+    protected function tags()
+    {
+        return $this->hasMany();
     }
 
 }

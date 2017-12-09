@@ -2,6 +2,6 @@
 
 namespace CloudCreativity\LaravelJsonApi\Eloquent;
 
-class HasManyAdapter extends HasOneAdapter
+class HasMany extends HasOne
 {
 }

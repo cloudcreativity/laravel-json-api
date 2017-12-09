@@ -2,6 +2,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\JsonApi\Comments;
 
+use CloudCreativity\LaravelJsonApi\Eloquent\HasOne;
 use CloudCreativity\LaravelJsonApi\Store\EloquentAdapter;
 use CloudCreativity\LaravelJsonApi\Tests\Models\Comment;
 use Illuminate\Database\Eloquent\Builder;
@@ -32,6 +33,14 @@ class Adapter extends EloquentAdapter
     protected function isSearchOne(Collection $filters)
     {
         // TODO: Implement isSearchOne() method.
+    }
+
+    /**
+     * @return HasOne
+     */
+    protected function commentable()
+    {
+        return $this->hasOne();
     }
 
 }
