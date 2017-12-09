@@ -21,7 +21,6 @@ namespace CloudCreativity\LaravelJsonApi\Http\Controllers;
 use Closure;
 use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface;
 use CloudCreativity\JsonApi\Contracts\Hydrator\HydratorInterface;
-use CloudCreativity\JsonApi\Contracts\Object\RelationshipInterface;
 use CloudCreativity\JsonApi\Contracts\Object\ResourceObjectInterface;
 use CloudCreativity\JsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\JsonApi\Exceptions\RuntimeException;
@@ -33,7 +32,7 @@ use Illuminate\Routing\Controller;
  *
  * @package CloudCreativity\LaravelJsonApi
  */
-abstract class JsonApiController extends Controller
+class JsonApiController extends Controller
 {
 
     use CreatesResponses;
@@ -58,14 +57,6 @@ abstract class JsonApiController extends Controller
      * @var bool
      */
     protected $useTransactions = true;
-
-    /**
-     * @param $record
-     * @return bool
-     *      whether the record was successfully deleted.
-     * @todo move to store
-     */
-    abstract protected function destroyRecord($record);
 
     /**
      * @param StoreInterface $store
@@ -272,7 +263,7 @@ abstract class JsonApiController extends Controller
             $this->deleting($record);
         }
 
-        if (!$this->destroyRecord($record)) {
+        if (!$this->hydrator()->delete($record)) {
             throw new RuntimeException('Record was not successfully deleted.');
         }
 

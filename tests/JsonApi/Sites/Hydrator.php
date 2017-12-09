@@ -8,6 +8,7 @@ use CloudCreativity\JsonApi\Hydrator\AbstractHydrator;
 use CloudCreativity\JsonApi\Hydrator\HydratesAttributesTrait;
 use CloudCreativity\JsonApi\Utils\Str;
 use CloudCreativity\LaravelJsonApi\Tests\Entities\Site;
+use CloudCreativity\LaravelJsonApi\Tests\Entities\SiteRepository;
 
 class Hydrator extends AbstractHydrator
 {
@@ -21,6 +22,31 @@ class Hydrator extends AbstractHydrator
         'domain',
         'name',
     ];
+
+    /**
+     * @var SiteRepository
+     */
+    private $repository;
+
+    /**
+     * Hydrator constructor.
+     *
+     * @param SiteRepository $repository
+     */
+    public function __construct(SiteRepository $repository)
+    {
+        $this->repository = $repository;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function delete($record)
+    {
+        $this->repository->remove($record);
+
+        return true;
+    }
 
     /**
      * @inheritDoc
@@ -72,7 +98,7 @@ class Hydrator extends AbstractHydrator
      */
     protected function persist($record)
     {
-        $record->save();
+        $this->repository->store($record);
     }
 
 }

@@ -18,23 +18,12 @@
 
 namespace CloudCreativity\LaravelJsonApi\Http\Controllers;
 
-use Illuminate\Database\Eloquent\Model;
-
 /**
  * Class EloquentController
  *
  * @package CloudCreativity\LaravelJsonApi
+ * @deprecated extend `JsonApiController` directly.
  */
 class EloquentController extends JsonApiController
 {
-
-    /**
-     * @param Model $record
-     * @return bool
-     */
-    protected function destroyRecord($record)
-    {
-        return $record->delete();
-    }
-
 }

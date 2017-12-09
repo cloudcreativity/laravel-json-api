@@ -123,20 +123,4 @@ class Site
         ];
     }
 
-    /**
-     * @return void
-     */
-    public function save()
-    {
-        app(SiteRepository::class)->store($this);
-    }
-
-    /**
-     * @return void
-     */
-    public function delete()
-    {
-        app(SiteRepository::class)->remove($this);
-    }
-
 }

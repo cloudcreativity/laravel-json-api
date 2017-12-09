@@ -131,6 +131,15 @@ abstract class EloquentHydrator extends AbstractHydrator
     }
 
     /**
+     * @inheritdoc
+     */
+    public function delete($record)
+    {
+        /** @var Model $record */
+        return $record->delete();
+    }
+
+    /**
      * @inheritDoc
      */
     public function updateRelationship($relationshipKey, RelationshipInterface $relationship, $record)
