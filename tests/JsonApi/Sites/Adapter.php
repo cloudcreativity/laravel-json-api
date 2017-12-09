@@ -3,6 +3,7 @@
 namespace CloudCreativity\LaravelJsonApi\Tests\JsonApi\Sites;
 
 use CloudCreativity\JsonApi\Contracts\Store\AdapterInterface;
+use CloudCreativity\JsonApi\Contracts\Store\ContainerInterface;
 use CloudCreativity\JsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Tests\Entities\SiteRepository;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
@@ -16,6 +17,11 @@ class Adapter implements AdapterInterface
     private $repository;
 
     /**
+     * @var ContainerInterface|null
+     */
+    private $adapters;
+
+    /**
      * Adapter constructor.
      *
      * @param SiteRepository $repository
@@ -23,6 +29,16 @@ class Adapter implements AdapterInterface
     public function __construct(SiteRepository $repository)
     {
         $this->repository = $repository;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function withAdapters(ContainerInterface $adapters)
+    {
+        $this->adapters = $adapters;
+
+        return $this;
     }
 
     /**

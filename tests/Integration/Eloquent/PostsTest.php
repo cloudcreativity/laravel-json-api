@@ -173,6 +173,19 @@ class PostsTest extends TestCase
     }
 
     /**
+     * Test that we can read the tags relationship.
+     */
+    public function testReadTags()
+    {
+        $post = $this->createPost();
+        $post->tags()->sync($tags = factory(Tag::class, 2)->create());
+
+        $this->expectSuccess()
+            ->doReadRelated($post, 'tags')
+            ->assertReadHasMany('tags', $tags);
+    }
+
+    /**
      * Test that we can read the resource identifier for the related author.
      */
     public function testReadAuthorRelationship()
@@ -201,6 +214,19 @@ class PostsTest extends TestCase
         $this->expectSuccess()
             ->doReadRelated($model, 'comments')
             ->assertReadHasManyIdentifiers('comments', $comments);
+    }
+
+    /**
+     * Test that we can read the tags relationship.
+     */
+    public function testReadTagsRelationship()
+    {
+        $post = $this->createPost();
+        $post->tags()->sync($tags = factory(Tag::class, 2)->create());
+
+        $this->expectSuccess()
+            ->doReadRelated($post, 'tags')
+            ->assertReadHasManyIdentifiers('tags', $tags);
     }
 
     /**

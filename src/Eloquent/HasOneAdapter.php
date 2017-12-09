@@ -2,7 +2,6 @@
 
 namespace CloudCreativity\LaravelJsonApi\Eloquent;
 
-use CloudCreativity\JsonApi\Contracts\Store\ContainerInterface;
 use CloudCreativity\JsonApi\Contracts\Store\RelationshipAdapterInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
@@ -10,44 +9,41 @@ class HasOneAdapter implements RelationshipAdapterInterface
 {
 
     /**
-     * @var string|null
+     * @var string
      */
-    protected $key;
+    protected $relationshipName;
 
     /**
-     * BelongsToAdapter constructor.
+     * @var string
+     */
+    protected $modelKey;
+
+    /**
+     * HasOneAdapter constructor.
      *
-     * @param string|null $key
+     * @param string $relationshipName
+     * @param string $modelKey
      */
-    public function __construct($key = null)
+    public function __construct($relationshipName, $modelKey)
     {
-        $this->key = $key;
+        $this->relationshipName = $relationshipName;
+        $this->modelKey = $modelKey;
     }
 
     /**
      * @inheritDoc
      */
-    public function withAdapters(ContainerInterface $adapters)
+    public function queryRelated($record, EncodingParametersInterface $parameters)
     {
-        return $this;
+        return $record->{$this->modelKey};
     }
 
     /**
      * @inheritDoc
      */
-    public function queryRelated($record, $relationshipName, EncodingParametersInterface $parameters)
+    public function queryRelationship($record, EncodingParametersInterface $parameters)
     {
-        $key = $this->key ?: $relationshipName;
-
-        return $record->{$key};
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function queryRelationship($record, $relationshipName, EncodingParametersInterface $parameters)
-    {
-        return $this->queryRelated($record, $relationshipName, $parameters);
+        return $this->queryRelated($record, $parameters);
     }
 
 }

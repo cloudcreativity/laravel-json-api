@@ -20,6 +20,7 @@ namespace CloudCreativity\LaravelJsonApi\Eloquent;
 
 use CloudCreativity\JsonApi\Contracts\Pagination\PageInterface;
 use CloudCreativity\JsonApi\Contracts\Store\AdapterInterface;
+use CloudCreativity\JsonApi\Contracts\Store\ContainerInterface;
 use CloudCreativity\JsonApi\Exceptions\RuntimeException;
 use CloudCreativity\JsonApi\Utils\Str;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PagingStrategyInterface;
@@ -117,6 +118,11 @@ abstract class Adapter implements AdapterInterface
     protected $relationships = [];
 
     /**
+     * @var ContainerInterface|null
+     */
+    private $adapters;
+
+    /**
      * Apply the supplied filters to the builder instance.
      *
      * @param Builder $query
@@ -143,6 +149,16 @@ abstract class Adapter implements AdapterInterface
     {
         $this->model = $model;
         $this->paging = $paging;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function withAdapters(ContainerInterface $adapters)
+    {
+        $this->adapters = $adapters;
+
+        return $this;
     }
 
     /**
@@ -215,21 +231,25 @@ abstract class Adapter implements AdapterInterface
         $key = isset($this->relationships[$relationshipName]) ?
             $this->relationships[$relationshipName] : $relationshipName;
 
-        if (!is_callable([$this->model, $key])) {
+        if (is_array($key)) {
+            return $this->morphMany($relationshipName, $key);
+        }
+
+        if (!method_exists($this->model, $key)) {
             throw new RuntimeException("Did not recognise relationship name: $relationshipName");
         }
 
-        $relation = call_user_func([$this->model, $key]);
+        $relation = $this->model->{$key}();
 
         if (!$relation instanceof Relation) {
             throw new RuntimeException("Expecting a relation for relationship: $relationshipName");
         }
 
         if ($this->isHasOne($relation)) {
-            return new HasOneAdapter($key);
+            return $this->hasOne($relationshipName, $key);
         }
 
-        return new HasManyAdapter($key);
+        return $this->hasMany($relationshipName, $key);
     }
 
     /**
@@ -445,6 +465,50 @@ abstract class Adapter implements AdapterInterface
         }
 
         return $model::$snakeAttributes ? Str::underscore($field) : Str::camelize($field);
+    }
+
+    /**
+     * @param $relationshipName
+     * @param $modelKey
+     * @return HasOneAdapter
+     */
+    protected function hasOne($relationshipName, $modelKey)
+    {
+        return new HasOneAdapter($relationshipName, $modelKey);
+    }
+
+    /**
+     * @param $relationshipName
+     * @param $modelKey
+     * @return HasManyAdapter
+     */
+    protected function hasMany($relationshipName, $modelKey)
+    {
+        return new HasManyAdapter($relationshipName, $modelKey);
+    }
+
+    /**
+     * @param $relationshipName
+     * @param array $modelKeys
+     * @return MorphToManyAdapter
+     */
+    protected function morphMany($relationshipName, array $modelKeys)
+    {
+        return new MorphToManyAdapter(...collect($modelKeys)->map(function ($key) use ($relationshipName) {
+            return $this->hasMany($relationshipName, $key);
+        }));
+    }
+
+    /**
+     * @return ContainerInterface
+     */
+    protected function adapters()
+    {
+        if (!$this->adapters) {
+            throw new RuntimeException('Adapters have not been injected.');
+        }
+
+        return $this->adapters;
     }
 
     /**

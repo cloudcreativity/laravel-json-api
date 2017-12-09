@@ -97,4 +97,15 @@ class CommentsTest extends TestCase
         $this->expectSuccess()->doReadRelated($comment, 'commentable')->assertReadHasOne($data);
     }
 
+    public function testReadCommentableRelationship()
+    {
+        $comment = factory(Comment::class)->states('post')->create();
+        /** @var Post $post */
+        $post = $comment->commentable;
+
+        $this->expectSuccess()
+            ->doReadRelationship($comment, 'commentable')
+            ->assertReadHasOneIdentifier('posts', $post->getKey());
+    }
+
 }

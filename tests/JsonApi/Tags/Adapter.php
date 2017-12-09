@@ -11,6 +11,13 @@ class Adapter extends EloquentAdapter
 {
 
     /**
+     * @var array
+     */
+    protected $relationships = [
+        'taggables' => ['posts', 'videos'],
+    ];
+
+    /**
      * Adapter constructor.
      */
     public function __construct()

@@ -28,6 +28,9 @@ abstract class TestCase extends BaseTestCase
             ]);
             $api->resource('users');
             $api->resource('videos');
+            $api->resource('tags', [
+                'has-many' => 'taggables',
+            ]);
         });
     }
 }

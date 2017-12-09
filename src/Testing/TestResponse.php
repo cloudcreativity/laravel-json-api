@@ -138,8 +138,8 @@ class TestResponse extends BaseTestResponse
     /**
      * Assert the response is the result of searching for many resources of the specified type.
      *
-     * @param string|null $resourceType
-     *      the expected resource type, or null for the expected type set on this tester.
+     * @param string|string[]|null $resourceType
+     *      the expected resource type(s), or null for the expected type set on this tester.
      * @return $this
      */
     public function assertSearchedMany($resourceType = null)
@@ -365,6 +365,42 @@ class TestResponse extends BaseTestResponse
         } else {
             $this->assertSearchedMany($resourceType);
         }
+
+        return $this;
+    }
+
+    /**
+     * Assert response is a has-many polymorphic related resources response.
+     *
+     * The expected values must be keyed by resource type, and contain either a string id or an array
+     * of string ids per type. For example:
+     *
+     * `['posts' => ['1', '2'], 'videos' => '1']`
+     *
+     * or
+     *
+     * `['posts' => $posts, 'videos' => $video]`
+     *
+     * An empty array indicates you expect the relationship to be empty.
+     *
+     * @param array $expected
+     * @return $this
+     */
+    public function assertReadPolymorphHasMany($expected)
+    {
+        if (empty($expected)) {
+            $this->assertSearchedNone();
+            return $this;
+        }
+
+        $expected = collect($expected)->map(function ($ids) {
+            return $this->normalizeIds($ids);
+        })->all();
+
+        $this->assertStatus(Response::HTTP_OK)
+            ->assertDocument()
+            ->assertResourceCollection()
+            ->assertContainsOnly($expected);
 
         return $this;
     }

@@ -3,7 +3,7 @@
 namespace CloudCreativity\LaravelJsonApi\Tests\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
 class Tag extends Model
 {
@@ -16,10 +16,18 @@ class Tag extends Model
     ];
 
     /**
-     * @return BelongsToMany
+     * @return MorphToMany
      */
     public function posts()
     {
-        return $this->belongsToMany(Post::class);
+        return $this->morphedByMany(Post::class, 'taggable');
+    }
+
+    /**
+     * @return MorphToMany
+     */
+    public function videos()
+    {
+        return $this->morphedByMany(Video::class, 'taggable');
     }
 }
