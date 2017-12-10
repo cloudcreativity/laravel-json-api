@@ -18,14 +18,19 @@
 
 namespace CloudCreativity\LaravelJsonApi\Eloquent;
 
+use Carbon\Carbon;
+use CloudCreativity\JsonApi\Adapter\AbstractResourceAdaptor;
+use CloudCreativity\JsonApi\Contracts\Adapter\HasManyAdapterInterface;
+use CloudCreativity\JsonApi\Contracts\Adapter\RelationshipAdapterInterface;
+use CloudCreativity\JsonApi\Contracts\Object\RelationshipsInterface;
+use CloudCreativity\JsonApi\Contracts\Object\ResourceObjectInterface;
 use CloudCreativity\JsonApi\Contracts\Pagination\PageInterface;
-use CloudCreativity\JsonApi\Contracts\Store\AdapterInterface;
-use CloudCreativity\JsonApi\Contracts\Store\ContainerInterface;
-use CloudCreativity\JsonApi\Contracts\Store\RelationshipAdapterInterface;
+use CloudCreativity\JsonApi\Contracts\Store\StoreAwareInterface;
 use CloudCreativity\JsonApi\Exceptions\RuntimeException;
 use CloudCreativity\JsonApi\Utils\Str;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PagingStrategyInterface;
 use CloudCreativity\LaravelJsonApi\Store\FindsManyResources;
+use CloudCreativity\Utils\Object\StandardObjectInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
@@ -37,7 +42,7 @@ use Neomerx\JsonApi\Contracts\Encoder\Parameters\SortParameterInterface;
  *
  * @package CloudCreativity\LaravelJsonApi
  */
-abstract class Adapter implements AdapterInterface
+abstract class AbstractAdapter extends AbstractResourceAdaptor
 {
 
     use FindsManyResources;
@@ -60,6 +65,62 @@ abstract class Adapter implements AdapterInterface
      * @var string|null
      */
     protected $primaryKey;
+
+    /**
+     * JSON API attribute field names to hydrate.
+     *
+     * - Empty array = hydrate no attributes.
+     * - Non-empty array = hydrate the specified attribute keys (see below).
+     * - Null = calculate the attributes to hydrate using `Model::getFillable()`
+     *
+     * List the keys from the resource's attributes that should be transferred to your
+     * model using the `fill()` method. To map a resource attribute key to a different
+     * model key, use a key/value pair where the key is the resource attribute and the
+     * value is the model attribute.
+     *
+     * For example:
+     *
+     * ```
+     * $attributes = [
+     *  'foo',
+     *  'bar' => 'baz'
+     *  'foo-bar',
+     * ];
+     * ```
+     *
+     * Will transfer the `foo` resource attribute to the model `foo` attribute, and the
+     * resource `bar` attribute to the model `baz` attribute. The `foo-bar` resource
+     * attribute will be converted to `foo_bar` if the Model uses snake case attributes,
+     * or `fooBar` if it does not use snake case.
+     *
+     * If this property is `null`, the attributes to hydrate will be calculated using
+     * `Model::getFillable()`.
+     *
+     * @var array|null
+     */
+    protected $attributes = null;
+
+    /**
+     * JSON API relationship field names to hydrate.
+     *
+     * This hydrator can hydrate Eloquent `BelongsTo` and `BelongsToMany` relationships. To do so,
+     * add the relationship name to this array. As per the attributes above, you can map
+     * a resource relationship key to a different model key using a key/value pair. The model key
+     * must be the method on the model to get the relationship object.
+     *
+     * @var string[]
+     */
+    protected $relationships = [];
+
+    /**
+     * The resource attributes that are dates.
+     *
+     * If an array, a list of JSON API resource attributes that should be cast to dates.
+     * If `null`, the list will be calculated using `Model::getDates()`
+     *
+     * @var string[]|null
+     */
+    protected $dates = null;
 
     /**
      * The filter param for a find-many request.
@@ -103,11 +164,6 @@ abstract class Adapter implements AdapterInterface
     protected $sortColumns = [];
 
     /**
-     * @var ContainerInterface|null
-     */
-    private $adapters;
-
-    /**
      * Apply the supplied filters to the builder instance.
      *
      * @param Builder $query
@@ -115,14 +171,6 @@ abstract class Adapter implements AdapterInterface
      * @return void
      */
     abstract protected function filter(Builder $query, Collection $filters);
-
-    /**
-     * Is this a search for a singleton resource?
-     *
-     * @param Collection $filters
-     * @return bool
-     */
-    abstract protected function isSearchOne(Collection $filters);
 
     /**
      * EloquentAdapter constructor.
@@ -137,13 +185,14 @@ abstract class Adapter implements AdapterInterface
     }
 
     /**
-     * @inheritDoc
+     * @param Model $record
+     * @param EncodingParametersInterface $params
+     * @return bool
+     * @throws \Exception
      */
-    public function withAdapters(ContainerInterface $adapters)
+    public function delete($record, EncodingParametersInterface $params)
     {
-        $this->adapters = $adapters;
-
-        return $this;
+        return (bool) $record->delete();
     }
 
     /**
@@ -213,10 +262,15 @@ abstract class Adapter implements AdapterInterface
      */
     public function related($relationshipName)
     {
-        $relation = method_exists($this, $relationshipName) ? $this->{$relationshipName}() : null;
+        $method = Str::camelize($relationshipName);
+        $relation = method_exists($this, $method) ? $this->{$method}() : null;
 
         if (!$relation instanceof RelationshipAdapterInterface) {
-            throw new RuntimeException("Unrecognised relationship name: $relationshipName");
+            throw new RuntimeException("Unrecognised relationship name: $method");
+        }
+
+        if ($relation instanceof StoreAwareInterface) {
+            $relation->withStore($this->store());
         }
 
         if (method_exists($relation, 'withRelationshipName')) {
@@ -255,6 +309,225 @@ abstract class Adapter implements AdapterInterface
     }
 
     /**
+     * @inheritDoc
+     */
+    protected function createRecord(ResourceObjectInterface $resource)
+    {
+        return $this->model->newInstance();
+    }
+
+    /**
+     * @param StandardObjectInterface $attributes
+     *      the attributes received from the client.
+     * @param Model $record
+     *      the model being hydrated
+     * @return array
+     *      the JSON API attribute keys to hydrate
+     * @deprecated use `hydrateAttributeFields`
+     */
+    protected function attributeKeys(StandardObjectInterface $attributes, $record)
+    {
+        return $this->hydrateAttributeFields($record);
+    }
+
+    /**
+     * Get the JSON API attribute fields that can be hydrated.
+     *
+     * @param Model $model
+     *      the model being hydrated.
+     * @return array
+     */
+    protected function hydrateAttributeFields($model)
+    {
+       if (is_array($this->attributes)) {
+           return $this->attributes;
+       }
+
+        return $this->attributes = collect($model->getFillable())->mapWithKeys(function ($modelKey) {
+            return [$this->fieldForModelKey($modelKey) => $modelKey];
+        })->all();
+    }
+
+    /**
+     * Get the JSON API relationship fields that can be hydrated.
+     *
+     * @param Model $model
+     *      the model being hydrated.
+     * @return array
+     */
+    protected function hydrateRelationshipFields($model)
+    {
+        return (array) $this->relationships;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function hydrateAttributes($record, StandardObjectInterface $attributes)
+    {
+        if (!$record instanceof Model) {
+            throw new \InvalidArgumentException('Expecting an Eloquent model.');
+        }
+
+        $data = [];
+
+        foreach ($this->attributeKeys($attributes, $record) as $resourceKey => $modelKey) {
+            if (is_numeric($resourceKey)) {
+                $resourceKey = $modelKey;
+                $modelKey = $this->keyForAttribute($modelKey, $record);
+            }
+
+            if ($attributes->has($resourceKey)) {
+                $data[$modelKey] = $this->deserializeAttribute($attributes->get($resourceKey), $resourceKey, $record);
+            }
+        }
+
+        $record->fill($data);
+    }
+
+    /**
+     * Convert a JSON API attribute key into a model attribute key.
+     *
+     * @param $resourceKey
+     * @param Model $model
+     * @return string
+     * @deprecated use `modelKeyForField`
+     */
+    protected function keyForAttribute($resourceKey, Model $model)
+    {
+        return $this->modelKeyForField($resourceKey);
+    }
+
+    /**
+     * Convert a JSON API resource field name to a model key.
+     *
+     * @param $field
+     * @return string
+     */
+    protected function modelKeyForField($field)
+    {
+        $model = $this->model;
+
+        return $model::$snakeAttributes ? Str::underscore($field) : Str::camelize($field);
+    }
+
+    /**
+     * Convert a model key to a JSON API resource field name.
+     *
+     * @param $key
+     * @return string
+     */
+    protected function fieldForModelKey($key)
+    {
+        return Str::dasherize($key);
+    }
+
+    /**
+     * Deserialize a value obtained from the resource's attributes.
+     *
+     * @param $value
+     *      the value that the client provided.
+     * @param $resourceKey
+     *      the attribute key for the value
+     * @param Model $record
+     * @return Carbon|null
+     */
+    protected function deserializeAttribute($value, $resourceKey, $record)
+    {
+        if ($this->isDateAttribute($resourceKey, $record)) {
+            return $this->deserializeDate($value);
+        }
+
+        return $value;
+    }
+
+    /**
+     * Convert a JSON date into a PHP date time object.
+     *
+     * @param $value
+     * @return Carbon|null
+     */
+    protected function deserializeDate($value)
+    {
+        return !is_null($value) ? new Carbon($value) : null;
+    }
+
+    /**
+     * Is this resource key a date attribute?
+     *
+     * @param $resourceKey
+     * @param Model $record
+     * @return bool
+     */
+    protected function isDateAttribute($resourceKey, $record)
+    {
+        if (is_null($this->dates)) {
+            return in_array(Str::underscore($resourceKey), $record->getDates(), true);
+        }
+
+        return in_array($resourceKey, $this->dates, true);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function hydrateRelationships(
+        $record,
+        RelationshipsInterface $relationships,
+        EncodingParametersInterface $parameters
+    ) {
+        foreach ($this->hydrateRelationshipFields($record) as $field) {
+            if (!$relationships->has($field)) {
+                continue;
+            }
+
+            $relation = $this->related($field);
+
+            if (!$relation instanceof HasManyAdapterInterface) {
+                $relation->update($record, $relationships->getRelationship($field), $parameters);
+            }
+        }
+    }
+
+    /**
+     * Hydrate related models after the primary record has been persisted.
+     *
+     * @param Model $record
+     * @param ResourceObjectInterface $resource
+     * @param EncodingParametersInterface $parameters
+     */
+    protected function hydrateRelated(
+        $record,
+        ResourceObjectInterface $resource,
+        EncodingParametersInterface $parameters
+    ) {
+        $relationships = $resource->getRelationships();
+
+        foreach ($this->hydrateRelationshipFields($record) as $field) {
+            if (!$relationships->has($field)) {
+                continue;
+            }
+
+            $relation = $this->related($field);
+
+            if ($relation instanceof HasManyAdapterInterface) {
+                $relation->replace($record, $relationships->getRelationship($field), $parameters);
+            }
+        }
+    }
+
+    /**
+     * @param Model $record
+     * @return Model
+     */
+    protected function persist($record)
+    {
+        $record->save();
+
+        return $record;
+    }
+
+    /**
      * @param Builder $query
      * @param Collection $filters
      * @return mixed
@@ -286,6 +559,17 @@ abstract class Adapter implements AdapterInterface
     protected function all(Builder $query)
     {
         return $query->get();
+    }
+
+    /**
+     * Is this a search for a singleton resource?
+     *
+     * @param Collection $filters
+     * @return bool
+     */
+    protected function isSearchOne(Collection $filters)
+    {
+        return false;
     }
 
     /**
@@ -468,18 +752,6 @@ abstract class Adapter implements AdapterInterface
         return new MorphHasMany(...collect($modelKeys)->map(function ($key) {
             return $this->hasMany($key);
         }));
-    }
-
-    /**
-     * @return ContainerInterface
-     */
-    protected function adapters()
-    {
-        if (!$this->adapters) {
-            throw new RuntimeException('Adapters have not been injected.');
-        }
-
-        return $this->adapters;
     }
 
     /**

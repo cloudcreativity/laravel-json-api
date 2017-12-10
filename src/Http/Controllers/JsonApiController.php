@@ -20,12 +20,11 @@ namespace CloudCreativity\LaravelJsonApi\Http\Controllers;
 
 use Closure;
 use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface;
-use CloudCreativity\JsonApi\Contracts\Hydrator\HydratorInterface;
 use CloudCreativity\JsonApi\Contracts\Object\ResourceObjectInterface;
 use CloudCreativity\JsonApi\Contracts\Store\StoreInterface;
-use CloudCreativity\JsonApi\Exceptions\RuntimeException;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
+use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 /**
  * Class JsonApiController
@@ -36,13 +35,6 @@ class JsonApiController extends Controller
 {
 
     use CreatesResponses;
-
-    /**
-     * The hydrator fully-qualified class name, or service name.
-     *
-     * @var HydratorInterface|string|null
-     */
-    protected $hydrator;
 
     /**
      * The database connection name to use for transactions, or null for the default connection.
@@ -81,13 +73,18 @@ class JsonApiController extends Controller
 
     /**
      * @param StoreInterface $store
-     * @param ResourceObjectInterface $resource
+     * @param RequestInterface $request
      * @return Response
      */
-    public function create(StoreInterface $store, ResourceObjectInterface $resource)
+    public function create(StoreInterface $store, RequestInterface $request)
     {
-        $record = $this->transaction(function () use ($store, $resource) {
-            return $this->doCreate($store, $resource);
+        $record = $this->transaction(function () use ($store, $request) {
+            return $this->doCreate(
+                $store,
+                $request->getResourceType(),
+                $request->getDocument()->getResource(),
+                $request->getParameters()
+            );
         });
 
         return $this->reply()->created($record);
@@ -95,27 +92,34 @@ class JsonApiController extends Controller
 
     /**
      * @param StoreInterface $store
-     * @param ResourceObjectInterface $resource
+     * @param RequestInterface $request
      * @param object $record
      * @return Response
      */
-    public function update(StoreInterface $store, ResourceObjectInterface $resource, $record)
+    public function update(StoreInterface $store, RequestInterface $request, $record)
     {
-        $record = $this->transaction(function () use ($store, $resource, $record) {
-            return $this->doUpdate($store, $resource, $record);
+        $record = $this->transaction(function () use ($store, $request, $record) {
+            return $this->doUpdate(
+                $store,
+                $record,
+                $request->getDocument()->getResource(),
+                $request->getParameters()
+            );
         });
 
         return $this->reply()->content($record);
     }
 
     /**
+     * @param StoreInterface $store
+     * @param RequestInterface $request
      * @param $record
      * @return Response
      */
-    public function delete($record)
+    public function delete(StoreInterface $store, RequestInterface $request, $record)
     {
-        $this->transaction(function () use ($record) {
-            $this->doDelete($record);
+        $this->transaction(function () use ($store, $request, $record) {
+            $this->doDelete($store, $record, $request->getParameters());
         });
 
         return $this->reply()->noContent();
@@ -130,7 +134,6 @@ class JsonApiController extends Controller
     public function readRelatedResource(StoreInterface $store, RequestInterface $request, $record)
     {
         $related = $store->queryRelated(
-            $request->getResourceType(),
             $record,
             $request->getRelationshipName(),
             $request->getParameters()
@@ -148,7 +151,6 @@ class JsonApiController extends Controller
     public function readRelationship(StoreInterface $store, RequestInterface $request, $record)
     {
         $related = $store->queryRelationship(
-            $request->getResourceType(),
             $record,
             $request->getRelationshipName(),
             $request->getParameters()
@@ -166,10 +168,11 @@ class JsonApiController extends Controller
     public function replaceRelationship(StoreInterface $store, RequestInterface $request, $record)
     {
         $this->transaction(function () use ($store, $request, $record) {
-            $this->hydrator()->withStore($store)->updateRelationship(
+            $store->replaceRelationship(
+                $record,
                 $request->getRelationshipName(),
                 $request->getDocument()->getRelationship(),
-                $record
+                $request->getParameters()
             );
         });
 
@@ -185,10 +188,11 @@ class JsonApiController extends Controller
     public function addToRelationship(StoreInterface $store, RequestInterface $request, $record)
     {
         $this->transaction(function () use ($store, $request, $record) {
-            $this->hydrator()->withStore($store)->addToRelationship(
+            $store->addToRelationship(
+                $record,
                 $request->getRelationshipName(),
                 $request->getDocument()->getRelationship(),
-                $record
+                $request->getParameters()
             );
         });
 
@@ -204,10 +208,11 @@ class JsonApiController extends Controller
     public function removeFromRelationship(StoreInterface $store, RequestInterface $request, $record)
     {
         $this->transaction(function () use ($store, $request, $record) {
-            $this->hydrator()->withStore($store)->removeFromRelationship(
+            $store->removeFromRelationship(
+                $record,
                 $request->getRelationshipName(),
                 $request->getDocument()->getRelationship(),
-                $record
+                $request->getParameters()
             );
         });
 
@@ -221,18 +226,24 @@ class JsonApiController extends Controller
      */
     protected function doSearch(StoreInterface $store, RequestInterface $request)
     {
-        return $store->query($request->getResourceType(), $request->getParameters());
+        return $store->queryRecords($request->getResourceType(), $request->getParameters());
     }
 
     /**
      * @param StoreInterface $store
+     * @param string $resourceType
      * @param ResourceObjectInterface $resource
+     * @param EncodingParametersInterface $parameters
      * @return object
      */
-    protected function doCreate(StoreInterface $store, ResourceObjectInterface $resource)
-    {
+    protected function doCreate(
+        StoreInterface $store,
+        $resourceType,
+        ResourceObjectInterface $resource,
+        EncodingParametersInterface $parameters
+    ) {
         $this->beforeCommit($resource);
-        $record = $this->hydrator()->withStore($store)->create($resource);
+        $record = $store->createRecord($resourceType, $resource, $parameters);
         $this->afterCommit($resource, $record, false);
 
         return $record;
@@ -240,32 +251,36 @@ class JsonApiController extends Controller
 
     /**
      * @param StoreInterface $store
-     * @param ResourceObjectInterface $resource
      * @param $record
+     * @param ResourceObjectInterface $resource
+     * @param EncodingParametersInterface $parameters
      * @return object
      */
-    protected function doUpdate(StoreInterface $store, ResourceObjectInterface $resource, $record)
-    {
+    protected function doUpdate(
+        StoreInterface $store,
+        $record,
+        ResourceObjectInterface $resource,
+        EncodingParametersInterface $parameters
+    ) {
         $this->beforeCommit($resource, $record);
-        $record = $this->hydrator()->withStore($store)->update($resource, $record);
+        $record = $store->updateRecord($record, $resource, $parameters);
         $this->afterCommit($resource, $record, true);
 
         return $record;
     }
 
     /**
+     * @param StoreInterface $store
      * @param $record
-     * @return void
+     * @param EncodingParametersInterface $parameters
      */
-    protected function doDelete($record)
+    protected function doDelete(StoreInterface $store, $record, EncodingParametersInterface $parameters)
     {
         if (method_exists($this, 'deleting')) {
             $this->deleting($record);
         }
 
-        if (!$this->hydrator()->delete($record)) {
-            throw new RuntimeException('Record was not successfully deleted.');
-        }
+        $store->deleteRecord($record, $parameters);
 
         if (method_exists($this, 'deleted')) {
             $this->deleted($record);
@@ -283,28 +298,6 @@ class JsonApiController extends Controller
         }
 
         return app('db')->connection($this->connection)->transaction($closure);
-    }
-
-    /**
-     * @return HydratorInterface
-     */
-    protected function hydrator()
-    {
-        if ($this->hydrator instanceof HydratorInterface) {
-            return $this->hydrator;
-        }
-
-        if (!$this->hydrator) {
-            throw new RuntimeException('The hydrator property must be set.');
-        }
-
-        $hydrator = app($this->hydrator);
-
-        if (!$hydrator instanceof HydratorInterface) {
-            throw new RuntimeException("Service $this->hydrator is not a hydrator.");
-        }
-
-        return $hydrator;
     }
 
     /**

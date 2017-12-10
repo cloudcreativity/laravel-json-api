@@ -2,12 +2,12 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\JsonApi\Users;
 
-use CloudCreativity\LaravelJsonApi\Store\EloquentAdapter;
+use CloudCreativity\LaravelJsonApi\Eloquent\AbstractAdapter;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Collection;
 
-class Adapter extends EloquentAdapter
+class Adapter extends AbstractAdapter
 {
 
     /**
@@ -25,14 +25,5 @@ class Adapter extends EloquentAdapter
     {
         // TODO: Implement filter() method.
     }
-
-    /**
-     * @inheritDoc
-     */
-    protected function isSearchOne(Collection $filters)
-    {
-        // TODO: Implement isSearchOne() method.
-    }
-
 
 }

@@ -2,11 +2,15 @@
 
 namespace CloudCreativity\LaravelJsonApi\Eloquent;
 
-use CloudCreativity\JsonApi\Contracts\Store\RelationshipAdapterInterface;
+use CloudCreativity\JsonApi\Contracts\Adapter\RelationshipAdapterInterface;
+use CloudCreativity\JsonApi\Contracts\Store\StoreAwareInterface;
+use CloudCreativity\JsonApi\Store\StoreAwareTrait;
 use Illuminate\Database\Eloquent\Model;
 
-abstract class AbstractRelation implements RelationshipAdapterInterface
+abstract class AbstractRelation implements RelationshipAdapterInterface, StoreAwareInterface
 {
+
+    use StoreAwareTrait;
 
     /**
      * @var Model
@@ -51,4 +55,5 @@ abstract class AbstractRelation implements RelationshipAdapterInterface
 
         return $this;
     }
+
 }

@@ -2,23 +2,25 @@
 
 namespace CloudCreativity\LaravelJsonApi\Eloquent;
 
-use CloudCreativity\JsonApi\Contracts\Store\RelationshipAdapterInterface;
+use CloudCreativity\JsonApi\Contracts\Adapter\HasManyAdapterInterface;
+use CloudCreativity\JsonApi\Contracts\Object\RelationshipInterface;
+use CloudCreativity\JsonApi\Exceptions\RuntimeException;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
-class MorphHasMany implements RelationshipAdapterInterface
+class MorphHasMany implements HasManyAdapterInterface
 {
 
     /**
-     * @var HasMany[]
+     * @var HasManyAdapterInterface[]
      */
     private $adapters;
 
     /**
      * MorphToManyAdapter constructor.
      *
-     * @param HasMany[] ...$adapters
+     * @param HasManyAdapterInterface[] ...$adapters
      */
-    public function __construct(HasMany ...$adapters)
+    public function __construct(HasManyAdapterInterface ...$adapters)
     {
         $this->adapters = $adapters;
     }
@@ -43,12 +45,12 @@ class MorphHasMany implements RelationshipAdapterInterface
     /**
      * @inheritDoc
      */
-    public function queryRelated($record, EncodingParametersInterface $parameters)
+    public function query($record, EncodingParametersInterface $parameters)
     {
         $all = collect();
 
         foreach ($this->adapters as $adapter) {
-            $all = $all->merge($adapter->queryRelated($record, $parameters));
+            $all = $all->merge($adapter->query($record, $parameters));
         }
 
         return $all;
@@ -57,16 +59,62 @@ class MorphHasMany implements RelationshipAdapterInterface
     /**
      * @inheritDoc
      */
-    public function queryRelationship($record, EncodingParametersInterface $parameters)
+    public function relationship($record, EncodingParametersInterface $parameters)
     {
         $all = collect();
 
         foreach ($this->adapters as $adapter) {
-            $all = $all->merge($adapter->queryRelationship($record, $parameters));
+            $all = $all->merge($adapter->relationship($record, $parameters));
         }
 
         return $all;
     }
 
+    /**
+     * @param object $record
+     * @param RelationshipInterface $relationship
+     * @param EncodingParametersInterface $parameters
+     * @return void
+     */
+    public function update($record, RelationshipInterface $relationship, EncodingParametersInterface $parameters)
+    {
+        throw new RuntimeException("Eloquent has-many relations must be replaced not updated.");
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function replace($record, RelationshipInterface $relationship, EncodingParametersInterface $parameters)
+    {
+        foreach ($this->adapters as $adapter) {
+            $adapter->replace($record, $relationship, $parameters);
+        }
+
+        return $record;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function add($record, RelationshipInterface $relationship, EncodingParametersInterface $parameters)
+    {
+        foreach ($this->adapters as $adapter) {
+            $adapter->add($record, $relationship, $parameters);
+        }
+
+        return $record;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function remove($record, RelationshipInterface $relationship, EncodingParametersInterface $parameters)
+    {
+        foreach ($this->adapters as $adapter) {
+            $adapter->remove($record, $relationship, $parameters);
+        }
+
+        return $record;
+    }
 
 }

@@ -17,7 +17,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Store;
 
-use CloudCreativity\LaravelJsonApi\Eloquent\Adapter;
+use CloudCreativity\LaravelJsonApi\Eloquent\AbstractAdapter;
 
 /**
  * Class EloquentAdapter
@@ -25,6 +25,6 @@ use CloudCreativity\LaravelJsonApi\Eloquent\Adapter;
  * @package CloudCreativity\LaravelJsonApi
  * @deprecated extend Eloquent\Adapter directly.
  */
-abstract class EloquentAdapter extends Adapter
+abstract class EloquentAdapter extends AbstractAdapter
 {
 }

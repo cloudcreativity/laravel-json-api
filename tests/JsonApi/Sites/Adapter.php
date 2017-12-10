@@ -2,24 +2,33 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\JsonApi\Sites;
 
-use CloudCreativity\JsonApi\Contracts\Store\AdapterInterface;
-use CloudCreativity\JsonApi\Contracts\Store\ContainerInterface;
+use CloudCreativity\JsonApi\Adapter\AbstractResourceAdaptor;
+use CloudCreativity\JsonApi\Adapter\HydratesAttributesTrait;
+use CloudCreativity\JsonApi\Contracts\Object\RelationshipsInterface;
+use CloudCreativity\JsonApi\Contracts\Object\ResourceObjectInterface;
 use CloudCreativity\JsonApi\Exceptions\RuntimeException;
+use CloudCreativity\JsonApi\Utils\Str;
+use CloudCreativity\LaravelJsonApi\Tests\Entities\Site;
 use CloudCreativity\LaravelJsonApi\Tests\Entities\SiteRepository;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
-class Adapter implements AdapterInterface
+class Adapter extends AbstractResourceAdaptor
 {
+
+    use HydratesAttributesTrait;
+
+    /**
+     * @var array
+     */
+    protected $attributes = [
+        'domain',
+        'name',
+    ];
 
     /**
      * @var SiteRepository
      */
     private $repository;
-
-    /**
-     * @var ContainerInterface|null
-     */
-    private $adapters;
 
     /**
      * Adapter constructor.
@@ -34,27 +43,21 @@ class Adapter implements AdapterInterface
     /**
      * @inheritDoc
      */
-    public function withAdapters(ContainerInterface $adapters)
-    {
-        $this->adapters = $adapters;
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function query(EncodingParametersInterface $parameters)
     {
         return $this->repository->all();
     }
 
     /**
-     * @inheritDoc
+     * @param Site $record
+     * @param EncodingParametersInterface $params
+     * @return bool
      */
-    public function queryRecord($resourceId, EncodingParametersInterface $parameters)
+    public function delete($record, EncodingParametersInterface $params)
     {
-        return $this->find($resourceId);
+        $this->repository->remove($record);
+
+        return true;
     }
 
     /**
@@ -94,9 +97,42 @@ class Adapter implements AdapterInterface
     /**
      * @inheritDoc
      */
-    public function inverse($relationshipName)
+    protected function createRecord(ResourceObjectInterface $resource)
     {
-        // TODO: Implement inverse() method.
+        return new Site($resource->getId());
+    }
+
+    /**
+     * @param object $record
+     * @param string $attrKey
+     * @param mixed $value
+     * @return void
+     */
+    protected function hydrateAttribute($record, $attrKey, $value)
+    {
+        $method = 'set' . Str::classify($attrKey);
+
+        call_user_func([$record, $method], $value);
+    }
+
+
+    /**
+     * @inheritDoc
+     */
+    protected function hydrateRelationships(
+        $record,
+        RelationshipsInterface $relationships,
+        EncodingParametersInterface $parameters
+    ) {
+        // no-op
+    }
+
+    /**
+     * @param Site $record
+     */
+    protected function persist($record)
+    {
+        $this->repository->store($record);
     }
 
 }

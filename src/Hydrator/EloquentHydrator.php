@@ -42,50 +42,6 @@ abstract class EloquentHydrator extends AbstractHydrator
 {
 
     /**
-     * The resource attribute keys to hydrate.
-     *
-     * - Empty array = hydrate no attributes.
-     * - Non-empty array = hydrate the specified attribute keys (see below).
-     * - Null = calculate the attributes to hydrate using `Model::getFillable()`
-     *
-     * List the keys from the resource's attributes that should be transferred to your
-     * model using the `fill()` method. To map a resource attribute key to a different
-     * model key, use a key/value pair where the key is the resource attribute and the
-     * value is the model attribute.
-     *
-     * For example:
-     *
-     * ```
-     * $attributes = [
-     *  'foo',
-     *  'bar' => 'baz'
-     *  'foo-bar',
-     * ];
-     * ```
-     *
-     * Will transfer the `foo` resource attribute to the model `foo` attribute, and the
-     * resource `bar` attribute to the model `baz` attribute. The `foo-bar` resource
-     * attribute will be converted to `foo_bar` if the Model uses snake case attributes,
-     * or `fooBar` if it does not use snake case.
-     *
-     * If this property is `null`, the attributes to hydrate will be calculated using
-     * `Model::getFillable()`.
-     *
-     * @var array|null
-     */
-    protected $attributes = null;
-
-    /**
-     * The resource attributes that are dates.
-     *
-     * If an array, a list of JSON API resource attributes that should be cast to dates.
-     * If `null`, the list will be calculated using `Model::getDates()`
-     *
-     * @var string[]|null
-     */
-    protected $dates = null;
-
-    /**
      * Resource relationship keys that should be automatically hydrated.
      *
      * This hydrator can hydrate Eloquent `BelongsTo` and `BelongsToMany` relationships. To do so,
@@ -107,37 +63,6 @@ abstract class EloquentHydrator extends AbstractHydrator
      * @var array|null
      */
     private $normalizedRelationships;
-
-    /**
-     * @inheritdoc
-     */
-    public function create(ResourceObjectInterface $resource)
-    {
-        $record = parent::create($resource);
-        $this->hydrateRelated($resource, $record);
-
-        return $record;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function update(ResourceObjectInterface $resource, $record)
-    {
-        $record = parent::update($resource, $record);
-        $this->hydrateRelated($resource, $record);
-
-        return $record;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function delete($record)
-    {
-        /** @var Model $record */
-        return $record->delete();
-    }
 
     /**
      * @inheritDoc
@@ -185,59 +110,6 @@ abstract class EloquentHydrator extends AbstractHydrator
         $relation->detach(new Collection($related));
 
         return $record;
-    }
-
-    /**
-     * @param Model $record
-     */
-    protected function persist($record)
-    {
-        $record->save();
-    }
-
-    /**
-     * @param StandardObjectInterface $attributes
-     *      the attributes received from the client.
-     * @param Model $record
-     *      the model being hydrated
-     * @return array
-     *      the JSON API attribute keys to hydrate
-     */
-    protected function attributeKeys(StandardObjectInterface $attributes, $record)
-    {
-        if (is_null($this->attributes)) {
-            $fillableAttributes = [];
-            foreach ($record->getFillable() as $attribute) {
-                $fillableAttributes[Str::dasherize($attribute)] = $attribute;
-            }
-            return $fillableAttributes;
-        }
-        return $this->attributes;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    protected function hydrateAttributes(StandardObjectInterface $attributes, $record)
-    {
-        if (!$record instanceof Model) {
-            throw new InvalidArgumentException('Expecting an Eloquent model.');
-        }
-
-        $data = [];
-
-        foreach ($this->attributeKeys($attributes, $record) as $resourceKey => $modelKey) {
-            if (is_numeric($resourceKey)) {
-                $resourceKey = $modelKey;
-                $modelKey = $this->keyForAttribute($modelKey, $record);
-            }
-
-            if ($attributes->has($resourceKey)) {
-                $data[$modelKey] = $this->deserializeAttribute($attributes->get($resourceKey), $resourceKey, $record);
-            }
-        }
-
-        $record->fill($data);
     }
 
     /**
@@ -312,62 +184,6 @@ abstract class EloquentHydrator extends AbstractHydrator
                 $this->hydrateHasOne($key, $relationship, $record);
             }
         }
-    }
-
-    /**
-     * Convert a resource attribute key into a model attribute key.
-     *
-     * @param $resourceKey
-     * @param Model $model
-     * @return string
-     */
-    protected function keyForAttribute($resourceKey, Model $model)
-    {
-        return $model::$snakeAttributes ? Str::snake($resourceKey) : Str::camel($resourceKey);
-    }
-
-    /**
-     * Deserialize a value obtained from the resource's attributes.
-     *
-     * @param $value
-     *      the value that the client provided.
-     * @param $resourceKey
-     *      the attribute key for the value
-     * @param Model $record
-     * @return Carbon|null
-     */
-    protected function deserializeAttribute($value, $resourceKey, $record)
-    {
-        if ($this->isDateAttribute($resourceKey, $record)) {
-            return $this->deserializeDate($value);
-        }
-
-        return $value;
-    }
-
-    /**
-     * @param $value
-     * @return Carbon|null
-     */
-    protected function deserializeDate($value)
-    {
-        return !is_null($value) ? new Carbon($value) : null;
-    }
-
-    /**
-     * Is this resource key a date attribute?
-     *
-     * @param $resourceKey
-     * @param Model $record
-     * @return bool
-     */
-    protected function isDateAttribute($resourceKey, $record)
-    {
-        if (is_null($this->dates)) {
-            return in_array(Str::snake($resourceKey), $record->getDates(), true);
-        }
-
-        return in_array($resourceKey, $this->dates, true);
     }
 
     /**
