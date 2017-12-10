@@ -173,7 +173,7 @@ abstract class AbstractAdapter extends AbstractResourceAdaptor
     abstract protected function filter(Builder $query, Collection $filters);
 
     /**
-     * EloquentAdapter constructor.
+     * AbstractAdapter constructor.
      *
      * @param Model $model
      * @param PagingStrategyInterface|null $paging
