@@ -3,6 +3,7 @@
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Eloquent;
 
 use CloudCreativity\LaravelJsonApi\Tests\Models\Comment;
+use CloudCreativity\LaravelJsonApi\Tests\Http\Controllers\PostsController;
 use CloudCreativity\LaravelJsonApi\Tests\Models\Post;
 use CloudCreativity\LaravelJsonApi\Tests\Models\Tag;
 use Illuminate\Foundation\Auth\User;
@@ -90,6 +91,11 @@ class PostsTest extends TestCase
             ->assertCreateResponse($data);
 
         $this->assertModelCreated($model, $id, ['title', 'slug', 'content', 'author_id']);
+        $this->assertDatabaseHas('taggables', [
+            'taggable_type' => Post::class,
+            'taggable_id' => $id,
+            'tag_id' => $tag->getKey(),
+        ]);
     }
 
     /**
@@ -121,6 +127,50 @@ class PostsTest extends TestCase
 
         $this->expectSuccess()->doUpdate($data)->assertUpdateResponse($data);
         $this->assertModelPatched($model, $data['attributes'], ['content']);
+    }
+
+    /**
+     * Issue 125.
+     *
+     * If the model caches any of its relationships prior to a hydrator being invoked,
+     * any changes to that relationship will not be serialized when the schema serializes
+     * the model.
+     *
+     * @see https://github.com/cloudcreativity/laravel-json-api/issues/125
+     */
+    public function testUpdateRefreshes()
+    {
+        /** @var PostsController $controller */
+        $controller = $this->app->make(PostsController::class);
+        $this->app->instance(PostsController::class, $controller);
+
+        $controller->on('saving', function ($resource, $model) {
+            $model->tags; // causes the model to cache the tags relationship
+        });
+
+        $model = $this->createPost();
+        /** @var Tag $tag */
+        $tag = factory(Tag::class)->create();
+
+        $data = [
+            'type' => 'posts',
+            'id' => (string) $model->getKey(),
+            'relationships' => [
+                'tags' => [
+                    'data' => [
+                        ['type' => 'tags', 'id' => (string) $tag->getKey()],
+                    ],
+                ],
+            ],
+        ];
+
+        $this->expectSuccess()->doUpdate($data)->assertUpdateResponse($data);
+
+        $this->assertDatabaseHas('taggables', [
+            'taggable_type' => Post::class,
+            'taggable_id' => $model->getKey(),
+            'tag_id' => $tag->getKey(),
+        ]);
     }
 
     /**

@@ -42,7 +42,10 @@ class HasMany extends AbstractRelation implements HasManyAdapterInterface
      */
     public function update($record, RelationshipInterface $relationship, EncodingParametersInterface $parameters)
     {
-        throw new RuntimeException("Eloquent has-many relations must be replaced not updated.");
+        $related = $this->store()->findMany($relationship->getIdentifiers());
+
+        $this->getRelation($record)->sync(new Collection($related));
+        // do not refresh as we expect the resource adapter to refresh the record.
     }
 
     /**
@@ -53,9 +56,8 @@ class HasMany extends AbstractRelation implements HasManyAdapterInterface
      */
     public function replace($record, RelationshipInterface $relationship, EncodingParametersInterface $parameters)
     {
-        $related = $this->store()->findMany($relationship->getIdentifiers());
-
-        $this->getRelation($record)->sync(new Collection($related));
+        $this->update($record, $relationship, $parameters);
+        $record->refresh(); // in case the relationship has been cached.
     }
 
     /**

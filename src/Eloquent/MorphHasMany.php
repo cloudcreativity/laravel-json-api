@@ -71,14 +71,15 @@ class MorphHasMany implements HasManyAdapterInterface
     }
 
     /**
-     * @param object $record
-     * @param RelationshipInterface $relationship
-     * @param EncodingParametersInterface $parameters
-     * @return void
+     * @inheritdoc
      */
     public function update($record, RelationshipInterface $relationship, EncodingParametersInterface $parameters)
     {
-        throw new RuntimeException("Eloquent has-many relations must be replaced not updated.");
+        foreach ($this->adapters as $adapter) {
+            $adapter->update($record, $relationship, $parameters);
+        }
+
+        return $record;
     }
 
     /**

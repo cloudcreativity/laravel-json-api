@@ -502,6 +502,7 @@ abstract class AbstractAdapter extends AbstractResourceAdaptor
         EncodingParametersInterface $parameters
     ) {
         $relationships = $resource->getRelationships();
+        $changed = false;
 
         foreach ($this->hydrateRelationshipFields($record) as $field) {
             if (!$relationships->has($field)) {
@@ -511,8 +512,14 @@ abstract class AbstractAdapter extends AbstractResourceAdaptor
             $relation = $this->related($field);
 
             if ($relation instanceof HasManyAdapterInterface) {
-                $relation->replace($record, $relationships->getRelationship($field), $parameters);
+                $relation->update($record, $relationships->getRelationship($field), $parameters);
+                $changed = true;
             }
+        }
+
+        /** If there are changes, we need to refresh the model in-case the relationship has been cached. */
+        if ($changed) {
+            $record->refresh();
         }
     }
 
