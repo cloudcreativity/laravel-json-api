@@ -90,7 +90,7 @@ class HasMany extends AbstractRelation implements HasManyAdapterInterface
     {
         $related = $this->store()->findMany($relationship->getIdentifiers());
 
-        $this->getRelation($record)->attach(new Collection($related));
+        $this->getRelation($record)->saveMany($related);
     }
 
     /**
