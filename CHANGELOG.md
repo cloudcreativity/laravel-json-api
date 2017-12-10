@@ -2,6 +2,17 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## Unreleased
+
+### Changed
+- Split adapter into resource and relationship adapter, and created classes to specifically deal with Eloquent
+relationships.
+- Adapters now handle both reading and modifying domain records.
+- Moved Eloquent JSON API classes into a single namespace.
+
+### Removed
+- Delete Eloquent hydrator class as all hydration is now handled by adapters instead.
+
 ## [0.11.3] - 2017-12-01
 
 ### Fixed
