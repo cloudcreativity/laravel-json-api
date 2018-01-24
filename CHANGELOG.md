@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## Unreleased
+
+### Fixed
+- [#138](https://github.com/cloudcreativity/laravel-json-api/issues/138)
+Generator commands not working since Laravel v5.5.28
+
 ## [0.11.3] - 2017-12-01
 
 ### Fixed
