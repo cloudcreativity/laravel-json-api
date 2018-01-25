@@ -2,6 +2,14 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## [0.11.4] - 2018-01-25
+
+### Fixed
+- [#138](https://github.com/cloudcreativity/laravel-json-api/issues/138)
+Generator commands not working since Laravel v5.5.28.
+- [#131](https://github.com/cloudcreativity/laravel-json-api/issues/131)
+Ensure Eloquent adapter uses default pagination parameters.
+
 ## [0.11.3] - 2017-12-01
 
 ### Fixed

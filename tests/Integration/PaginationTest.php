@@ -39,6 +39,30 @@ class PaginationTest extends TestCase
         $this->posts = factory(Post::class, 4)->create();
     }
 
+    /**
+     * An adapter's default pagination is used if no pagination parameters are sent.
+     *
+     * @see https://github.com/cloudcreativity/laravel-json-api/issues/131
+     */
+    public function testDefaultPagination()
+    {
+        $response = $this->doSearch();
+        $response->assertSearchResponse()->assertContainsOnly(['posts' => $this->posts->modelKeys()]);
+
+        $response->assertJson([
+            'meta' => [
+                'page' => [
+                    'current-page' => 1,
+                    'per-page' => 10,
+                    'from' => 1,
+                    'to' => 4,
+                    'total' => 4,
+                    'last-page' => 1,
+                ],
+            ],
+        ]);
+    }
+
     public function testPage1()
     {
         $response = $this->doSearch(['page' => ['number' => 1, 'size' => 3]]);
