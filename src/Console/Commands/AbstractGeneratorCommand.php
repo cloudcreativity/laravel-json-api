@@ -89,7 +89,7 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
     }
 
     /**
-     * @return bool|null
+     * @return int
      */
     public function handle()
     {
@@ -99,8 +99,8 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
         }
 
         /** @todo remove when removing support for Laravel 5.4 */
-        if (is_callable(['parent', 'fire'])) {
-            return (parent::fire() !== false) ? 0 : 1;
+        if (method_exists($this, 'fire')) {
+            return ($this->fire() !== false) ? 0 : 1;
         }
 
         return (parent::handle() !== false) ? 0 : 1;
