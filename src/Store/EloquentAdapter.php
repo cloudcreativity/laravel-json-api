@@ -28,6 +28,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\SortParameterInterface;
+use Neomerx\JsonApi\Encoder\Parameters\EncodingParameters;
 
 /**
  * Class EloquentAdapter
@@ -154,7 +155,9 @@ abstract class EloquentAdapter implements AdapterInterface
             throw new RuntimeException('Paging parameters exist but paging is not supported.');
         }
 
-        return $pagination->isEmpty() ? $this->all($query) : $this->paginate($query, $parameters);
+        return $pagination->isEmpty() ?
+            $this->all($query) :
+            $this->paginate($query, $this->normalizeParameters($parameters, $pagination));
     }
 
     /**
@@ -386,6 +389,28 @@ abstract class EloquentAdapter implements AdapterInterface
         }
 
         return $model::$snakeAttributes ? Str::underscore($field) : Str::camelize($field);
+    }
+
+    /**
+     * Normalize parameters for pagination.
+     *
+     * This is a temporary solution for Issue #131 in the v0.11.x series.
+     *
+     * @param EncodingParametersInterface $parameters
+     * @param Collection $extractedPagination
+     * @return EncodingParameters
+     * @see https://github.com/cloudcreativity/laravel-json-api/issues/131
+     */
+    private function normalizeParameters(EncodingParametersInterface $parameters, Collection $extractedPagination)
+    {
+        return new EncodingParameters(
+            $parameters->getIncludePaths(),
+            $parameters->getFieldSets(),
+            $parameters->getSortParameters(),
+            $extractedPagination->all(),
+            $parameters->getFilteringParameters(),
+            $parameters->getUnrecognizedParameters()
+        );
     }
 
 }
