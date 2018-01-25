@@ -18,7 +18,7 @@
 namespace CloudCreativity\LaravelJsonApi;
 
 use CloudCreativity\JsonApi\AbstractContainer;
-use CloudCreativity\JsonApi\Contracts\ResolverInterface;
+use CloudCreativity\JsonApi\Contracts\Resolver\ResolverInterface;
 use Illuminate\Contracts\Container\Container as IlluminateContainer;
 use Neomerx\JsonApi\Contracts\Schema\SchemaFactoryInterface;
 

@@ -21,6 +21,7 @@ namespace CloudCreativity\LaravelJsonApi\Api;
 use CloudCreativity\JsonApi\Exceptions\RuntimeException;
 use CloudCreativity\JsonApi\Resolver\NamespaceResolver;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
+use CloudCreativity\LaravelJsonApi\Resolver\UnitNamespaceResolver;
 use Illuminate\Contracts\Config\Repository as Config;
 
 /**
@@ -109,11 +110,12 @@ class Repository
      * @param array $resources
      * @param $byResource
      * @return NamespaceResolver
-     * @todo support not by resource
      */
     private function createResolver($rootNamespace, array $resources, $byResource)
     {
-        return new NamespaceResolver($rootNamespace, $resources);
+        return $byResource ?
+            new NamespaceResolver($rootNamespace, $resources) :
+            new UnitNamespaceResolver($rootNamespace, $resources);
     }
 
     /**
