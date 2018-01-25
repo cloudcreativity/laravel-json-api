@@ -13,6 +13,14 @@ relationships.
 ### Removed
 - Delete Eloquent hydrator class as all hydration is now handled by adapters instead.
 
+## [0.11.4] - 2018-01-25
+
+### Fixed
+- [#138](https://github.com/cloudcreativity/laravel-json-api/issues/138)
+Generator commands not working since Laravel v5.5.28.
+- [#131](https://github.com/cloudcreativity/laravel-json-api/issues/131)
+Ensure Eloquent adapter uses default pagination parameters.
+
 ## [0.11.3] - 2017-12-01
 
 ### Fixed

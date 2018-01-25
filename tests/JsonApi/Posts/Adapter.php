@@ -31,6 +31,14 @@ class Adapter extends AbstractAdapter
     ];
 
     /**
+     * @var array
+     */
+    protected $defaultPagination = [
+        'number' => 1,
+        'size' => 10,
+    ];
+
+    /**
      * Adapter constructor.
      *
      * @param StandardStrategy $paging
