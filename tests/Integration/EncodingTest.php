@@ -19,9 +19,10 @@ class EncodingTest extends TestCase
         $json = $this
             ->withApiRoutes()
             ->getJsonApi("http://www.example.com/api/v1/posts/$id")
+            ->assertStatus(200)
             ->json();
 
-        $this->assertLinks('http://www.example.com', $id, $json);
+        $this->assertSelfLink("http://www.example.com/api/v1/posts/$id", $json);
     }
 
     /**
@@ -35,9 +36,62 @@ class EncodingTest extends TestCase
         $json = $this
             ->withApiRoutes()
             ->getJsonApi("http://www.example.com/api/v1/posts/$id")
+            ->assertStatus(200)
             ->json();
 
-        $this->assertLinks('', $id, $json);
+        $this->assertSelfLink("/api/v1/posts/$id", $json);
+    }
+
+    /**
+     * If there is no URL namespace, the URL must be properly formed.
+     */
+    public function testRequestResourceDoesNotHaveUrlNamespace()
+    {
+        $id = factory(Post::class)->create()->getKey();
+        config()->set('json-api-default.url.namespace', null);
+
+        $json = $this
+            ->withApiRoutes()
+            ->getJsonApi("http://www.example.com/posts/$id")
+            ->assertStatus(200)
+            ->json();
+
+        $this->assertSelfLink("http://www.example.com/posts/$id", $json);
+    }
+
+    /**
+     * If there is no URL namespace, the URL must be properly formed.
+     */
+    public function testRequestResourceHasEmptyUrlNamespace()
+    {
+        $id = factory(Post::class)->create()->getKey();
+        config()->set('json-api-default.url.namespace', '');
+
+        $json = $this
+            ->withApiRoutes()
+            ->getJsonApi("http://www.example.com/posts/$id")
+            ->assertStatus(200)
+            ->json();
+
+        $this->assertSelfLink("http://www.example.com/posts/$id", $json);
+    }
+
+    /**
+     * If there is no URL host and namespace, the URL must be properly formed.
+     */
+    public function testRequestResourceDoesNotHaveHostAndUrlNamespace()
+    {
+        $id = factory(Post::class)->create()->getKey();
+        config()->set('json-api-default.url.host', false);
+        config()->set('json-api-default.url.namespace', null);
+
+        $json = $this
+            ->withApiRoutes()
+            ->getJsonApi("http://www.example.com/posts/$id")
+            ->assertStatus(200)
+            ->json();
+
+        $this->assertSelfLink("/posts/$id", $json);
     }
 
     /**
@@ -52,7 +106,7 @@ class EncodingTest extends TestCase
         config()->set('json-api-default.url.host', null);
 
         $json = json_api('default')->encoder()->serializeData($post);
-        $this->assertLinks($host, $post->getKey(), $json);
+        $this->assertSelfLink("http://www.example.com/api/v1/posts/{$post->getKey()}", $json);
     }
 
     /**
@@ -67,7 +121,7 @@ class EncodingTest extends TestCase
         config()->set('json-api-default.url.host', $host = 'http://www.example.com');
 
         $json = json_api('default')->encoder()->serializeData($post);
-        $this->assertLinks($host, $post->getKey(), $json);
+        $this->assertSelfLink("http://www.example.com/api/v1/posts/{$post->getKey()}", $json);
     }
 
     /**
@@ -82,20 +136,19 @@ class EncodingTest extends TestCase
         config()->set('json-api-default.url.host', false);
 
         $json = json_api('default')->encoder()->serializeData($post);
-        $this->assertLinks('', $post->getKey(), $json);
+        $this->assertSelfLink("/api/v1/posts/{$post->getKey()}", $json);
     }
 
     /**
-     * @param $host
-     * @param $id
+     * @param $link
      * @param array $json
      */
-    private function assertLinks($host, $id, array $json)
+    private function assertSelfLink($link, array $json)
     {
         $this->assertArraySubset([
             'data' => [
                 'links' => [
-                    'self' => "$host/api/v1/posts/$id",
+                    'self' => $link,
                 ],
             ],
         ], $json);

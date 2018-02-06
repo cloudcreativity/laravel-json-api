@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## [0.11.5] - 2018-02-06
+
+### Fixed
+- [#142](https://github.com/cloudcreativity/laravel-json-api/issues/142)
+URLs were incorrectly formed when there is no URL namespace.
+
 ## [0.11.4] - 2018-01-25
 
 ### Fixed
