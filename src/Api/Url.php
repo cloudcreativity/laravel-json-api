@@ -51,7 +51,7 @@ class Url
     public function __construct($host, $namespace, $name)
     {
         $this->host = rtrim($host, '/');
-        $this->namespace = '/' . ltrim($namespace, '/');
+        $this->namespace = $namespace ? '/' . ltrim($namespace, '/') : null;
         $this->name = $name;
     }
 
