@@ -13,6 +13,12 @@ relationships.
 ### Removed
 - Delete Eloquent hydrator class as all hydration is now handled by adapters instead.
 
+## [0.11.5] - 2018-02-06
+
+### Fixed
+- [#142](https://github.com/cloudcreativity/laravel-json-api/issues/142)
+URLs were incorrectly formed when there is no URL namespace.
+
 ## [0.11.4] - 2018-01-25
 
 ### Fixed
