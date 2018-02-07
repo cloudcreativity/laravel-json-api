@@ -115,6 +115,7 @@ abstract class TestCase extends BaseTestCase
         $this->createVideosTable($schema);
         $this->createCommentsTable($schema);
         $this->createTagsTables($schema);
+        $this->createBlogsTable($schema);
         $this->withFactories(__DIR__ . '/../factories');
 
         return $schema;
@@ -178,6 +179,20 @@ abstract class TestCase extends BaseTestCase
             $table->increments('id');
             $table->unsignedInteger('tag_id');
             $table->morphs('taggable');
+        });
+    }
+
+    /**
+     * @param Schema $schema
+     */
+    protected function createBlogsTable(Schema $schema)
+    {
+        $schema->create('blogs', function (Blueprint $table) {
+            $table->increments('id');
+            $table->timestamps();
+            $table->string('title');
+            $table->text('article');
+            $table->timestamp('published_at');
         });
     }
 

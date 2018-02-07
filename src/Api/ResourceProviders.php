@@ -27,9 +27,8 @@ use IteratorAggregate;
  * Class ResourceProviders
  *
  * @package CloudCreativity\LaravelJsonApi
- * @todo make final as this is not meant to be extended.
  */
-class ResourceProviders implements IteratorAggregate
+final class ResourceProviders implements IteratorAggregate
 {
 
     /**

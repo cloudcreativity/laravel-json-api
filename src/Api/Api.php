@@ -28,6 +28,7 @@ use CloudCreativity\JsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use CloudCreativity\LaravelJsonApi\Http\Responses\Responses;
+use CloudCreativity\LaravelJsonApi\Resolver\AggregateResolver;
 use Neomerx\JsonApi\Contracts\Codec\CodecMatcherInterface;
 use Neomerx\JsonApi\Contracts\Encoder\EncoderInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
@@ -48,7 +49,7 @@ class Api
     private $factory;
 
     /**
-     * @var ResolverInterface
+     * @var AggregateResolver
      */
     private $resolver;
 
@@ -106,7 +107,7 @@ class Api
      * Definition constructor.
      *
      * @param Factory $factory
-     * @param ResolverInterface $resolver
+     * @param AggregateResolver $resolver
      * @param $apiName
      * @param array $codecs
      * @param Url $url
@@ -116,7 +117,7 @@ class Api
      */
     public function __construct(
         Factory $factory,
-        ResolverInterface $resolver,
+        AggregateResolver $resolver,
         $apiName,
         array $codecs,
         Url $url,
@@ -331,11 +332,10 @@ class Api
      *
      * @param ResourceProvider $provider
      * @return void
-     * @todo sort out merging resolvers from different providers.
      */
     public function register(ResourceProvider $provider)
     {
-//        $this->resources = $provider->getResources()->merge($this->resources);
+        $this->resolver->attach($provider->getResolver());
         $this->errors = array_replace($provider->getErrors(), $this->errors);
     }
 

@@ -1,5 +1,6 @@
 <?php
 
+use CloudCreativity\LaravelJsonApi\Tests\Package\Blog;
 use Faker\Generator as Faker;
 use Illuminate\Database\Eloquent\Factory as EloquentFactory;
 use Illuminate\Foundation\Auth\User;
@@ -72,5 +73,19 @@ $factory->define(Models\Video::class, function (Faker $faker) {
         'user_id' => function () {
             return factory(User::class)->create()->getKey();
         },
+    ];
+});
+
+/** Blog */
+$factory->define(Blog::class, function (Faker $faker) {
+    return [
+        'title' => $faker->sentence,
+        'article' => $faker->text,
+    ];
+});
+
+$factory->state(Blog::class, 'published', function (Faker $faker) {
+    return [
+        'published_at' => $faker->dateTimeBetween('-1 month', 'now'),
     ];
 });

@@ -21,6 +21,7 @@ namespace CloudCreativity\LaravelJsonApi\Api;
 use CloudCreativity\JsonApi\Exceptions\RuntimeException;
 use CloudCreativity\JsonApi\Resolver\NamespaceResolver;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
+use CloudCreativity\LaravelJsonApi\Resolver\AggregateResolver;
 use CloudCreativity\LaravelJsonApi\Resolver\UnitNamespaceResolver;
 use Illuminate\Contracts\Config\Repository as Config;
 
@@ -77,7 +78,7 @@ class Repository
 
         $api = new Api(
             $this->factory,
-            $this->createResolver($rootNamespace, $resources, $byResource),
+            new AggregateResolver($this->createResolver($rootNamespace, $resources, $byResource)),
             $apiName,
             (array) array_get($config, 'codecs'),
             $this->normalizeUrl((array) array_get($config, 'url'), $host),
@@ -87,8 +88,7 @@ class Repository
         );
 
         /** Attach resource providers to the API. */
-        // @todo add this back in
-//        $this->createProviders($apiName)->registerAll($api);
+        $this->createProviders($apiName)->registerAll($api);
 
         return $api;
     }
