@@ -3,12 +3,23 @@
 namespace CloudCreativity\LaravelJsonApi\Tests\JsonApi\Users;
 
 use CloudCreativity\LaravelJsonApi\Eloquent\AbstractAdapter;
+use CloudCreativity\LaravelJsonApi\Eloquent\HasOne;
+use CloudCreativity\LaravelJsonApi\Tests\Models\User;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Collection;
 
 class Adapter extends AbstractAdapter
 {
+
+    /**
+     * @var array
+     */
+    protected $with = ['phone'];
+
+    /**
+     * @var array
+     */
+    protected $relationships = ['phone'];
 
     /**
      * Adapter constructor.
@@ -24,6 +35,26 @@ class Adapter extends AbstractAdapter
     protected function filter(Builder $query, Collection $filters)
     {
         // TODO: Implement filter() method.
+    }
+
+    /**
+     * @return HasOne
+     */
+    protected function phone()
+    {
+        return $this->hasOne();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function deserializeAttribute($value, $resourceKey, $record)
+    {
+        if ('password' === $resourceKey) {
+            return $value ? bcrypt($value) : null;
+        }
+
+        return parent::deserializeAttribute($value, $resourceKey, $record);
     }
 
 }

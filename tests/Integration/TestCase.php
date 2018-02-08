@@ -30,7 +30,6 @@ use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Schema\Builder as Schema;
 use Illuminate\Foundation\Application;
-use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Facades\Route;
 use Orchestra\Testbench\TestCase as BaseTestCase;
 
@@ -95,10 +94,11 @@ abstract class TestCase extends BaseTestCase
         $config->set('json-api-default.namespace', '\\CloudCreativity\\LaravelJsonApi\\Tests\\JsonApi');
         $config->set('json-api-default.resources', [
             'comments' => Models\Comment::class,
+            'phones' => Models\Phone::class,
             'posts' => Models\Post::class,
             'sites' => Entities\Site::class,
             'tags' => Models\Tag::class,
-            'users' => User::class,
+            'users' => Models\User::class,
             'videos' => Models\Video::class,
         ]);
     }
@@ -115,6 +115,7 @@ abstract class TestCase extends BaseTestCase
         $this->createVideosTable($schema);
         $this->createCommentsTable($schema);
         $this->createTagsTables($schema);
+        $this->createPhonesTable($schema);
         $this->createBlogsTable($schema);
         $this->withFactories(__DIR__ . '/../factories');
 
@@ -179,6 +180,19 @@ abstract class TestCase extends BaseTestCase
             $table->increments('id');
             $table->unsignedInteger('tag_id');
             $table->morphs('taggable');
+        });
+    }
+
+    /**
+     * @param Schema $schema
+     */
+    protected function createPhonesTable(Schema $schema)
+    {
+        $schema->create('phones', function (Blueprint $table) {
+            $table->increments('id');
+            $table->timestamps();
+            $table->unsignedInteger('user_id')->nullable();
+            $table->string('number');
         });
     }
 

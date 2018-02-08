@@ -17,20 +17,18 @@
 
 namespace CloudCreativity\LaravelJsonApi\Eloquent;
 
-use CloudCreativity\JsonApi\Contracts\Adapter\HasManyAdapterInterface;
 use CloudCreativity\JsonApi\Contracts\Object\RelationshipInterface;
 use CloudCreativity\JsonApi\Exceptions\RuntimeException;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo as Relation;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 /**
- * Class HasMany
+ * Class HasOne
  *
  * @package CloudCreativity\LaravelJsonApi
  */
-class HasMany extends AbstractRelation implements HasManyAdapterInterface
+class BelongsTo extends AbstractRelation
 {
 
     /**
@@ -61,63 +59,55 @@ class HasMany extends AbstractRelation implements HasManyAdapterInterface
      */
     public function update($record, RelationshipInterface $relationship, EncodingParametersInterface $parameters)
     {
-        $related = $this->store()->findMany($relationship->getIdentifiers());
+        $relation = $this->relation($record);
 
-        $this->getRelation($record)->sync(new Collection($related));
-        // do not refresh as we expect the resource adapter to refresh the record.
+        if ($related = $this->related($relationship)) {
+            $relation->associate($related);
+        } else {
+            $relation->dissociate();
+        }
     }
 
     /**
      * @param Model $record
      * @param RelationshipInterface $relationship
      * @param EncodingParametersInterface $parameters
-     * @return void
+     * @return Model
      */
     public function replace($record, RelationshipInterface $relationship, EncodingParametersInterface $parameters)
     {
         $this->update($record, $relationship, $parameters);
-        $record->refresh(); // in case the relationship has been cached.
+        $record->save();
+
+        return $record;
     }
 
     /**
-     * @param Model $record
-     * @param RelationshipInterface $relationship
-     * @param EncodingParametersInterface $parameters
-     * @return void
+     * @param $record
+     * @return Relation
      */
-    public function add($record, RelationshipInterface $relationship, EncodingParametersInterface $parameters)
-    {
-        $related = $this->store()->findMany($relationship->getIdentifiers());
-
-        $this->getRelation($record)->saveMany($related);
-    }
-
-    /**
-     * @param Model $record
-     * @param RelationshipInterface $relationship
-     * @param EncodingParametersInterface $parameters
-     * @return void
-     */
-    public function remove($record, RelationshipInterface $relationship, EncodingParametersInterface $parameters)
-    {
-        $related = $this->store()->findMany($relationship->getIdentifiers());
-
-        $this->getRelation($record)->detach(new Collection($related));
-    }
-
-    /**
-     * @param Model $record
-     * @return BelongsToMany
-     */
-    protected function getRelation($record)
+    protected function relation($record)
     {
         $relation = $record->{$this->key}();
 
-        if (!$relation instanceof BelongsToMany) {
-            throw new RuntimeException("Expecting a belongs-to-many relationship.");
+        if (!$relation instanceof Relation) {
+            throw new RuntimeException("Model relation '{$this->key}' is not an Eloquent belongs-to relation.");
         }
 
         return $relation;
+    }
+
+    /**
+     * Get the related model for the JSON API relationship.
+     *
+     * @param RelationshipInterface $relationship
+     * @return Model|null
+     */
+    protected function related(RelationshipInterface $relationship)
+    {
+        $identifier = $relationship->hasIdentifier() ? $relationship->getIdentifier() : null;
+
+        return $identifier ? $this->store()->find($identifier) : null;
     }
 
 }

@@ -26,7 +26,9 @@ abstract class TestCase extends BaseTestCase
                 'has-one' => 'author',
                 'has-many' => ['comments', 'tags'],
             ]);
-            $api->resource('users');
+            $api->resource('users', [
+                'has-one' => 'phone',
+            ]);
             $api->resource('videos');
             $api->resource('tags', [
                 'has-many' => 'taggables',

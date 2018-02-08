@@ -1,9 +1,9 @@
 <?php
 
-namespace CloudCreativity\LaravelJsonApi\Tests\JsonApi\Users;
+namespace CloudCreativity\LaravelJsonApi\Tests\JsonApi\Phones;
 
 use CloudCreativity\LaravelJsonApi\Eloquent\AbstractSchema;
-use CloudCreativity\LaravelJsonApi\Tests\Models\User;
+use CloudCreativity\LaravelJsonApi\Tests\Models\Phone;
 
 class Schema extends AbstractSchema
 {
@@ -11,15 +11,17 @@ class Schema extends AbstractSchema
     /**
      * @var string
      */
-    protected $resourceType = 'users';
+    protected $resourceType = 'phones';
 
     /**
      * @var array
      */
-    protected $attributes = ['name', 'email'];
+    protected $attributes = [
+        'number',
+    ];
 
     /**
-     * @param User $resource
+     * @param Phone $resource
      * @param bool $isPrimary
      * @param array $includeRelationships
      * @return array
@@ -27,8 +29,9 @@ class Schema extends AbstractSchema
     public function getRelationships($resource, $isPrimary, array $includeRelationships)
     {
         return [
-            'phone' => [
-                self::DATA => $resource->phone,
+            'user' => [
+                self::DATA => isset($includeRelationships['user']) ?
+                    $resource->user : $this->createBelongsToIdentity($resource, 'user'),
             ],
         ];
     }

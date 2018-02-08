@@ -486,7 +486,7 @@ abstract class AbstractAdapter extends AbstractResourceAdaptor
 
             $relation = $this->related($field);
 
-            if (!$relation instanceof HasManyAdapterInterface) {
+            if (!$this->requiresPrimaryRecordPersistence($relation)) {
                 $relation->update($record, $relationships->getRelationship($field), $parameters);
             }
         }
@@ -514,7 +514,7 @@ abstract class AbstractAdapter extends AbstractResourceAdaptor
 
             $relation = $this->related($field);
 
-            if ($relation instanceof HasManyAdapterInterface) {
+            if ($this->requiresPrimaryRecordPersistence($relation)) {
                 $relation->update($record, $relationships->getRelationship($field), $parameters);
                 $changed = true;
             }
@@ -524,6 +524,17 @@ abstract class AbstractAdapter extends AbstractResourceAdaptor
         if ($changed) {
             $record->refresh();
         }
+    }
+
+    /**
+     * Does the relationship need to be hydrated after the primary record has been persisted?
+     *
+     * @param RelationshipAdapterInterface $relation
+     * @return bool
+     */
+    protected function requiresPrimaryRecordPersistence(RelationshipAdapterInterface $relation)
+    {
+        return $relation instanceof HasManyAdapterInterface || $relation instanceof HasOne;
     }
 
     /**
@@ -736,7 +747,16 @@ abstract class AbstractAdapter extends AbstractResourceAdaptor
     }
 
     /**
-     * @param $modelKey
+     * @param string|null $modelKey
+     * @return BelongsTo
+     */
+    protected function belongsTo($modelKey = null)
+    {
+        return new BelongsTo($this->model, $modelKey ?: $this->guessRelation());
+    }
+
+    /**
+     * @param string|null $modelKey
      * @return HasOne
      */
     protected function hasOne($modelKey = null)
@@ -745,7 +765,7 @@ abstract class AbstractAdapter extends AbstractResourceAdaptor
     }
 
     /**
-     * @param $modelKey
+     * @param string|null $modelKey
      * @return HasMany
      */
     protected function hasMany($modelKey = null)

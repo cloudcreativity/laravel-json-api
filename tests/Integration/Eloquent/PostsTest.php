@@ -2,11 +2,11 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Eloquent;
 
-use CloudCreativity\LaravelJsonApi\Tests\Models\Comment;
 use CloudCreativity\LaravelJsonApi\Tests\Http\Controllers\PostsController;
+use CloudCreativity\LaravelJsonApi\Tests\Models\Comment;
 use CloudCreativity\LaravelJsonApi\Tests\Models\Post;
 use CloudCreativity\LaravelJsonApi\Tests\Models\Tag;
-use Illuminate\Foundation\Auth\User;
+use CloudCreativity\LaravelJsonApi\Tests\Models\User;
 
 class PostsTest extends TestCase
 {

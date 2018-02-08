@@ -1,10 +1,9 @@
 <?php
 
-use CloudCreativity\LaravelJsonApi\Tests\Package\Blog;
+use CloudCreativity\LaravelJsonApi\Tests\Models;
+use CloudCreativity\LaravelJsonApi\Tests\Package;
 use Faker\Generator as Faker;
 use Illuminate\Database\Eloquent\Factory as EloquentFactory;
-use Illuminate\Foundation\Auth\User;
-use CloudCreativity\LaravelJsonApi\Tests\Models;
 
 /** @var EloquentFactory $factory */
 
@@ -13,7 +12,7 @@ $factory->define(Models\Comment::class, function (Faker $faker) {
     return [
         'content' => $faker->paragraph,
         'user_id' => function () {
-            return factory(User::class)->create()->getKey();
+            return factory(Models\User::class)->create()->getKey();
         },
     ];
 });
@@ -36,6 +35,21 @@ $factory->state(Models\Comment::class, 'video', function () {
     ];
 });
 
+/** Phone */
+$factory->define(Models\Phone::class, function (Faker $faker) {
+    return [
+        'number' => $faker->numerify('+447#########'),
+    ];
+});
+
+$factory->state(Models\Phone::class, 'user', function (Faker $faker) {
+    return [
+        'user_id' => function () {
+            return factory(Models\User::class)->create()->getKey();
+        },
+    ];
+});
+
 /** Post */
 $factory->define(Models\Post::class, function (Faker $faker) {
     return [
@@ -43,7 +57,7 @@ $factory->define(Models\Post::class, function (Faker $faker) {
         'slug' => $faker->unique()->slug,
         'content' => $faker->text,
         'author_id' => function () {
-            return factory(User::class)->create()->getKey();
+            return factory(Models\User::class)->create()->getKey();
         },
     ];
 });
@@ -56,7 +70,7 @@ $factory->define(Models\Tag::class, function (Faker $faker) {
 });
 
 /** User */
-$factory->define(User::class, function (Faker $faker) {
+$factory->define(Models\User::class, function (Faker $faker) {
     return [
         'name' => $faker->name,
         'email' => $faker->unique()->email,
@@ -71,20 +85,20 @@ $factory->define(Models\Video::class, function (Faker $faker) {
         'title' => $faker->words(3, true),
         'description' => $faker->paragraph,
         'user_id' => function () {
-            return factory(User::class)->create()->getKey();
+            return factory(Models\User::class)->create()->getKey();
         },
     ];
 });
 
 /** Blog */
-$factory->define(Blog::class, function (Faker $faker) {
+$factory->define(Package\Blog::class, function (Faker $faker) {
     return [
         'title' => $faker->sentence,
         'article' => $faker->text,
     ];
 });
 
-$factory->state(Blog::class, 'published', function (Faker $faker) {
+$factory->state(Package\Blog::class, 'published', function (Faker $faker) {
     return [
         'published_at' => $faker->dateTimeBetween('-1 month', 'now'),
     ];

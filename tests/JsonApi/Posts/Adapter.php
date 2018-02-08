@@ -4,7 +4,7 @@ namespace CloudCreativity\LaravelJsonApi\Tests\JsonApi\Posts;
 
 use CloudCreativity\LaravelJsonApi\Eloquent\AbstractAdapter;
 use CloudCreativity\LaravelJsonApi\Eloquent\HasMany;
-use CloudCreativity\LaravelJsonApi\Eloquent\HasOne;
+use CloudCreativity\LaravelJsonApi\Eloquent\BelongsTo;
 use CloudCreativity\LaravelJsonApi\Pagination\StandardStrategy;
 use CloudCreativity\LaravelJsonApi\Tests\Models\Post;
 use Illuminate\Database\Eloquent\Builder;
@@ -49,11 +49,11 @@ class Adapter extends AbstractAdapter
     }
 
     /**
-     * @return HasOne
+     * @return BelongsTo
      */
     protected function author()
     {
-        return $this->hasOne();
+        return $this->belongsTo();
     }
 
     /**

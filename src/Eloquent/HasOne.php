@@ -1,87 +1,56 @@
 <?php
-/**
- * Copyright 2017 Cloud Creativity Limited
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 
 namespace CloudCreativity\LaravelJsonApi\Eloquent;
 
 use CloudCreativity\JsonApi\Contracts\Object\RelationshipInterface;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use CloudCreativity\JsonApi\Exceptions\RuntimeException;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
+use Illuminate\Database\Eloquent\Relations\HasOne as Relation;
 
-/**
- * Class HasOne
- *
- * @package CloudCreativity\LaravelJsonApi
- */
-class HasOne extends AbstractRelation
+class HasOne extends BelongsTo
 {
 
     /**
-     * @param Model $record
-     * @param EncodingParametersInterface $parameters
-     * @return mixed
-     */
-    public function query($record, EncodingParametersInterface $parameters)
-    {
-        return $record->{$this->key};
-    }
-
-    /**
-     * @param Model $record
-     * @param EncodingParametersInterface $parameters
-     * @return mixed
-     */
-    public function relationship($record, EncodingParametersInterface $parameters)
-    {
-        return $this->query($record, $parameters);
-    }
-
-    /**
-     * @param Model $record
-     * @param RelationshipInterface $relationship
-     * @param EncodingParametersInterface $parameters
-     * @return void
+     * @inheritDoc
      */
     public function update($record, RelationshipInterface $relationship, EncodingParametersInterface $parameters)
     {
-        /** @var BelongsTo $relation */
-        $relation = $record->{$this->key}();
-        $identifier = $relationship->hasIdentifier() ? $relationship->getIdentifier() : null;
-        $related = $identifier ? $this->store()->find($identifier) : null;
+        $relation = $this->relation($record);
 
-        if ($related) {
-            $relation->associate($related);
-        } else {
-            $relation->dissociate();
+        /** Clear the relationship first. */
+        $relation->update([
+            $relation->getForeignKeyName() => null,
+        ]);
+
+        /** If there is a related model, save it. */
+        if ($related = $this->related($relationship)) {
+            $relation->save($related);
         }
+
+        // no need to refresh $record as the Eloquent adapter will do it.
     }
 
     /**
-     * @param Model $record
-     * @param RelationshipInterface $relationship
-     * @param EncodingParametersInterface $parameters
-     * @return Model
+     * @inheritDoc
      */
     public function replace($record, RelationshipInterface $relationship, EncodingParametersInterface $parameters)
     {
         $this->update($record, $relationship, $parameters);
-        $record->save();
-
-        return $record;
+        $record->refresh(); // in case the relationship has been cached.
     }
 
+    /**
+     * @param $record
+     * @return Relation
+     */
+    protected function relation($record)
+    {
+        $relation = $record->{$this->key}();
+
+        if (!$relation instanceof Relation) {
+            throw new RuntimeException("Model relation '{$this->key}' is not an Eloquent has-one relation.");
+        }
+
+        return $relation;
+    }
 }

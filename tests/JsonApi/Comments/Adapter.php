@@ -4,7 +4,7 @@ namespace CloudCreativity\LaravelJsonApi\Tests\JsonApi\Comments;
 
 use CloudCreativity\JsonApi\Contracts\Object\ResourceObjectInterface;
 use CloudCreativity\LaravelJsonApi\Eloquent\AbstractAdapter;
-use CloudCreativity\LaravelJsonApi\Eloquent\HasOne;
+use CloudCreativity\LaravelJsonApi\Eloquent\BelongsTo;
 use CloudCreativity\LaravelJsonApi\Tests\Models\Comment;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -36,11 +36,11 @@ class Adapter extends AbstractAdapter
     }
 
     /**
-     * @return HasOne
+     * @return BelongsTo
      */
     protected function commentable()
     {
-        return $this->hasOne();
+        return $this->belongsTo();
     }
 
     /**
