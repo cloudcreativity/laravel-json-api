@@ -2,6 +2,11 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## [0.12.0] - 2018-02-08
+
+### Added
+- Package now supports Laravel 5.6 in addition to Laravel 5.4 and 5.5.
+
 ## [0.11.5] - 2018-02-06
 
 ### Fixed

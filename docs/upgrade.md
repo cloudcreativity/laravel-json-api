@@ -4,8 +4,20 @@ As we are currently on pre-1.0 releases, when you upgrade you will also need to 
 dependencies need to be upgraded. Use the following command:
 
 ```bash
-$ composer require cloudcreativity/laravel-json-api:^0.11 --update-with-dependencies
+$ composer require cloudcreativity/laravel-json-api:^0.12 --update-with-dependencies
 ```
+
+## Upgrading to 0.12 from 0.11
+
+There are no major changes in this upgrade, we have tagged a new version to mark adding in support
+for Laravel 5.6.
+
+The only additional step is to upgrade our testing package if you are using it to `v0.3`. There are
+no major changes in this testing package - `v0.3` just adds in support for PHPUnit 7.0.
+
+```bash
+$ composer require --dev cloudcreativity/json-api-testing:^0.3
+``` 
 
 ## Upgrading to 0.11 from 0.10
 
