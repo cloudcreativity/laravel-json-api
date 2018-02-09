@@ -16,14 +16,22 @@ class HasOne extends BelongsTo
     public function update($record, RelationshipInterface $relationship, EncodingParametersInterface $parameters)
     {
         $relation = $this->relation($record);
+        $related = $this->related($relationship);
+        $current = $record->{$this->key};
 
-        /** Clear the relationship first. */
-        $relation->update([
-            $relation->getForeignKeyName() => null,
-        ]);
+        /** If the relationship is not changing, we do not need to do anything. */
+        if ($current && $related && $current->is($related)) {
+            return;
+        }
+
+        /** If there is a current related model, we need to clear it. */
+        if ($current) {
+            $current->{$relation->getForeignKeyName()} = null;
+            $current->save();
+        }
 
         /** If there is a related model, save it. */
-        if ($related = $this->related($relationship)) {
+        if ($related) {
             $relation->save($related);
         }
 
