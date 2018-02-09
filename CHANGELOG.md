@@ -13,6 +13,11 @@ relationships.
 ### Removed
 - Delete Eloquent hydrator class as all hydration is now handled by adapters instead.
 
+## [0.12.0] - 2018-02-08
+
+### Added
+- Package now supports Laravel 5.6 in addition to Laravel 5.4 and 5.5.
+
 ## [0.11.5] - 2018-02-06
 
 ### Fixed
