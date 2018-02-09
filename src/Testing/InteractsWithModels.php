@@ -83,7 +83,7 @@ trait InteractsWithModels
     protected function assertModelPatched(Model $model, array $changedAttributes, $unchangedKeys = [])
     {
         /** We need to ensure values are cast to database values */
-        $expected = $model->newInstance($changedAttributes)->getAttributes();
+        $expected = $model->newInstance()->forceFill($changedAttributes)->getAttributes();
         $attributes = $model->getAttributes();
 
         foreach ((array) $unchangedKeys as $attr) {

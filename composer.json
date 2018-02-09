@@ -23,7 +23,7 @@
     ],
     "require": {
         "php": "^5.6|^7.0",
-        "cloudcreativity/json-api": "^0.11",
+        "cloudcreativity/json-api": "^1.0",
         "illuminate/console": "5.4.*|5.5.*|5.6.*",
         "illuminate/contracts": "5.4.*|5.5.*|5.6.*",
         "illuminate/database": "5.4.*|5.5.*|5.6.*",
@@ -58,7 +58,8 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-develop": "0.13.x-dev"
+            "dev-develop": "0.13.x-dev",
+            "dev-jj-abrams": "1.x-dev"
         },
         "laravel": {
             "providers": [
@@ -69,7 +70,7 @@
             }
         }
     },
-    "minimum-stability": "stable",
+    "minimum-stability": "dev",
     "prefer-stable": true,
     "config": {
         "sort-packages": true

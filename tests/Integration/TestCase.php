@@ -30,7 +30,6 @@ use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Schema\Builder as Schema;
 use Illuminate\Foundation\Application;
-use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Facades\Route;
 use Orchestra\Testbench\TestCase as BaseTestCase;
 
@@ -94,11 +93,13 @@ abstract class TestCase extends BaseTestCase
         $config->set('json-api-default', require __DIR__ . '/../../stubs/api.php');
         $config->set('json-api-default.namespace', '\\CloudCreativity\\LaravelJsonApi\\Tests\\JsonApi');
         $config->set('json-api-default.resources', [
-            'posts' => Models\Post::class,
             'comments' => Models\Comment::class,
+            'phones' => Models\Phone::class,
+            'posts' => Models\Post::class,
             'sites' => Entities\Site::class,
             'tags' => Models\Tag::class,
-            'users' => User::class,
+            'users' => Models\User::class,
+            'videos' => Models\Video::class,
         ]);
     }
 
@@ -111,8 +112,11 @@ abstract class TestCase extends BaseTestCase
         $this->loadLaravelMigrations('testbench');
         $schema = $app->make('db')->connection()->getSchemaBuilder();
         $this->createPostsTable($schema);
+        $this->createVideosTable($schema);
         $this->createCommentsTable($schema);
         $this->createTagsTables($schema);
+        $this->createPhonesTable($schema);
+        $this->createBlogsTable($schema);
         $this->withFactories(__DIR__ . '/../factories');
 
         return $schema;
@@ -129,7 +133,21 @@ abstract class TestCase extends BaseTestCase
             $table->string('title');
             $table->string('slug');
             $table->text('content');
-            $table->unsignedInteger('author_id');
+            $table->unsignedInteger('author_id')->nullable();
+        });
+    }
+
+    /**
+     * @param Schema $schema
+     */
+    protected function createVideosTable(Schema $schema)
+    {
+        $schema->create('videos', function (Blueprint $table) {
+            $table->uuid('uuid');
+            $table->timestamps();
+            $table->string('title');
+            $table->text('description');
+            $table->unsignedInteger('user_id');
         });
     }
 
@@ -139,10 +157,10 @@ abstract class TestCase extends BaseTestCase
     protected function createCommentsTable(Schema $schema)
     {
         $schema->create('comments', function (Blueprint $table) {
-            $table->uuid('id');
+            $table->increments('id');
             $table->timestamps();
             $table->text('content');
-            $table->unsignedInteger('post_id');
+            $table->morphs('commentable');
             $table->unsignedInteger('user_id');
         });
     }
@@ -158,13 +176,37 @@ abstract class TestCase extends BaseTestCase
             $table->string('name');
         });
 
-        $schema->create('post_tag', function (Blueprint $table) {
+        $schema->create('taggables', function (Blueprint $table) {
             $table->increments('id');
-            $table->integer('post_id')->unsigned();
-            $table->integer('tag_id')->unsigned();
+            $table->unsignedInteger('tag_id');
+            $table->morphs('taggable');
+        });
+    }
 
-            $table->foreign('post_id')->references('id')->on('posts')->onDelete('cascade')->onUpdate('cascade');
-            $table->foreign('tag_id')->references('id')->on('tags')->onDelete('cascade')->onUpdate('cascade');
+    /**
+     * @param Schema $schema
+     */
+    protected function createPhonesTable(Schema $schema)
+    {
+        $schema->create('phones', function (Blueprint $table) {
+            $table->increments('id');
+            $table->timestamps();
+            $table->unsignedInteger('user_id')->nullable();
+            $table->string('number');
+        });
+    }
+
+    /**
+     * @param Schema $schema
+     */
+    protected function createBlogsTable(Schema $schema)
+    {
+        $schema->create('blogs', function (Blueprint $table) {
+            $table->increments('id');
+            $table->timestamps();
+            $table->string('title');
+            $table->text('article');
+            $table->timestamp('published_at');
         });
     }
 
@@ -174,6 +216,18 @@ abstract class TestCase extends BaseTestCase
     protected function resolveApplicationExceptionHandler($app)
     {
         $app->singleton(ExceptionHandler::class, Handler::class);
+    }
+
+    /**
+     * Expect the request to be a success.
+     *
+     * @return $this
+     */
+    protected function expectSuccess()
+    {
+        $this->app->make(ExceptionHandler::class)->throwExceptions();
+
+        return $this;
     }
 
     /**

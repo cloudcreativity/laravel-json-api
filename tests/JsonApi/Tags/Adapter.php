@@ -2,13 +2,21 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\JsonApi\Tags;
 
-use CloudCreativity\LaravelJsonApi\Store\EloquentAdapter;
+use CloudCreativity\LaravelJsonApi\Eloquent\AbstractAdapter;
+use CloudCreativity\LaravelJsonApi\Eloquent\MorphHasMany;
 use CloudCreativity\LaravelJsonApi\Tests\Models\Tag;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 
-class Adapter extends EloquentAdapter
+class Adapter extends AbstractAdapter
 {
+
+    /**
+     * @var array
+     */
+    protected $relationships = [
+        'taggables' => ['posts', 'videos'],
+    ];
 
     /**
      * Adapter constructor.
@@ -19,19 +27,19 @@ class Adapter extends EloquentAdapter
     }
 
     /**
-     * @inheritDoc
+     * @return MorphHasMany
      */
-    protected function filter(Builder $query, Collection $filters)
+    protected function taggables()
     {
-        // TODO: Implement filter() method.
+        return $this->morphMany('posts', 'videos');
     }
 
     /**
      * @inheritDoc
      */
-    protected function isSearchOne(Collection $filters)
+    protected function filter(Builder $query, Collection $filters)
     {
-        // TODO: Implement isSearchOne() method.
+        // TODO: Implement filter() method.
     }
 
 

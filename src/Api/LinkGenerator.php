@@ -18,9 +18,9 @@
 
 namespace CloudCreativity\LaravelJsonApi\Api;
 
+use Illuminate\Contracts\Routing\UrlGenerator as IlluminateUrlGenerator;
 use Neomerx\JsonApi\Contracts\Document\LinkInterface;
 use Neomerx\JsonApi\Contracts\Schema\SchemaFactoryInterface;
-use Illuminate\Contracts\Routing\UrlGenerator as IlluminateUrlGenerator;
 
 /**
  * Class LinkGenerator

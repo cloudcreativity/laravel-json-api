@@ -53,7 +53,7 @@ class Validators extends AbstractValidatorProvider
      */
     protected function relationshipRules(RelationshipsValidatorInterface $relationships, $record = null)
     {
-        $relationships->hasOne('post', 'posts', is_null($record), false);
+        $relationships->hasOne('commentable', ['posts', 'videos'], is_null($record), false);
     }
 
 }

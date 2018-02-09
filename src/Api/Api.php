@@ -18,19 +18,21 @@
 
 namespace CloudCreativity\LaravelJsonApi\Api;
 
+use CloudCreativity\JsonApi\Contracts\ContainerInterface;
 use CloudCreativity\JsonApi\Contracts\Encoder\SerializerInterface;
 use CloudCreativity\JsonApi\Contracts\Http\Client\ClientInterface;
 use CloudCreativity\JsonApi\Contracts\Http\Responses\ErrorResponseInterface;
 use CloudCreativity\JsonApi\Contracts\Repositories\ErrorRepositoryInterface;
+use CloudCreativity\JsonApi\Contracts\Resolver\ResolverInterface;
 use CloudCreativity\JsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use CloudCreativity\LaravelJsonApi\Http\Responses\Responses;
+use CloudCreativity\LaravelJsonApi\Resolver\AggregateResolver;
 use Neomerx\JsonApi\Contracts\Codec\CodecMatcherInterface;
 use Neomerx\JsonApi\Contracts\Encoder\EncoderInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use Neomerx\JsonApi\Contracts\Http\Headers\SupportedExtensionsInterface;
-use Neomerx\JsonApi\Contracts\Schema\ContainerInterface;
 use Neomerx\JsonApi\Encoder\EncoderOptions;
 
 /**
@@ -47,24 +49,14 @@ class Api
     private $factory;
 
     /**
+     * @var AggregateResolver
+     */
+    private $resolver;
+
+    /**
      * @var string
      */
     private $name;
-
-    /**
-     * @var string
-     */
-    private $rootNamespace;
-
-    /**
-     * @var bool
-     */
-    private $byResource;
-
-    /**
-     * @var ApiResources
-     */
-    private $resources;
 
     /**
      * @var array
@@ -94,7 +86,7 @@ class Api
     /**
      * @var ContainerInterface|null
      */
-    private $schemas;
+    private $container;
 
     /**
      * @var StoreInterface|null
@@ -115,35 +107,29 @@ class Api
      * Definition constructor.
      *
      * @param Factory $factory
+     * @param AggregateResolver $resolver
      * @param $apiName
-     * @param string $rootNamespace
-     * @param ApiResources $resources
      * @param array $codecs
      * @param Url $url
-     * @param bool $byResource
      * @param bool $useEloquent
      * @param string|null $supportedExt
      * @param array $errors
      */
     public function __construct(
         Factory $factory,
+        AggregateResolver $resolver,
         $apiName,
-        $rootNamespace,
-        ApiResources $resources,
         array $codecs,
         Url $url,
-        $byResource = true,
         $useEloquent = true,
         $supportedExt = null,
         array $errors
     ) {
         $this->factory = $factory;
+        $this->resolver = $resolver;
         $this->name = $apiName;
-        $this->rootNamespace = $rootNamespace;
-        $this->resources = $resources;
         $this->codecs = $codecs;
         $this->url = $url;
-        $this->byResource = $byResource;
         $this->useEloquent = $useEloquent;
         $this->supportedExt = $supportedExt;
         $this->errors = $errors;
@@ -161,27 +147,19 @@ class Api
     }
 
     /**
+     * @return ResolverInterface
+     */
+    public function getResolver()
+    {
+        return $this->resolver;
+    }
+
+    /**
      * @return string
      */
     public function getName()
     {
         return $this->name;
-    }
-
-    /**
-     * @return string
-     */
-    public function getRootNamespace()
-    {
-        return $this->rootNamespace;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isByResource()
-    {
-        return $this->byResource;
     }
 
     /**
@@ -201,21 +179,13 @@ class Api
     }
 
     /**
-     * @return ApiResources
-     */
-    public function getResources()
-    {
-        return clone $this->resources;
-    }
-
-    /**
      * @return CodecMatcherInterface
      */
     public function getCodecMatcher()
     {
         if (!$this->codecMatcher) {
             $this->codecMatcher = $this->factory->createConfiguredCodecMatcher(
-                $this->getSchemas(),
+                $this->getContainer(),
                 $this->codecs,
                 (string) $this->getUrl()
             );
@@ -225,17 +195,15 @@ class Api
     }
 
     /**
-     * @return ContainerInterface
+     * @return ContainerInterface|null
      */
-    public function getSchemas()
+    public function getContainer()
     {
-        if (!$this->schemas) {
-            $this->schemas = $this->factory->createContainer(
-                $this->getResources()->getSchemas()
-            );
+        if (!$this->container) {
+            $this->container = $this->factory->createJsonApiContainer($this->resolver);
         }
 
-        return $this->schemas;
+        return $this->container;
     }
 
     /**
@@ -244,9 +212,7 @@ class Api
     public function getStore()
     {
         if (!$this->store) {
-            $this->store = $this->factory->createStore(
-                $this->factory->createAdapterContainer($this->getResources()->getAdapters())
-            );
+            $this->store = $this->factory->createStore($this->container);
         }
 
         return $this->store;
@@ -301,7 +267,7 @@ class Api
     {
         $options = new EncoderOptions($options, (string) $this->getUrl(), $depth);
 
-        return $this->factory->createEncoder($this->getSchemas(), $options);
+        return $this->factory->createEncoder($this->getContainer(), $options);
     }
 
     /**
@@ -316,7 +282,7 @@ class Api
         SupportedExtensionsInterface $extensions = null
     ) {
         return $this->factory->createResponses(
-            $this->getSchemas(),
+            $this->getContainer(),
             $this->getErrors(),
             $this->getCodecMatcher(),
             $parameters,
@@ -331,7 +297,7 @@ class Api
      */
     public function client($httpClient)
     {
-        return $this->factory->createClient($httpClient, $this->getSchemas(), $this->encoder());
+        return $this->factory->createClient($httpClient, $this->getContainer(), $this->encoder());
     }
 
     /**
@@ -369,7 +335,8 @@ class Api
      */
     public function register(ResourceProvider $provider)
     {
-        $this->resources = $provider->getResources()->merge($this->resources);
+        $this->resolver->attach($provider->getResolver());
         $this->errors = array_replace($provider->getErrors(), $this->errors);
     }
+
 }

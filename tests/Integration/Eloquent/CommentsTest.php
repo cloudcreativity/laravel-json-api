@@ -3,6 +3,7 @@
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Eloquent;
 
 use CloudCreativity\LaravelJsonApi\Tests\Models\Comment;
+use CloudCreativity\LaravelJsonApi\Tests\Models\Post;
 
 class CommentsTest extends TestCase
 {
@@ -14,79 +15,97 @@ class CommentsTest extends TestCase
 
     public function testCreate()
     {
-        $model = $this->createComment(false);
+        $comment = factory(Comment::class)->states('post')->make();
 
         $data = [
             'type' => 'comments',
-            'id' => $id = $model->getKey(), // client generated id.
             'attributes' => [
-                'content' => $model->content,
+                'content' => $comment->content,
             ],
             'relationships' => [
-                'post' => [
+                'commentable' => [
                     'data' => [
                         'type' => 'posts',
-                        'id' => (string) $model->post_id,
+                        'id' => (string) $comment->commentable_id,
                     ],
                 ],
             ],
         ];
 
-        $this->actingAs($model->user);
-        $this->doCreate($data)->assertCreateResponse($data);
-        $this->assertNotNull(Comment::find($id));
-    }
+        $this->actingAs($comment->user);
 
-    public function testCreateWithInvalidClientId()
-    {
-        $this->markTestIncomplete('@todo when it is possible to validate client ids.');
+        $expected = $data;
+        $expected['relationships']['created-by'] = [
+            'data' => ['type' => 'users', 'id' => $comment->user_id],
+        ];
+
+        $id = $this
+            ->expectSuccess()
+            ->doCreate($data)
+            ->assertCreatedWithId($expected);
+
+        $this->assertModelCreated($comment, $id);
     }
 
     public function testRead()
     {
-        $model = $this->createComment();
+        $comment = factory(Comment::class)->states('post')->create();
 
         $data = [
             'type' => 'comments',
-            'id' => (string) $model->getKey(),
+            'id' => (string) $comment->getKey(),
             'attributes' => [
-                'content' => $model->content,
+                'content' => $comment->content,
             ],
             'relationships' => [
-                'post' => [
+                'commentable' => [
                     'data' => [
                         'type' => 'posts',
-                        'id' => $model->post_id,
+                        'id' => $comment->commentable_id,
                     ],
                 ],
                 'created-by' => [
                     'data' => [
                         'type' => 'users',
-                        'id' => $model->user_id,
+                        'id' => $comment->user_id,
                     ],
                 ],
             ],
         ];
 
-        $this->doRead($model)->assertReadResponse($data);
+        $this->expectSuccess()
+            ->doRead($comment)
+            ->assertRead($data);
     }
 
-    /**
-     * @return mixed
-     */
-    protected function getResourceType()
+    public function testReadCommentable()
     {
-        return 'comments';
+        $comment = factory(Comment::class)->states('post')->create();
+        /** @var Post $post */
+        $post = $comment->commentable;
+
+        $data = [
+            'type' => 'posts',
+            'id' => $post->getKey(),
+            'attributes' => [
+                'title' => $post->title,
+                'slug' => $post->slug,
+                'content' => $post->content,
+            ],
+        ];
+
+        $this->expectSuccess()->doReadRelated($comment, 'commentable')->assertReadHasOne($data);
     }
 
-    /**
-     * @param bool $create
-     * @return Comment
-     */
-    private function createComment($create = true)
+    public function testReadCommentableRelationship()
     {
-        $factory = factory(Comment::class);
+        $comment = factory(Comment::class)->states('post')->create();
+        /** @var Post $post */
+        $post = $comment->commentable;
 
-        return $create ? $factory->create() : $factory->make();
+        $this->expectSuccess()
+            ->doReadRelationship($comment, 'commentable')
+            ->assertReadHasOneIdentifier('posts', $post->getKey());
     }
+
 }

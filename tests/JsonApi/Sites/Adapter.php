@@ -2,12 +2,28 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\JsonApi\Sites;
 
-use CloudCreativity\JsonApi\Contracts\Store\AdapterInterface;
+use CloudCreativity\JsonApi\Adapter\AbstractResourceAdaptor;
+use CloudCreativity\JsonApi\Adapter\HydratesAttributesTrait;
+use CloudCreativity\JsonApi\Contracts\Object\RelationshipsInterface;
+use CloudCreativity\JsonApi\Contracts\Object\ResourceObjectInterface;
+use CloudCreativity\JsonApi\Exceptions\RuntimeException;
+use CloudCreativity\JsonApi\Utils\Str;
+use CloudCreativity\LaravelJsonApi\Tests\Entities\Site;
 use CloudCreativity\LaravelJsonApi\Tests\Entities\SiteRepository;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
-class Adapter implements AdapterInterface
+class Adapter extends AbstractResourceAdaptor
 {
+
+    use HydratesAttributesTrait;
+
+    /**
+     * @var array
+     */
+    protected $attributes = [
+        'domain',
+        'name',
+    ];
 
     /**
      * @var SiteRepository
@@ -33,6 +49,26 @@ class Adapter implements AdapterInterface
     }
 
     /**
+     * @param Site $record
+     * @param EncodingParametersInterface $params
+     * @return bool
+     */
+    public function delete($record, EncodingParametersInterface $params)
+    {
+        $this->repository->remove($record);
+
+        return true;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function related($relationshipName)
+    {
+        throw new RuntimeException('Not supported');
+    }
+
+    /**
      * @inheritdoc
      */
     public function exists($resourceId)
@@ -46,6 +82,57 @@ class Adapter implements AdapterInterface
     public function find($resourceId)
     {
         return $this->repository->find($resourceId);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function findMany(array $resourceIds)
+    {
+        return collect($resourceIds)->map(function ($resourceId) {
+            return $this->find($resourceId);
+        })->filter()->all();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function createRecord(ResourceObjectInterface $resource)
+    {
+        return new Site($resource->getId());
+    }
+
+    /**
+     * @param object $record
+     * @param string $attrKey
+     * @param mixed $value
+     * @return void
+     */
+    protected function hydrateAttribute($record, $attrKey, $value)
+    {
+        $method = 'set' . Str::classify($attrKey);
+
+        call_user_func([$record, $method], $value);
+    }
+
+
+    /**
+     * @inheritDoc
+     */
+    protected function hydrateRelationships(
+        $record,
+        RelationshipsInterface $relationships,
+        EncodingParametersInterface $parameters
+    ) {
+        // no-op
+    }
+
+    /**
+     * @param Site $record
+     */
+    protected function persist($record)
+    {
+        $this->repository->store($record);
     }
 
 }

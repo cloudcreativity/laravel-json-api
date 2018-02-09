@@ -18,8 +18,8 @@
 
 namespace CloudCreativity\LaravelJsonApi\Routing;
 
+use CloudCreativity\JsonApi\Contracts\Resolver\ResolverInterface;
 use CloudCreativity\JsonApi\Utils\Str;
-use CloudCreativity\LaravelJsonApi\Api\ApiResource;
 use Illuminate\Contracts\Routing\Registrar;
 use Illuminate\Routing\Route;
 use Illuminate\Support\Fluent;
@@ -35,21 +35,21 @@ class ResourceGroup
     use RegistersResources;
 
     /**
-     * @var ApiResource
+     * @var ResolverInterface
      */
-    private $apiResource;
+    private $resolver;
 
     /**
      * ResourceGroup constructor.
      *
      * @param string $resourceType
-     * @param ApiResource $apiResource
+     * @param ResolverInterface $resolver
      * @param Fluent $options
      */
-    public function __construct($resourceType, ApiResource $apiResource, Fluent $options)
+    public function __construct($resourceType, ResolverInterface $resolver, Fluent $options)
     {
         $this->resourceType = $resourceType;
-        $this->apiResource = $apiResource;
+        $this->resolver = $resolver;
         $this->options = $options;
     }
 
@@ -101,7 +101,9 @@ class ResourceGroup
             return $authorizer;
         }
 
-        return $this->apiResource->getAuthorizerFqn() ?: $this->options->get('default-authorizer');
+        $authorizer = $this->resolver->getAuthorizerByResourceType($this->resourceType);
+
+        return class_exists($authorizer) ?: $this->options->get('default-authorizer');
     }
 
     /**
@@ -113,7 +115,9 @@ class ResourceGroup
             return $validators;
         }
 
-        return $this->apiResource->getValidatorsFqn();
+        $validators = $this->resolver->getValidatorsByResourceType($this->resourceType);
+
+        return class_exists($validators) ? $validators : null;
     }
 
     /**

@@ -12,10 +12,30 @@ class Handler extends BaseHandler
     use HandlesErrors;
 
     /**
+     * @var bool
+     */
+    private $report = false;
+
+    /**
+     * @return $this
+     */
+    public function throwExceptions()
+    {
+        $this->report = true;
+
+        return $this;
+    }
+
+    /**
      * @param Exception $e
+     * @throws Exception
      */
     public function report(Exception $e)
     {
+        if (true === $this->report) {
+            throw $e;
+        }
+
         parent::report($e);
     }
 

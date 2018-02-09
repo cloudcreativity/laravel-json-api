@@ -19,12 +19,20 @@ abstract class TestCase extends BaseTestCase
         parent::setUp();
 
         $this->withDefaultApi([], function (ApiGroup $api) {
-            $api->resource('comments');
+            $api->resource('comments', [
+                'has-one' => 'commentable',
+            ]);
             $api->resource('posts', [
                 'has-one' => 'author',
                 'has-many' => ['comments', 'tags'],
             ]);
-            $api->resource('users');
+            $api->resource('users', [
+                'has-one' => 'phone',
+            ]);
+            $api->resource('videos');
+            $api->resource('tags', [
+                'has-many' => 'taggables',
+            ]);
         });
     }
 }

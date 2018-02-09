@@ -29,11 +29,11 @@ class Schema extends EloquentSchema
     public function getRelationships($resource, $isPrimary, array $includeRelationships)
     {
         return [
-            'post' => [
+            'commentable' => [
                 self::SHOW_SELF => true,
                 self::SHOW_RELATED => true,
-                self::DATA => isset($includeRelationships['post']) ?
-                    $resource->post : $this->createBelongsToIdentity($resource, 'post'),
+                self::DATA => isset($includeRelationships['commentable']) ?
+                    $resource->commentable : $this->createBelongsToIdentity($resource, 'commentable'),
             ],
             'created-by' => [
                 self::SHOW_SELF => true,

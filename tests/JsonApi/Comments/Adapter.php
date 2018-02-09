@@ -2,13 +2,30 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\JsonApi\Comments;
 
-use CloudCreativity\LaravelJsonApi\Store\EloquentAdapter;
+use CloudCreativity\JsonApi\Contracts\Object\ResourceObjectInterface;
+use CloudCreativity\LaravelJsonApi\Eloquent\AbstractAdapter;
+use CloudCreativity\LaravelJsonApi\Eloquent\BelongsTo;
 use CloudCreativity\LaravelJsonApi\Tests\Models\Comment;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 
-class Adapter extends EloquentAdapter
+class Adapter extends AbstractAdapter
 {
+
+    /**
+     * @var array
+     */
+    protected $attributes = [
+        'content',
+    ];
+
+    /**
+     * @var array
+     */
+    protected $relationships = [
+        'commentable',
+    ];
 
     /**
      * Adapter constructor.
@@ -19,19 +36,30 @@ class Adapter extends EloquentAdapter
     }
 
     /**
-     * @inheritDoc
+     * @return BelongsTo
      */
-    protected function filter(Builder $query, Collection $filters)
+    protected function commentable()
     {
-        // TODO: Implement filter() method.
+        return $this->belongsTo();
     }
 
     /**
      * @inheritDoc
      */
-    protected function isSearchOne(Collection $filters)
+    protected function createRecord(ResourceObjectInterface $resource)
     {
-        // TODO: Implement isSearchOne() method.
+        $record = new Comment();
+        $record->user()->associate(Auth::user());
+
+        return $record;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function filter(Builder $query, Collection $filters)
+    {
+        // TODO: Implement filter() method.
     }
 
 }

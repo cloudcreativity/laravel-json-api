@@ -2,6 +2,7 @@
 
 namespace DummyNamespace;
 
+use CloudCreativity\JsonApi\Contracts\Object\ResourceObjectInterface;
 use CloudCreativity\LaravelJsonApi\Hydrator\EloquentHydrator;
 
 class Hydrator extends EloquentHydrator
@@ -18,5 +19,14 @@ class Hydrator extends EloquentHydrator
     protected $relationships = [
         //
     ];
+
+    /**
+     * @param ResourceObjectInterface $resource
+     * @return DummyModel
+     */
+    protected function createRecord(ResourceObjectInterface $resource)
+    {
+        return new DummyModel();
+    }
 
 }

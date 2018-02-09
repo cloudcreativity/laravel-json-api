@@ -18,7 +18,9 @@
 
 namespace CloudCreativity\LaravelJsonApi\Factories;
 
+use CloudCreativity\JsonApi\Contracts\ContainerInterface;
 use CloudCreativity\JsonApi\Contracts\Repositories\ErrorRepositoryInterface;
+use CloudCreativity\JsonApi\Contracts\Resolver\ResolverInterface;
 use CloudCreativity\JsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\JsonApi\Exceptions\RuntimeException;
 use CloudCreativity\JsonApi\Factories\Factory as BaseFactory;
@@ -26,12 +28,11 @@ use CloudCreativity\LaravelJsonApi\Api\LinkGenerator;
 use CloudCreativity\LaravelJsonApi\Api\ResourceProvider;
 use CloudCreativity\LaravelJsonApi\Api\Url;
 use CloudCreativity\LaravelJsonApi\Api\UrlGenerator;
+use CloudCreativity\LaravelJsonApi\Container;
 use CloudCreativity\LaravelJsonApi\Http\Responses\Responses;
-use CloudCreativity\LaravelJsonApi\Schema\Container as SchemaContainer;
-use CloudCreativity\LaravelJsonApi\Store\Container as AdapterContainer;
 use CloudCreativity\LaravelJsonApi\Validators\ValidatorErrorFactory;
 use CloudCreativity\LaravelJsonApi\Validators\ValidatorFactory;
-use Illuminate\Contracts\Container\Container;
+use Illuminate\Contracts\Container\Container as IlluminateContainer;
 use Illuminate\Contracts\Routing\UrlGenerator as IlluminateUrlGenerator;
 use Illuminate\Contracts\Validation\Factory as ValidatorFactoryContract;
 use Neomerx\JsonApi\Contracts\Codec\CodecMatcherInterface;
@@ -48,41 +49,28 @@ class Factory extends BaseFactory
 {
 
     /**
-     * @var Container
+     * @var IlluminateContainer
      */
     protected $container;
 
     /**
      * Factory constructor.
      *
-     * @param Container $container
+     * @param IlluminateContainer $container
      */
-    public function __construct(Container $container)
+    public function __construct(IlluminateContainer $container)
     {
         parent::__construct();
         $this->container = $container;
     }
 
     /**
-     * @inheritdoc
+     * @param ResolverInterface $resolver
+     * @return ContainerInterface
      */
-    public function createContainer(array $providers = [])
+    public function createJsonApiContainer(ResolverInterface $resolver)
     {
-        $container = new SchemaContainer($this->container, $this, $providers);
-        $container->setLogger($this->logger);
-
-        return $container;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function createAdapterContainer(array $adapters)
-    {
-        $container = new AdapterContainer($this->container);
-        $container->registerMany($adapters);
-
-        return $container;
+        return new Container($this->container, $resolver, $this);
     }
 
     /**

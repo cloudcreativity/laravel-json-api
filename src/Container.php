@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Copyright 2017 Cloud Creativity Limited
  *
@@ -16,48 +15,48 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\LaravelJsonApi\Store;
+namespace CloudCreativity\LaravelJsonApi;
 
-use CloudCreativity\JsonApi\Contracts\Store\AdapterInterface;
-use CloudCreativity\JsonApi\Exceptions\RuntimeException;
-use CloudCreativity\JsonApi\Store\Container as BaseContainer;
-use Illuminate\Contracts\Container\Container as LaravelContainer;
+use CloudCreativity\JsonApi\AbstractContainer;
+use CloudCreativity\JsonApi\Contracts\Resolver\ResolverInterface;
+use Illuminate\Contracts\Container\Container as IlluminateContainer;
+use Neomerx\JsonApi\Contracts\Schema\SchemaFactoryInterface;
 
 /**
  * Class Container
  *
  * @package CloudCreativity\LaravelJsonApi
  */
-class Container extends BaseContainer
+class Container extends AbstractContainer
 {
 
     /**
-     * @var LaravelContainer
+     * @var IlluminateContainer
      */
     private $container;
 
     /**
      * Container constructor.
      *
-     * @param LaravelContainer $container
+     * @param IlluminateContainer $container
+     * @param ResolverInterface $resolver
+     * @param SchemaFactoryInterface $factory
      */
-    public function __construct(LaravelContainer $container)
-    {
+    public function __construct(
+        IlluminateContainer $container,
+        ResolverInterface $resolver,
+        SchemaFactoryInterface $factory
+    ) {
+        parent::__construct($resolver, $factory);
         $this->container = $container;
     }
 
     /**
-     * @param $string
-     * @return AdapterInterface
+     * @inheritDoc
      */
-    protected function createFromString($string)
+    protected function create($className)
     {
-        $adapter = $this->container->make($string);
-
-        if (!$adapter instanceof AdapterInterface) {
-            throw new RuntimeException("Service $string is not a JSON API adapter.");
-        }
-
-        return $adapter;
+        return $this->container->make($className);
     }
+
 }

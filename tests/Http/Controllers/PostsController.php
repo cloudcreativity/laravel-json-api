@@ -2,12 +2,10 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Http\Controllers;
 
-use CloudCreativity\LaravelJsonApi\Http\Controllers\EloquentController;
-use CloudCreativity\LaravelJsonApi\Tests\JsonApi\Posts\Hydrator;
-use CloudCreativity\LaravelJsonApi\Tests\Models\Post;
+use CloudCreativity\LaravelJsonApi\Http\Controllers\JsonApiController;
 use Illuminate\Support\Collection;
 
-class PostsController extends EloquentController
+class PostsController extends JsonApiController
 {
 
     /**
@@ -15,14 +13,8 @@ class PostsController extends EloquentController
      */
     private $invokables;
 
-    /**
-     * PostsController constructor.
-     *
-     * @param Hydrator $hydrator
-     */
-    public function __construct(Hydrator $hydrator)
+    public function __construct()
     {
-        parent::__construct(new Post(), $hydrator);
         $this->invokables = collect();
     }
 
@@ -60,4 +52,5 @@ class PostsController extends EloquentController
             call_user_func_array($fn, $args);
         }
     }
+
 }

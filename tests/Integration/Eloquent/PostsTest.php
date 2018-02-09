@@ -3,8 +3,10 @@
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Eloquent;
 
 use CloudCreativity\LaravelJsonApi\Tests\Http\Controllers\PostsController;
+use CloudCreativity\LaravelJsonApi\Tests\Models\Comment;
 use CloudCreativity\LaravelJsonApi\Tests\Models\Post;
 use CloudCreativity\LaravelJsonApi\Tests\Models\Tag;
+use CloudCreativity\LaravelJsonApi\Tests\Models\User;
 
 class PostsTest extends TestCase
 {
@@ -27,7 +29,7 @@ class PostsTest extends TestCase
             'title' => 'Title B',
         ]);
 
-        $response = $this->doSearch(['sort' => '-title']);
+        $response = $this->expectSuccess()->doSearch(['sort' => '-title']);
         $response->assertSearchResponse()->assertContainsOnly(['posts' => [$a->getKey(), $b->getKey()]]);
 
         $json = $response->decodeResponseJson();
@@ -44,7 +46,8 @@ class PostsTest extends TestCase
         // this model should not be in the search results
         $this->createPost();
 
-        $this->doSearchById($models)
+        $this->expectSuccess()
+            ->doSearchById($models)
             ->assertSearchByIdResponse($models);
     }
 
@@ -83,12 +86,14 @@ class PostsTest extends TestCase
         ];
 
         $id = $this
+            ->expectSuccess()
             ->doCreate($data)
             ->assertCreateResponse($data);
 
         $this->assertModelCreated($model, $id, ['title', 'slug', 'content', 'author_id']);
-        $this->assertDatabaseHas('post_tag', [
-            'post_id' => $id,
+        $this->assertDatabaseHas('taggables', [
+            'taggable_type' => Post::class,
+            'taggable_id' => $id,
             'tag_id' => $tag->getKey(),
         ]);
     }
@@ -101,7 +106,7 @@ class PostsTest extends TestCase
         $model = $this->createPost();
         $model->tags()->create(['name' => 'Important']);;
 
-        $this->doRead($model)->assertReadResponse($this->serialize($model));
+        $this->expectSuccess()->doRead($model)->assertReadResponse($this->serialize($model));
     }
 
     /**
@@ -120,7 +125,7 @@ class PostsTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data)->assertUpdateResponse($data);
+        $this->expectSuccess()->doUpdate($data)->assertUpdateResponse($data);
         $this->assertModelPatched($model, $data['attributes'], ['content']);
     }
 
@@ -139,7 +144,7 @@ class PostsTest extends TestCase
         $controller = $this->app->make(PostsController::class);
         $this->app->instance(PostsController::class, $controller);
 
-        $controller->on('saving', function ($model) {
+        $controller->on('saving', function ($resource, $model) {
             $model->tags; // causes the model to cache the tags relationship
         });
 
@@ -159,10 +164,11 @@ class PostsTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data)->assertUpdateResponse($data);
+        $this->expectSuccess()->doUpdate($data)->assertUpdateResponse($data);
 
-        $this->assertDatabaseHas('post_tag', [
-            'post_id' => $model->getKey(),
+        $this->assertDatabaseHas('taggables', [
+            'taggable_type' => Post::class,
+            'taggable_id' => $model->getKey(),
             'tag_id' => $tag->getKey(),
         ]);
     }
@@ -174,8 +180,211 @@ class PostsTest extends TestCase
     {
         $model = $this->createPost();
 
-        $this->doDelete($model)->assertDeleteResponse();
+        $this->expectSuccess()->doDelete($model)->assertDeleteResponse();
         $this->assertModelDeleted($model);
+    }
+
+    /**
+     * Test that we can read the related author.
+     */
+    public function testReadAuthor()
+    {
+        $model = $this->createPost();
+        $author = $model->author;
+
+        $data = [
+            'type' => 'users',
+            'id' => $author->getKey(),
+            'attributes' => [
+                'name' => $author->name,
+            ],
+        ];
+
+        $this->expectSuccess()->doReadRelated($model, 'author')->assertReadHasOne($data);
+    }
+
+    /**
+     * Test that we can read the related comments.
+     */
+    public function testReadComments()
+    {
+        $model = $this->createPost();
+        $comments = factory(Comment::class, 2)->create([
+            'commentable_type' => Post::class,
+            'commentable_id' => $model->getKey(),
+        ]);
+
+        /** This comment should not appear in the results... */
+        factory(Comment::class)->states('post')->create();
+
+        $this->expectSuccess()
+            ->doReadRelated($model, 'comments')
+            ->assertReadHasMany('comments', $comments);
+    }
+
+    /**
+     * Test that we can read the tags relationship.
+     */
+    public function testReadTags()
+    {
+        $post = $this->createPost();
+        $post->tags()->sync($tags = factory(Tag::class, 2)->create());
+
+        $this->expectSuccess()
+            ->doReadRelated($post, 'tags')
+            ->assertReadHasMany('tags', $tags);
+    }
+
+    /**
+     * Test that we can read the resource identifier for the related author.
+     */
+    public function testReadAuthorRelationship()
+    {
+        $model = $this->createPost();
+
+        $this->expectSuccess()
+            ->doReadRelationship($model, 'author')
+            ->assertReadHasOneIdentifier('users', $model->author_id);
+    }
+
+    /**
+     * Test that we can read the resource identifiers for the related comments.
+     */
+    public function testReadCommentsRelationship()
+    {
+        $model = $this->createPost();
+        $comments = factory(Comment::class, 2)->create([
+            'commentable_type' => Post::class,
+            'commentable_id' => $model->getKey(),
+        ]);
+
+        /** This comment should not appear in the results... */
+        factory(Comment::class)->states('post')->create();
+
+        $this->expectSuccess()
+            ->doReadRelated($model, 'comments')
+            ->assertReadHasManyIdentifiers('comments', $comments);
+    }
+
+    /**
+     * Test that we can read the tags relationship.
+     */
+    public function testReadTagsRelationship()
+    {
+        $post = $this->createPost();
+        $post->tags()->sync($tags = factory(Tag::class, 2)->create());
+
+        $this->expectSuccess()
+            ->doReadRelated($post, 'tags')
+            ->assertReadHasManyIdentifiers('tags', $tags);
+    }
+
+    /**
+     * Test that we can change the related author to a different resource.
+     */
+    public function testReplaceAuthorRelationship()
+    {
+        $post = $this->createPost();
+        /** @var User $author */
+        $author = factory(User::class)->create();
+
+        $data = ['type' => 'users', 'id' => (string) $author->getKey()];
+
+        $this->expectSuccess()
+            ->doReplaceRelationship($post, 'author', $data)
+            ->assertStatus(204);
+
+        $this->assertModelPatched($post, ['author_id' => $author->getKey()]);
+    }
+
+    /**
+     * Test that we can clear the related author relationship.
+     */
+    public function testReplaceAuthorRelationshipWithNull()
+    {
+        $post = $this->createPost();
+
+        $this->expectSuccess()
+            ->doReplaceRelationship($post, 'author', null)
+            ->assertStatus(204);
+
+        $this->assertModelPatched($post, ['author_id' => null]);
+    }
+
+    /**
+     * Test that we can attach related resources to an empty has-many relationship.
+     */
+    public function testReplaceEmptyTagsRelationship()
+    {
+        $post = $this->createPost();
+        $tags = factory(Tag::class, 2)->create();
+
+        $data = $tags->map(function (Tag $tag) {
+            return ['type' => 'tags', 'id' => (string) $tag->getKey()];
+        })->all();
+
+        $this->expectSuccess()
+            ->doReplaceRelationship($post, 'tags', $data)
+            ->assertStatus(204);
+
+        $this->assertSame($post->tags()->count(), 2);
+    }
+
+    /**
+     * Test that we can clear related resources from a has-many relationship.
+     */
+    public function testReplaceTagsRelationshipWithNone()
+    {
+        $post = $this->createPost();
+        $tags = factory(Tag::class, 2)->create();
+        $post->tags()->sync($tags);
+
+        $this->expectSuccess()
+            ->doReplaceRelationship($post, 'tags', [])
+            ->assertStatus(204);
+
+        $this->assertSame($post->tags()->count(), 0);
+    }
+
+    /**
+     * Test that we can add resources to a has-many relationship.
+     */
+    public function testAddToTagsRelationship()
+    {
+        $post = $this->createPost();
+        $existing = factory(Tag::class, 2)->create();
+        $post->tags()->sync($existing);
+
+        $add = factory(Tag::class, 2)->create();
+        $data = $add->map(function (Tag $tag) {
+            return ['type' => 'tags', 'id' => (string) $tag->getKey()];
+        })->all();
+
+        $this->expectSuccess()
+            ->doAddToRelationship($post, 'tags', $data)
+            ->assertStatus(204);
+
+        $this->assertSame($post->tags()->count(), 4);
+    }
+
+    /**
+     * Test that we can remove resources from a has-many relationship.
+     */
+    public function testRemoveFromTagsRelationship()
+    {
+        $post = $this->createPost();
+        $tags = factory(Tag::class, 4)->create();
+        $post->tags()->sync($tags);
+
+        $data = $tags->take(2)->map(function (Tag $tag) {
+            return ['type' => 'tags', 'id' => (string) $tag->getKey()];
+        })->all();
+
+        $this->expectSuccess()
+            ->doRemoveFromRelationship($post, 'tags', $data)
+            ->assertStatus(204);
+
+        $this->assertSame($post->tags()->count(), 2);
     }
 
     /**
