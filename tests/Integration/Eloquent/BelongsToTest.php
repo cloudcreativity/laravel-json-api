@@ -1,0 +1,286 @@
+<?php
+
+namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Eloquent;
+use CloudCreativity\LaravelJsonApi\Tests\Models\Comment;
+use CloudCreativity\LaravelJsonApi\Tests\Models\Post;
+use CloudCreativity\LaravelJsonApi\Tests\Models\User;
+
+/**
+ * Class BelongsToTest
+ *
+ * Tests a JSON API has-one relationship that relates to an Eloquent belongs-to
+ * relationship.
+ *
+ * In our dummy app, this is the author relationship on the post model.
+ *
+ * @package CloudCreativity\LaravelJsonApi
+ */
+class BelongsToTest extends TestCase
+{
+
+    /**
+     * @var string
+     */
+    protected $resourceType = 'posts';
+
+    public function testCreateWithNull()
+    {
+        /** @var Post $post */
+        $post = factory(Post::class)->make([
+            'author_id' => null,
+        ]);
+
+        $data = [
+            'type' => 'posts',
+            'attributes' => [
+                'title' => $post->title,
+                'slug' => $post->slug,
+                'content' => $post->content,
+            ],
+            'relationships' => [
+                'author' => [
+                    'data' => null,
+                ],
+            ],
+        ];
+
+        $id = $this
+            ->doCreate($data)
+            ->assertCreatedWithId($data);
+
+        $this->assertDatabaseHas('posts', [
+            'id' => $id,
+            'author_id' => null,
+        ]);
+    }
+
+    public function testCreateWithRelated()
+    {
+        /** @var Post $post */
+        $post = factory(Post::class)->make();
+
+        $data = [
+            'type' => 'posts',
+            'attributes' => [
+                'title' => $post->title,
+                'slug' => $post->slug,
+                'content' => $post->content,
+            ],
+            'relationships' => [
+                'author' => [
+                    'data' => [
+                        'type' => 'users',
+                        'id' => (string) $post->author_id,
+                    ],
+                ],
+            ],
+        ];
+
+        $id = $this
+            ->doCreate($data)
+            ->assertCreatedWithId($data);
+
+        $this->assertDatabaseHas('posts', [
+            'id' => $id,
+            'author_id' => $post->author_id,
+        ]);
+    }
+
+    public function testUpdateReplacesRelationshipWithNull()
+    {
+        /** @var Post $post */
+        $post = factory(Post::class)->create();
+
+        $data = [
+            'type' => 'posts',
+            'id' => (string) $post->getKey(),
+            'attributes' => [
+                'title' => $post->title,
+                'slug' => $post->slug,
+                'content' => $post->content,
+            ],
+            'relationships' => [
+                'author' => [
+                    'data' => null,
+                ],
+            ],
+        ];
+
+        $this->doUpdate($data)->assertUpdated($data);
+
+        $this->assertDatabaseHas('posts', [
+            'id' => $post->getKey(),
+            'author_id' => null,
+        ]);
+    }
+
+    public function testUpdateReplacesNullRelationshipWithResource()
+    {
+        /** @var Post $post */
+        $post = factory(Post::class)->create([
+            'author_id' => null,
+        ]);
+
+        /** @var User $user */
+        $user = factory(User::class)->create();
+
+        $data = [
+            'type' => 'posts',
+            'id' => (string) $post->getKey(),
+            'attributes' => [
+                'title' => $post->title,
+                'slug' => $post->slug,
+                'content' => $post->content,
+            ],
+            'relationships' => [
+                'author' => [
+                    'data' => [
+                        'type' => 'users',
+                        'id' => (string) $user->getKey(),
+                    ],
+                ],
+            ],
+        ];
+
+        $this->doUpdate($data)->assertUpdated($data);
+
+        $this->assertDatabaseHas('posts', [
+            'id' => $post->getKey(),
+            'author_id' => $user->getKey(),
+        ]);
+    }
+
+    public function testUpdateChangesRelatedResource()
+    {
+        /** @var Post $post */
+        $post = factory(Post::class)->create();
+        $this->assertNotNull($post->author_id);
+
+        /** @var User $user */
+        $user = factory(User::class)->create();
+
+        $data = [
+            'type' => 'posts',
+            'id' => (string) $post->getKey(),
+            'attributes' => [
+                'title' => $post->title,
+                'slug' => $post->slug,
+                'content' => $post->content,
+            ],
+            'relationships' => [
+                'author' => [
+                    'data' => [
+                        'type' => 'users',
+                        'id' => (string) $user->getKey(),
+                    ],
+                ],
+            ],
+        ];
+
+        $this->doUpdate($data)->assertUpdated($data);
+
+        $this->assertDatabaseHas('posts', [
+            'id' => $post->getKey(),
+            'author_id' => $user->getKey(),
+        ]);
+    }
+
+    public function testReadRelated()
+    {
+        /** @var Post $post */
+        $post = factory(Post::class)->create();
+        /** @var User $user */
+        $user = $post->author;
+
+        $expected = [
+            'type' => 'users',
+            'id' => $user->getKey(),
+            'attributes' => [
+                'name' => $user->name,
+            ],
+        ];
+
+        $this->doReadRelated($post, 'author')
+            ->assertReadHasOne($expected);
+    }
+
+    public function testReadRelatedNull()
+    {
+        /** @var Post $post */
+        $post = factory(Post::class)->create([
+            'author_id' => null,
+        ]);
+
+        $this->doReadRelated($post, 'author')
+            ->assertReadHasOne(null);
+    }
+
+    public function testReadRelationship()
+    {
+        $post = factory(Post::class)->create();
+
+        $this->doReadRelationship($post, 'author')
+            ->assertReadHasOneIdentifier('users', $post->author_id);
+    }
+
+    public function testReadEmptyRelationship()
+    {
+        $post = factory(Post::class)->create([
+            'author_id' => null,
+        ]);
+
+        $this->doReadRelationship($post, 'author')
+            ->assertReadHasOneIdentifier(null);
+    }
+
+    public function testReplaceNullRelationshipWithRelatedResource()
+    {
+        $post = factory(Post::class)->create([
+            'author_id' => null,
+        ]);
+
+        $user = factory(User::class)->create();
+
+        $data = ['type' => 'users', 'id' => (string) $user->getKey()];
+
+        $this->doReplaceRelationship($post, 'author', $data)
+            ->assertStatus(204);
+
+        $this->assertDatabaseHas('posts', [
+            'id' => $post->getKey(),
+            'author_id' => $user->getKey(),
+        ]);
+    }
+
+    public function testReplaceRelationshipWithNull()
+    {
+        $post = factory(Post::class)->create();
+        $this->assertNotNull($post->author_id);
+
+        $this->doReplaceRelationship($post, 'author', null)
+            ->assertStatus(204);
+
+        $this->assertDatabaseHas('posts', [
+            'id' => $post->getKey(),
+            'author_id' => null,
+        ]);
+    }
+
+    public function testReplaceRelationshipWithDifferentResource()
+    {
+        $post = factory(Post::class)->create();
+        $this->assertNotNull($post->author_id);
+
+        $user = factory(User::class)->create();
+
+        $data = ['type' => 'users', 'id' => (string) $user->getKey()];
+
+        $this->doReplaceRelationship($post, 'author', $data)
+            ->assertStatus(204);
+
+        $this->assertDatabaseHas('posts', [
+            'id' => $post->getKey(),
+            'author_id' => $user->getKey(),
+        ]);
+    }
+}

@@ -185,25 +185,6 @@ class PostsTest extends TestCase
     }
 
     /**
-     * Test that we can read the related author.
-     */
-    public function testReadAuthor()
-    {
-        $model = $this->createPost();
-        $author = $model->author;
-
-        $data = [
-            'type' => 'users',
-            'id' => $author->getKey(),
-            'attributes' => [
-                'name' => $author->name,
-            ],
-        ];
-
-        $this->expectSuccess()->doReadRelated($model, 'author')->assertReadHasOne($data);
-    }
-
-    /**
      * Test that we can read the related comments.
      */
     public function testReadComments()
@@ -277,38 +258,6 @@ class PostsTest extends TestCase
         $this->expectSuccess()
             ->doReadRelated($post, 'tags')
             ->assertReadHasManyIdentifiers('tags', $tags);
-    }
-
-    /**
-     * Test that we can change the related author to a different resource.
-     */
-    public function testReplaceAuthorRelationship()
-    {
-        $post = $this->createPost();
-        /** @var User $author */
-        $author = factory(User::class)->create();
-
-        $data = ['type' => 'users', 'id' => (string) $author->getKey()];
-
-        $this->expectSuccess()
-            ->doReplaceRelationship($post, 'author', $data)
-            ->assertStatus(204);
-
-        $this->assertModelPatched($post, ['author_id' => $author->getKey()]);
-    }
-
-    /**
-     * Test that we can clear the related author relationship.
-     */
-    public function testReplaceAuthorRelationshipWithNull()
-    {
-        $post = $this->createPost();
-
-        $this->expectSuccess()
-            ->doReplaceRelationship($post, 'author', null)
-            ->assertStatus(204);
-
-        $this->assertModelPatched($post, ['author_id' => null]);
     }
 
     /**
