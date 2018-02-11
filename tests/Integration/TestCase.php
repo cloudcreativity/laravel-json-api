@@ -160,7 +160,7 @@ abstract class TestCase extends BaseTestCase
             $table->increments('id');
             $table->timestamps();
             $table->text('content');
-            $table->morphs('commentable');
+            $table->nullableMorphs('commentable');
             $table->unsignedInteger('user_id');
         });
     }

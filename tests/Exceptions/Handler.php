@@ -4,6 +4,7 @@ namespace CloudCreativity\LaravelJsonApi\Tests\Exceptions;
 
 use CloudCreativity\LaravelJsonApi\Exceptions\HandlesErrors;
 use Exception;
+use Neomerx\JsonApi\Exceptions\JsonApiException;
 use Orchestra\Testbench\Exceptions\Handler as BaseHandler;
 
 class Handler extends BaseHandler
@@ -32,7 +33,7 @@ class Handler extends BaseHandler
      */
     public function report(Exception $e)
     {
-        if (true === $this->report) {
+        if (true === $this->report && !$e instanceof JsonApiException) {
             throw $e;
         }
 

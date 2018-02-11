@@ -24,6 +24,7 @@ class Adapter extends AbstractAdapter
      * @var array
      */
     protected $relationships = [
+        'created-by',
         'commentable',
     ];
 
@@ -33,6 +34,14 @@ class Adapter extends AbstractAdapter
     public function __construct()
     {
         parent::__construct(new Comment());
+    }
+
+    /**
+     * @return BelongsTo
+     */
+    protected function createdBy()
+    {
+        return $this->belongsTo('user');
     }
 
     /**
