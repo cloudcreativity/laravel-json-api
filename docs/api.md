@@ -77,18 +77,18 @@ The `use-eloquent` option is effectively a default, and can be overridden when u
 
 ```bash
 # will generate Eloquent classes
-$ php artisan make:resource posts
+$ php artisan make:json-api:resource posts
 # will generate non-Eloquent classes
-$ php artisan make:resource posts -N
+$ php artisan make:json-api:resource posts -N
 ```
 
 If `use-eloquent` is `false`:
 
 ```bash
 # will generate non-Eloquent classes
-$ php artisan make:resource posts
+$ php artisan make:json-api:resource posts
 # will generate Eloquent classes
-$ php artisan make:resource posts -e
+$ php artisan make:json-api:resource posts -e
 ```
 
 ## Defining Resources
