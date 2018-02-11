@@ -270,8 +270,7 @@ class MorphToManyTest extends TestCase
         $tags = factory(Tag::class, 2)->create();
         $post->tags()->sync($tags);
 
-        $this->expectSuccess()
-            ->doReplaceRelationship($post, 'tags', [])
+        $this->doReplaceRelationship($post, 'tags', [])
             ->assertStatus(204);
 
         $this->assertFalse($post->tags()->exists());
@@ -288,8 +287,7 @@ class MorphToManyTest extends TestCase
             return ['type' => 'tags', 'id' => (string) $tag->getKey()];
         })->all();
 
-        $this->expectSuccess()
-            ->doReplaceRelationship($post, 'tags', $data)
+        $this->doReplaceRelationship($post, 'tags', $data)
             ->assertStatus(204);
 
         $this->assertTagsAre($post, $tags);
@@ -306,8 +304,7 @@ class MorphToManyTest extends TestCase
             return ['type' => 'tags', 'id' => (string) $tag->getKey()];
         })->all();
 
-        $this->expectSuccess()
-            ->doAddToRelationship($post, 'tags', $data)
+        $this->doAddToRelationship($post, 'tags', $data)
             ->assertStatus(204);
 
         $this->assertTagsAre($post, $existing->merge($add));
@@ -323,8 +320,7 @@ class MorphToManyTest extends TestCase
             return ['type' => 'tags', 'id' => (string) $tag->getKey()];
         })->all();
 
-        $this->expectSuccess()
-            ->doRemoveFromRelationship($post, 'tags', $data)
+        $this->doRemoveFromRelationship($post, 'tags', $data)
             ->assertStatus(204);
 
         $this->assertTagsAre($post, [$tags->get(2), $tags->get(3)]);

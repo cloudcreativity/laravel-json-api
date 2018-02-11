@@ -46,9 +46,7 @@ class PackageTest extends TestCase
             ],
         ];
 
-        $this->expectSuccess()
-            ->doRead($blog)
-            ->assertRead($expected);
+        $this->doRead($blog)->assertRead($expected);
     }
 
     /**
@@ -66,8 +64,6 @@ class PackageTest extends TestCase
             'id' => $post->getKey(),
         ];
 
-        $this->expectSuccess()
-            ->doRead($post)
-            ->assertRead($expected);
+        $this->doRead($post)->assertRead($expected);
     }
 }

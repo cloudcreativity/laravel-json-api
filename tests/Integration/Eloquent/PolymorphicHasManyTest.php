@@ -43,7 +43,7 @@ class PolymorphicHasManyTest extends TestCase
         $expected = $data;
         unset($expected['relationships']);
 
-        $id = $this->expectSuccess()->doCreate($data)->assertCreatedWithId($expected);
+        $id = $this->doCreate($data)->assertCreatedWithId($expected);
 
         $this->assertDatabaseMissing('taggables', [
             'tag_id' => $id,
@@ -84,7 +84,7 @@ class PolymorphicHasManyTest extends TestCase
         $expected = $data;
         unset($expected['relationships']);
 
-        $id = $this->expectSuccess()->doCreate($data)->assertCreatedWithId($expected);
+        $id = $this->doCreate($data)->assertCreatedWithId($expected);
         $tag = Tag::findOrFail($id);
 
         $this->assertTaggablesAre($tag, [$post], $videos);
@@ -185,12 +185,10 @@ class PolymorphicHasManyTest extends TestCase
         $tag->posts()->sync($post = factory(Post::class)->create());
         $tag->videos()->sync($videos = factory(Video::class, 2)->create());
 
-        $this->expectSuccess()
-            ->doReadRelated($tag, 'taggables')
-            ->assertReadPolymorphHasMany([
-                'posts' => $post,
-                'videos' => $videos,
-            ]);
+        $this->doReadRelated($tag, 'taggables')->assertReadPolymorphHasMany([
+            'posts' => $post,
+            'videos' => $videos,
+        ]);
     }
 
     public function testReadEmptyRelated()
@@ -208,12 +206,10 @@ class PolymorphicHasManyTest extends TestCase
         $tag->posts()->sync($post = factory(Post::class)->create());
         $tag->videos()->sync($videos = factory(Video::class, 2)->create());
 
-        $this->expectSuccess()
-            ->doReadRelated($tag, 'taggables')
-            ->assertReadPolymorphHasManyIdentifiers([
-                'posts' => $post,
-                'videos' => $videos,
-            ]);
+        $this->doReadRelated($tag, 'taggables')->assertReadPolymorphHasManyIdentifiers([
+            'posts' => $post,
+            'videos' => $videos,
+        ]);
     }
 
     public function testReadEmptyRelationship()

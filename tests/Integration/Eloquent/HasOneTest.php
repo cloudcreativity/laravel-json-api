@@ -210,7 +210,7 @@ class HasOneTest extends TestCase
             ],
         ];
 
-        $this->expectSuccess()->doReadRelated($user, 'phone')->assertReadHasOne($data);
+        $this->doReadRelated($user, 'phone')->assertReadHasOne($data);
     }
 
     /**
@@ -221,8 +221,7 @@ class HasOneTest extends TestCase
         /** @var Phone $phone */
         $phone = factory(Phone::class)->states('user')->create();
 
-        $this->expectSuccess()
-            ->doReadRelationship($phone->user, 'phone')
+        $this->doReadRelationship($phone->user, 'phone')
             ->assertReadHasOneIdentifier('phones', $phone->getKey());
     }
 
@@ -238,8 +237,7 @@ class HasOneTest extends TestCase
 
         $data = ['type' => 'phones', 'id' => (string) $phone->getKey()];
 
-        $this->expectSuccess()
-            ->doReplaceRelationship($user, 'phone', $data)
+        $this->doReplaceRelationship($user, 'phone', $data)
             ->assertStatus(204);
 
         $this->assertDatabaseHas('phones', [
@@ -259,8 +257,7 @@ class HasOneTest extends TestCase
         /** @var Phone $other */
         $other = factory(Phone::class)->states('user')->create();
 
-        $this->expectSuccess()
-            ->doReplaceRelationship($phone->user, 'phone', null)
+        $this->doReplaceRelationship($phone->user, 'phone', null)
             ->assertStatus(204);
 
         $this->assertDatabaseHas('phones', [
@@ -287,8 +284,7 @@ class HasOneTest extends TestCase
 
         $data = ['type' => 'phones', 'id' => (string) $other->getKey()];
 
-        $this->expectSuccess()
-            ->doReplaceRelationship($existing->user, 'phone', $data)
+        $this->doReplaceRelationship($existing->user, 'phone', $data)
             ->assertStatus(204);
 
         $this->assertDatabaseHas('phones', [

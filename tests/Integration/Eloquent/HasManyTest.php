@@ -272,8 +272,7 @@ class HasManyTest extends TestCase
         $users = factory(User::class, 2)->create();
         $country->users()->saveMany($users);
 
-        $this->expectSuccess()
-            ->doReplaceRelationship($country, 'users', [])
+        $this->doReplaceRelationship($country, 'users', [])
             ->assertStatus(204);
 
         $this->assertFalse($country->users()->exists());
@@ -290,8 +289,7 @@ class HasManyTest extends TestCase
             return ['type' => 'users', 'id' => (string) $user->getKey()];
         })->all();
 
-        $this->expectSuccess()
-            ->doReplaceRelationship($country, 'users', $data)
+        $this->doReplaceRelationship($country, 'users', $data)
             ->assertStatus(204);
 
         $this->assertUsersAre($country, $users);
@@ -308,8 +306,7 @@ class HasManyTest extends TestCase
             return ['type' => 'users', 'id' => (string) $user->getKey()];
         })->all();
 
-        $this->expectSuccess()
-            ->doAddToRelationship($country, 'users', $data)
+        $this->doAddToRelationship($country, 'users', $data)
             ->assertStatus(204);
 
         $this->assertUsersAre($country, $existing->merge($add));
@@ -326,8 +323,7 @@ class HasManyTest extends TestCase
             return ['type' => 'users', 'id' => (string) $user->getKey()];
         })->all();
 
-        $this->expectSuccess()
-            ->doRemoveFromRelationship($country, 'users', $data)
+        $this->doRemoveFromRelationship($country, 'users', $data)
             ->assertStatus(204);
 
         $this->assertUsersAre($country, [$users->get(2), $users->get(3)]);

@@ -49,7 +49,6 @@ class MorphToTest extends TestCase
         ];
 
         $id = $this
-            ->expectSuccess()
             ->doCreate($data)
             ->assertCreatedWithId($data);
 

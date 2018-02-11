@@ -6,7 +6,6 @@ use CloudCreativity\LaravelJsonApi\Tests\Http\Controllers\PostsController;
 use CloudCreativity\LaravelJsonApi\Tests\Models\Comment;
 use CloudCreativity\LaravelJsonApi\Tests\Models\Post;
 use CloudCreativity\LaravelJsonApi\Tests\Models\Tag;
-use CloudCreativity\LaravelJsonApi\Tests\Models\User;
 
 class PostsTest extends TestCase
 {
@@ -29,7 +28,7 @@ class PostsTest extends TestCase
             'title' => 'Title B',
         ]);
 
-        $response = $this->expectSuccess()->doSearch(['sort' => '-title']);
+        $response = $this->doSearch(['sort' => '-title']);
         $response->assertSearchResponse()->assertContainsOnly(['posts' => [$a->getKey(), $b->getKey()]]);
 
         $json = $response->decodeResponseJson();
@@ -46,7 +45,7 @@ class PostsTest extends TestCase
         // this model should not be in the search results
         $this->createPost();
 
-        $this->expectSuccess()
+        $this
             ->doSearchById($models)
             ->assertSearchByIdResponse($models);
     }
@@ -78,7 +77,6 @@ class PostsTest extends TestCase
         ];
 
         $id = $this
-            ->expectSuccess()
             ->doCreate($data)
             ->assertCreateResponse($data);
 
@@ -93,7 +91,7 @@ class PostsTest extends TestCase
         $model = $this->createPost();
         $model->tags()->create(['name' => 'Important']);
 
-        $this->expectSuccess()->doRead($model)->assertReadResponse($this->serialize($model));
+        $this->doRead($model)->assertReadResponse($this->serialize($model));
     }
 
     /**
@@ -112,7 +110,7 @@ class PostsTest extends TestCase
             ],
         ];
 
-        $this->expectSuccess()->doUpdate($data)->assertUpdateResponse($data);
+        $this->doUpdate($data)->assertUpdateResponse($data);
         $this->assertModelPatched($model, $data['attributes'], ['content']);
     }
 
@@ -151,7 +149,7 @@ class PostsTest extends TestCase
             ],
         ];
 
-        $this->expectSuccess()->doUpdate($data)->assertUpdateResponse($data);
+        $this->doUpdate($data)->assertUpdateResponse($data);
 
         $this->assertDatabaseHas('taggables', [
             'taggable_type' => Post::class,
@@ -167,7 +165,7 @@ class PostsTest extends TestCase
     {
         $model = $this->createPost();
 
-        $this->expectSuccess()->doDelete($model)->assertDeleteResponse();
+        $this->doDelete($model)->assertDeleteResponse();
         $this->assertModelDeleted($model);
     }
 
@@ -185,8 +183,7 @@ class PostsTest extends TestCase
         /** This comment should not appear in the results... */
         factory(Comment::class)->states('post')->create();
 
-        $this->expectSuccess()
-            ->doReadRelated($model, 'comments')
+        $this->doReadRelated($model, 'comments')
             ->assertReadHasMany('comments', $comments);
     }
 
@@ -197,8 +194,7 @@ class PostsTest extends TestCase
     {
         $model = $this->createPost();
 
-        $this->expectSuccess()
-            ->doReadRelationship($model, 'author')
+        $this->doReadRelationship($model, 'author')
             ->assertReadHasOneIdentifier('users', $model->author_id);
     }
 
@@ -216,8 +212,7 @@ class PostsTest extends TestCase
         /** This comment should not appear in the results... */
         factory(Comment::class)->states('post')->create();
 
-        $this->expectSuccess()
-            ->doReadRelated($model, 'comments')
+        $this->doReadRelated($model, 'comments')
             ->assertReadHasManyIdentifiers('comments', $comments);
     }
 

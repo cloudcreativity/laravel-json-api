@@ -37,8 +37,7 @@ class VideosTest extends TestCase
 
         $this->actingAs($video->user);
 
-        $this->expectSuccess()
-            ->doCreate($data)
+        $this->doCreate($data)
             ->assertCreated($expected);
 
         $this->assertModelCreated($video, $video->getKey());
@@ -70,8 +69,7 @@ class VideosTest extends TestCase
             ],
         ];
 
-        $this->expectSuccess()
-            ->doRead($video)
+        $this->doRead($video)
             ->assertRead($expected);
     }
 }

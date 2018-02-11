@@ -30,7 +30,7 @@ class SitesTest extends TestCase
     public function testSearchAll()
     {
         $this->createSite(); // ensure there is at least one site.
-        $this->expectSuccess()->doSearch()->assertSearchResponse();
+        $this->doSearch()->assertSearchResponse();
     }
 
     public function testCreate()
@@ -44,7 +44,7 @@ class SitesTest extends TestCase
             ],
         ];
 
-        $id = $this->expectSuccess()->doCreate($data)->assertCreateResponse($data);
+        $id = $this->doCreate($data)->assertCreateResponse($data);
         $this->assertEquals('my-site', $id);
 
         return $data;
@@ -63,7 +63,7 @@ class SitesTest extends TestCase
             ],
         ];
 
-        $this->expectSuccess()->doRead('my-site')->assertReadResponse($expected);
+        $this->doRead('my-site')->assertReadResponse($expected);
     }
 
     public function testUpdate()
@@ -81,13 +81,13 @@ class SitesTest extends TestCase
         $expected = $data;
         $expected['domain'] = $site->getDomain();
 
-        $this->expectSuccess()->doUpdate($data)->assertUpdateResponse($expected);
+        $this->doUpdate($data)->assertUpdateResponse($expected);
     }
 
     public function testDelete()
     {
         $this->createSite();
-        $this->expectSuccess()->doDelete('my-site')->assertDeleteResponse();
+        $this->doDelete('my-site')->assertDeleteResponse();
         $this->assertNull(app(SiteRepository::class)->find('my-site'));
     }
 

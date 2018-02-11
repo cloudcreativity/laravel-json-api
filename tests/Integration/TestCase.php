@@ -245,18 +245,6 @@ abstract class TestCase extends BaseTestCase
     }
 
     /**
-     * Expect the request to be a success.
-     *
-     * @return $this
-     */
-    protected function expectSuccess()
-    {
-        $this->app->make(ExceptionHandler::class)->throwExceptions();
-
-        return $this;
-    }
-
-    /**
      * Wrap route definitions in the correct namespace.
      *
      * @param Closure $closure
