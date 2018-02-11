@@ -15,7 +15,7 @@ class Adapter extends AbstractAdapter
      * @var array
      */
     protected $relationships = [
-        'taggables' => ['posts', 'videos'],
+        'taggables',
     ];
 
     /**
@@ -31,7 +31,10 @@ class Adapter extends AbstractAdapter
      */
     protected function taggables()
     {
-        return $this->morphMany('posts', 'videos');
+        return $this->morphMany(
+            $this->hasMany('posts'),
+            $this->hasMany('videos')
+        );
     }
 
     /**
@@ -41,6 +44,5 @@ class Adapter extends AbstractAdapter
     {
         // TODO: Implement filter() method.
     }
-
 
 }

@@ -156,7 +156,7 @@ class TestResponse extends BaseTestResponse
     }
 
     /**
-     * Assert the response is the result of searching for many resources of the specified type.
+     * Assert the response is the result of searching many resources of the specified type.
      *
      * @param string|string[]|null $resourceType
      *      the expected resource type(s), or null for the expected type set on this tester.
@@ -168,6 +168,22 @@ class TestResponse extends BaseTestResponse
             ->assertDocument()
             ->assertResourceCollection()
             ->assertTypes($resourceType ?: $this->expectedResourceType());
+
+        return $this;
+    }
+
+    /**
+     * Assert the response is the result of searching many resource and contains multiple types.
+     *
+     * @param array $expected
+     * @return $this
+     */
+    public function assertSearchedPolymorphMany(array $expected)
+    {
+        $this->assertStatus(Response::HTTP_OK)
+            ->assertDocument()
+            ->assertResourceCollection()
+            ->assertTypes($expected);
 
         return $this;
     }
@@ -222,6 +238,34 @@ class TestResponse extends BaseTestResponse
             ->assertDocument()
             ->assertResourceCollection()
             ->assertContainsOnly([$resourceType => $this->normalizeIds($expectedIds)]);
+
+        return $this;
+    }
+
+    /**
+     *
+     * The expected values must be keyed by resource type, and contain either a string id or an array
+     * of string ids per type. For example:
+     *
+     * `['posts' => ['1', '2'], 'comments' => '1']`
+     *
+     * You can pass URL routable objects e.g. models as the values, e.g.:
+     *
+     * `['posts' => [$post1, $post2], 'comments' => $comment]`
+     *
+     * @param array $expected
+     * @return $this
+     */
+    public function assertSearchedPolymorphIds(array $expected)
+    {
+        $expected = collect($expected)->map(function ($value) {
+            return $this->normalizeIds($value);
+        })->all();
+
+        $this->assertStatus(Response::HTTP_OK)
+            ->assertDocument()
+            ->assertResourceCollection()
+            ->assertContainsOnly($expected);
 
         return $this;
     }
@@ -444,6 +488,25 @@ class TestResponse extends BaseTestResponse
         } else {
             // @todo this checks for resources, not identifiers.
             $this->assertSearchedMany($resourceType);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Assert the response is a polymorphic has-many related resource identifiers response.
+     *
+     * @param array|null $expected
+     *      the list of resource types that are expected in the relationship, keyed by resource type.
+     * @return $this
+     */
+    public function assertReadPolymorphHasManyIdentifiers($expected)
+    {
+        if (empty($expected)) {
+            $this->assertSearchedNone();
+        } else {
+            // @todo this checks for resources, not identifiers.
+            $this->assertSearchedPolymorphIds($expected);
         }
 
         return $this;

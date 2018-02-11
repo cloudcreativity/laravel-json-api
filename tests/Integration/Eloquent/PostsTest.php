@@ -74,14 +74,6 @@ class PostsTest extends TestCase
                         'id' => (string) $model->author_id,
                     ],
                 ],
-                'tags' => [
-                    'data' => [
-                        [
-                            'type' => 'tags',
-                            'id' => (string) $tag->getKey(),
-                        ],
-                    ],
-                ],
             ],
         ];
 
@@ -91,11 +83,6 @@ class PostsTest extends TestCase
             ->assertCreateResponse($data);
 
         $this->assertModelCreated($model, $id, ['title', 'slug', 'content', 'author_id']);
-        $this->assertDatabaseHas('taggables', [
-            'taggable_type' => Post::class,
-            'taggable_id' => $id,
-            'tag_id' => $tag->getKey(),
-        ]);
     }
 
     /**
@@ -104,7 +91,7 @@ class PostsTest extends TestCase
     public function testRead()
     {
         $model = $this->createPost();
-        $model->tags()->create(['name' => 'Important']);;
+        $model->tags()->create(['name' => 'Important']);
 
         $this->expectSuccess()->doRead($model)->assertReadResponse($this->serialize($model));
     }
@@ -204,19 +191,6 @@ class PostsTest extends TestCase
     }
 
     /**
-     * Test that we can read the tags relationship.
-     */
-    public function testReadTags()
-    {
-        $post = $this->createPost();
-        $post->tags()->sync($tags = factory(Tag::class, 2)->create());
-
-        $this->expectSuccess()
-            ->doReadRelated($post, 'tags')
-            ->assertReadHasMany('tags', $tags);
-    }
-
-    /**
      * Test that we can read the resource identifier for the related author.
      */
     public function testReadAuthorRelationship()
@@ -245,95 +219,6 @@ class PostsTest extends TestCase
         $this->expectSuccess()
             ->doReadRelated($model, 'comments')
             ->assertReadHasManyIdentifiers('comments', $comments);
-    }
-
-    /**
-     * Test that we can read the tags relationship.
-     */
-    public function testReadTagsRelationship()
-    {
-        $post = $this->createPost();
-        $post->tags()->sync($tags = factory(Tag::class, 2)->create());
-
-        $this->expectSuccess()
-            ->doReadRelated($post, 'tags')
-            ->assertReadHasManyIdentifiers('tags', $tags);
-    }
-
-    /**
-     * Test that we can attach related resources to an empty has-many relationship.
-     */
-    public function testReplaceEmptyTagsRelationship()
-    {
-        $post = $this->createPost();
-        $tags = factory(Tag::class, 2)->create();
-
-        $data = $tags->map(function (Tag $tag) {
-            return ['type' => 'tags', 'id' => (string) $tag->getKey()];
-        })->all();
-
-        $this->expectSuccess()
-            ->doReplaceRelationship($post, 'tags', $data)
-            ->assertStatus(204);
-
-        $this->assertSame($post->tags()->count(), 2);
-    }
-
-    /**
-     * Test that we can clear related resources from a has-many relationship.
-     */
-    public function testReplaceTagsRelationshipWithNone()
-    {
-        $post = $this->createPost();
-        $tags = factory(Tag::class, 2)->create();
-        $post->tags()->sync($tags);
-
-        $this->expectSuccess()
-            ->doReplaceRelationship($post, 'tags', [])
-            ->assertStatus(204);
-
-        $this->assertSame($post->tags()->count(), 0);
-    }
-
-    /**
-     * Test that we can add resources to a has-many relationship.
-     */
-    public function testAddToTagsRelationship()
-    {
-        $post = $this->createPost();
-        $existing = factory(Tag::class, 2)->create();
-        $post->tags()->sync($existing);
-
-        $add = factory(Tag::class, 2)->create();
-        $data = $add->map(function (Tag $tag) {
-            return ['type' => 'tags', 'id' => (string) $tag->getKey()];
-        })->all();
-
-        $this->expectSuccess()
-            ->doAddToRelationship($post, 'tags', $data)
-            ->assertStatus(204);
-
-        $this->assertSame($post->tags()->count(), 4);
-    }
-
-    /**
-     * Test that we can remove resources from a has-many relationship.
-     */
-    public function testRemoveFromTagsRelationship()
-    {
-        $post = $this->createPost();
-        $tags = factory(Tag::class, 4)->create();
-        $post->tags()->sync($tags);
-
-        $data = $tags->take(2)->map(function (Tag $tag) {
-            return ['type' => 'tags', 'id' => (string) $tag->getKey()];
-        })->all();
-
-        $this->expectSuccess()
-            ->doRemoveFromRelationship($post, 'tags', $data)
-            ->assertStatus(204);
-
-        $this->assertSame($post->tags()->count(), 2);
     }
 
     /**

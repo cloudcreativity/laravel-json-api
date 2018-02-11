@@ -19,6 +19,8 @@ namespace CloudCreativity\LaravelJsonApi\Eloquent;
 
 use CloudCreativity\JsonApi\Contracts\Adapter\HasManyAdapterInterface;
 use CloudCreativity\JsonApi\Contracts\Object\RelationshipInterface;
+use CloudCreativity\JsonApi\Contracts\Store\StoreAwareInterface;
+use CloudCreativity\JsonApi\Contracts\Store\StoreInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 /**
@@ -26,7 +28,7 @@ use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
  *
  * @package CloudCreativity\LaravelJsonApi
  */
-class MorphHasMany implements HasManyAdapterInterface
+class MorphHasMany implements HasManyAdapterInterface, StoreAwareInterface
 {
 
     /**
@@ -45,10 +47,23 @@ class MorphHasMany implements HasManyAdapterInterface
     }
 
     /**
+     * @param StoreInterface $store
+     * @return void
+     */
+    public function withStore(StoreInterface $store)
+    {
+        foreach ($this->adapters as $adapter) {
+            if ($adapter instanceof StoreAwareInterface) {
+                $adapter->withStore($store);
+            }
+        }
+    }
+
+    /**
      * Set the relationship name.
      *
      * @param $name
-     * @return $this
+     * @return void
      */
     public function withRelationshipName($name)
     {
@@ -57,8 +72,6 @@ class MorphHasMany implements HasManyAdapterInterface
                 $adapter->withRelationshipName($name);
             }
         }
-
-        return $this;
     }
 
     /**

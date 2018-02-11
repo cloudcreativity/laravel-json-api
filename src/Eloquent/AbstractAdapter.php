@@ -774,14 +774,12 @@ abstract class AbstractAdapter extends AbstractResourceAdaptor
     }
 
     /**
-     * @param string[] ...$modelKeys
+     * @param HasManyAdapterInterface[] ...$adapters
      * @return MorphHasMany
      */
-    protected function morphMany(...$modelKeys)
+    protected function morphMany(HasManyAdapterInterface ...$adapters)
     {
-        return new MorphHasMany(...collect($modelKeys)->map(function ($key) {
-            return $this->hasMany($key);
-        }));
+        return new MorphHasMany(...$adapters);
     }
 
     /**
@@ -797,7 +795,7 @@ abstract class AbstractAdapter extends AbstractResourceAdaptor
     /**
      * Normalize parameters for pagination.
      *
-     * This is a temporary solution for Issue #131 in the v0.11.x series.
+     * This is a temporary solution for Issue #131 in the v0.11/v0.12 series.
      *
      * @param EncodingParametersInterface $parameters
      * @param Collection $extractedPagination

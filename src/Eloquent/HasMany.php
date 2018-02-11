@@ -61,7 +61,7 @@ class HasMany extends AbstractRelation implements HasManyAdapterInterface
      */
     public function update($record, RelationshipInterface $relationship, EncodingParametersInterface $parameters)
     {
-        $related = $this->store()->findMany($relationship->getIdentifiers());
+        $related = $this->findRelated($record, $relationship);
 
         $this->getRelation($record)->sync(new Collection($related));
         // do not refresh as we expect the resource adapter to refresh the record.
@@ -87,7 +87,7 @@ class HasMany extends AbstractRelation implements HasManyAdapterInterface
      */
     public function add($record, RelationshipInterface $relationship, EncodingParametersInterface $parameters)
     {
-        $related = $this->store()->findMany($relationship->getIdentifiers());
+        $related = $this->findRelated($record, $relationship);
 
         $this->getRelation($record)->saveMany($related);
     }
@@ -100,7 +100,7 @@ class HasMany extends AbstractRelation implements HasManyAdapterInterface
      */
     public function remove($record, RelationshipInterface $relationship, EncodingParametersInterface $parameters)
     {
-        $related = $this->store()->findMany($relationship->getIdentifiers());
+        $related = $this->findRelated($record, $relationship);
 
         $this->getRelation($record)->detach(new Collection($related));
     }
@@ -118,6 +118,31 @@ class HasMany extends AbstractRelation implements HasManyAdapterInterface
         }
 
         return $relation;
+    }
+
+    /**
+     * Find the related models for a JSON API relationship object.
+     *
+     * We look up the models via the store. These then have to be filtered to
+     * ensure they are of the correct model type, because this has-many relation
+     * might be used in a polymorphic has-many JSON API relation.
+     *
+     * @todo this is currently inefficient for polymorphic relationships. We
+     * need to be able to filter the resource identifiers by the expected resource
+     * type before looking them up via the store.
+     *
+     * @param $record
+     * @param RelationshipInterface $relationship
+     * @return iterable
+     */
+    private function findRelated($record, RelationshipInterface $relationship)
+    {
+        $inverse = $this->getRelation($record)->getRelated();
+        $related = $this->store()->findMany($relationship->getIdentifiers());
+
+        return collect($related)->filter(function ($model) use ($inverse) {
+            return $model instanceof $inverse;
+        });
     }
 
 }

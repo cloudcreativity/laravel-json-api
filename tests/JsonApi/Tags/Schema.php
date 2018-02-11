@@ -2,13 +2,29 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\JsonApi\Tags;
 
-use CloudCreativity\LaravelJsonApi\Schema\EloquentSchema;
+use CloudCreativity\LaravelJsonApi\Eloquent\AbstractSchema;
 
-class Schema extends EloquentSchema
+class Schema extends AbstractSchema
 {
 
     /**
      * @var string
      */
     protected $resourceType = 'tags';
+
+    /**
+     * @param object $resource
+     * @param bool $isPrimary
+     * @param array $includeRelationships
+     * @return array
+     */
+    public function getRelationships($resource, $isPrimary, array $includeRelationships)
+    {
+        return [
+            'taggables' => [
+                self::SHOW_SELF => true,
+                self::SHOW_RELATED => true,
+            ],
+        ];
+    }
 }
