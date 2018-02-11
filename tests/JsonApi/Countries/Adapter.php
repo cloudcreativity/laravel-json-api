@@ -40,4 +40,12 @@ class Adapter extends AbstractAdapter
         return $this->hasMany();
     }
 
+    /**
+     * @return HasMany
+     */
+    public function posts()
+    {
+        return $this->hasMany();
+    }
+
 }

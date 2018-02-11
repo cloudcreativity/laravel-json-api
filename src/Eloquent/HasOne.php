@@ -4,6 +4,7 @@ namespace CloudCreativity\LaravelJsonApi\Eloquent;
 
 use CloudCreativity\JsonApi\Contracts\Object\RelationshipInterface;
 use CloudCreativity\JsonApi\Exceptions\RuntimeException;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne as Relation;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
@@ -17,6 +18,7 @@ class HasOne extends BelongsTo
     {
         $relation = $this->relation($record);
         $related = $this->related($relationship);
+        /** @var Model|null $current */
         $current = $record->{$this->key};
 
         /** If the relationship is not changing, we do not need to do anything. */
@@ -26,8 +28,7 @@ class HasOne extends BelongsTo
 
         /** If there is a current related model, we need to clear it. */
         if ($current) {
-            $current->{$relation->getForeignKeyName()} = null;
-            $current->save();
+            $current->setAttribute($relation->getForeignKeyName(), null)->save();
         }
 
         /** If there is a related model, save it. */

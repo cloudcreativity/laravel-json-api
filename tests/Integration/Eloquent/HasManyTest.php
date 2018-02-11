@@ -3,7 +3,6 @@
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Eloquent;
 
 use CloudCreativity\LaravelJsonApi\Tests\Models\Country;
-use CloudCreativity\LaravelJsonApi\Tests\Models\Tag;
 use CloudCreativity\LaravelJsonApi\Tests\Models\User;
 
 /**
@@ -23,12 +22,6 @@ class HasManyTest extends TestCase
      * @var string
      */
     protected $resourceType = 'countries';
-
-    protected function setUp()
-    {
-        parent::setUp();
-        $this->expectSuccess();
-    }
 
     public function testCreateWithEmpty()
     {

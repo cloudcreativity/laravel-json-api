@@ -121,12 +121,18 @@ class HasMany extends AbstractRelation implements HasManyAdapterInterface
     }
 
     /**
+     * Get the relation for a modification request.
+     *
      * @param Model $record
      * @return Relations\BelongsToMany|Relations\HasMany
      */
-    protected function getRelation($record)
+    private function getRelation($record)
     {
         $relation = $record->{$this->key}();
+
+        if ($relation instanceof Relations\HasManyThrough) {
+            throw new RuntimeException('Eloquent has-many-through relations cannot be updated.');
+        }
 
         if (!$relation instanceof Relations\BelongsToMany && !$relation instanceof Relations\HasMany) {
             throw new RuntimeException("Expecting a Eloquent has-many or belongs-to-many relationship.");
