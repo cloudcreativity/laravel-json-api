@@ -22,6 +22,9 @@ abstract class TestCase extends BaseTestCase
             $api->resource('comments', [
                 'has-one' => 'commentable',
             ]);
+            $api->resource('countries', [
+                'has-many' => 'users',
+            ]);
             $api->resource('posts', [
                 'has-one' => 'author',
                 'has-many' => ['comments', 'tags'],

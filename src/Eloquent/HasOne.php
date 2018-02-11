@@ -4,8 +4,8 @@ namespace CloudCreativity\LaravelJsonApi\Eloquent;
 
 use CloudCreativity\JsonApi\Contracts\Object\RelationshipInterface;
 use CloudCreativity\JsonApi\Exceptions\RuntimeException;
-use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use Illuminate\Database\Eloquent\Relations\HasOne as Relation;
+use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 class HasOne extends BelongsTo
 {

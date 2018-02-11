@@ -35,6 +35,14 @@ $factory->state(Models\Comment::class, 'video', function () {
     ];
 });
 
+/** Country */
+$factory->define(Models\Country::class, function (Faker $faker) {
+    return [
+        'name' => $faker->country,
+        'code' => $faker->countryCode,
+    ];
+});
+
 /** Phone */
 $factory->define(Models\Phone::class, function (Faker $faker) {
     return [

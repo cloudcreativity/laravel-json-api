@@ -2,6 +2,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Models;
 
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -37,5 +38,13 @@ class User extends Authenticatable
     public function phone()
     {
         return $this->hasOne(Phone::class);
+    }
+
+    /**
+     * @return BelongsTo
+     */
+    public function country()
+    {
+        return $this->belongsTo(Country::class);
     }
 }

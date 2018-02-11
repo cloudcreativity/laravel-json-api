@@ -22,7 +22,7 @@ use CloudCreativity\JsonApi\Contracts\Object\RelationshipInterface;
 use CloudCreativity\JsonApi\Exceptions\RuntimeException;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 /**
@@ -62,8 +62,15 @@ class HasMany extends AbstractRelation implements HasManyAdapterInterface
     public function update($record, RelationshipInterface $relationship, EncodingParametersInterface $parameters)
     {
         $related = $this->findRelated($record, $relationship);
+        $relation = $this->getRelation($record);
 
-        $this->getRelation($record)->sync(new Collection($related));
+        if ($relation instanceof Relations\BelongsToMany) {
+            $relation->sync($related);
+            return;
+        } else {
+            $this->sync($relation, $record->{$this->key}, $related);
+        }
+
         // do not refresh as we expect the resource adapter to refresh the record.
     }
 
@@ -90,6 +97,7 @@ class HasMany extends AbstractRelation implements HasManyAdapterInterface
         $related = $this->findRelated($record, $relationship);
 
         $this->getRelation($record)->saveMany($related);
+        $record->refresh(); // in case the relationship has been cached.
     }
 
     /**
@@ -101,23 +109,64 @@ class HasMany extends AbstractRelation implements HasManyAdapterInterface
     public function remove($record, RelationshipInterface $relationship, EncodingParametersInterface $parameters)
     {
         $related = $this->findRelated($record, $relationship);
+        $relation = $this->getRelation($record);
 
-        $this->getRelation($record)->detach(new Collection($related));
+        if ($relation instanceof Relations\BelongsToMany) {
+            $relation->detach($related);
+        } else {
+            $this->detach($relation, $related);
+        }
+
+        $record->refresh(); // in case the relationship has been cached
     }
 
     /**
      * @param Model $record
-     * @return BelongsToMany
+     * @return Relations\BelongsToMany|Relations\HasMany
      */
     protected function getRelation($record)
     {
         $relation = $record->{$this->key}();
 
-        if (!$relation instanceof BelongsToMany) {
-            throw new RuntimeException("Expecting a belongs-to-many relationship.");
+        if (!$relation instanceof Relations\BelongsToMany && !$relation instanceof Relations\HasMany) {
+            throw new RuntimeException("Expecting a Eloquent has-many or belongs-to-many relationship.");
         }
 
         return $relation;
+    }
+
+    /**
+     * @param Relations\HasMany $relation
+     * @param Collection $existing
+     * @param $updated
+     */
+    private function sync(Relations\HasMany $relation, Collection $existing, Collection $updated)
+    {
+        $add = collect($updated)->reject(function ($model) use ($existing) {
+            return $existing->contains($model);
+        });
+
+        $remove = $existing->reject(function ($model) use ($updated) {
+            return $updated->contains($model);
+        });
+
+        if ($remove->isNotEmpty()) {
+            $this->detach($relation, $remove);
+        }
+
+        $relation->saveMany($add);
+    }
+
+    /**
+     * @param Relations\HasMany $relation
+     * @param Collection $remove
+     */
+    private function detach(Relations\HasMany $relation, Collection $remove)
+    {
+        /** @var Model $model */
+        foreach ($remove as $model) {
+            $model->setAttribute($relation->getForeignKeyName(), null)->save();
+        }
     }
 
     /**
@@ -133,16 +182,18 @@ class HasMany extends AbstractRelation implements HasManyAdapterInterface
      *
      * @param $record
      * @param RelationshipInterface $relationship
-     * @return iterable
+     * @return Collection
      */
     private function findRelated($record, RelationshipInterface $relationship)
     {
         $inverse = $this->getRelation($record)->getRelated();
         $related = $this->store()->findMany($relationship->getIdentifiers());
 
-        return collect($related)->filter(function ($model) use ($inverse) {
+        $related = collect($related)->filter(function ($model) use ($inverse) {
             return $model instanceof $inverse;
         });
+
+        return new Collection($related);
     }
 
 }

@@ -94,6 +94,7 @@ abstract class TestCase extends BaseTestCase
         $config->set('json-api-default.namespace', '\\CloudCreativity\\LaravelJsonApi\\Tests\\JsonApi');
         $config->set('json-api-default.resources', [
             'comments' => Models\Comment::class,
+            'countries' => Models\Country::class,
             'phones' => Models\Phone::class,
             'posts' => Models\Post::class,
             'sites' => Entities\Site::class,
@@ -111,11 +112,13 @@ abstract class TestCase extends BaseTestCase
     {
         $this->loadLaravelMigrations('testbench');
         $schema = $app->make('db')->connection()->getSchemaBuilder();
+        $this->modifyUsersTable($schema);
         $this->createPostsTable($schema);
         $this->createVideosTable($schema);
         $this->createCommentsTable($schema);
         $this->createTagsTables($schema);
         $this->createPhonesTable($schema);
+        $this->createCountriesTable($schema);
         $this->createBlogsTable($schema);
         $this->withFactories(__DIR__ . '/../factories');
 
@@ -193,6 +196,29 @@ abstract class TestCase extends BaseTestCase
             $table->timestamps();
             $table->unsignedInteger('user_id')->nullable();
             $table->string('number');
+        });
+    }
+
+    /**
+     * @param Schema $schema
+     */
+    protected function modifyUsersTable(Schema $schema)
+    {
+        $schema->table('users', function (Blueprint $table) {
+            $table->unsignedInteger('country_id')->nullable();
+        });
+    }
+
+    /**
+     * @param Schema $schema
+     */
+    protected function createCountriesTable(Schema $schema)
+    {
+        $schema->create('countries', function (Blueprint $table) {
+            $table->increments('id');
+            $table->timestamps();
+            $table->string('name');
+            $table->string('code');
         });
     }
 

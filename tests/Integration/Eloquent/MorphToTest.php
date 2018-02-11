@@ -1,6 +1,7 @@
 <?php
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Eloquent;
+
 use CloudCreativity\LaravelJsonApi\Tests\Models\Comment;
 use CloudCreativity\LaravelJsonApi\Tests\Models\Post;
 use CloudCreativity\LaravelJsonApi\Tests\Models\User;
