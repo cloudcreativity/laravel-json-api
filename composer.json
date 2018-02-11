@@ -53,7 +53,9 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "CloudCreativity\\LaravelJsonApi\\Tests\\": "tests/"
+            "App\\": "tests/dummy/app",
+            "CloudCreativity\\LaravelJsonApi\\Tests\\": "tests/lib",
+            "Package\\": "tests/package/src"
         }
     },
     "extra": {
