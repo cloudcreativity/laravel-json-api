@@ -12,6 +12,7 @@ relationships.
 
 ### Removed
 - Delete Eloquent hydrator class as all hydration is now handled by adapters instead.
+- The utility `Fqn` class has been removed as namespace resolution is now done by resolvers.
 
 ## [0.12.0] - 2018-02-08
 
