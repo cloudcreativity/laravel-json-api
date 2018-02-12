@@ -2,8 +2,8 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Eloquent;
 
-use App\Post;
-use App\User;
+use DummyApp\Post;
+use DummyApp\User;
 
 /**
  * Class BelongsToTest

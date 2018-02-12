@@ -1,6 +1,6 @@
 <?php
 
-namespace App\JsonApi\Sites;
+namespace DummyApp\JsonApi\Sites;
 
 use CloudCreativity\JsonApi\Adapter\AbstractResourceAdaptor;
 use CloudCreativity\JsonApi\Adapter\HydratesAttributesTrait;
@@ -8,8 +8,8 @@ use CloudCreativity\JsonApi\Contracts\Object\RelationshipsInterface;
 use CloudCreativity\JsonApi\Contracts\Object\ResourceObjectInterface;
 use CloudCreativity\JsonApi\Exceptions\RuntimeException;
 use CloudCreativity\JsonApi\Utils\Str;
-use App\Entities\Site;
-use App\Entities\SiteRepository;
+use DummyApp\Entities\Site;
+use DummyApp\Entities\SiteRepository;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 class Adapter extends AbstractResourceAdaptor

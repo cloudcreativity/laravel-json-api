@@ -3,7 +3,7 @@
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration;
 
 use CloudCreativity\LaravelJsonApi\Routing\ApiGroup;
-use App\Post;
+use DummyApp\Post;
 
 class EncodingTest extends TestCase
 {

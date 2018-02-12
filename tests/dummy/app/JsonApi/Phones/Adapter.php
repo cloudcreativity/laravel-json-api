@@ -1,9 +1,9 @@
 <?php
 
-namespace App\JsonApi\Phones;
+namespace DummyApp\JsonApi\Phones;
 
 use CloudCreativity\LaravelJsonApi\Eloquent\AbstractAdapter;
-use App\Phone;
+use DummyApp\Phone;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 

@@ -1,9 +1,9 @@
 <?php
 
-namespace App\JsonApi\Posts;
+namespace DummyApp\JsonApi\Posts;
 
 use CloudCreativity\LaravelJsonApi\Schema\EloquentSchema;
-use App\Post;
+use DummyApp\Post;
 
 class Schema extends EloquentSchema
 {

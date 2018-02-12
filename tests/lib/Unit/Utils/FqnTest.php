@@ -36,27 +36,27 @@ class FqnTest extends TestCase
     {
         return [
             [
-                'App\JsonApi\Posts\Schema',
+                'DummyApp\JsonApi\Posts\Schema',
                 'posts',
-                'App\JsonApi',
+                'DummyApp\JsonApi',
                 true,
             ],
             [
-                'App\JsonApi\Schemas\Post',
+                'DummyApp\JsonApi\Schemas\Post',
                 'posts',
-                'App\JsonApi',
+                'DummyApp\JsonApi',
                 false,
             ],
             [
-                'App\JsonApi\DanceEvents\Schema',
+                'DummyApp\JsonApi\DanceEvents\Schema',
                 'dance-events',
-                'App\JsonApi',
+                'DummyApp\JsonApi',
                 true,
             ],
             [
-                'App\JsonApi\Schemas\DanceEvent',
+                'DummyApp\JsonApi\Schemas\DanceEvent',
                 'dance-events',
-                'App\JsonApi',
+                'DummyApp\JsonApi',
                 false,
             ],
         ];
@@ -81,27 +81,27 @@ class FqnTest extends TestCase
     {
         return [
             [
-                'App\JsonApi\Posts\Adapter',
+                'DummyApp\JsonApi\Posts\Adapter',
                 'posts',
-                'App\JsonApi',
+                'DummyApp\JsonApi',
                 true,
             ],
             [
-                'App\JsonApi\Adapters\Post',
+                'DummyApp\JsonApi\Adapters\Post',
                 'posts',
-                'App\JsonApi',
+                'DummyApp\JsonApi',
                 false,
             ],
             [
-                'App\JsonApi\DanceEvents\Adapter',
+                'DummyApp\JsonApi\DanceEvents\Adapter',
                 'dance-events',
-                'App\JsonApi',
+                'DummyApp\JsonApi',
                 true,
             ],
             [
-                'App\JsonApi\Adapters\DanceEvent',
+                'DummyApp\JsonApi\Adapters\DanceEvent',
                 'dance-events',
-                'App\JsonApi',
+                'DummyApp\JsonApi',
                 false,
             ],
         ];
@@ -126,27 +126,27 @@ class FqnTest extends TestCase
     {
         return [
             [
-                'App\JsonApi\Posts\Authorizer',
+                'DummyApp\JsonApi\Posts\Authorizer',
                 'posts',
-                'App\JsonApi',
+                'DummyApp\JsonApi',
                 true,
             ],
             [
-                'App\JsonApi\Authorizers\Post',
+                'DummyApp\JsonApi\Authorizers\Post',
                 'posts',
-                'App\JsonApi',
+                'DummyApp\JsonApi',
                 false,
             ],
             [
-                'App\JsonApi\DanceEvents\Authorizer',
+                'DummyApp\JsonApi\DanceEvents\Authorizer',
                 'dance-events',
-                'App\JsonApi',
+                'DummyApp\JsonApi',
                 true,
             ],
             [
-                'App\JsonApi\Authorizers\DanceEvent',
+                'DummyApp\JsonApi\Authorizers\DanceEvent',
                 'dance-events',
-                'App\JsonApi',
+                'DummyApp\JsonApi',
                 false,
             ],
         ];
@@ -171,27 +171,27 @@ class FqnTest extends TestCase
     {
         return [
             [
-                'App\JsonApi\Posts\Validators',
+                'DummyApp\JsonApi\Posts\Validators',
                 'posts',
-                'App\JsonApi',
+                'DummyApp\JsonApi',
                 true,
             ],
             [
-                'App\JsonApi\Validators\Post',
+                'DummyApp\JsonApi\Validators\Post',
                 'posts',
-                'App\JsonApi',
+                'DummyApp\JsonApi',
                 false,
             ],
             [
-                'App\JsonApi\DanceEvents\Validators',
+                'DummyApp\JsonApi\DanceEvents\Validators',
                 'dance-events',
-                'App\JsonApi',
+                'DummyApp\JsonApi',
                 true,
             ],
             [
-                'App\JsonApi\Validators\DanceEvent',
+                'DummyApp\JsonApi\Validators\DanceEvent',
                 'dance-events',
-                'App\JsonApi',
+                'DummyApp\JsonApi',
                 false,
             ],
         ];
@@ -216,27 +216,27 @@ class FqnTest extends TestCase
     {
         return [
             [
-                'App\JsonApi\Posts\Hydrator',
+                'DummyApp\JsonApi\Posts\Hydrator',
                 'posts',
-                'App\JsonApi',
+                'DummyApp\JsonApi',
                 true,
             ],
             [
-                'App\JsonApi\Hydrators\Post',
+                'DummyApp\JsonApi\Hydrators\Post',
                 'posts',
-                'App\JsonApi',
+                'DummyApp\JsonApi',
                 false,
             ],
             [
-                'App\JsonApi\DanceEvents\Hydrator',
+                'DummyApp\JsonApi\DanceEvents\Hydrator',
                 'dance-events',
-                'App\JsonApi',
+                'DummyApp\JsonApi',
                 true,
             ],
             [
-                'App\JsonApi\Hydrators\DanceEvent',
+                'DummyApp\JsonApi\Hydrators\DanceEvent',
                 'dance-events',
-                'App\JsonApi',
+                'DummyApp\JsonApi',
                 false,
             ],
         ];

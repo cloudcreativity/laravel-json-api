@@ -15,13 +15,13 @@ return [
     | The `by-resource` setting determines how your units are organised within
     | your root namespace.
     |
-    | - true: e.g. \App\JsonApi\Posts\{Schema, Hydrator}
+    | - true: e.g. \DummyApp\JsonApi\Posts\{Adapter, Schema}
     | - false:
-    |   - e.g. \App\JsonApi\Schemas\{User, Post, Comment}
-    |   - e.g. \App\JsonApi\Hydrators\{User, Post, Comment}
+    |   - e.g. \DummyApp\JsonApi\Adapters\{User, Post, Comment}
+    |   - e.g. \DummyApp\JsonApi\Schemas\{User, Post, Comment}
     |
     */
-    'namespace' => null,
+    'namespace' => '\DummyApp\JsonApi',
     'by-resource' => true,
 
     /*
@@ -33,19 +33,19 @@ return [
     | record (model/entity) classes they relate to.
     |
     | For example, if you had a `posts` JSON API resource, that related to
-    | an Eloquent model `App\Post`, your mapping would be:
+    | an Eloquent model `DummyApp\Post`, your mapping would be:
     |
-    | `'posts' => App\Post::class`
+    | `'posts' => DummyApp\Post::class`
     */
     'resources' => [
-        'comments' => \App\Comment::class,
-        'countries' => \App\Country::class,
-        'phones' => \App\Phone::class,
-        'posts' => \App\Post::class,
-        'sites' => \App\Entities\Site::class,
-        'tags' => \App\Tag::class,
-        'users' => \App\User::class,
-        'videos' => \App\Video::class,
+        'comments' => \DummyApp\Comment::class,
+        'countries' => \DummyApp\Country::class,
+        'phones' => \DummyApp\Phone::class,
+        'posts' => \DummyApp\Post::class,
+        'sites' => \DummyApp\Entities\Site::class,
+        'tags' => \DummyApp\Tag::class,
+        'users' => \DummyApp\User::class,
+        'videos' => \DummyApp\Video::class,
     ],
 
     /*
@@ -135,7 +135,7 @@ return [
     |
     */
     'providers' => [
-        \Package\ResourceProvider::class,
+        \DummyPackage\ResourceProvider::class,
     ],
 
     /*

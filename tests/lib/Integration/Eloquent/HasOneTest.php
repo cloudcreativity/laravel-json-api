@@ -2,8 +2,8 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Eloquent;
 
-use App\Phone;
-use App\User;
+use DummyApp\Phone;
+use DummyApp\User;
 
 /**
  * Class HasOneTest

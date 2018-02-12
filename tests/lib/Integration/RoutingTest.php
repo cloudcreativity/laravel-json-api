@@ -4,7 +4,7 @@ namespace CloudCreativity\LaravelJsonApi\Tests\Integration;
 
 use CloudCreativity\LaravelJsonApi\Facades\JsonApi;
 use CloudCreativity\LaravelJsonApi\Routing\ApiGroup;
-use App\Http\Controllers\PostsController;
+use DummyApp\Http\Controllers\PostsController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
@@ -496,7 +496,7 @@ class RoutingTest extends TestCase
     private function withRoutes(\Closure $closure)
     {
         Route::group([
-            'namespace' => '\\App\\Http\\Controllers',
+            'namespace' => '\\DummyApp\\Http\\Controllers',
         ], $closure);
     }
 

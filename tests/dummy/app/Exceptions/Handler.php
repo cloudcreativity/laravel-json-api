@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Exceptions;
+namespace DummyApp\Exceptions;
 
 use CloudCreativity\LaravelJsonApi\Exceptions\HandlesErrors;
 use Exception;

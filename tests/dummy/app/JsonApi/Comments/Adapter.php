@@ -1,11 +1,11 @@
 <?php
 
-namespace App\JsonApi\Comments;
+namespace DummyApp\JsonApi\Comments;
 
 use CloudCreativity\JsonApi\Contracts\Object\ResourceObjectInterface;
 use CloudCreativity\LaravelJsonApi\Eloquent\AbstractAdapter;
 use CloudCreativity\LaravelJsonApi\Eloquent\BelongsTo;
-use App\Comment;
+use DummyApp\Comment;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;

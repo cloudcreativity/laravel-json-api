@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Providers;
+namespace DummyApp\Providers;
 
-use App\Entities\SiteRepository;
+use DummyApp\Entities\SiteRepository;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Database\Eloquent\Factory as ModelFactory;
 
-class AppServiceProvider extends ServiceProvider
+class DummyServiceProvider extends ServiceProvider
 {
 
     /**

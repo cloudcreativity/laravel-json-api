@@ -18,15 +18,15 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration;
 
-use App;
 use CloudCreativity\LaravelJsonApi\Facades\JsonApi;
 use CloudCreativity\LaravelJsonApi\ServiceProvider;
 use CloudCreativity\LaravelJsonApi\Testing\MakesJsonApiRequests;
+use DummyApp;
+use DummyPackage;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Orchestra\Testbench\TestCase as BaseTestCase;
-use Package;
 
 /**
  * Class TestCase
@@ -66,8 +66,8 @@ abstract class TestCase extends BaseTestCase
     {
         return [
             ServiceProvider::class,
-            Package\ServiceProvider::class,
-            App\Providers\AppServiceProvider::class,
+            DummyPackage\ServiceProvider::class,
+            DummyApp\Providers\DummyServiceProvider::class,
         ];
     }
 
@@ -87,7 +87,7 @@ abstract class TestCase extends BaseTestCase
      */
     protected function resolveApplicationExceptionHandler($app)
     {
-        $app->singleton(ExceptionHandler::class, App\Exceptions\Handler::class);
+        $app->singleton(ExceptionHandler::class, DummyApp\Exceptions\Handler::class);
     }
 
     /**
@@ -98,7 +98,7 @@ abstract class TestCase extends BaseTestCase
     protected function withAppRoutes()
     {
         Route::group([
-            'namespace' => 'App\\Http\\Controllers',
+            'namespace' => 'DummyApp\\Http\\Controllers',
         ], function () {
             require __DIR__ . '/../../dummy/routes/json-api.php';
         });

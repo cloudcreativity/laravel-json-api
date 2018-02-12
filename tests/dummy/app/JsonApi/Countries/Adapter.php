@@ -1,10 +1,10 @@
 <?php
 
-namespace App\JsonApi\Countries;
+namespace DummyApp\JsonApi\Countries;
 
 use CloudCreativity\LaravelJsonApi\Eloquent\AbstractAdapter;
 use CloudCreativity\LaravelJsonApi\Eloquent\HasMany;
-use App\Country;
+use DummyApp\Country;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 

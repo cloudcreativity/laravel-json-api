@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace DummyApp;
 
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;

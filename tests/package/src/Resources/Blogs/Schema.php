@@ -1,6 +1,6 @@
 <?php
 
-namespace Package\Resources\Blogs;
+namespace DummyPackage\Resources\Blogs;
 
 use CloudCreativity\LaravelJsonApi\Eloquent\AbstractSchema;
 

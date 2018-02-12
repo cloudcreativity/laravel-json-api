@@ -2,8 +2,8 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Eloquent;
 
-use App\Post;
-use App\Tag;
+use DummyApp\Post;
+use DummyApp\Tag;
 
 /**
  * Class HasManyTest

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace DummyApp\Http\Controllers;
 
 use CloudCreativity\LaravelJsonApi\Http\Controllers\JsonApiController;
 

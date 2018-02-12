@@ -1,9 +1,9 @@
 <?php
 
-namespace Package\Resources\Blogs;
+namespace DummyPackage\Resources\Blogs;
 
 use CloudCreativity\LaravelJsonApi\Eloquent\AbstractAdapter;
-use Package\Blog;
+use DummyPackage\Blog;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 

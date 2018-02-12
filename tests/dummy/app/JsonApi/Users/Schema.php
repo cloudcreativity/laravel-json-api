@@ -1,9 +1,9 @@
 <?php
 
-namespace App\JsonApi\Users;
+namespace DummyApp\JsonApi\Users;
 
 use CloudCreativity\LaravelJsonApi\Eloquent\AbstractSchema;
-use App\User;
+use DummyApp\User;
 
 class Schema extends AbstractSchema
 {

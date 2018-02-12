@@ -2,7 +2,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration;
 
-use App\Post;
+use DummyApp\Post;
 use CloudCreativity\LaravelJsonApi\Pagination\StandardStrategy;
 use Illuminate\Database\Eloquent\Collection;
 

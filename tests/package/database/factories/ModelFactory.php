@@ -2,7 +2,7 @@
 
 use Faker\Generator as Faker;
 use Illuminate\Database\Eloquent\Factory as EloquentFactory;
-use Package\Blog;
+use DummyPackage\Blog;
 
 /** @var EloquentFactory $factory */
 

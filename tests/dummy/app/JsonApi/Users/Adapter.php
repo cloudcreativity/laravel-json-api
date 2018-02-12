@@ -1,10 +1,10 @@
 <?php
 
-namespace App\JsonApi\Users;
+namespace DummyApp\JsonApi\Users;
 
 use CloudCreativity\LaravelJsonApi\Eloquent\AbstractAdapter;
 use CloudCreativity\LaravelJsonApi\Eloquent\HasOne;
-use App\User;
+use DummyApp\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 

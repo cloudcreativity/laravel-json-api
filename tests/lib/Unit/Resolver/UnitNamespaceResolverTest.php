@@ -21,7 +21,7 @@ class UnitNamespaceResolverTest extends TestCase
     protected function setUp()
     {
         parent::setUp();
-        $this->resolver = new UnitNamespaceResolver('App\JsonApi', [
+        $this->resolver = new UnitNamespaceResolver('DummyApp\JsonApi', [
             'posts' => Post::class,
             'comments' => Comment::class,
         ]);
@@ -37,10 +37,10 @@ class UnitNamespaceResolverTest extends TestCase
                 Post::class,
                 'posts',
                 true,
-                'App\JsonApi\Schemas\Post',
-                'App\JsonApi\Adapters\Post',
-                'App\JsonApi\Validators\Post',
-                'App\JsonApi\Authorizers\Post',
+                'DummyApp\JsonApi\Schemas\Post',
+                'DummyApp\JsonApi\Adapters\Post',
+                'DummyApp\JsonApi\Validators\Post',
+                'DummyApp\JsonApi\Authorizers\Post',
             ]
         ];
     }

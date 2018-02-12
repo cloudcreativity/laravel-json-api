@@ -2,9 +2,9 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Eloquent;
 
-use App\Post;
-use App\Tag;
-use App\Video;
+use DummyApp\Post;
+use DummyApp\Tag;
+use DummyApp\Video;
 
 /**
  * Class PolymorphicHasManyTest

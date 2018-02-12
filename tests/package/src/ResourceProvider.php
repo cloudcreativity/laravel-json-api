@@ -1,6 +1,6 @@
 <?php
 
-namespace Package;
+namespace DummyPackage;
 
 use CloudCreativity\LaravelJsonApi\Api\ResourceProvider as BaseResourceProvider;
 use CloudCreativity\LaravelJsonApi\Routing\ApiGroup;

@@ -1,9 +1,9 @@
 <?php
 
-namespace App\JsonApi\Comments;
+namespace DummyApp\JsonApi\Comments;
 
 use CloudCreativity\LaravelJsonApi\Schema\EloquentSchema;
-use App\Comment;
+use DummyApp\Comment;
 
 class Schema extends EloquentSchema
 {

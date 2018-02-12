@@ -2,10 +2,10 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Eloquent;
 
-use App\Comment;
-use App\Post;
-use App\User;
-use App\Video;
+use DummyApp\Comment;
+use DummyApp\Post;
+use DummyApp\User;
+use DummyApp\Video;
 
 /**
  * Class MorphToTest

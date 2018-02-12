@@ -1,9 +1,9 @@
 <?php
 
-namespace App\JsonApi\Videos;
+namespace DummyApp\JsonApi\Videos;
 
 use CloudCreativity\LaravelJsonApi\Schema\EloquentSchema;
-use App\Video;
+use DummyApp\Video;
 
 class Schema extends EloquentSchema
 {

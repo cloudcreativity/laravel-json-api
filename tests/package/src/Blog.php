@@ -1,6 +1,6 @@
 <?php
 
-namespace Package;
+namespace DummyPackage;
 
 use Illuminate\Database\Eloquent\Model;
 

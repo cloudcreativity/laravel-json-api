@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Events;
+namespace DummyApp\Events;
 
 use CloudCreativity\LaravelJsonApi\Broadcasting\BroadcastsData;
-use App\Post;
+use DummyApp\Post;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Queue\SerializesModels;

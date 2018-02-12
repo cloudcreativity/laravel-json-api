@@ -2,7 +2,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Eloquent;
 
-use App\Video;
+use DummyApp\Video;
 
 class ClientGeneratedIdTest extends TestCase
 {

@@ -2,8 +2,8 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\NonEloquent;
 
-use App\Entities\Site;
-use App\Entities\SiteRepository;
+use DummyApp\Entities\Site;
+use DummyApp\Entities\SiteRepository;
 use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
 
 class SitesTest extends TestCase

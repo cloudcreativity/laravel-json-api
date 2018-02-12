@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Entities;
+namespace DummyApp\Entities;
 
 use Generator;
 use IteratorAggregate;

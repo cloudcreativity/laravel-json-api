@@ -18,7 +18,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration;
 
-use App\Comment;
+use DummyApp\Comment;
 
 class ValidationTest extends TestCase
 {

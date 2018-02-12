@@ -1,10 +1,10 @@
 <?php
 
-namespace App\JsonApi\Sites;
+namespace DummyApp\JsonApi\Sites;
 
 use CloudCreativity\JsonApi\Schema\ExtractsAttributesTrait;
 use CloudCreativity\JsonApi\Utils\Str;
-use App\Entities\Site;
+use DummyApp\Entities\Site;
 use InvalidArgumentException;
 use Neomerx\JsonApi\Schema\SchemaProvider;
 

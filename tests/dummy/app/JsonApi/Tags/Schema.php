@@ -1,6 +1,6 @@
 <?php
 
-namespace App\JsonApi\Tags;
+namespace DummyApp\JsonApi\Tags;
 
 use CloudCreativity\LaravelJsonApi\Eloquent\AbstractSchema;
 

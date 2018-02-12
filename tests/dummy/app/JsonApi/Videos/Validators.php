@@ -1,6 +1,6 @@
 <?php
 
-namespace App\JsonApi\Videos;
+namespace DummyApp\JsonApi\Videos;
 
 use CloudCreativity\JsonApi\Contracts\Validators\RelationshipsValidatorInterface;
 use CloudCreativity\LaravelJsonApi\Validators\AbstractValidatorProvider;

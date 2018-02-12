@@ -2,8 +2,8 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration;
 
-use App\Post;
-use App\Events\PostCreated;
+use DummyApp\Post;
+use DummyApp\Events\PostCreated;
 
 class BroadcastingTest extends TestCase
 {

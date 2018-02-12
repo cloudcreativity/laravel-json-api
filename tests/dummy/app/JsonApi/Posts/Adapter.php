@@ -1,12 +1,12 @@
 <?php
 
-namespace App\JsonApi\Posts;
+namespace DummyApp\JsonApi\Posts;
 
 use CloudCreativity\LaravelJsonApi\Eloquent\AbstractAdapter;
 use CloudCreativity\LaravelJsonApi\Eloquent\HasMany;
 use CloudCreativity\LaravelJsonApi\Eloquent\BelongsTo;
 use CloudCreativity\LaravelJsonApi\Pagination\StandardStrategy;
-use App\Post;
+use DummyApp\Post;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 

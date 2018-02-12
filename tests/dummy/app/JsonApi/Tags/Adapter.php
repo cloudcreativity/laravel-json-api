@@ -1,10 +1,10 @@
 <?php
 
-namespace App\JsonApi\Tags;
+namespace DummyApp\JsonApi\Tags;
 
 use CloudCreativity\LaravelJsonApi\Eloquent\AbstractAdapter;
 use CloudCreativity\LaravelJsonApi\Eloquent\MorphHasMany;
-use App\Tag;
+use DummyApp\Tag;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\JsonApi\Tags;
+namespace DummyApp\JsonApi\Tags;
 
 use CloudCreativity\JsonApi\Contracts\Validators\RelationshipsValidatorInterface;
 use CloudCreativity\LaravelJsonApi\Validators\AbstractValidatorProvider;

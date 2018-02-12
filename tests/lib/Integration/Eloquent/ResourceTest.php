@@ -2,10 +2,10 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Eloquent;
 
-use App\Comment;
-use App\Http\Controllers\PostsController;
-use App\Post;
-use App\Tag;
+use DummyApp\Comment;
+use DummyApp\Http\Controllers\PostsController;
+use DummyApp\Post;
+use DummyApp\Tag;
 
 class ResourceTest extends TestCase
 {

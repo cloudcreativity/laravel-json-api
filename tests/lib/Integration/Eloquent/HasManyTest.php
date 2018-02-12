@@ -2,8 +2,8 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Eloquent;
 
-use App\Country;
-use App\User;
+use DummyApp\Country;
+use DummyApp\User;
 
 /**
  * Class HasManyTest
