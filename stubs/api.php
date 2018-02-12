@@ -15,10 +15,10 @@ return [
     | The `by-resource` setting determines how your units are organised within
     | your root namespace.
     |
-    | - true: e.g. \DummyApp\JsonApi\Posts\{Adapter, Schema}
+    | - true: e.g. \App\JsonApi\Posts\{Adapter, Schema}
     | - false:
-    |   - e.g. \DummyApp\JsonApi\Adapters\{User, Post, Comment}
-    |   - e.g. \DummyApp\JsonApi\Schemas\{User, Post, Comment}
+    |   - e.g. \App\JsonApi\Adapters\{User, Post, Comment}
+    |   - e.g. \App\JsonApi\Schemas\{User, Post, Comment}
     |
     */
     'namespace' => null,

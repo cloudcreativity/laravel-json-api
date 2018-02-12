@@ -50,6 +50,14 @@ class AggregateResolver implements ResolverInterface, IteratorAggregate
     }
 
     /**
+     * @return ResolverInterface
+     */
+    public function getDefaultResolver()
+    {
+        return $this->api;
+    }
+
+    /**
      * @inheritDoc
      */
     public function getIterator()

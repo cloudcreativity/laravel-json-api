@@ -2,37 +2,96 @@
 
 namespace DummyNamespace;
 
-use CloudCreativity\JsonApi\Contracts\Store\AdapterInterface;
+use CloudCreativity\JsonApi\Adapter\AbstractResourceAdapter;
+use CloudCreativity\JsonApi\Contracts\Object\RelationshipsInterface;
+use CloudCreativity\JsonApi\Contracts\Object\ResourceObjectInterface;
+use CloudCreativity\Utils\Object\StandardObjectInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
-class Adapter implements AdapterInterface
+class Adapter extends AbstractResourceAdapter
 {
 
     /**
-     * @param EncodingParametersInterface $parameters
-     * @return mixed
+     * @inheritDoc
+     */
+    protected function createRecord(ResourceObjectInterface $resource)
+    {
+        // TODO: Implement createRecord() method.
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function hydrateAttributes($record, StandardObjectInterface $attributes)
+    {
+        // TODO: Implement hydrateAttributes() method.
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function hydrateRelationships(
+        $record,
+        RelationshipsInterface $relationships,
+        EncodingParametersInterface $parameters
+    ) {
+        // TODO: Implement hydrateRelationships() method.
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function persist($record)
+    {
+        // TODO: Implement persist() method.
+    }
+
+    /**
+     * @inheritDoc
      */
     public function query(EncodingParametersInterface $parameters)
     {
-        // TODO
+        // TODO: Implement query() method.
     }
 
     /**
-     * @param $resourceId
-     * @return bool
+     * @inheritDoc
+     */
+    public function delete($record, EncodingParametersInterface $params)
+    {
+        // TODO: Implement delete() method.
+    }
+
+    /**
+     * @inheritDoc
      */
     public function exists($resourceId)
     {
-        // TODO
+        // TODO: Implement exists() method.
     }
 
     /**
-     * @param string $resourceId
-     * @return object|null
+     * @inheritDoc
      */
     public function find($resourceId)
     {
-        // TODO
+        // TODO: Implement find() method.
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function findMany(array $resourceIds)
+    {
+        // TODO: Implement findMany() method.
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function related($relationshipName)
+    {
+        // TODO: Implement related() method.
     }
 
 }

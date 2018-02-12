@@ -2,9 +2,9 @@
 
 namespace DummyNamespace;
 
-use CloudCreativity\LaravelJsonApi\Schema\AbstractSchema;
+use Neomerx\JsonApi\Schema\SchemaProvider;
 
-class Schema extends AbstractSchema
+class Schema extends SchemaProvider
 {
 
     /**

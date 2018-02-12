@@ -2,7 +2,7 @@
 
 namespace DummyApp\JsonApi\Sites;
 
-use CloudCreativity\JsonApi\Adapter\AbstractResourceAdaptor;
+use CloudCreativity\JsonApi\Adapter\AbstractResourceAdapter;
 use CloudCreativity\JsonApi\Adapter\HydratesAttributesTrait;
 use CloudCreativity\JsonApi\Contracts\Object\RelationshipsInterface;
 use CloudCreativity\JsonApi\Contracts\Object\ResourceObjectInterface;
@@ -12,7 +12,7 @@ use DummyApp\Entities\Site;
 use DummyApp\Entities\SiteRepository;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
-class Adapter extends AbstractResourceAdaptor
+class Adapter extends AbstractResourceAdapter
 {
 
     use HydratesAttributesTrait;

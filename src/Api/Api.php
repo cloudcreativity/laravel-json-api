@@ -25,6 +25,7 @@ use CloudCreativity\JsonApi\Contracts\Http\Responses\ErrorResponseInterface;
 use CloudCreativity\JsonApi\Contracts\Repositories\ErrorRepositoryInterface;
 use CloudCreativity\JsonApi\Contracts\Resolver\ResolverInterface;
 use CloudCreativity\JsonApi\Contracts\Store\StoreInterface;
+use CloudCreativity\JsonApi\Resolver\NamespaceResolver;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use CloudCreativity\LaravelJsonApi\Http\Responses\Responses;
@@ -147,11 +148,33 @@ class Api
     }
 
     /**
+     * Get the resolver for the API and packages.
+     *
      * @return ResolverInterface
      */
     public function getResolver()
     {
         return $this->resolver;
+    }
+
+    /**
+     * Get the API's resolver.
+     *
+     * @return ResolverInterface
+     */
+    public function getDefaultResolver()
+    {
+        return $this->resolver->getDefaultResolver();
+    }
+
+    /**
+     * @return bool
+     */
+    public function isByResource()
+    {
+        $resolver = $this->getDefaultResolver();
+
+        return $resolver instanceof NamespaceResolver;
     }
 
     /**

@@ -27,7 +27,7 @@ use Illuminate\Filesystem\Filesystem;
  *
  * @package CloudCreativity\LaravelJsonApi
  */
-class MakeApiCommand extends Command
+class MakeApi extends Command
 {
 
     /**

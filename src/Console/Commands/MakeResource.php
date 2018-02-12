@@ -26,7 +26,7 @@ use Illuminate\Support\Collection;
  *
  * @package CloudCreativity\LaravelJsonApi
  */
-class MakeResourceCommand extends Command
+class MakeResource extends Command
 {
 
     /**
@@ -56,10 +56,9 @@ class MakeResourceCommand extends Command
      * @var array
      */
     private $commands = [
-        'make:json-api:adapter' => MakeAdapterCommand::class,
-        'make:json-api:hydrator' => MakeHydratorCommand::class,
-        'make:json-api:schema' => MakeSchemaCommand::class,
-        'make:json-api:validators' => MakeValidatorsCommand::class,
+        'make:json-api:adapter' => MakeAdapter::class,
+        'make:json-api:schema' => MakeSchema::class,
+        'make:json-api:validators' => MakeValidators::class,
     ];
 
     /**

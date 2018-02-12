@@ -19,7 +19,7 @@
 namespace CloudCreativity\LaravelJsonApi\Eloquent;
 
 use Carbon\Carbon;
-use CloudCreativity\JsonApi\Adapter\AbstractResourceAdaptor;
+use CloudCreativity\JsonApi\Adapter\AbstractResourceAdapter;
 use CloudCreativity\JsonApi\Contracts\Adapter\HasManyAdapterInterface;
 use CloudCreativity\JsonApi\Contracts\Adapter\RelationshipAdapterInterface;
 use CloudCreativity\JsonApi\Contracts\Object\RelationshipsInterface;
@@ -43,7 +43,7 @@ use Neomerx\JsonApi\Encoder\Parameters\EncodingParameters;
  *
  * @package CloudCreativity\LaravelJsonApi
  */
-abstract class AbstractAdapter extends AbstractResourceAdaptor
+abstract class AbstractAdapter extends AbstractResourceAdapter
 {
 
     use FindsManyResources;
