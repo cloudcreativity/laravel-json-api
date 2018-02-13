@@ -4,16 +4,27 @@ All notable changes to this project will be documented in this file. This projec
 
 ## Unreleased
 
+### Added
+- New Eloquent relationship adapters allows full support for relationship endpoints.
+- Message bags can now have their keys dasherized when converting them to JSON API errors in the `ErrorBag` class.
+
 ### Changed
 - Split adapter into resource and relationship adapter, and created classes to specifically deal with Eloquent
 relationships.
 - Adapters now handle both reading and modifying domain records.
 - Moved Eloquent JSON API classes into a single namespace.
+- Moved logic from Eloquent controller into the JSON API controller as the logic is no longer specific to
+handling resources that related to Eloquent models.
 
 ### Removed
 - Delete Eloquent hydrator class as all hydration is now handled by adapters instead.
 - The utility `Fqn` class has been removed as namespace resolution is now done by resolvers.
 - The deprecated `Str` utility class has been removed. Use `CloudCreativity\JsonApi\Utils\Str` instead.
+
+### Deprecated
+- The Eloquent controller is deprecated in favour using the JSON API controller directly.
+- The `Schema\EloquentSchema` is deprecated in favour of using the `Eloquent\AbstractSchema`.
+- The `Store\EloquentAdapter` is deprecated in favour of using the `Eloquent\AbstractAdapter`.
 
 ## [0.12.0] - 2018-02-08
 

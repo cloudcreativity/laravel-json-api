@@ -33,7 +33,7 @@ class ErrorBagTest extends TestCase
 
     public function testIteration()
     {
-        $bag = new ErrorBag(new MessageBag([
+        $bag = ErrorBag::create(new MessageBag([
             'foo' => 'foobar',
             'bar' => [
                 'baz',
@@ -58,7 +58,7 @@ class ErrorBagTest extends TestCase
         $expected = clone $prototype;
         $expected->setSourcePointer('foo')->setDetail('Some detail');
         $messages = new MessageBag(['foo' => 'Some detail']);
-        $bag = new ErrorBag($messages, $prototype);
+        $bag = ErrorBag::create($messages, $prototype);
 
         $this->assertEquals($expected, current($bag->toArray()));
     }
@@ -67,7 +67,11 @@ class ErrorBagTest extends TestCase
     {
         $messages = new MessageBag(['foo' => 'Some detail']);
         $expected = (new Error())->setSourcePointer('/data/attributes/foo')->setDetail('Some detail');
+
         $bag = new ErrorBag($messages, null, '/data/attributes');
+        $this->assertEquals($expected, current($bag->toArray()));
+
+        $bag = ErrorBag::create($messages)->withSourcePrefix('/data/attributes');
         $this->assertEquals($expected, current($bag->toArray()));
     }
 
@@ -80,12 +84,43 @@ class ErrorBagTest extends TestCase
         $this->assertEquals($expected, current($bag->toArray()));
     }
 
+    public function testSourcePointerDasherizesKeys()
+    {
+        $messages = new MessageBag(['foo_bar.baz_bat' => 'Some detail']);
+        $expected = new Error();
+        $expected->setSourcePointer('/data/attributes/foo-bar/baz-bat')->setDetail('Some detail');
+
+        $bag = ErrorBag::create($messages)
+            ->withSourcePrefix('/data/attributes')
+            ->withDasherizedKeys();
+
+        $this->assertEquals($expected, current($bag->toArray()));
+    }
+
     public function testSourceParameter()
     {
         $messages = new MessageBag(['foo.bar.baz' => 'Some detail']);
         $expected = new Error();
         $expected->setSourceParameter('filter.foo.bar.baz')->setDetail('Some detail');
+
         $bag = new ErrorBag($messages, null, 'filter', true);
+        $this->assertEquals($expected, current($bag->toArray()));
+
+        $bag = ErrorBag::create($messages)->withSourcePrefix('filter')->asParameters();
+        $this->assertEquals($expected, current($bag->toArray()));
+    }
+
+    public function testSourceParameterDasherizesKeys()
+    {
+        $messages = new MessageBag(['foo_bar.baz_bat' => 'Some detail']);
+        $expected = new Error();
+        $expected->setSourceParameter('filter.foo-bar.baz-bat')->setDetail('Some detail');
+
+        $bag = ErrorBag::create($messages)
+            ->withSourcePrefix('filter')
+            ->withDasherizedKeys()
+            ->asParameters();
+
         $this->assertEquals($expected, current($bag->toArray()));
     }
 }
