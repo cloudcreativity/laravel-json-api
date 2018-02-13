@@ -6,7 +6,8 @@ All notable changes to this project will be documented in this file. This projec
 
 ### Added
 - New Eloquent relationship adapters allows full support for relationship endpoints.
-- Message bags can now have their keys dasherized when converting them to JSON API errors in the `ErrorBag` class.
+- Message bags can now have their keys mapped and/or dasherized when converting them to JSON API errors 
+in the `ErrorBag` class.
 
 ### Changed
 - Split adapter into resource and relationship adapter, and created classes to specifically deal with Eloquent

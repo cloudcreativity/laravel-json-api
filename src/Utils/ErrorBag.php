@@ -18,7 +18,9 @@
 
 namespace CloudCreativity\LaravelJsonApi\Utils;
 
+use Closure;
 use CloudCreativity\JsonApi\Document\Error;
+use CloudCreativity\JsonApi\Exceptions\InvalidArgumentException;
 use CloudCreativity\JsonApi\Utils\Str;
 use Illuminate\Contracts\Support\MessageBag;
 use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
@@ -50,6 +52,11 @@ class ErrorBag extends AbstractErrorBag
      * @var bool
      */
     private $dasherize;
+
+    /**
+     * @var array|Closure
+     */
+    private $keyMap;
 
     /**
      * Fluent constructor.
@@ -84,6 +91,7 @@ class ErrorBag extends AbstractErrorBag
         $this->sourcePrefix = $sourcePrefix ? (string) $sourcePrefix : null;
         $this->isParameter = (bool) $isParameter;
         $this->dasherize = false;
+        $this->keyMap = [];
     }
 
     /**
@@ -112,7 +120,7 @@ class ErrorBag extends AbstractErrorBag
     /**
      * @return self
      */
-    public function asPointers()
+    public function withPointers()
     {
         $copy = clone $this;
         $copy->isParameter = false;
@@ -123,10 +131,26 @@ class ErrorBag extends AbstractErrorBag
     /**
      * @return self
      */
-    public function asParameters()
+    public function withParameters()
     {
         $copy = clone $this;
         $copy->isParameter = true;
+
+        return $copy;
+    }
+
+    /**
+     * @param array|Closure $map
+     * @return self
+     */
+    public function withKeyMap($map)
+    {
+        if (!is_array($map) && !$map instanceof Closure) {
+            throw new InvalidArgumentException('Expecting an array or closure.');
+        }
+
+        $copy = clone $this;
+        $copy->keyMap = $map;
 
         return $copy;
     }
@@ -177,10 +201,25 @@ class ErrorBag extends AbstractErrorBag
      * @param string $glue
      * @return string
      */
-    protected function normalizeKey($key, $glue = '.')
+    private function normalizeKey($key, $glue = '.')
     {
+        $key = $this->mapKey($key);
+
         return collect(explode('.', $key))->map(function ($key) {
             return $this->dasherize ? Str::dasherize($key) : $key;
         })->implode($glue);
+    }
+
+    /**
+     * @param string $key
+     * @return string
+     */
+    private function mapKey($key)
+    {
+        if ($this->keyMap instanceof Closure) {
+            return call_user_func($this->keyMap, $key);
+        }
+
+        return isset($this->keyMap[$key]) ? $this->keyMap[$key] : $key;
     }
 }

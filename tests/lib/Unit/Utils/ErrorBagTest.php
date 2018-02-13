@@ -97,6 +97,42 @@ class ErrorBagTest extends TestCase
         $this->assertEquals($expected, current($bag->toArray()));
     }
 
+    /**
+     * @return array
+     */
+    public function mappedPointersProvider()
+    {
+        return [
+            ['category', ['foo' => 'bar'], '/category'],
+            ['type', ['type' => 'category'], '/category'],
+            ['data.foo', ['data.foo' => 'config.foo_bar'], '/config/foo-bar'],
+            ['data.*', ['data.*' => 'config'], '/config'],
+            ['data', function ($key) {
+                return 'config';
+            }, '/config'],
+        ];
+    }
+
+    /**
+     * @param $key
+     * @param $mapping
+     * @param $expected
+     * @dataProvider mappedPointersProvider
+     */
+    public function testSourcePointerMapsKeys($key, $mapping, $expected)
+    {
+        $messages = new MessageBag([$key => 'Some detail']);
+        $error = new Error();
+        $error->setSourcePointer("/data/attributes{$expected}")->setDetail('Some detail');
+
+        $bag = ErrorBag::create($messages)
+            ->withSourcePrefix('/data/attributes')
+            ->withKeyMap($mapping)
+            ->withDasherizedKeys();
+
+        $this->assertEquals($error, current($bag->toArray()));
+    }
+
     public function testSourceParameter()
     {
         $messages = new MessageBag(['foo.bar.baz' => 'Some detail']);
@@ -106,7 +142,7 @@ class ErrorBagTest extends TestCase
         $bag = new ErrorBag($messages, null, 'filter', true);
         $this->assertEquals($expected, current($bag->toArray()));
 
-        $bag = ErrorBag::create($messages)->withSourcePrefix('filter')->asParameters();
+        $bag = ErrorBag::create($messages)->withSourcePrefix('filter')->withParameters();
         $this->assertEquals($expected, current($bag->toArray()));
     }
 
@@ -119,7 +155,7 @@ class ErrorBagTest extends TestCase
         $bag = ErrorBag::create($messages)
             ->withSourcePrefix('filter')
             ->withDasherizedKeys()
-            ->asParameters();
+            ->withParameters();
 
         $this->assertEquals($expected, current($bag->toArray()));
     }
