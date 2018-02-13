@@ -20,9 +20,9 @@ namespace CloudCreativity\LaravelJsonApi\Eloquent;
 
 use Carbon\Carbon;
 use CloudCreativity\JsonApi\Exceptions\RuntimeException;
+use CloudCreativity\JsonApi\Utils\Str;
 use CloudCreativity\LaravelJsonApi\Schema\CreatesEloquentIdentities;
 use CloudCreativity\LaravelJsonApi\Schema\CreatesLinks;
-use CloudCreativity\LaravelJsonApi\Utils\Str;
 use DateTime;
 use Illuminate\Database\Eloquent\Model;
 use Neomerx\JsonApi\Schema\SchemaProvider;

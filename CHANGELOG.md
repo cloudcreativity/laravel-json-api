@@ -13,6 +13,7 @@ relationships.
 ### Removed
 - Delete Eloquent hydrator class as all hydration is now handled by adapters instead.
 - The utility `Fqn` class has been removed as namespace resolution is now done by resolvers.
+- The deprecated `Str` utility class has been removed. Use `CloudCreativity\JsonApi\Utils\Str` instead.
 
 ## [0.12.0] - 2018-02-08
 
