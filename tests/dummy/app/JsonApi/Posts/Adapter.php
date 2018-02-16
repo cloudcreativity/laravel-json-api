@@ -84,7 +84,22 @@ class Adapter extends AbstractAdapter
      */
     protected function filter(Builder $query, Collection $filters)
     {
-        // TODO: Implement filter() method.
+        if ($slug = $filters->get('slug')) {
+            $query->where('slug', $slug);
+        }
+
+        if ($title = $filters->get('title')) {
+            $query->where('title', 'like', $title . '%');
+        }
+    }
+
+    /**
+     * @param Collection $filters
+     * @return bool
+     */
+    protected function isSearchOne(Collection $filters)
+    {
+        return $filters->has('slug');
     }
 
 }

@@ -18,8 +18,8 @@ class Validators extends AbstractValidatorProvider
      * @var array
      */
     protected $queryRules = [
-        'filter.title' => 'string|min:1',
-        'filter.slug' => 'sometimes|required|alpha_dash',
+        'filter.title' => 'filled|string',
+        'filter.slug' => 'filled|alpha_dash',
         'page.number' => 'integer|min:1',
         'page.size' => 'integer|between:1,50',
     ];

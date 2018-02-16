@@ -36,6 +36,65 @@ class ResourceTest extends TestCase
         $this->assertEquals([$b->getKey(), $a->getKey()], $actual);
     }
 
+    public function testFilteredSearch()
+    {
+        $a = factory(Post::class)->create([
+            'title' => 'My First Post',
+        ]);
+
+        $b = factory(Post::class)->create([
+            'title' => 'My Second Post',
+        ]);
+
+        factory(Post::class)->create([
+            'title' => 'Some Other Post',
+        ]);
+
+        $this->doSearch(['filter' => ['title' => 'My']])
+            ->assertSearchResponse()->assertContainsOnly(['posts' => [$a->getKey(), $b->getKey()]]);
+    }
+
+    public function testInvalidFilter()
+    {
+        $this->doSearch(['filter' => ['title' => '']])
+            ->assertStatus(400)
+            ->assertErrors()
+            ->assertParameters('filter.title');
+    }
+
+    public function testSearchOne()
+    {
+        $post = factory(Post::class)->create([
+            'slug' => 'my-first-post',
+        ]);
+
+        $expected = $this->serialize($post);
+
+        $this->doSearch(['filter' => ['slug' => 'my-first-post']])
+            ->assertReadHasOne($expected);
+    }
+
+    public function testSearchOneIsNull()
+    {
+        $post = factory(Post::class)->create([
+            'slug' => 'my-first-post',
+        ]);
+
+        $this->doSearch(['filter' => ['slug' => 'my-second-post']])
+            ->assertReadHasOne(null);
+    }
+
+    /**
+     * Test searching with included resources.
+     */
+    public function testSearchWithIncluded()
+    {
+        factory(Comment::class, 5)->states('post')->create();
+
+        $this->doSearch(['include' => 'comments.created-by'])
+            ->assertSearchedMany();
+    }
+
     /**
      * Test that we can search posts for specific ids
      */
@@ -48,14 +107,6 @@ class ResourceTest extends TestCase
         $this
             ->doSearchById($models)
             ->assertSearchByIdResponse($models);
-    }
-
-    public function testSearchWithIncluded()
-    {
-        factory(Comment::class, 5)->states('post')->create();
-
-        $this->doSearch(['include' => 'comments.created-by'])
-            ->assertSearchedMany();
     }
 
     /**
