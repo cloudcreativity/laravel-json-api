@@ -4,6 +4,7 @@ namespace DummyApp\JsonApi\Users;
 
 use CloudCreativity\LaravelJsonApi\Eloquent\AbstractAdapter;
 use CloudCreativity\LaravelJsonApi\Eloquent\HasOne;
+use CloudCreativity\LaravelJsonApi\Pagination\StandardStrategy;
 use DummyApp\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -23,18 +24,22 @@ class Adapter extends AbstractAdapter
 
     /**
      * Adapter constructor.
+     *
+     * @param StandardStrategy $paging
      */
-    public function __construct()
+    public function __construct(StandardStrategy $paging)
     {
-        parent::__construct(new User());
+        parent::__construct(new User(), $paging);
     }
 
     /**
      * @inheritDoc
      */
-    protected function filter(Builder $query, Collection $filters)
+    protected function filter($query, Collection $filters)
     {
-        // TODO: Implement filter() method.
+        if ($name = $filters->get('name')) {
+            $query->where('users.name', 'like', "%{$name}%");
+        }
     }
 
     /**

@@ -233,6 +233,71 @@ class HasManyTest extends TestCase
             ->assertReadHasMany(null);
     }
 
+    public function testReadRelatedWithFilter()
+    {
+        $country = factory(Country::class)->create();
+
+        $a = factory(User::class)->create([
+            'name' => 'John Doe',
+            'country_id' => $country->getKey(),
+        ]);
+
+        $b = factory(User::class)->create([
+            'name' => 'Jane Doe',
+            'country_id' => $country->getKey(),
+        ]);
+
+        factory(User::class)->create([
+            'name' => 'Frankie Manning',
+            'country_id' => $country->getKey(),
+        ]);
+
+        $this->doReadRelated($country, 'users', ['filter' => ['name' => 'Doe']])
+            ->assertReadHasMany('users', [$a, $b]);
+    }
+
+    public function testReadRelatedWithSort()
+    {
+        $country = factory(Country::class)->create();
+
+        $a = factory(User::class)->create([
+            'name' => 'John Doe',
+            'country_id' => $country->getKey(),
+        ]);
+
+        $b = factory(User::class)->create([
+            'name' => 'Jane Doe',
+            'country_id' => $country->getKey(),
+        ]);
+
+        $this->doReadRelated($country, 'users', ['sort' => 'name'])
+            ->assertReadHasMany('users', [$a, $b]);
+
+        $this->markTestIncomplete('@todo this assertion does not assert the order of the resources.');
+    }
+
+    public function testReadRelatedWithInclude()
+    {
+        $country = factory(Country::class)->create();
+        $users = factory(User::class, 2)->create();
+        $country->users()->saveMany($users);
+
+        $this->doReadRelated($country, 'users', ['include' => 'phone'])
+            ->assertReadHasMany('users', $users);
+    }
+
+    public function testReadRelatedWithPagination()
+    {
+        $country = factory(Country::class)->create();
+        $users = factory(User::class, 3)->create();
+        $country->users()->saveMany($users);
+
+        $this->doReadRelated($country, 'users', ['page' => ['number' => 1, 'size' => 2]])
+            ->assertReadHasMany('users', $users->take(2));
+
+        $this->markTestIncomplete('@todo check the pagination meta.');
+    }
+
     public function testReadRelationship()
     {
         $country = factory(Country::class)->create();

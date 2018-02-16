@@ -34,6 +34,8 @@ class ResourceTest extends TestCase
         $json = $response->decodeResponseJson();
         $actual = [array_get($json, 'data.0.id'), array_get($json, 'data.1.id')];
         $this->assertEquals([$b->getKey(), $a->getKey()], $actual);
+
+        $this->markTestIncomplete('@todo assert-contains-only does not assert the order.');
     }
 
     public function testFilteredSearch()
@@ -234,42 +236,6 @@ class ResourceTest extends TestCase
 
         $this->doDelete($model)->assertDeleteResponse();
         $this->assertModelDeleted($model);
-    }
-
-    /**
-     * Test that we can read the related comments.
-     */
-    public function testReadComments()
-    {
-        $model = $this->createPost();
-        $comments = factory(Comment::class, 2)->create([
-            'commentable_type' => Post::class,
-            'commentable_id' => $model->getKey(),
-        ]);
-
-        /** This comment should not appear in the results... */
-        factory(Comment::class)->states('post')->create();
-
-        $this->doReadRelated($model, 'comments')
-            ->assertReadHasMany('comments', $comments);
-    }
-
-    /**
-     * Test that we can read the resource identifiers for the related comments.
-     */
-    public function testReadCommentsRelationship()
-    {
-        $model = $this->createPost();
-        $comments = factory(Comment::class, 2)->create([
-            'commentable_type' => Post::class,
-            'commentable_id' => $model->getKey(),
-        ]);
-
-        /** This comment should not appear in the results... */
-        factory(Comment::class)->states('post')->create();
-
-        $this->doReadRelated($model, 'comments')
-            ->assertReadHasManyIdentifiers('comments', $comments);
     }
 
     /**

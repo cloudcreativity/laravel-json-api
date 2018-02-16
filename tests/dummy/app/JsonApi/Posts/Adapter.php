@@ -82,7 +82,7 @@ class Adapter extends AbstractAdapter
     /**
      * @inheritDoc
      */
-    protected function filter(Builder $query, Collection $filters)
+    protected function filter($query, Collection $filters)
     {
         if ($slug = $filters->get('slug')) {
             $query->where('slug', $slug);
