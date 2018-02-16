@@ -44,6 +44,14 @@ class Validators extends AbstractValidatorProvider
     ];
 
     /**
+     * @var array
+     */
+    protected $allowedIncludePaths = [
+        'comments',
+        'comments.created-by',
+    ];
+
+    /**
      * @inheritdoc
      */
     protected function attributeRules($record = null)

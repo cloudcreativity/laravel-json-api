@@ -8,6 +8,9 @@ All notable changes to this project will be documented in this file. This projec
 - New Eloquent relationship adapters allows full support for relationship endpoints.
 - Message bags can now have their keys mapped and/or dasherized when converting them to JSON API errors 
 in the `ErrorBag` class.
+- JSON API resource paths are now automatically converted to model relationship paths for eager loading in
+the Eloquent adapter.
+- The Eloquent adapter now applies eager loading when reading or updating a specific resource.
 
 ### Changed
 - Split adapter into resource and relationship adapter, and created classes to specifically deal with Eloquent

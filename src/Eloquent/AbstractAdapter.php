@@ -46,7 +46,8 @@ use Neomerx\JsonApi\Encoder\Parameters\EncodingParameters;
 abstract class AbstractAdapter extends AbstractResourceAdapter
 {
 
-    use FindsManyResources;
+    use FindsManyResources,
+        Concerns\IncludesModels;
 
     /**
      * @var Model
@@ -147,9 +148,10 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     protected $defaultPagination = null;
 
     /**
-     * Default eager loading when querying many resources.
+     * The model relationships to eager load on every query.
      *
      * @var string[]|null
+     * @deprecated use `$defaultWith` instead.
      */
     protected $with = null;
 
@@ -183,17 +185,10 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     {
         $this->model = $model;
         $this->paging = $paging;
-    }
 
-    /**
-     * @param Model $record
-     * @param EncodingParametersInterface $params
-     * @return bool
-     * @throws \Exception
-     */
-    public function delete($record, EncodingParametersInterface $params)
-    {
-        return (bool) $record->delete();
+        if ($this->with) {
+            $this->defaultWith = array_merge($this->defaultWith, $this->with);
+        }
     }
 
     /**
@@ -202,19 +197,26 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     public function query(EncodingParametersInterface $parameters)
     {
         $filters = $this->extractFilters($parameters);
-        $this->with($query = $this->newQuery(), $this->extractIncludePaths($parameters));
+        $query = $this->newQuery();
 
+        /** Apply eager loading */
+        $this->with($query, $this->extractIncludePaths($parameters));
+
+        /** Find by ids */
         if ($this->isFindMany($filters)) {
             return $this->findByIds($query, $filters);
         }
 
+        /** Filter and sort */
         $this->filter($query, $filters);
         $this->sort($query, (array) $parameters->getSortParameters());
 
+        /** Return a single record if this is a search for one resource. */
         if ($this->isSearchOne($filters)) {
             return $this->first($query);
         }
 
+        /** Paginate results if needed. */
         $pagination = $this->extractPagination($parameters);
 
         if (!$pagination->isEmpty() && !$this->hasPaging()) {
@@ -229,11 +231,40 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     /**
      * @inheritDoc
      */
-    public function queryRecord($resourceId, EncodingParametersInterface $parameters)
+    public function read($resourceId, EncodingParametersInterface $parameters)
     {
         $this->with($query = $this->newQuery(), $this->extractIncludePaths($parameters));
 
         return $query->where($this->getQualifiedKeyName(), $resourceId)->first();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function update($record, ResourceObjectInterface $resource, EncodingParametersInterface $parameters)
+    {
+        /** @var Model $record */
+        $record = parent::update($record, $resource, $parameters);
+        $relationshipPaths = $this->getRelationshipPaths($this->extractIncludePaths($parameters));
+
+        /** Eager load anything that needs to be loaded. */
+        if (method_exists($record, 'loadMissing')) {
+            $record->loadMissing($relationshipPaths);
+        } else {
+            /** @todo remove this when dropping support for Laravel 5.4 */
+            $record->load($relationshipPaths);
+        }
+
+        return $record;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function delete($record, EncodingParametersInterface $params)
+    {
+        /** @var Model $record */
+        return (bool) $record->delete();
     }
 
     /**
@@ -306,9 +337,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      */
     protected function with(Builder $query, Collection $includePaths)
     {
-        if ($this->with) {
-            $query->with($this->with);
-        }
+        $query->with($this->getRelationshipPaths($includePaths));
     }
 
     /**
@@ -629,7 +658,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      */
     protected function extractIncludePaths(EncodingParametersInterface $parameters)
     {
-        return new Collection((array) $parameters->getIncludePaths());
+        return collect($parameters->getIncludePaths());
     }
 
     /**
@@ -638,7 +667,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      */
     protected function extractFilters(EncodingParametersInterface $parameters)
     {
-        return new Collection((array) $parameters->getFilteringParameters());
+        return collect($parameters->getFilteringParameters());
     }
 
     /**
@@ -649,7 +678,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     {
         $pagination = (array) $parameters->getPaginationParameters();
 
-        return new Collection($pagination ?: $this->defaultPagination());
+        return collect($pagination ?: $this->defaultPagination());
     }
 
     /**

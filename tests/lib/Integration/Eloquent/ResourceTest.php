@@ -50,6 +50,14 @@ class ResourceTest extends TestCase
             ->assertSearchByIdResponse($models);
     }
 
+    public function testSearchWithIncluded()
+    {
+        factory(Comment::class, 5)->states('post')->create();
+
+        $this->doSearch(['include' => 'comments.created-by'])
+            ->assertSearchedMany();
+    }
+
     /**
      * Test the create resource route.
      */
@@ -92,6 +100,14 @@ class ResourceTest extends TestCase
         $model->tags()->create(['name' => 'Important']);
 
         $this->doRead($model)->assertReadResponse($this->serialize($model));
+    }
+
+    /**
+     * Test that the resource can not be found.
+     */
+    public function testResourceNotFound()
+    {
+        $this->doRead('xyz')->assertStatus(404);
     }
 
     /**

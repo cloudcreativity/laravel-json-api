@@ -18,6 +18,8 @@
 namespace CloudCreativity\LaravelJsonApi\Http\Middleware;
 
 use Closure;
+use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterpreterInterface;
+use CloudCreativity\JsonApi\Object\ResourceIdentifier;
 use CloudCreativity\LaravelJsonApi\Routing\ResourceRegistrar;
 use Illuminate\Http\Request;
 
@@ -36,7 +38,25 @@ class SubstituteBindings
      */
     public function handle($request, Closure $next)
     {
-        if ($record = json_api_request()->getRecord()) {
+        $jsonApiRequest = json_api_request();
+        $store = json_api()->getStore();
+        $record = null;
+
+        /** If the request is a read record request, we need to do this so eager loading occurs. */
+        if (app(RequestInterpreterInterface::class)->isReadResource()) {
+            $record = $store->readRecord(
+                $jsonApiRequest->getResourceType(),
+                $jsonApiRequest->getResourceId(),
+                $jsonApiRequest->getParameters()
+            );
+        } elseif ($jsonApiRequest->getResourceId()) {
+            $record = $store->findOrFail(ResourceIdentifier::create(
+                $jsonApiRequest->getResourceType(),
+                $jsonApiRequest->getResourceId()
+            ));
+        }
+
+        if ($record) {
             $request->route()->setParameter(ResourceRegistrar::PARAM_RESOURCE_ID, $record);
         }
 
