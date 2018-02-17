@@ -20,7 +20,6 @@ namespace CloudCreativity\LaravelJsonApi;
 
 use CloudCreativity\JsonApi\Contracts\Exceptions\ExceptionParserInterface;
 use CloudCreativity\JsonApi\Contracts\Factories\FactoryInterface;
-use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterpreterInterface;
 use CloudCreativity\JsonApi\Contracts\Object\DocumentInterface;
 use CloudCreativity\JsonApi\Contracts\Object\RelationshipInterface;
 use CloudCreativity\JsonApi\Contracts\Object\ResourceObjectInterface;
@@ -35,7 +34,6 @@ use CloudCreativity\LaravelJsonApi\Http\Middleware\AuthorizeRequest;
 use CloudCreativity\LaravelJsonApi\Http\Middleware\BootJsonApi;
 use CloudCreativity\LaravelJsonApi\Http\Middleware\SubstituteBindings;
 use CloudCreativity\LaravelJsonApi\Http\Middleware\ValidateRequest;
-use CloudCreativity\LaravelJsonApi\Http\Requests\RequestInterpreter;
 use CloudCreativity\LaravelJsonApi\Http\Responses\Responses;
 use CloudCreativity\LaravelJsonApi\Routing\ResourceRegistrar;
 use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
@@ -92,7 +90,6 @@ class ServiceProvider extends BaseServiceProvider
     {
         $this->bindNeomerx();
         $this->bindService();
-        $this->bindRequestInterpreter();
         $this->bindInboundRequest();
         $this->bindRouteRegistrar();
         $this->bindApiRepository();
@@ -188,14 +185,6 @@ class ServiceProvider extends BaseServiceProvider
     protected function bindRouteRegistrar()
     {
         $this->app->alias(ResourceRegistrar::class, 'json-api.registrar');
-    }
-
-    /**
-     * Bind a request interpreter into the container.
-     */
-    protected function bindRequestInterpreter()
-    {
-        $this->app->singleton(RequestInterpreterInterface::class, RequestInterpreter::class);
     }
 
     /**

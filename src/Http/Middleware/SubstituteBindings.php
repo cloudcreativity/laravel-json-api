@@ -18,7 +18,6 @@
 namespace CloudCreativity\LaravelJsonApi\Http\Middleware;
 
 use Closure;
-use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterpreterInterface;
 use CloudCreativity\JsonApi\Object\ResourceIdentifier;
 use CloudCreativity\LaravelJsonApi\Routing\ResourceRegistrar;
 use Illuminate\Http\Request;
@@ -43,7 +42,7 @@ class SubstituteBindings
         $record = null;
 
         /** If the request is a read record request, we need to do this so eager loading occurs. */
-        if (app(RequestInterpreterInterface::class)->isReadResource()) {
+        if ($jsonApiRequest->isReadResource()) {
             $record = $store->readRecord(
                 $jsonApiRequest->getResourceType(),
                 $jsonApiRequest->getResourceId(),
