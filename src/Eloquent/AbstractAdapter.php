@@ -268,9 +268,11 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      */
     public function read($resourceId, EncodingParametersInterface $parameters)
     {
-        $this->with($query = $this->newQuery(), $this->extractIncludePaths($parameters));
+        if ($record = parent::read($resourceId, $parameters)) {
+            $this->load($record, $parameters);
+        }
 
-        return $query->where($this->getQualifiedKeyName(), $resourceId)->first();
+        return $record;
     }
 
     /**
@@ -373,6 +375,25 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     protected function with($query, Collection $includePaths)
     {
         $query->with($this->getRelationshipPaths($includePaths));
+    }
+
+    /**
+     * Add eager loading to a record.
+     *
+     * @param $record
+     * @param EncodingParametersInterface $parameters
+     */
+    protected function load($record, EncodingParametersInterface $parameters)
+    {
+        $relationshipPaths = $this->getRelationshipPaths($this->extractIncludePaths($parameters));
+
+        /** Eager load anything that needs to be loaded. */
+        if (method_exists($record, 'loadMissing')) {
+            $record->loadMissing($relationshipPaths);
+        } else {
+            /** @todo remove this when dropping support for Laravel 5.4 */
+            $record->load($relationshipPaths);
+        }
     }
 
     /**
