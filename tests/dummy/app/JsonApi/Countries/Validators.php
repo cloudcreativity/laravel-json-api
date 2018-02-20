@@ -14,6 +14,21 @@ class Validators extends AbstractValidatorProvider
     protected $resourceType = 'countries';
 
     /**
+     * @var array
+     */
+    protected $allowedSortParameters = [
+        'created-at',
+        'updated-at',
+        'name',
+        'code',
+    ];
+
+    /**
+     * @var array
+     */
+    protected $allowedIncludePaths = [];
+
+    /**
      * @inheritDoc
      */
     protected function attributeRules($record = null)

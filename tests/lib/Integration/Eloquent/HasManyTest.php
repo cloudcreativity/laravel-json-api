@@ -256,6 +256,16 @@ class HasManyTest extends TestCase
             ->assertReadHasMany('users', [$a, $b]);
     }
 
+    public function testReadRelatedWithInvalidFilter()
+    {
+        $country = factory(Country::class)->create();
+
+        $this->doReadRelated($country, 'users', ['filter' => ['name' => '']])
+            ->assertStatus(400)
+            ->assertErrors()
+            ->assertParameters('filter.name');
+    }
+
     public function testReadRelatedWithSort()
     {
         $country = factory(Country::class)->create();
@@ -276,6 +286,17 @@ class HasManyTest extends TestCase
         $this->markTestIncomplete('@todo this assertion does not assert the order of the resources.');
     }
 
+    public function testReadRelatedWithInvalidSort()
+    {
+        $country = factory(Country::class)->create();
+
+        // code is a valid sort on the countries resource, but not on the users resource.
+        $this->doReadRelated($country, 'users', ['sort' => 'code'])
+            ->assertStatus(400)
+            ->assertErrors()
+            ->assertParameters('sort');
+    }
+
     public function testReadRelatedWithInclude()
     {
         $country = factory(Country::class)->create();
@@ -284,6 +305,16 @@ class HasManyTest extends TestCase
 
         $this->doReadRelated($country, 'users', ['include' => 'phone'])
             ->assertReadHasMany('users', $users);
+    }
+
+    public function testReadRelatedWithInvalidInclude()
+    {
+        $country = factory(Country::class)->create();
+
+        $this->doReadRelated($country, 'users', ['include' => 'foo'])
+            ->assertStatus(400)
+            ->assertErrors()
+            ->assertParameters('include');
     }
 
     public function testReadRelatedWithPagination()

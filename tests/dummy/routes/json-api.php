@@ -11,7 +11,9 @@ JsonApi::register('default', [], function (ApiGroup $api) {
         'has-many' => ['users', 'posts'],
     ]);
     $api->resource('posts', [
-        'has-one' => 'author',
+        'has-one' => [
+            'author' => ['inverse' => 'users']
+        ],
         'has-many' => ['comments', 'tags'],
     ]);
     $api->resource('users', [

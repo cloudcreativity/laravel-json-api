@@ -58,8 +58,13 @@ class ResourceGroup
      */
     public function addResource(Registrar $router)
     {
-        $router->group($this->groupAction(), function ($router) {
-            $this->addResourceRoutes($router);
+        $router->group($this->groupAction(), function (Registrar $router) {
+            /** Primary resource routes. */
+            $router->group(['middleware' => 'json-api.validate'], function ($router) {
+                $this->addResourceRoutes($router);
+            });
+
+            /** Resource relationship Routes */
             $this->addRelationshipRoutes($router);
         });
     }
@@ -83,11 +88,9 @@ class ResourceGroup
     {
         $middleware = (array) $this->options->get('middleware');
         $authorizer = $this->authorizer();
-        $validators = $this->validators();
 
         return array_merge($middleware, array_filter([
             $authorizer ? "json-api.authorize:$authorizer" : null,
-            $validators ? "json-api.validate:$validators" : null,
             'json-api.bindings',
         ]));
     }
@@ -104,20 +107,6 @@ class ResourceGroup
         $authorizer = $this->resolver->getAuthorizerByResourceType($this->resourceType);
 
         return class_exists($authorizer) ?: $this->options->get('default-authorizer');
-    }
-
-    /**
-     * @return string|null
-     */
-    protected function validators()
-    {
-        if ($validators = $this->options->get('validators')) {
-            return $validators;
-        }
-
-        $validators = $this->resolver->getValidatorsByResourceType($this->resourceType);
-
-        return class_exists($validators) ? $validators : null;
     }
 
     /**

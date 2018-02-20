@@ -56,6 +56,10 @@ class Container extends AbstractContainer
      */
     protected function create($className)
     {
+        if (!class_exists($className)) {
+            return null;
+        }
+
         return $this->container->make($className);
     }
 

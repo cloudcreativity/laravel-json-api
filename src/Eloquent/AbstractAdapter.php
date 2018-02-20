@@ -791,7 +791,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      * @param Builder $query
      * @param SortParameterInterface $param
      */
-    protected function sortBy(Builder $query, SortParameterInterface $param)
+    protected function sortBy($query, SortParameterInterface $param)
     {
         $column = $this->getQualifiedSortColumn($query, $param->getField());
         $order = $param->isAscending() ? 'asc' : 'desc';
@@ -804,7 +804,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      * @param string $field
      * @return string
      */
-    protected function getQualifiedSortColumn(Builder $query, $field)
+    protected function getQualifiedSortColumn($query, $field)
     {
         $key = $this->columnForField($field, $query->getModel());
 

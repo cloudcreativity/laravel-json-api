@@ -214,7 +214,7 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
     /**
      * @inheritDoc
      */
-    public function searchRelatedQueryChecker()
+    public function relatedQueryChecker()
     {
         // TODO: Implement searchRelatedQueryChecker() method.
         return $this->queryChecker();
@@ -223,7 +223,7 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
     /**
      * @inheritDoc
      */
-    public function searchRelationshipQueryChecker()
+    public function relationshipQueryChecker()
     {
         // TODO: Implement searchRelationshipQueryChecker() method.
         return $this->queryChecker();
