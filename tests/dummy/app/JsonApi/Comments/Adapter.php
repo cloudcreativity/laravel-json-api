@@ -5,6 +5,7 @@ namespace DummyApp\JsonApi\Comments;
 use CloudCreativity\JsonApi\Contracts\Object\ResourceObjectInterface;
 use CloudCreativity\LaravelJsonApi\Eloquent\AbstractAdapter;
 use CloudCreativity\LaravelJsonApi\Eloquent\BelongsTo;
+use CloudCreativity\LaravelJsonApi\Pagination\StandardStrategy;
 use DummyApp\Comment;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -29,11 +30,20 @@ class Adapter extends AbstractAdapter
     ];
 
     /**
-     * Adapter constructor.
+     * @var array
      */
-    public function __construct()
+    protected $includePaths = [
+        'created-by' => 'user',
+    ];
+
+    /**
+     * Adapter constructor.
+     *
+     * @param StandardStrategy $paging
+     */
+    public function __construct(StandardStrategy $paging)
     {
-        parent::__construct(new Comment());
+        parent::__construct(new Comment(), $paging);
     }
 
     /**
@@ -68,7 +78,9 @@ class Adapter extends AbstractAdapter
      */
     protected function filter($query, Collection $filters)
     {
-        // TODO: Implement filter() method.
+        if ($createdBy = $filters->get('created-by')) {
+            $query->where('comments.user_id', $createdBy);
+        }
     }
 
 }

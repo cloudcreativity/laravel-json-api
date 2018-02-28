@@ -47,6 +47,7 @@ class Validators extends AbstractValidatorProvider
      * @var array
      */
     protected $allowedIncludePaths = [
+        'author',
         'comments',
         'comments.created-by',
     ];

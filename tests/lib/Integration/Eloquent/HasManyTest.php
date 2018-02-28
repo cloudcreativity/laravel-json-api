@@ -305,6 +305,8 @@ class HasManyTest extends TestCase
 
         $this->doReadRelated($country, 'users', ['include' => 'phone'])
             ->assertReadHasMany('users', $users);
+
+        $this->markTestIncomplete('@todo assert that phone is included.');
     }
 
     public function testReadRelatedWithInvalidInclude()
@@ -327,6 +329,16 @@ class HasManyTest extends TestCase
             ->assertReadHasMany('users', $users->take(2));
 
         $this->markTestIncomplete('@todo check the pagination meta.');
+    }
+
+    public function testReadRelatedWithInvalidPagination()
+    {
+        $country = factory(Country::class)->create();
+
+        $this->doReadRelated($country, 'users', ['page' => ['number' => 0, 'size' => 10]])
+            ->assertStatus(400)
+            ->assertErrors()
+            ->assertParameters('page.number');
     }
 
     public function testReadRelationship()
