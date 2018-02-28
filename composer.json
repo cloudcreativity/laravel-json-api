@@ -44,6 +44,7 @@
         "cloudcreativity/json-api-testing": "Required to use the test helpers."
     },
     "autoload": {
+
         "psr-4": {
             "CloudCreativity\\LaravelJsonApi\\": "src/"
         },

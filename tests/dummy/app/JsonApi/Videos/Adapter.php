@@ -37,7 +37,7 @@ class Adapter extends EloquentAdapter
     /**
      * @inheritDoc
      */
-    protected function filter(Builder $query, Collection $filters)
+    protected function filter($query, Collection $filters)
     {
         // TODO: Implement filter() method.
     }

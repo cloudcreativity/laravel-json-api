@@ -235,7 +235,7 @@ class Api
     public function getStore()
     {
         if (!$this->store) {
-            $this->store = $this->factory->createStore($this->container);
+            $this->store = $this->factory->createStore($this->getContainer());
         }
 
         return $this->store;

@@ -29,6 +29,7 @@ use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
  * Class HasMany
  *
  * @package CloudCreativity\LaravelJsonApi
+ * @todo might be best to split has-many-through out into a separate JSON API relation.
  */
 class HasMany extends AbstractRelation implements HasManyAdapterInterface
 {
@@ -40,7 +41,14 @@ class HasMany extends AbstractRelation implements HasManyAdapterInterface
      */
     public function query($record, EncodingParametersInterface $parameters)
     {
-        return $record->{$this->key};
+        $relation = $this->getRelation($record);
+        $adapter = $this->store()->adapterFor($relation->getModel());
+
+        if (!$adapter instanceof AbstractAdapter) {
+            throw new RuntimeException('Expecting inverse adapter to be an Eloquent adapter.');
+        }
+
+        return $adapter->queryRelation($relation, $parameters);
     }
 
     /**
@@ -62,7 +70,7 @@ class HasMany extends AbstractRelation implements HasManyAdapterInterface
     public function update($record, RelationshipInterface $relationship, EncodingParametersInterface $parameters)
     {
         $related = $this->findRelated($record, $relationship);
-        $relation = $this->getRelation($record);
+        $relation = $this->getWritableRelation($record);
 
         if ($relation instanceof Relations\BelongsToMany) {
             $relation->sync($related);
@@ -96,7 +104,7 @@ class HasMany extends AbstractRelation implements HasManyAdapterInterface
     {
         $related = $this->findRelated($record, $relationship);
 
-        $this->getRelation($record)->saveMany($related);
+        $this->getWritableRelation($record)->saveMany($related);
         $record->refresh(); // in case the relationship has been cached.
     }
 
@@ -109,7 +117,7 @@ class HasMany extends AbstractRelation implements HasManyAdapterInterface
     public function remove($record, RelationshipInterface $relationship, EncodingParametersInterface $parameters)
     {
         $related = $this->findRelated($record, $relationship);
-        $relation = $this->getRelation($record);
+        $relation = $this->getWritableRelation($record);
 
         if ($relation instanceof Relations\BelongsToMany) {
             $relation->detach($related);
@@ -124,21 +132,48 @@ class HasMany extends AbstractRelation implements HasManyAdapterInterface
      * Get the relation for a modification request.
      *
      * @param Model $record
-     * @return Relations\BelongsToMany|Relations\HasMany
+     * @return Relations\BelongsToMany|Relations\HasMany|Relations\MorphMany|Relations\HasManyThrough
      */
     private function getRelation($record)
     {
         $relation = $record->{$this->key}();
 
-        if ($relation instanceof Relations\HasManyThrough) {
-            throw new RuntimeException('Eloquent has-many-through relations cannot be updated.');
-        }
-
-        if (!$relation instanceof Relations\BelongsToMany && !$relation instanceof Relations\HasMany) {
-            throw new RuntimeException("Expecting a Eloquent has-many or belongs-to-many relationship.");
+        if (!$this->acceptRelation($relation)) {
+            throw new RuntimeException(
+                "Expecting an Eloquent has-many, has-many-through or belongs-to-many relationship."
+            );
         }
 
         return $relation;
+    }
+
+    /**
+     * @param $record
+     * @return Relations\BelongsToMany|Relations\HasMany|Relations\MorphMany
+     */
+    private function getWritableRelation($record)
+    {
+        $relation = $this->getRelation($record);
+
+        if ($relation instanceof Relations\HasManyThrough) {
+            throw new RuntimeException('Modifying a has-many-through Eloquent relation is not supported.');
+        }
+
+        return $relation;
+    }
+
+    /**
+     * Is the relation acceptable for this JSON API relationship?
+     *
+     * @param $relation
+     * @return bool
+     */
+    private function acceptRelation($relation)
+    {
+        return $relation instanceof Relations\HasManyThrough ||
+            $relation instanceof Relations\BelongsToMany ||
+            $relation instanceof Relations\HasMany ||
+            $relation instanceof Relations\MorphMany;
     }
 
     /**

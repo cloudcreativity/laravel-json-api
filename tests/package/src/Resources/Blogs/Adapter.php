@@ -21,7 +21,7 @@ class Adapter extends AbstractAdapter
     /**
      * @inheritDoc
      */
-    protected function filter(Builder $query, Collection $filters)
+    protected function filter($query, Collection $filters)
     {
         // TODO: Implement filter() method.
     }

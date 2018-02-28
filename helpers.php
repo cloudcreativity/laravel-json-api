@@ -35,7 +35,7 @@ if (!function_exists('json_api')) {
     /**
      * Get the inbound JSON API request.
      *
-     * @return \CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface|null
+     * @return \CloudCreativity\JsonApi\Contracts\Http\Requests\InboundRequestInterface|null
      */
     function json_api_request() {
         /** @var \CloudCreativity\LaravelJsonApi\Services\JsonApiService $service */

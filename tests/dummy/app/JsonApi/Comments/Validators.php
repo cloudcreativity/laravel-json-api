@@ -19,6 +19,7 @@ class Validators extends AbstractValidatorProvider
     protected $queryRules = [
         'page.number' => 'integer|min:1',
         'page.size' => 'integer|between:1,50',
+        'filter.created-by' => 'integer|min:1',
     ];
 
     /**
@@ -27,6 +28,7 @@ class Validators extends AbstractValidatorProvider
     protected $allowedSortParameters = [
         'created-at',
         'updated-at',
+        'content',
     ];
 
     /**
@@ -34,7 +36,10 @@ class Validators extends AbstractValidatorProvider
      */
     protected $allowedFilteringParameters = [
         'id',
+        'created-by',
     ];
+
+    protected $allowedIncludePaths = ['created-by'];
 
     /**
      * @inheritdoc

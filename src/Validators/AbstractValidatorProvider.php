@@ -29,7 +29,6 @@ use CloudCreativity\JsonApi\Exceptions\RuntimeException;
 use CloudCreativity\JsonApi\Http\Query\ChecksQueryParameters;
 use CloudCreativity\LaravelJsonApi\Api\Api;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorFactoryInterface;
-use CloudCreativity\LaravelJsonApi\Http\Requests\RequestInterpreter;
 use Illuminate\Contracts\Validation\Validator;
 use Neomerx\JsonApi\Contracts\Http\Query\QueryCheckerInterface;
 
@@ -108,11 +107,6 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
     protected $allowedPagingParameters = null;
 
     /**
-     * @var RequestInterpreter
-     */
-    protected $requestInterpreter;
-
-    /**
      * @var Api
      */
     private $api;
@@ -150,13 +144,11 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
      * AbstractValidatorProvider constructor.
      *
      * @param Api $api
-     * @param RequestInterpreter $interpreter
      * @param FactoryInterface $factory
      */
-    public function __construct(Api $api, RequestInterpreter $interpreter, FactoryInterface $factory)
+    public function __construct(Api $api, FactoryInterface $factory)
     {
         $this->api = $api;
-        $this->requestInterpreter = $interpreter;
         $this->factory = $factory;
     }
 
@@ -222,7 +214,7 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
     /**
      * @inheritDoc
      */
-    public function searchRelatedQueryChecker()
+    public function relatedQueryChecker()
     {
         // TODO: Implement searchRelatedQueryChecker() method.
         return $this->queryChecker();
@@ -231,7 +223,7 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
     /**
      * @inheritDoc
      */
-    public function searchRelationshipQueryChecker()
+    public function relationshipQueryChecker()
     {
         // TODO: Implement searchRelationshipQueryChecker() method.
         return $this->queryChecker();

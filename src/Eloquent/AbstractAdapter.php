@@ -37,6 +37,7 @@ use Illuminate\Support\Collection;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\SortParameterInterface;
 use Neomerx\JsonApi\Encoder\Parameters\EncodingParameters;
+use Illuminate\Database\Eloquent\Relations;
 
 /**
  * Class EloquentAdapter
@@ -173,7 +174,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      * @param Collection $filters
      * @return void
      */
-    abstract protected function filter(Builder $query, Collection $filters);
+    abstract protected function filter($query, Collection $filters);
 
     /**
      * AbstractAdapter constructor.
@@ -226,6 +227,40 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
         return $pagination->isEmpty() ?
             $this->all($query) :
             $this->paginate($query, $this->normalizeParameters($parameters, $pagination));
+    }
+
+    /**
+     * Query the resource when it appears in a relation of a parent model.
+     *
+     * For example, a request to `/posts/1/comments` will invoke this method on the
+     * comments adapter.
+     *
+     * @param Relations\BelongsToMany|Relations\HasMany|Relations\HasManyThrough $relation
+     * @param EncodingParametersInterface $parameters
+     * @return mixed
+     * @todo this does not currently support default pagination as it causes a problem with polymorphic relations
+     */
+    public function queryRelation($relation, EncodingParametersInterface $parameters)
+    {
+        $query = $relation->newQuery();
+
+        /** Apply eager loading */
+        $this->with($query, $this->extractIncludePaths($parameters));
+
+        /** Filter and sort */
+        $this->filter($query, $this->extractFilters($parameters));
+        $this->sort($query, (array) $parameters->getSortParameters());
+
+        /** Paginate results if needed. */
+        $pagination = collect($parameters->getPaginationParameters());
+
+        if (!$pagination->isEmpty() && !$this->hasPaging()) {
+            throw new RuntimeException('Paging parameters exist but paging is not supported.');
+        }
+
+        return $pagination->isEmpty() ?
+            $this->all($query) :
+            $this->paginate($query, $parameters);
     }
 
     /**
@@ -337,7 +372,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      *      the paths for resources that will be included.
      * @return void
      */
-    protected function with(Builder $query, Collection $includePaths)
+    protected function with($query, Collection $includePaths)
     {
         $query->with($this->getRelationshipPaths($includePaths));
     }
@@ -627,7 +662,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      * @param Builder $query
      * @return mixed
      */
-    protected function all(Builder $query)
+    protected function all($query)
     {
         return $query->get();
     }
@@ -650,7 +685,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      * @param EncodingParametersInterface $parameters
      * @return PageInterface
      */
-    protected function paginate(Builder $query, EncodingParametersInterface $parameters)
+    protected function paginate($query, EncodingParametersInterface $parameters)
     {
         return $this->paging->paginate($query, $parameters);
     }
@@ -725,7 +760,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      * @param SortParameterInterface[] $sortBy
      * @return void
      */
-    protected function sort(Builder $query, array $sortBy)
+    protected function sort($query, array $sortBy)
     {
         if (empty($sortBy)) {
             $this->defaultSort($query);
@@ -747,15 +782,16 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      * @param Builder $query
      * @return void
      */
-    protected function defaultSort(Builder $query)
+    protected function defaultSort($query)
     {
+        // no-op
     }
 
     /**
      * @param Builder $query
      * @param SortParameterInterface $param
      */
-    protected function sortBy(Builder $query, SortParameterInterface $param)
+    protected function sortBy($query, SortParameterInterface $param)
     {
         $column = $this->getQualifiedSortColumn($query, $param->getField());
         $order = $param->isAscending() ? 'asc' : 'desc';
@@ -768,7 +804,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      * @param string $field
      * @return string
      */
-    protected function getQualifiedSortColumn(Builder $query, $field)
+    protected function getQualifiedSortColumn($query, $field)
     {
         $key = $this->columnForField($field, $query->getModel());
 

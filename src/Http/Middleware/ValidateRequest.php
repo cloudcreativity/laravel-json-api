@@ -19,12 +19,8 @@
 namespace CloudCreativity\LaravelJsonApi\Http\Middleware;
 
 use Closure;
-use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface;
-use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterpreterInterface;
-use CloudCreativity\JsonApi\Contracts\Validators\ValidatorProviderInterface;
 use CloudCreativity\JsonApi\Exceptions\RuntimeException;
 use CloudCreativity\JsonApi\Http\Middleware\ValidatesRequests;
-use Illuminate\Container\Container;
 use Illuminate\Http\Request;
 
 /**
@@ -38,49 +34,39 @@ class ValidateRequest
     use ValidatesRequests;
 
     /**
-     * @var Container
-     */
-    protected $container;
-
-    /**
-     * ValidateRequest constructor.
-     *
-     * @param Container $container
-     */
-    public function __construct(Container $container)
-    {
-        $this->container = $container;
-    }
-
-    /**
      * @param Request $request
      * @param Closure $next
-     * @param string $validators
+     * @param string|null $inverse
+     *      the inverse resource type for relationship endpoints.
      * @return mixed
      */
-    public function handle($request, Closure $next, $validators)
+    public function handle($request, Closure $next, $inverse = null)
     {
-        $this->validate(
-            $this->container->make(RequestInterpreterInterface::class),
-            $this->container->make(RequestInterface::class),
-            $this->resolveValidators($validators)
+        $api = json_api();
+        $inboundRequest = json_api_request();
+
+        if ($inboundRequest->getRelationshipName() && !$inverse) {
+            throw new RuntimeException(sprintf(
+                'Expecting an inverse resource type for the %s relationship on the %s resource.',
+                $inboundRequest->getRelationshipName(),
+                $inboundRequest->getResourceType()
+            ));
+        }
+
+        $resourceValidators = $api->getContainer()->getValidatorsByResourceType(
+            $inboundRequest->getResourceType()
         );
+
+        if ($resourceValidators) {
+            $this->validate(
+                $inboundRequest,
+                $api->getStore(),
+                $resourceValidators,
+                $inverse ? $api->getContainer()->getValidatorsByResourceType($inverse) : null
+            );
+        }
 
         return $next($request);
     }
 
-    /**
-     * @param $name
-     * @return ValidatorProviderInterface
-     */
-    protected function resolveValidators($name)
-    {
-        $validators = $this->container->make($name);
-
-        if (!$validators instanceof ValidatorProviderInterface) {
-            throw new RuntimeException("Validators '$name' is not a validator provider instance.");
-        }
-
-        return $validators;
-    }
 }

@@ -20,12 +20,12 @@ namespace CloudCreativity\LaravelJsonApi\Http\Middleware;
 
 use Closure;
 use CloudCreativity\JsonApi\Contracts\Factories\FactoryInterface;
-use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface;
-use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterpreterInterface;
-use CloudCreativity\JsonApi\Http\Middleware\NegotiatesContent;
+use CloudCreativity\JsonApi\Contracts\Http\Requests\InboundRequestInterface;
+use CloudCreativity\JsonApi\Http\Middleware\ParsesServerRequests;
 use CloudCreativity\LaravelJsonApi\Api\Api;
 use CloudCreativity\LaravelJsonApi\Api\Repository;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
+use CloudCreativity\LaravelJsonApi\Routing\ResourceRegistrar;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\AbstractPaginator;
@@ -39,7 +39,7 @@ use Psr\Http\Message\ServerRequestInterface;
 class BootJsonApi
 {
 
-    use NegotiatesContent;
+    use ParsesServerRequests;
 
     /**
      * @var Container
@@ -78,11 +78,8 @@ class BootJsonApi
         /** Build and register the API */
         $api = $this->bindApi($namespace, $request->getSchemeAndHttpHost());
 
-        /** Do content negotiation, which matches encoders/decoders */
-        $this->doContentNegotiation($factory, $serverRequest, $api->getCodecMatcher());
-
-        /** Build and register the JSON API request */
-        $this->bindRequest($factory, $serverRequest, $api);
+        /** Build and register the JSON API inbound request */
+        $this->bindRequest($factory, $serverRequest, $request, $api);
 
         /** Set up the Laravel paginator to read from JSON API request instead */
         $this->bindPageResolver();
@@ -112,19 +109,29 @@ class BootJsonApi
     /**
      * @param FactoryInterface $factory
      * @param ServerRequestInterface $serverRequest
+     * @param Request $httpRequest
      * @param Api $api
-     * @return RequestInterface
+     * @return void
      */
-    protected function bindRequest(FactoryInterface $factory, ServerRequestInterface $serverRequest, Api $api)
-    {
-        /** @var RequestInterpreterInterface $interpreter */
-        $interpreter = $this->container->make(RequestInterpreterInterface::class);
+    protected function bindRequest(
+        FactoryInterface $factory,
+        ServerRequestInterface $serverRequest,
+        Request $httpRequest,
+        Api $api
+    ) {
+        $inboundRequest = $this->parseServerRequest(
+            $serverRequest,
+            $factory,
+            $api->getStore(),
+            $api->getCodecMatcher(),
+            $httpRequest->route(ResourceRegistrar::PARAM_RESOURCE_TYPE),
+            $httpRequest->route(ResourceRegistrar::PARAM_RESOURCE_ID),
+            $httpRequest->route(ResourceRegistrar::PARAM_RELATIONSHIP_NAME),
+            $httpRequest->is('*/relationships/*')
+        );
 
-        $request = $factory->createRequest($serverRequest, $interpreter, $api->getStore());
-        $this->container->instance(RequestInterface::class, $request);
-        $this->container->alias(RequestInterface::class, 'json-api.request');
-
-        return $request;
+        $this->container->instance(InboundRequestInterface::class, $inboundRequest);
+        $this->container->alias(InboundRequestInterface::class, 'json-api.request');
     }
 
     /**
@@ -136,8 +143,8 @@ class BootJsonApi
     {
         /** Override the current page resolution */
         AbstractPaginator::currentPageResolver(function ($pageName) {
-            /** @var RequestInterface $request */
-            $request = app(RequestInterface::class);
+            /** @var InboundRequestInterface $request */
+            $request = app(InboundRequestInterface::class);
             $pagination = (array) $request->getParameters()->getPaginationParameters();
 
             return isset($pagination[$pageName]) ? $pagination[$pageName] : null;

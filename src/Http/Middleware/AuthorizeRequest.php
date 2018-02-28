@@ -20,8 +20,8 @@ namespace CloudCreativity\LaravelJsonApi\Http\Middleware;
 
 use Closure;
 use CloudCreativity\JsonApi\Contracts\Authorizer\AuthorizerInterface;
-use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface;
-use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterpreterInterface;
+use CloudCreativity\JsonApi\Contracts\Http\Requests\InboundRequestInterface;
+use CloudCreativity\JsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\JsonApi\Exceptions\RuntimeException;
 use CloudCreativity\JsonApi\Http\Middleware\AuthorizesRequests;
 use Illuminate\Contracts\Container\Container;
@@ -61,8 +61,8 @@ class AuthorizeRequest
     public function handle($request, Closure $next, $authorizer)
     {
         $this->authorize(
-            $this->container->make(RequestInterpreterInterface::class),
-            $this->container->make(RequestInterface::class),
+            $this->container->make(InboundRequestInterface::class),
+            $this->container->make(StoreInterface::class),
             $this->resolveAuthorizer($authorizer)
         );
 
