@@ -30,6 +30,7 @@ use CloudCreativity\JsonApi\Http\Query\ChecksQueryParameters;
 use CloudCreativity\LaravelJsonApi\Api\Api;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorFactoryInterface;
 use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Support\Str;
 use Neomerx\JsonApi\Contracts\Http\Query\QueryCheckerInterface;
 
 /**
@@ -186,7 +187,7 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
 
     /**
      * @return QueryCheckerInterface
-     * @todo remove once usages of it below have been properly implemented
+     * @deprecated use `searchQueryChecker` instead.
      */
     public function queryChecker()
     {
@@ -198,8 +199,15 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
      */
     public function resourceQueryChecker()
     {
-        // TODO: Implement resourceQueryChecker() method.
-        return $this->queryChecker();
+        return $this->factory->createExtendedQueryChecker(
+            $this->allowUnrecognizedParameters(),
+            $this->allowedIncludePaths(),
+            $this->allowedFieldSetTypes(),
+            [],
+            [],
+            [],
+            $this->queryValidatorWithoutSearch()
+        );
     }
 
     /**
@@ -207,7 +215,6 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
      */
     public function searchQueryChecker()
     {
-        // TODO: Implement searchQueryChecker() method.
         return $this->queryChecker();
     }
 
@@ -365,7 +372,7 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
     }
 
     /**
-     * Get a validator for the filter query parameters.
+     * Get a validator for all query parameters.
      *
      * @return QueryValidatorInterface
      */
@@ -382,6 +389,23 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
     }
 
     /**
+     * Get a validator for query parameters except for filter, sort and page.
+     *
+     * @return QueryValidatorInterface
+     */
+    protected function queryValidatorWithoutSearch()
+    {
+        return $this->validatorFactory()->queryParameters(
+            $this->queryRulesWithoutSearch(),
+            $this->queryMessages(),
+            $this->queryCustomAttributes(),
+            function (Validator $validator) {
+                return $this->conditionalQuery($validator);
+            }
+        );
+    }
+
+    /**
      * Get the validation rules for the query parameters.
      *
      * @return array
@@ -389,6 +413,18 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
     protected function queryRules()
     {
         return $this->queryRules;
+    }
+
+    /**
+     * Get the validation rules for query parameters, excluding filter, sort and page.
+     *
+     * @return array
+     */
+    protected function queryRulesWithoutSearch()
+    {
+        return collect($this->queryRules())->reject(function ($value, $key) {
+            return Str::startsWith($key, ['filter.', 'sort.', 'page.']);
+        })->all();
     }
 
     /**

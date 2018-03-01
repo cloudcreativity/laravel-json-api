@@ -17,9 +17,9 @@ class Validators extends AbstractValidatorProvider
      * @var array
      */
     protected $queryRules = [
-        'page.number' => 'integer|min:1',
-        'page.size' => 'integer|between:1,50',
-        'filter.created-by' => 'integer|min:1',
+        'page.number' => 'filled|integer|min:1',
+        'page.size' => 'filled|integer|between:1,50',
+        'filter.created-by' => 'filled|numeric',
     ];
 
     /**
@@ -37,6 +37,14 @@ class Validators extends AbstractValidatorProvider
     protected $allowedFilteringParameters = [
         'id',
         'created-by',
+    ];
+
+    /**
+     * @var array
+     */
+    protected $allowedPagingParameters = [
+        'number',
+        'size',
     ];
 
     protected $allowedIncludePaths = ['created-by'];
@@ -58,7 +66,6 @@ class Validators extends AbstractValidatorProvider
      */
     protected function relationshipRules(RelationshipsValidatorInterface $relationships, $record = null)
     {
-        $relationships->hasOne('created-by', 'users', is_null($record), false);
         $relationships->hasOne('commentable', ['posts', 'videos'], is_null($record), true);
     }
 

@@ -19,6 +19,8 @@ relationships.
 - Moved Eloquent JSON API classes into a single namespace.
 - Moved logic from Eloquent controller into the JSON API controller as the logic is no longer specific to
 handling resources that related to Eloquent models.
+- Filter, sort and page query parameters are no longer allowed for requests on primary resources (create, read
+update and delete) because these query parameters do not apply to these requests.
 
 ### Removed
 - Delete Eloquent hydrator class as all hydration is now handled by adapters instead.
@@ -29,6 +31,11 @@ handling resources that related to Eloquent models.
 - The Eloquent controller is deprecated in favour using the JSON API controller directly.
 - The `Schema\EloquentSchema` is deprecated in favour of using the `Eloquent\AbstractSchema`.
 - The `Store\EloquentAdapter` is deprecated in favour of using the `Eloquent\AbstractAdapter`.
+
+### Fixed
+- [#128](https://github.com/cloudcreativity/laravel-json-api/issues/128) 
+Filter, sort and page parameters validation rules are excluded for resource requests for which those
+parameters do not apply (create, read, update and delete).
 
 ## [0.12.0] - 2018-02-08
 
