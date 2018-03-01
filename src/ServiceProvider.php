@@ -20,6 +20,8 @@ namespace CloudCreativity\LaravelJsonApi;
 
 use CloudCreativity\JsonApi\Contracts\Exceptions\ExceptionParserInterface;
 use CloudCreativity\JsonApi\Contracts\Factories\FactoryInterface;
+use CloudCreativity\JsonApi\Contracts\Http\Requests\InboundRequestInterface;
+use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface;
 use CloudCreativity\JsonApi\Contracts\Object\DocumentInterface;
 use CloudCreativity\JsonApi\Contracts\Object\RelationshipInterface;
 use CloudCreativity\JsonApi\Contracts\Object\ResourceObjectInterface;
@@ -194,6 +196,8 @@ class ServiceProvider extends BaseServiceProvider
      */
     protected function bindInboundRequest()
     {
+        $this->app->alias(InboundRequestInterface::class, RequestInterface::class);
+
         $this->app->bind(StoreInterface::class, function () {
             return json_api()->getStore();
         });
