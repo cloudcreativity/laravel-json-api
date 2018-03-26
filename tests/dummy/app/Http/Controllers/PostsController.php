@@ -3,54 +3,79 @@
 namespace DummyApp\Http\Controllers;
 
 use CloudCreativity\LaravelJsonApi\Http\Controllers\JsonApiController;
-use Illuminate\Support\Collection;
+use DummyApp\Events\ResourceEvent;
+use DummyApp\Post;
 
 class PostsController extends JsonApiController
 {
 
     /**
-     * @var Collection
+     * @param Post|null $record
+     * @param $resource
      */
-    private $invokables;
-
-    public function __construct()
+    public function saving($record, $resource)
     {
-        $this->invokables = collect();
+        event(new ResourceEvent('saving', $record, $resource));
     }
 
     /**
-     * Set a callback for testing purposes.
-     *
-     * @param $event
-     * @param callable $fn
-     * @return $this
+     * @param $resource
      */
-    public function on($event, callable $fn)
+    public function creating($resource)
     {
-        $this->invokables[$event] = $fn;
-
-        return $this;
+        event(new ResourceEvent('creating', null, $resource));
     }
 
     /**
-     * @param array ...$args
+     * @param Post $record
+     * @param $resource
      */
-    protected function saving(...$args)
+    public function updating(Post $record, $resource)
     {
-        $this->invoke('saving', $args);
+        event(new ResourceEvent('updating', $record, $resource));
     }
 
     /**
-     * Invoke a test callback.
-     *
-     * @param $event
-     * @param array $args
+     * @param Post $record
+     * @param $resource
      */
-    private function invoke($event, array $args)
+    public function saved(Post $record, $resource)
     {
-        if ($fn = $this->invokables->get($event)) {
-            call_user_func_array($fn, $args);
-        }
+        event(new ResourceEvent('saved', $record, $resource));
+    }
+
+    /**
+     * @param Post $record
+     * @param $resource
+     */
+    public function created(Post $record, $resource)
+    {
+        event(new ResourceEvent('created', $record, $resource));
+    }
+
+    /**
+     * @param Post $record
+     * @param $resource
+     */
+    public function updated(Post $record, $resource)
+    {
+        event(new ResourceEvent('updated', $record, $resource));
+    }
+
+    /**
+     * @param Post $record
+     */
+    public function deleting(Post $record)
+    {
+        event(new ResourceEvent('deleting', $record));
+    }
+
+    /**
+     * @param Post $record
+     */
+    public function deleted(Post $record)
+    {
+        event(new ResourceEvent('deleted', $record->getKey()));
     }
 
 }

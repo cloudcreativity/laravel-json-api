@@ -304,16 +304,16 @@ class JsonApiController extends Controller
      * @param ResourceObjectInterface $resource
      * @param object|null $record
      */
-    protected function beforeCommit(ResourceObjectInterface $resource, $record = null)
+    private function beforeCommit(ResourceObjectInterface $resource, $record = null)
     {
         if (method_exists($this, 'saving')) {
-            $this->saving($resource, $record);
+            $this->saving($record, $resource);
         }
 
-        $fn = is_null($record) ? 'creating' : 'updating';
-
-        if (method_exists($this, $fn)) {
-            $this->{$fn}($resource, $record);
+        if (is_null($record) && method_exists($this, 'creating')) {
+            $this->creating($resource);
+        } elseif ($record && method_exists($this, 'updating')) {
+            $this->updating($record, $resource);
         }
     }
 
@@ -322,16 +322,16 @@ class JsonApiController extends Controller
      * @param $record
      * @param $updating
      */
-    protected function afterCommit(ResourceObjectInterface $resource, $record, $updating)
+    private function afterCommit(ResourceObjectInterface $resource, $record, $updating)
     {
-        $fn = !$updating ? 'created' : 'updating';
+        $fn = !$updating ? 'created' : 'updated';
 
         if (method_exists($this, $fn)) {
-            $this->{$fn}($resource, $record);
+            $this->{$fn}($record, $resource);
         }
 
         if (method_exists($this, 'saved')) {
-            $this->saved($resource, $record);
+            $this->saved($record, $resource);
         }
     }
 

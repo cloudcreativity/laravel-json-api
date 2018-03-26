@@ -3,6 +3,7 @@
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Eloquent;
 
 use DummyApp\Comment;
+use DummyApp\Events\ResourceEvent;
 use DummyApp\Http\Controllers\PostsController;
 use DummyApp\Post;
 use DummyApp\Tag;
@@ -198,8 +199,10 @@ class ResourceTest extends TestCase
         $controller = $this->app->make(PostsController::class);
         $this->app->instance(PostsController::class, $controller);
 
-        $controller->on('saving', function ($resource, $model) {
-            $model->tags; // causes the model to cache the tags relationship
+        app('events')->listen(ResourceEvent::class, function ($event) {
+            if ('saving' === $event->hook) {
+                $event->record->tags; // causes the model to cache the tags relationship.
+            }
         });
 
         $model = $this->createPost();
