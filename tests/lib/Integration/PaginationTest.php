@@ -69,14 +69,15 @@ class PaginationTest extends TestCase
                     'from' => null,
                     'to' => null,
                     'total' => 0,
-                    'last-page' => 0,
+                    'last-page' => 1,
                 ],
             ],
             'links' => [
-                'first' => $this->buildLink(
+                'first' => $first = $this->buildLink(
                     'http://localhost/api/v1/posts',
                     ['page' => ['number' => 1, 'size' => 3]]
                 ),
+                'last' => $first,
             ],
         ]);
     }

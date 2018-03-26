@@ -144,9 +144,9 @@ trait CreatesPages
             return null;
         }
 
-        /** Paginator returns last page as zero for empty collection */
+        /** In older versions of Laravel, last page can return zero for an empty collection. */
         if (1 > $last = $paginator->lastPage()) {
-            return null;
+            $last = 1;
         }
 
         return $this->createLink($last, $paginator->perPage(), $params);
@@ -199,8 +199,13 @@ trait CreatesPages
         ];
 
         if ($paginator instanceof LengthAwarePaginator) {
+            /** In older versions of Laravel, last page can return zero for an empty collection. */
+            if (1 > $last = $paginator->lastPage()) {
+                $last = 1;
+            }
+
             $meta[$this->normalizeMetaKey('total')] = $paginator->total();
-            $meta[$this->normalizeMetaKey('last-page')] = $paginator->lastPage();
+            $meta[$this->normalizeMetaKey('last-page')] = $last;
         }
 
         return $meta;
