@@ -144,7 +144,12 @@ trait CreatesPages
             return null;
         }
 
-        return $this->createLink($paginator->lastPage(), $paginator->perPage(), $params);
+        /** Paginator returns last page as zero for empty collection */
+        if (1 > $last = $paginator->lastPage()) {
+            return null;
+        }
+
+        return $this->createLink($last, $paginator->perPage(), $params);
     }
 
     /**

@@ -20,18 +20,12 @@ class PaginationTest extends TestCase
     private $strategy;
 
     /**
-     * @var Collection
-     */
-    private $posts;
-
-    /**
      * @return void
      */
     protected function setUp()
     {
         parent::setUp();
         $this->app->instance(StandardStrategy::class, $this->strategy = new StandardStrategy());
-        $this->posts = factory(Post::class, 4)->create();
     }
 
     /**
@@ -41,8 +35,9 @@ class PaginationTest extends TestCase
      */
     public function testDefaultPagination()
     {
+        $posts = factory(Post::class, 4)->create();
         $response = $this->doSearch();
-        $response->assertSearchResponse()->assertContainsOnly(['posts' => $this->posts->modelKeys()]);
+        $response->assertSearchResponse()->assertContainsOnly(['posts' => $posts->modelKeys()]);
 
         $response->assertJson([
             'meta' => [
@@ -58,10 +53,39 @@ class PaginationTest extends TestCase
         ]);
     }
 
-    public function testPage1()
+    /**
+     * If the search does not match any models, then there are no pages.
+     */
+    public function testNoPages()
     {
         $response = $this->doSearch(['page' => ['number' => 1, 'size' => 3]]);
-        $response->assertSearchResponse()->assertContainsOnly(['posts' => $this->posts->take(3)->modelKeys()]);
+        $response->assertSearchedNone();
+
+        $response->assertJson([
+            'meta' => [
+                'page' => [
+                    'current-page' => 1,
+                    'per-page' => 3,
+                    'from' => null,
+                    'to' => null,
+                    'total' => 0,
+                    'last-page' => 0,
+                ],
+            ],
+            'links' => [
+                'first' => $this->buildLink(
+                    'http://localhost/api/v1/posts',
+                    ['page' => ['number' => 1, 'size' => 3]]
+                ),
+            ],
+        ]);
+    }
+
+    public function testPage1()
+    {
+        $posts = factory(Post::class, 4)->create();
+        $response = $this->doSearch(['page' => ['number' => 1, 'size' => 3]]);
+        $response->assertSearchResponse()->assertContainsOnly(['posts' => $posts->take(3)->modelKeys()]);
 
         $response->assertJson([
             'meta' => [
@@ -93,8 +117,9 @@ class PaginationTest extends TestCase
 
     public function testPage2()
     {
+        $posts = factory(Post::class, 4)->create();
         $response = $this->doSearch(['page' => ['number' => 2, 'size' => 3]]);
-        $response->assertSearchResponse()->assertContainsOnly(['posts' => $this->posts->last()->getKey()]);
+        $response->assertSearchResponse()->assertContainsOnly(['posts' => $posts->last()->getKey()]);
 
         $response->assertJson([
             'meta' => [
@@ -126,6 +151,7 @@ class PaginationTest extends TestCase
 
     public function testCustomPageKeys()
     {
+        factory(Post::class, 4)->create();
         $this->strategy->withPageKey('page')->withPerPageKey('limit');
 
         $response = $this->doSearch(['page' => ['page' => 1, 'limit' => 3]]);
@@ -151,6 +177,7 @@ class PaginationTest extends TestCase
 
     public function testSimplePagination()
     {
+        factory(Post::class, 4)->create();
         $this->strategy->withSimplePagination();
         $response = $this->doSearch(['page' => ['number' => 1, 'size' => 3]]);
         $response->assertSearchResponse();
@@ -183,6 +210,7 @@ class PaginationTest extends TestCase
 
     public function testCustomMetaKeys()
     {
+        factory(Post::class, 4)->create();
         $this->strategy->withMetaKey('paginator')->withUnderscoredMetaKeys();
         $response = $this->doSearch(['page' => ['number' => 1, 'size' => 3]]);
         $response->assertSearchResponse();
@@ -203,6 +231,7 @@ class PaginationTest extends TestCase
 
     public function testMetaNotNested()
     {
+        factory(Post::class, 4)->create();
         $this->strategy->withMetaKey(null);
 
         $response = $this->doSearch(['page' => ['number' => 1, 'size' => 3]]);
@@ -222,6 +251,8 @@ class PaginationTest extends TestCase
 
     public function testPageParametersAreValidated()
     {
+        factory(Post::class, 4)->create();
+
         $this->doSearch(['page' => ['number' => 1, 'size' => 999]])
             ->assertStatus(400)
             ->assertErrors()

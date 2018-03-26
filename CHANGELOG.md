@@ -36,6 +36,8 @@ update and delete) because these query parameters do not apply to these requests
 - [#128](https://github.com/cloudcreativity/laravel-json-api/issues/128) 
 Filter, sort and page parameters validation rules are excluded for resource requests for which those
 parameters do not apply (create, read, update and delete).
+- [#92](https://github.com/cloudcreativity/laravel-json-api/issues/92)
+Last page link is now excluded if there are pages, rather than linking to page zero.
 
 ## [0.12.0] - 2018-02-08
 
