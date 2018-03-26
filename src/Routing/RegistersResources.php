@@ -20,6 +20,7 @@ namespace CloudCreativity\LaravelJsonApi\Routing;
 
 use ArrayAccess;
 use CloudCreativity\JsonApi\Utils\Str;
+use CloudCreativity\LaravelJsonApi\Http\Controllers\JsonApiController;
 use Illuminate\Contracts\Routing\Registrar;
 use Illuminate\Routing\Route;
 use Illuminate\Support\Fluent;
@@ -101,6 +102,10 @@ trait RegistersResources
     {
         if ($controller = $this->options->get('controller')) {
             return $controller;
+        }
+
+        if (false === $controller) {
+            return $this->options['controller'] = '\\' . JsonApiController::class;
         }
 
         return $this->options['controller'] = Str::classify($this->resourceType) . 'Controller';

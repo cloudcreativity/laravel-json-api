@@ -8,6 +8,7 @@ JsonApi::register('default', [], function (ApiGroup $api) {
         'has-one' => 'commentable',
     ]);
     $api->resource('countries', [
+        'controller' => false,
         'has-many' => ['users', 'posts'],
     ]);
     $api->resource('posts', [
@@ -17,10 +18,14 @@ JsonApi::register('default', [], function (ApiGroup $api) {
         'has-many' => ['comments', 'tags'],
     ]);
     $api->resource('users', [
+        'controller' => false,
         'has-one' => 'phone',
     ]);
-    $api->resource('videos');
+    $api->resource('videos', [
+        'controller' => false,
+    ]);
     $api->resource('tags', [
+        'controller' => false,
         'has-many' => 'taggables',
     ]);
 

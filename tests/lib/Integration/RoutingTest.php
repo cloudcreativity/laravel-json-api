@@ -3,6 +3,7 @@
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration;
 
 use CloudCreativity\LaravelJsonApi\Facades\JsonApi;
+use CloudCreativity\LaravelJsonApi\Http\Controllers\JsonApiController;
 use CloudCreativity\LaravelJsonApi\Routing\ApiGroup;
 use DummyApp\Http\Controllers\PostsController;
 use Illuminate\Http\Request;
@@ -93,6 +94,29 @@ class RoutingTest extends TestCase
             JsonApi::register('default', [], function (ApiGroup $api) use ($expected) {
                 $api->resource('posts', [
                     'controller' => $expected,
+                    'has-one' => 'author',
+                    'has-many' => 'comments',
+                ]);
+            });
+        });
+
+        $this->assertMatch($method, $url, $expected . $action);
+    }
+
+    /**
+     * @param $method
+     * @param $url
+     * @param $action
+     * @dataProvider defaultsProvider
+     */
+    public function testControllerIsOptional($method, $url, $action)
+    {
+        $expected = '\\' . JsonApiController::class;
+
+        $this->withRoutes(function () use ($expected) {
+            JsonApi::register('default', [], function (ApiGroup $api) use ($expected) {
+                $api->resource('posts', [
+                    'controller' => false,
                     'has-one' => 'author',
                     'has-many' => 'comments',
                 ]);

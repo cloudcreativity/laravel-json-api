@@ -11,6 +11,9 @@ in the `ErrorBag` class.
 - JSON API resource paths are now automatically converted to model relationship paths for eager loading in
 the Eloquent adapter.
 - The Eloquent adapter now applies eager loading when reading or updating a specific resource.
+- Resources no longer need to have a controller as the generic JSON API controller will now handle any resource.
+Any resource that does not have a controller must use `false` as its `controller` option when registering the 
+resource routes.
 
 ### Changed
 - Split adapter into resource and relationship adapter, and created classes to specifically deal with Eloquent
