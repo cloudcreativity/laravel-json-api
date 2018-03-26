@@ -20,6 +20,7 @@ namespace CloudCreativity\LaravelJsonApi\Http\Controllers;
 
 use Closure;
 use CloudCreativity\JsonApi\Contracts\Http\Requests\InboundRequestInterface;
+use CloudCreativity\JsonApi\Contracts\Object\RelationshipInterface;
 use CloudCreativity\JsonApi\Contracts\Object\ResourceObjectInterface;
 use CloudCreativity\JsonApi\Contracts\Store\StoreInterface;
 use Illuminate\Http\Response;
@@ -44,7 +45,7 @@ class JsonApiController extends Controller
     protected $connection;
 
     /**
-     * Whether database transaction should be used.
+     * Whether database transactions should be used.
      *
      * @var bool
      */
@@ -87,6 +88,10 @@ class JsonApiController extends Controller
             );
         });
 
+        if ($record instanceof Response) {
+            return $record;
+        }
+
         return $this->reply()->created($record);
     }
 
@@ -107,6 +112,10 @@ class JsonApiController extends Controller
             );
         });
 
+        if ($record instanceof Response) {
+            return $record;
+        }
+
         return $this->reply()->content($record);
     }
 
@@ -118,9 +127,13 @@ class JsonApiController extends Controller
      */
     public function delete(StoreInterface $store, InboundRequestInterface $request, $record)
     {
-        $this->transaction(function () use ($store, $request, $record) {
-            $this->doDelete($store, $record, $request->getParameters());
+        $result = $this->transaction(function () use ($store, $request, $record) {
+            return $this->doDelete($store, $record, $request->getParameters());
         });
+
+        if ($result instanceof Response) {
+            return $result;
+        }
 
         return $this->reply()->noContent();
     }
@@ -167,14 +180,19 @@ class JsonApiController extends Controller
      */
     public function replaceRelationship(StoreInterface $store, InboundRequestInterface $request, $record)
     {
-        $this->transaction(function () use ($store, $request, $record) {
-            $store->replaceRelationship(
+        $result = $this->transaction(function () use ($store, $request, $record) {
+            return $this->doReplaceRelationship(
+                $store,
                 $record,
                 $request->getRelationshipName(),
                 $request->getDocument()->getRelationship(),
                 $request->getParameters()
             );
         });
+
+        if ($result instanceof Response) {
+            return $result;
+        }
 
         return $this->reply()->noContent();
     }
@@ -187,14 +205,18 @@ class JsonApiController extends Controller
      */
     public function addToRelationship(StoreInterface $store, InboundRequestInterface $request, $record)
     {
-        $this->transaction(function () use ($store, $request, $record) {
-            $store->addToRelationship(
+        $result = $this->transaction(function () use ($store, $request, $record) {
+            return $store->addToRelationship(
                 $record,
                 $request->getRelationshipName(),
                 $request->getDocument()->getRelationship(),
                 $request->getParameters()
             );
         });
+
+        if ($result instanceof Response) {
+            return $result;
+        }
 
         return $this->reply()->noContent();
     }
@@ -207,14 +229,18 @@ class JsonApiController extends Controller
      */
     public function removeFromRelationship(StoreInterface $store, InboundRequestInterface $request, $record)
     {
-        $this->transaction(function () use ($store, $request, $record) {
-            $store->removeFromRelationship(
+        $result = $this->transaction(function () use ($store, $request, $record) {
+            return $store->removeFromRelationship(
                 $record,
                 $request->getRelationshipName(),
                 $request->getDocument()->getRelationship(),
                 $request->getParameters()
             );
         });
+
+        if ($result instanceof Response) {
+            return $result;
+        }
 
         return $this->reply()->noContent();
     }
@@ -234,7 +260,8 @@ class JsonApiController extends Controller
      * @param string $resourceType
      * @param ResourceObjectInterface $resource
      * @param EncodingParametersInterface $parameters
-     * @return object
+     * @return object|Response
+     *      the created record or a HTTP response.
      */
     protected function doCreate(
         StoreInterface $store,
@@ -254,7 +281,8 @@ class JsonApiController extends Controller
      * @param $record
      * @param ResourceObjectInterface $resource
      * @param EncodingParametersInterface $parameters
-     * @return object
+     * @return object|Response
+     *      the updated record or a HTTP response.
      */
     protected function doUpdate(
         StoreInterface $store,
@@ -273,6 +301,8 @@ class JsonApiController extends Controller
      * @param StoreInterface $store
      * @param $record
      * @param EncodingParametersInterface $parameters
+     * @return Response|null
+     *      an HTTP response or null.
      */
     protected function doDelete(StoreInterface $store, $record, EncodingParametersInterface $parameters)
     {
@@ -285,6 +315,85 @@ class JsonApiController extends Controller
         if (method_exists($this, 'deleted')) {
             $this->deleted($record);
         }
+
+        return null;
+    }
+
+    /**
+     * @param StoreInterface $store
+     * @param $record
+     * @param $relationshipKey
+     * @param RelationshipInterface $relationship
+     * @param EncodingParametersInterface $params
+     * @return Response|null
+     *      an HTTP response or null.
+     */
+    protected function doReplaceRelationship(
+        StoreInterface $store,
+        $record,
+        $relationshipKey,
+        RelationshipInterface $relationship,
+        EncodingParametersInterface $params
+    ) {
+        $store->replaceRelationship(
+            $record,
+            $relationshipKey,
+            $relationship,
+            $params
+        );
+
+        return null;
+    }
+
+    /**
+     * @param StoreInterface $store
+     * @param $record
+     * @param $relationshipKey
+     * @param RelationshipInterface $relationship
+     * @param EncodingParametersInterface $params
+     * @return Response|null
+     *      an HTTP response or null.
+     */
+    protected function doAddToRelationship(
+        StoreInterface $store,
+        $record,
+        $relationshipKey,
+        RelationshipInterface $relationship,
+        EncodingParametersInterface $params
+    ) {
+        $store->addToRelationship(
+            $record,
+            $relationshipKey,
+            $relationship,
+            $params
+        );
+
+        return null;
+    }
+
+    /**
+     * @param StoreInterface $store
+     * @param $record
+     * @param $relationshipKey
+     * @param RelationshipInterface $relationship
+     * @param EncodingParametersInterface $params
+     * @return Response|null
+     */
+    protected function doRemoveFromRelationship(
+        StoreInterface $store,
+        $record,
+        $relationshipKey,
+        RelationshipInterface $relationship,
+        EncodingParametersInterface $params
+    ) {
+        $store->removeFromRelationship(
+            $record,
+            $relationshipKey,
+            $relationship,
+            $params
+        );
+
+        return null;
     }
 
     /**
