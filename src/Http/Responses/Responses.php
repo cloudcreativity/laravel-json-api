@@ -47,9 +47,30 @@ class Responses extends AbstractResponses
     /**
      * @inheritdoc
      */
+    public function getErrorResponse($errors, $statusCode = self::HTTP_BAD_REQUEST, array $headers = [])
+    {
+        /** If the error occurred while we were encoding, the encoder needs to be reset. */
+        $this->resetEncoder();
+
+        return parent::getErrorResponse($errors, $statusCode, $headers);
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function createResponse($content, $statusCode, array $headers)
     {
         return response($content, $statusCode, $headers);
+    }
+
+    /**
+     * Reset the encoder.
+     *
+     * @return void
+     */
+    protected function resetEncoder()
+    {
+        $this->getEncoder()->withLinks([])->withMeta(null);
     }
 
 }

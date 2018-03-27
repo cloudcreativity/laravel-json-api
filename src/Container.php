@@ -20,7 +20,6 @@ namespace CloudCreativity\LaravelJsonApi;
 use CloudCreativity\JsonApi\AbstractContainer;
 use CloudCreativity\JsonApi\Contracts\Resolver\ResolverInterface;
 use Illuminate\Contracts\Container\Container as IlluminateContainer;
-use Neomerx\JsonApi\Contracts\Schema\SchemaFactoryInterface;
 
 /**
  * Class Container
@@ -40,14 +39,12 @@ class Container extends AbstractContainer
      *
      * @param IlluminateContainer $container
      * @param ResolverInterface $resolver
-     * @param SchemaFactoryInterface $factory
      */
     public function __construct(
         IlluminateContainer $container,
-        ResolverInterface $resolver,
-        SchemaFactoryInterface $factory
+        ResolverInterface $resolver
     ) {
-        parent::__construct($resolver, $factory);
+        parent::__construct($resolver);
         $this->container = $container;
     }
 

@@ -21,7 +21,7 @@ return [
     |   - e.g. \DummyApp\JsonApi\Schemas\{User, Post, Comment}
     |
     */
-    'namespace' => '\DummyApp\JsonApi',
+    'namespace' => 'DummyApp\JsonApi',
     'by-resource' => true,
 
     /*
