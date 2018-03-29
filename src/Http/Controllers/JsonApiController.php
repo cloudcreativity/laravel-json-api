@@ -269,11 +269,16 @@ class JsonApiController extends Controller
         ResourceObjectInterface $resource,
         EncodingParametersInterface $parameters
     ) {
-        $this->beforeCommit($resource);
-        $record = $store->createRecord($resourceType, $resource, $parameters);
-        $this->afterCommit($resource, $record, false);
+        $response = $this->beforeCommit($resource);
 
-        return $record;
+        if ($response instanceof Response) {
+            return $response;
+        }
+
+        $record = $store->createRecord($resourceType, $resource, $parameters);
+        $response = $this->afterCommit($resource, $record, false);
+
+        return ($response instanceof Response) ? $response : $record;
     }
 
     /**
@@ -290,11 +295,16 @@ class JsonApiController extends Controller
         ResourceObjectInterface $resource,
         EncodingParametersInterface $parameters
     ) {
-        $this->beforeCommit($resource, $record);
-        $record = $store->updateRecord($record, $resource, $parameters);
-        $this->afterCommit($resource, $record, true);
+        $response = $this->beforeCommit($resource, $record);
 
-        return $record;
+        if ($response instanceof Response) {
+            return $response;
+        }
+
+        $record = $store->updateRecord($record, $resource, $parameters);
+        $response = $this->afterCommit($resource, $record, true);
+
+        return ($response instanceof Response) ? $response : $record;
     }
 
     /**
@@ -306,17 +316,23 @@ class JsonApiController extends Controller
      */
     protected function doDelete(StoreInterface $store, $record, EncodingParametersInterface $parameters)
     {
+        $response = null;
+
         if (method_exists($this, 'deleting')) {
-            $this->deleting($record);
+            $response = $this->deleting($record);
+        }
+
+        if ($response instanceof Response) {
+            return $response;
         }
 
         $store->deleteRecord($record, $parameters);
 
         if (method_exists($this, 'deleted')) {
-            $this->deleted($record);
+            $response = $this->deleted($record);
         }
 
-        return null;
+        return $response;
     }
 
     /**
@@ -412,36 +428,41 @@ class JsonApiController extends Controller
     /**
      * @param ResourceObjectInterface $resource
      * @param object|null $record
+     * @return Response|null
      */
     private function beforeCommit(ResourceObjectInterface $resource, $record = null)
     {
-        if (method_exists($this, 'saving')) {
-            $this->saving($record, $resource);
+        $result = method_exists($this, 'saving') ? $this->saving($record, $resource) : null;
+
+        if ($result instanceof Response) {
+            return $result;
         }
 
         if (is_null($record) && method_exists($this, 'creating')) {
-            $this->creating($resource);
+            $result = $this->creating($resource);
         } elseif ($record && method_exists($this, 'updating')) {
-            $this->updating($record, $resource);
+            $result = $this->updating($record, $resource);
         }
+
+        return $result;
     }
 
     /**
      * @param ResourceObjectInterface $resource
      * @param $record
      * @param $updating
+     * @return Response|null
      */
     private function afterCommit(ResourceObjectInterface $resource, $record, $updating)
     {
         $fn = !$updating ? 'created' : 'updated';
+        $result = method_exists($this, $fn) ? $this->{$fn}($record, $resource) : null;
 
-        if (method_exists($this, $fn)) {
-            $this->{$fn}($record, $resource);
+        if ($result instanceof Response) {
+            return $result;
         }
 
-        if (method_exists($this, 'saved')) {
-            $this->saved($record, $resource);
-        }
+        return method_exists($this, 'saved') ? $this->saved($record, $resource) : null;
     }
 
 }
