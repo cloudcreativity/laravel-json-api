@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\JsonApi\Contracts;
+namespace CloudCreativity\LaravelJsonApi\Contracts;
 
 use CloudCreativity\JsonApi\Contracts\Adapter\ResourceAdapterInterface;
 use CloudCreativity\JsonApi\Contracts\Authorizer\AuthorizerInterface;
@@ -25,7 +25,7 @@ use Neomerx\JsonApi\Contracts\Schema\ContainerInterface as BaseContainerInterfac
 /**
  * Interface ContainerInterface
  *
- * @package CloudCreativity\JsonApi
+ * @package CloudCreativity\LaravelJsonApi
  */
 interface ContainerInterface extends BaseContainerInterface
 {

@@ -18,7 +18,6 @@
 
 namespace CloudCreativity\LaravelJsonApi\Factories;
 
-use CloudCreativity\JsonApi\Contracts\ContainerInterface;
 use CloudCreativity\JsonApi\Contracts\Repositories\ErrorRepositoryInterface;
 use CloudCreativity\JsonApi\Contracts\Resolver\ResolverInterface;
 use CloudCreativity\JsonApi\Contracts\Store\StoreInterface;
@@ -29,6 +28,7 @@ use CloudCreativity\LaravelJsonApi\Api\ResourceProvider;
 use CloudCreativity\LaravelJsonApi\Api\Url;
 use CloudCreativity\LaravelJsonApi\Api\UrlGenerator;
 use CloudCreativity\LaravelJsonApi\Container;
+use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
 use CloudCreativity\LaravelJsonApi\Http\Responses\Responses;
 use CloudCreativity\LaravelJsonApi\Validators\ValidatorErrorFactory;
 use CloudCreativity\LaravelJsonApi\Validators\ValidatorFactory;

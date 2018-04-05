@@ -19,7 +19,6 @@
 namespace CloudCreativity\LaravelJsonApi\Tests\Unit\Store;
 
 use CloudCreativity\JsonApi\Contracts\Adapter\RelationshipAdapterInterface;
-use CloudCreativity\JsonApi\Contracts\ContainerInterface;
 use CloudCreativity\JsonApi\Contracts\Store\AdapterInterface;
 use CloudCreativity\JsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\JsonApi\Exceptions\RecordNotFoundException;
@@ -27,6 +26,7 @@ use CloudCreativity\JsonApi\Exceptions\RuntimeException;
 use CloudCreativity\JsonApi\Object\ResourceIdentifier;
 use CloudCreativity\JsonApi\Object\ResourceIdentifierCollection;
 use CloudCreativity\JsonApi\Object\ResourceObject;
+use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
 use CloudCreativity\LaravelJsonApi\Tests\Unit\TestCase;
 use CloudCreativity\Utils\Object\StandardObject;
 use PHPUnit_Framework_MockObject_MockObject;

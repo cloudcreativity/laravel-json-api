@@ -2,15 +2,16 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Unit;
 
-use CloudCreativity\JsonApi\AbstractContainer;
 use CloudCreativity\JsonApi\Contracts\Adapter\ResourceAdapterInterface;
 use CloudCreativity\JsonApi\Contracts\Authorizer\AuthorizerInterface;
 use CloudCreativity\JsonApi\Contracts\Resolver\ResolverInterface;
 use CloudCreativity\JsonApi\Contracts\Validators\ValidatorProviderInterface;
 use CloudCreativity\JsonApi\Exceptions\RuntimeException;
+use CloudCreativity\LaravelJsonApi\Container;
+use Illuminate\Container\Container as IlluminateContainer;
 use Neomerx\JsonApi\Contracts\Schema\SchemaProviderInterface;
 
-class AbstractContainerTest extends TestCase
+class ContainerTest extends TestCase
 {
 
     /**
@@ -19,9 +20,14 @@ class AbstractContainerTest extends TestCase
     private $resolver;
 
     /**
-     * @var \PHPUnit_Framework_MockObject_MockObject|AbstractContainer
+     * @var Container
      */
     private $container;
+
+    /**
+     * @var \PHPUnit_Framework_MockObject_MockObject|IlluminateContainer
+     */
+    private $illuminateContainer;
 
     /**
      * @return void
@@ -42,17 +48,17 @@ class AbstractContainerTest extends TestCase
             ->with(\stdClass::class)
             ->willReturn('posts');
 
-        /** @var \PHPUnit_Framework_MockObject_MockObject|AbstractContainer $container */
-        $this->container = $this->getMockForAbstractClass(AbstractContainer::class, [$this->resolver]);
+        $this->illuminateContainer = $this->createMock(IlluminateContainer::class);
+        $this->container = new Container($this->illuminateContainer, $this->resolver);
     }
 
     public function testSchema()
     {
         $schema = $this->createMock(SchemaProviderInterface::class);
 
-        $this->container
+        $this->illuminateContainer
             ->expects($this->once())
-            ->method('create')
+            ->method('make')
             ->with(get_class($schema))
             ->willReturn($schema);
 
@@ -88,7 +94,7 @@ class AbstractContainerTest extends TestCase
             ->method('getSchemaByResourceType')
             ->willReturn(\stdClass::class);
 
-        $this->container->method('create')->willReturn(new \stdClass());
+        $this->illuminateContainer->method('make')->willReturn(new \stdClass());
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('stdClass');
         $this->container->getSchemaByResourceType('posts');
@@ -98,9 +104,9 @@ class AbstractContainerTest extends TestCase
     {
         $adapter = $this->createMock(ResourceAdapterInterface::class);
 
-        $this->container
+        $this->illuminateContainer
             ->expects($this->once())
-            ->method('create')
+            ->method('make')
             ->with(get_class($adapter))
             ->willReturn($adapter);
 
@@ -129,7 +135,7 @@ class AbstractContainerTest extends TestCase
      */
     public function testAdapterForInvalidResourceType()
     {
-        $this->container->expects($this->never())->method('create');
+        $this->illuminateContainer->expects($this->never())->method('make');
         $this->assertNull($this->container->getAdapterByResourceType('comments'));
     }
 
@@ -139,7 +145,7 @@ class AbstractContainerTest extends TestCase
             ->method('getAdapterByResourceType')
             ->willReturn(\stdClass::class);
 
-        $this->container->method('create')->willReturn(new \stdClass());
+        $this->illuminateContainer->method('make')->willReturn(new \stdClass());
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('stdClass');
         $this->container->getAdapterByResourceType('posts');
@@ -149,9 +155,9 @@ class AbstractContainerTest extends TestCase
     {
         $validators = $this->createMock(ValidatorProviderInterface::class);
 
-        $this->container
+        $this->illuminateContainer
             ->expects($this->once())
-            ->method('create')
+            ->method('make')
             ->with(get_class($validators))
             ->willReturn($validators);
 
@@ -168,7 +174,7 @@ class AbstractContainerTest extends TestCase
     public function testValidatorsCreateReturnsNull()
     {
         $this->resolver->method('getValidatorsByResourceType')->willReturn(ValidatorProviderInterface::class);
-        $this->container->expects($this->once())->method('create')->with(ValidatorProviderInterface::class);
+        $this->illuminateContainer->expects($this->never())->method('make')->with(ValidatorProviderInterface::class);
 
         $this->assertNull($this->container->getValidatorsByResourceType('posts'));
         $this->assertNull($this->container->getValidatorsByType(\stdClass::class));
@@ -177,14 +183,14 @@ class AbstractContainerTest extends TestCase
 
     public function testValidatorsForInvalidResourceType()
     {
-        $this->container->expects($this->never())->method('create');
+        $this->illuminateContainer->expects($this->never())->method('make');
         $this->assertNull($this->container->getValidatorsByResourceType('comments'));
     }
 
     public function testValidatorsAreNotValidators()
     {
         $this->resolver->method('getValidatorsByResourceType')->willReturn(\stdClass::class);
-        $this->container->method('create')->willReturn(new \stdClass());
+        $this->illuminateContainer->method('make')->willReturn(new \stdClass());
 
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage(\stdClass::class);
@@ -196,9 +202,9 @@ class AbstractContainerTest extends TestCase
     {
         $authorizer = $this->createMock(AuthorizerInterface::class);
 
-        $this->container
+        $this->illuminateContainer
             ->expects($this->once())
-            ->method('create')
+            ->method('make')
             ->with(get_class($authorizer))
             ->willReturn($authorizer);
 
@@ -215,7 +221,7 @@ class AbstractContainerTest extends TestCase
     public function testAuthorizerCreateReturnsNull()
     {
         $this->resolver->method('getAuthorizerByResourceType')->willReturn(AuthorizerInterface::class);
-        $this->container->expects($this->once())->method('create')->with(AuthorizerInterface::class);
+        $this->illuminateContainer->expects($this->never())->method('make')->with(AuthorizerInterface::class);
 
         $this->assertNull($this->container->getAuthorizerByResourceType('posts'));
         $this->assertNull($this->container->getAuthorizerByType(\stdClass::class));
@@ -224,14 +230,14 @@ class AbstractContainerTest extends TestCase
 
     public function testAuthorizerForInvalidResourceType()
     {
-        $this->container->expects($this->never())->method('create');
+        $this->illuminateContainer->expects($this->never())->method('make');
         $this->assertNull($this->container->getAuthorizerByResourceType('comments'));
     }
 
     public function testAuthorizerIsNotAuthorizer()
     {
         $this->resolver->method('getAuthorizerByResourceType')->willReturn(\stdClass::class);
-        $this->container->method('create')->willReturn(new \stdClass());
+        $this->illuminateContainer->method('make')->willReturn(new \stdClass());
 
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage(\stdClass::class);

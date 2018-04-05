@@ -19,7 +19,6 @@
 namespace CloudCreativity\JsonApi\Store;
 
 use CloudCreativity\JsonApi\Contracts\Adapter\HasManyAdapterInterface;
-use CloudCreativity\JsonApi\Contracts\ContainerInterface;
 use CloudCreativity\JsonApi\Contracts\Object\RelationshipInterface;
 use CloudCreativity\JsonApi\Contracts\Object\ResourceIdentifierCollectionInterface;
 use CloudCreativity\JsonApi\Contracts\Object\ResourceIdentifierInterface;
@@ -29,6 +28,7 @@ use CloudCreativity\JsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\JsonApi\Exceptions\RecordNotFoundException;
 use CloudCreativity\JsonApi\Exceptions\RuntimeException;
 use CloudCreativity\JsonApi\Object\ResourceIdentifier;
+use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 /**

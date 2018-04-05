@@ -18,7 +18,6 @@
 
 namespace CloudCreativity\JsonApi\Contracts\Factories;
 
-use CloudCreativity\JsonApi\Contracts\ContainerInterface;
 use CloudCreativity\JsonApi\Contracts\Encoder\SerializerInterface;
 use CloudCreativity\JsonApi\Contracts\Http\Client\ClientInterface;
 use CloudCreativity\JsonApi\Contracts\Http\Requests\InboundRequestInterface;
@@ -30,6 +29,7 @@ use CloudCreativity\JsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\JsonApi\Contracts\Utils\ReplacerInterface;
 use CloudCreativity\JsonApi\Contracts\Validators\QueryValidatorInterface;
 use CloudCreativity\JsonApi\Contracts\Validators\ValidatorFactoryInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
 use Neomerx\JsonApi\Contracts\Codec\CodecMatcherInterface;
 use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
 use Neomerx\JsonApi\Contracts\Document\LinkInterface;
