@@ -17,9 +17,9 @@
  */
 
 namespace CloudCreativity\LaravelJsonApi {
+
     use CloudCreativity\JsonApi\Exceptions\InvalidJsonException;
     use CloudCreativity\LaravelJsonApi\Utils\Helpers;
-    use Neomerx\JsonApi\Exceptions\JsonApiException;
     use Psr\Http\Message\RequestInterface;
     use Psr\Http\Message\ResponseInterface;
 
@@ -28,30 +28,16 @@ namespace CloudCreativity\LaravelJsonApi {
         /**
          * Decodes a JSON string.
          *
-         * @param $content
+         * @param string $content
          * @param bool $assoc
          * @param int $depth
          * @param int $options
-         * @return mixed
-         * @throws JsonApiException
+         * @return object|array
+         * @throws InvalidJsonException
          */
         function json_decode($content, $assoc = false, $depth = 512, $options = 0)
         {
-            $decoded = \json_decode($content, $assoc, $depth, $options);
-
-            if (JSON_ERROR_NONE !== json_last_error()) {
-                throw InvalidJsonException::create();
-            }
-
-            if (!$assoc && !is_object($decoded)) {
-                throw new InvalidJsonException(null, 'JSON is not an object.');
-            }
-
-            if ($assoc && !is_array($decoded)) {
-                throw new InvalidJsonException(null, 'JSON is not an object or array.');
-            }
-
-            return $decoded;
+            return Helpers::decode($content, $assoc, $depth, $options);
         }
 
         /**
@@ -75,6 +61,7 @@ namespace CloudCreativity\LaravelJsonApi {
 }
 
 namespace {
+
     if (!function_exists('json_api')) {
         /**
          * Get the API handling the inbound request, or a named API.

@@ -17,11 +17,41 @@
 
 namespace CloudCreativity\LaravelJsonApi\Utils;
 
+use CloudCreativity\JsonApi\Exceptions\InvalidJsonException;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
 class Helpers
 {
+
+    /**
+     * Decode a JSON string.
+     *
+     * @param string $content
+     * @param bool $assoc
+     * @param int $depth
+     * @param int $options
+     * @return object|array
+     * @throws InvalidJsonException
+     */
+    public static function decode($content, $assoc = false, $depth = 512, $options = 0)
+    {
+        $decoded = \json_decode($content, $assoc, $depth, $options);
+
+        if (JSON_ERROR_NONE !== json_last_error()) {
+            throw InvalidJsonException::create();
+        }
+
+        if (!$assoc && !is_object($decoded)) {
+            throw new InvalidJsonException(null, 'JSON is not an object.');
+        }
+
+        if ($assoc && !is_array($decoded)) {
+            throw new InvalidJsonException(null, 'JSON is not an object or array.');
+        }
+
+        return $decoded;
+    }
 
     /**
      * Does the HTTP request contain body content?
