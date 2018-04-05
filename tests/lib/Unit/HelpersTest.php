@@ -5,8 +5,8 @@ namespace CloudCreativity\LaravelJsonApi\Tests\Unit;
 use CloudCreativity\JsonApi\Exceptions\InvalidJsonException;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
-use function CloudCreativity\JsonApi\http_contains_body;
-use function CloudCreativity\JsonApi\json_decode;
+use function CloudCreativity\LaravelJsonApi\http_contains_body;
+use function CloudCreativity\LaravelJsonApi\json_decode;
 
 class HelpersTest extends TestCase
 {

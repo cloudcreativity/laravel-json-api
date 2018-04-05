@@ -51,8 +51,7 @@
             "CloudCreativity\\JsonApi\\": "lib/"
         },
         "files": [
-            "helpers.php",
-            "helpers2.php"
+            "helpers.php"
         ]
     },
     "autoload-dev": {

@@ -22,7 +22,7 @@ use Neomerx\JsonApi\Contracts\Codec\CodecMatcherInterface;
 use Neomerx\JsonApi\Contracts\Http\HttpFactoryInterface;
 use Neomerx\JsonApi\Exceptions\JsonApiException;
 use Psr\Http\Message\ServerRequestInterface;
-use function CloudCreativity\JsonApi\http_contains_body;
+use function CloudCreativity\LaravelJsonApi\http_contains_body;
 
 /**
  * Trait NegotiatesContent

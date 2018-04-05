@@ -16,31 +16,92 @@
  * limitations under the License.
  */
 
-if (!function_exists('json_api')) {
-    /**
-     * Get the API handling the inbound request, or a named API.
-     *
-     * @param string|null $apiName
-     *      the API name, or null to get the API handling the inbound request.
-     * @return \CloudCreativity\LaravelJsonApi\Api\Api
-     * @throws \CloudCreativity\JsonApi\Exceptions\RuntimeException
-     */
-    function json_api($apiName = null) {
-        /** @var \CloudCreativity\LaravelJsonApi\Services\JsonApiService $service */
-        $service = app('json-api');
+namespace CloudCreativity\LaravelJsonApi {
+    use CloudCreativity\JsonApi\Exceptions\InvalidJsonException;
+    use CloudCreativity\LaravelJsonApi\Utils\Helpers;
+    use Neomerx\JsonApi\Exceptions\JsonApiException;
+    use Psr\Http\Message\RequestInterface;
+    use Psr\Http\Message\ResponseInterface;
 
-        return $apiName ? $service->api($apiName) : $service->requestApiOrFail();
-    }
+    if (!function_exists('\CloudCreativity\LaravelJsonApi\json_decode')) {
 
-    /**
-     * Get the inbound JSON API request.
-     *
-     * @return \CloudCreativity\JsonApi\Contracts\Http\Requests\InboundRequestInterface|null
-     */
-    function json_api_request() {
-        /** @var \CloudCreativity\LaravelJsonApi\Services\JsonApiService $service */
-        $service = app('json-api');
+        /**
+         * Decodes a JSON string.
+         *
+         * @param $content
+         * @param bool $assoc
+         * @param int $depth
+         * @param int $options
+         * @return mixed
+         * @throws JsonApiException
+         */
+        function json_decode($content, $assoc = false, $depth = 512, $options = 0)
+        {
+            $decoded = \json_decode($content, $assoc, $depth, $options);
 
-        return $service->request();
+            if (JSON_ERROR_NONE !== json_last_error()) {
+                throw InvalidJsonException::create();
+            }
+
+            if (!$assoc && !is_object($decoded)) {
+                throw new InvalidJsonException(null, 'JSON is not an object.');
+            }
+
+            if ($assoc && !is_array($decoded)) {
+                throw new InvalidJsonException(null, 'JSON is not an object or array.');
+            }
+
+            return $decoded;
+        }
+
+        /**
+         * Does the HTTP message contain body content?
+         *
+         * If only a request is provided, the method will determine if the request contains body.
+         *
+         * If a request and response is provided, the method will determine if the response contains
+         * body. Determining this for a response is dependent on the request method, which is why
+         * the request is also required.
+         *
+         * @param RequestInterface $request
+         * @param ResponseInterface $response
+         * @return bool
+         */
+        function http_contains_body(RequestInterface $request, ResponseInterface $response = null)
+        {
+            return $response ? Helpers::doesResponseHaveBody($request, $response) : Helpers::doesRequestHaveBody($request);
+        }
     }
 }
+
+namespace {
+    if (!function_exists('json_api')) {
+        /**
+         * Get the API handling the inbound request, or a named API.
+         *
+         * @param string|null $apiName
+         *      the API name, or null to get the API handling the inbound request.
+         * @return \CloudCreativity\LaravelJsonApi\Api\Api
+         * @throws \CloudCreativity\JsonApi\Exceptions\RuntimeException
+         */
+        function json_api($apiName = null) {
+            /** @var \CloudCreativity\LaravelJsonApi\Services\JsonApiService $service */
+            $service = app('json-api');
+
+            return $apiName ? $service->api($apiName) : $service->requestApiOrFail();
+        }
+
+        /**
+         * Get the inbound JSON API request.
+         *
+         * @return \CloudCreativity\JsonApi\Contracts\Http\Requests\InboundRequestInterface|null
+         */
+        function json_api_request() {
+            /** @var \CloudCreativity\LaravelJsonApi\Services\JsonApiService $service */
+            $service = app('json-api');
+
+            return $service->request();
+        }
+    }
+}
+

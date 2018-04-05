@@ -15,17 +15,12 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\JsonApi\Utils;
+namespace CloudCreativity\LaravelJsonApi\Utils;
 
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
-/**
- * Class Http
- *
- * @package CloudCreativity\JsonApi
- */
-class Http
+class Helpers
 {
 
     /**
