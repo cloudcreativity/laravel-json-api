@@ -22,16 +22,18 @@ use CloudCreativity\JsonApi\Contracts\Encoder\SerializerInterface;
 use CloudCreativity\JsonApi\Contracts\Http\Client\ClientInterface;
 use CloudCreativity\JsonApi\Contracts\Object\ResourceObjectInterface;
 use CloudCreativity\JsonApi\Document\Error;
-use CloudCreativity\JsonApi\Encoder\Encoder;
-use CloudCreativity\JsonApi\Factories\Factory;
+use CloudCreativity\JsonApi\Http\Client\GuzzleClient;
 use CloudCreativity\JsonApi\Http\Responses\Response as ClientResponse;
 use CloudCreativity\JsonApi\Object\ResourceIdentifier;
+use CloudCreativity\LaravelJsonApi\Encoder\Encoder;
+use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use CloudCreativity\LaravelJsonApi\Tests\Unit\TestCase;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\BadResponseException;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;
+use Illuminate\Contracts\Container\Container;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use Neomerx\JsonApi\Contracts\Schema\ContainerInterface;
 use Neomerx\JsonApi\Contracts\Schema\SchemaProviderInterface;
@@ -97,8 +99,8 @@ class GuzzleClientTest extends TestCase
         ]);
 
         /** @var ContainerInterface $container */
-        $factory = new Factory();
-        $this->client = $factory->createClient($http, $container, $serializer);
+        $factory = new Factory($this->createMock(Container::class));
+        $this->client = new GuzzleClient($factory, $http, $container, $serializer);
     }
 
     public function testIndex()
@@ -398,9 +400,26 @@ class GuzzleClientTest extends TestCase
             ["foo" => "bar"]
         );
 
-        /** @var Encoder $encoder */
-        $encoder = Encoder::instance();
-        $this->willSeeErrors($encoder->serializeErrors([$expected]), 500);
+        $this->willSeeErrors([
+            'errors' => [
+                [
+                    'id' => $expected->getId(),
+                    'links' => [
+                        'about' => 'http://localhost/errors/server',
+                    ],
+                    'status' => $expected->getStatus(),
+                    'code' => $expected->getCode(),
+                    'title' => $expected->getTitle(),
+                    'detail' => $expected->getDetail(),
+                    'source' => [
+                        'pointer' => '/',
+                    ],
+                    'meta' => [
+                        'foo' => 'bar',
+                    ],
+                ],
+            ]
+        ], 500);
 
         try {
             $this->client->delete($this->record);

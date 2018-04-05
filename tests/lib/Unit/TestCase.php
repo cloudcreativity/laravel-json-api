@@ -18,27 +18,12 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Unit;
 
-use CloudCreativity\JsonApi\Contracts\Factories\FactoryInterface;
 use CloudCreativity\JsonApi\Contracts\Object\DocumentInterface;
-use CloudCreativity\JsonApi\Factories\Factory;
 use CloudCreativity\JsonApi\Object\Document;
 use PHPUnit\Framework\TestCase as BaseTestCase;
 
 class TestCase extends BaseTestCase
 {
-
-    /**
-     * @var FactoryInterface
-     */
-    protected $factory;
-
-    /**
-     * @return void
-     */
-    protected function setUp()
-    {
-        $this->factory = new Factory();
-    }
 
     /**
      * @param $content

@@ -48,7 +48,7 @@ class InboundRequestTest extends TestCase
         $this->assertNull($this->request->getRelationshipName());
         $this->assertFalse($this->request->hasRelationships());
         $this->assertNull($this->request->getDocument());
-        $this->assertEquals($this->factory->createQueryParameters(), $this->request->getParameters());
+        $this->assertEquals(new EncodingParameters(), $this->request->getParameters());
     }
 
     public function testIsCreateResource()
@@ -126,7 +126,7 @@ class InboundRequestTest extends TestCase
             ],
         ]);
 
-        $request = $this->factory->createInboundRequest(
+        $request = new InboundRequest(
             'POST',
             'posts',
             '1',
@@ -181,7 +181,7 @@ class InboundRequestTest extends TestCase
      */
     private function willSee($method, $resourceId = null, $relationshipName = null, $relationships = false)
     {
-        $this->request = $this->factory->createInboundRequest(
+        $this->request = new InboundRequest(
            $method,
            'posts',
            $resourceId,

@@ -26,9 +26,12 @@ use CloudCreativity\JsonApi\Exceptions\RuntimeException;
 use CloudCreativity\JsonApi\Object\ResourceIdentifier;
 use CloudCreativity\JsonApi\Object\ResourceIdentifierCollection;
 use CloudCreativity\JsonApi\Object\ResourceObject;
+use CloudCreativity\JsonApi\Pagination\Page;
+use CloudCreativity\JsonApi\Store\Store;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
 use CloudCreativity\LaravelJsonApi\Tests\Unit\TestCase;
 use CloudCreativity\Utils\Object\StandardObject;
+use Neomerx\JsonApi\Encoder\Parameters\EncodingParameters;
 use PHPUnit_Framework_MockObject_MockObject;
 
 /**
@@ -59,8 +62,8 @@ class StoreTest extends TestCase
      */
     public function testQuery()
     {
-        $params = $this->factory->createQueryParameters();
-        $expected = $this->factory->createPage([]);
+        $params = new EncodingParameters();
+        $expected = new Page([]);
 
         $store = $this->store([
             'posts' => $this->willNotQuery(),
@@ -77,12 +80,12 @@ class StoreTest extends TestCase
     {
         $store = $this->store(['posts' => $this->willNotQuery()]);
         $this->expectException(RuntimeException::class);
-        $store->queryRecords('users', $this->factory->createQueryParameters());
+        $store->queryRecords('users', new EncodingParameters());
     }
 
     public function testCreateRecord()
     {
-        $params = $this->factory->createQueryParameters();
+        $params = new EncodingParameters();
         $resource = new ResourceObject();
         $expected = new StandardObject();
 
@@ -98,7 +101,7 @@ class StoreTest extends TestCase
     {
         $store = $this->store(['posts' => $this->willNotQuery()]);
         $this->expectException(RuntimeException::class);
-        $store->createRecord('comments', new ResourceObject(), $this->factory->createQueryParameters());
+        $store->createRecord('comments', new ResourceObject(), new EncodingParameters());
     }
 
     /**
@@ -107,7 +110,7 @@ class StoreTest extends TestCase
      */
     public function testReadRecord()
     {
-        $params = $this->factory->createQueryParameters();
+        $params = new EncodingParameters();
         $expected = new StandardObject();
 
         $store = $this->store([
@@ -125,12 +128,12 @@ class StoreTest extends TestCase
     {
         $store = $this->store(['posts' => $this->willNotQuery()]);
         $this->expectException(RuntimeException::class);
-        $store->readRecord('users', '1', $this->factory->createQueryParameters());
+        $store->readRecord('users', '1', new EncodingParameters());
     }
 
     public function testUpdateRecord()
     {
-        $params = $this->factory->createQueryParameters();
+        $params = new EncodingParameters();
         $resource = new ResourceObject();
         $record = new StandardObject();
         $expected = clone $record;
@@ -147,7 +150,7 @@ class StoreTest extends TestCase
 
     public function testDeleteRecord()
     {
-        $params = $this->factory->createQueryParameters();
+        $params = new EncodingParameters();
         $record = new StandardObject();
 
         $adapter = $this->willDeleteRecord($record, $params);
@@ -162,7 +165,7 @@ class StoreTest extends TestCase
 
     public function testDeleteRecordFails()
     {
-        $params = $this->factory->createQueryParameters();
+        $params = new EncodingParameters();
         $record = new StandardObject();
 
         $adapter = $this->willDeleteRecord($record, $params, false);
@@ -182,9 +185,9 @@ class StoreTest extends TestCase
      */
     public function testQueryRelated()
     {
-        $parameters = $this->factory->createQueryParameters();
+        $parameters = new EncodingParameters();
         $record = new StandardObject();
-        $expected = $this->factory->createPage([]);
+        $expected = new Page([]);
 
         $store = $this->storeByTypes([
             ResourceObject::class => $this->willNotQuery(),
@@ -200,9 +203,9 @@ class StoreTest extends TestCase
      */
     public function testQueryRelationship()
     {
-        $parameters = $this->factory->createQueryParameters();
+        $parameters = new EncodingParameters();
         $record = new StandardObject();
-        $expected = $this->factory->createPage([]);
+        $expected = new Page([]);
 
         $store = $this->storeByTypes([
             ResourceObject::class => $this->willNotQuery(),
@@ -435,7 +438,7 @@ class StoreTest extends TestCase
                 return isset($adapters[$resourceType]) ? $adapters[$resourceType] : null;
             });
 
-        return $this->factory->createStore($this->container);
+        return new Store($this->container);
     }
 
     /**
@@ -457,7 +460,7 @@ class StoreTest extends TestCase
                 return isset($types[$type]) ? $types[$type] : null;
             });
 
-        return $this->factory->createStore($this->container);
+        return new Store($this->container);
     }
 
     /**

@@ -223,7 +223,7 @@ class Api
     public function getContainer()
     {
         if (!$this->container) {
-            $this->container = $this->factory->createJsonApiContainer($this->resolver);
+            $this->container = $this->factory->createExtendedContainer($this->resolver);
         }
 
         return $this->container;

@@ -16,22 +16,28 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\LaravelJsonApi\Tests\Unit\Encoder;
+namespace CloudCreativity\LaravelJsonApi\Encoder;
 
-use CloudCreativity\JsonApi\Encoder\Encoder;
-use CloudCreativity\LaravelJsonApi\Tests\Unit\TestCase;
+use CloudCreativity\JsonApi\Contracts\Encoder\SerializerInterface;
+use CloudCreativity\LaravelJsonApi\Factories\Factory;
+use Neomerx\JsonApi\Encoder\Encoder as BaseEncoder;
+use Neomerx\JsonApi\Encoder\Serialize\ArraySerializerTrait;
 
 /**
- * Class EncoderTest
+ * Class Encoder
  *
- * @package CloudCreativity\JsonApi
+ * @package CloudCreativity\LaravelJsonApi
  */
-class EncoderTest extends TestCase
+class Encoder extends BaseEncoder implements SerializerInterface
 {
 
-    public function test()
+    use ArraySerializerTrait;
+
+    /**
+     * @return Factory
+     */
+    protected static function createFactory()
     {
-        $encoder = Encoder::instance();
-        $this->assertInstanceOf(Encoder::class, $encoder);
+        return app(Factory::class);
     }
 }

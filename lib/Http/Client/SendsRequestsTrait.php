@@ -19,7 +19,7 @@
 namespace CloudCreativity\JsonApi\Http\Client;
 
 use CloudCreativity\JsonApi\Contracts\Encoder\SerializerInterface;
-use CloudCreativity\JsonApi\Contracts\Factories\FactoryInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Factories\FactoryInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use Neomerx\JsonApi\Contracts\Http\Query\QueryParametersParserInterface;
 use Neomerx\JsonApi\Contracts\Schema\ContainerInterface;

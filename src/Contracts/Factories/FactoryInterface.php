@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\JsonApi\Contracts\Factories;
+namespace CloudCreativity\LaravelJsonApi\Contracts\Factories;
 
 use CloudCreativity\JsonApi\Contracts\Encoder\SerializerInterface;
 use CloudCreativity\JsonApi\Contracts\Http\Client\ClientInterface;
@@ -25,6 +25,7 @@ use CloudCreativity\JsonApi\Contracts\Http\Responses\ResponseInterface;
 use CloudCreativity\JsonApi\Contracts\Object\DocumentInterface;
 use CloudCreativity\JsonApi\Contracts\Pagination\PageInterface;
 use CloudCreativity\JsonApi\Contracts\Repositories\ErrorRepositoryInterface;
+use CloudCreativity\JsonApi\Contracts\Resolver\ResolverInterface;
 use CloudCreativity\JsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\JsonApi\Contracts\Utils\ReplacerInterface;
 use CloudCreativity\JsonApi\Contracts\Validators\QueryValidatorInterface;
@@ -43,15 +44,18 @@ use Psr\Http\Message\RequestInterface as PsrRequest;
 use Psr\Http\Message\ResponseInterface as PsrResponse;
 
 /**
- * Interface FactoryInterface
+ * Interface ExtensionInterface
  *
- * Our extension of the `neomerx/json-api` factory, that adds in the units that
- * are created by our extended package.
- *
- * @package CloudCreativity\JsonApi
+ * @package CloudCreativity\LaravelJsonApi\Contracts\Factories
  */
 interface FactoryInterface extends BaseFactoryInterface
 {
+
+    /**
+     * @param ResolverInterface $resolver
+     * @return mixed
+     */
+    public function createExtendedContainer(ResolverInterface $resolver);
 
     /**
      * @param SchemaContainerInterface $container

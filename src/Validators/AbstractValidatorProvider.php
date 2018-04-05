@@ -18,7 +18,6 @@
 
 namespace CloudCreativity\LaravelJsonApi\Validators;
 
-use CloudCreativity\JsonApi\Contracts\Factories\FactoryInterface;
 use CloudCreativity\JsonApi\Contracts\Object\ResourceObjectInterface;
 use CloudCreativity\JsonApi\Contracts\Validators\AttributesValidatorInterface;
 use CloudCreativity\JsonApi\Contracts\Validators\QueryValidatorInterface;
@@ -28,6 +27,7 @@ use CloudCreativity\JsonApi\Contracts\Validators\ValidatorProviderInterface;
 use CloudCreativity\JsonApi\Exceptions\RuntimeException;
 use CloudCreativity\JsonApi\Http\Query\ChecksQueryParameters;
 use CloudCreativity\LaravelJsonApi\Api\Api;
+use CloudCreativity\LaravelJsonApi\Contracts\Factories\FactoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorFactoryInterface;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Support\Str;

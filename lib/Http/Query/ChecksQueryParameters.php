@@ -18,8 +18,8 @@
 
 namespace CloudCreativity\JsonApi\Http\Query;
 
-use CloudCreativity\JsonApi\Contracts\Factories\FactoryInterface;
 use CloudCreativity\JsonApi\Contracts\Validators\QueryValidatorInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Factories\FactoryInterface;
 use Neomerx\JsonApi\Contracts\Http\Query\QueryCheckerInterface;
 
 /**

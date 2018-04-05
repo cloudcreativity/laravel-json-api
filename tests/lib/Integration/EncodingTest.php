@@ -2,7 +2,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration;
 
-use CloudCreativity\LaravelJsonApi\Routing\ApiGroup;
+use CloudCreativity\LaravelJsonApi\Encoder\Encoder;
 use DummyApp\Post;
 
 class EncodingTest extends TestCase
@@ -12,6 +12,15 @@ class EncodingTest extends TestCase
      * @var bool
      */
     protected $appRoutes = false;
+
+    /**
+     * Test that the extended encoder returns itself if `Encoder::instance()` is called.
+     */
+    public function testInstance()
+    {
+        $encoder = Encoder::instance();
+        $this->assertInstanceOf(Encoder::class, $encoder);
+    }
 
     /**
      * If the URL host is set to `null`, we expect the request host to be prepended to links.

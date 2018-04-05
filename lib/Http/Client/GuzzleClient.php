@@ -21,15 +21,15 @@ namespace CloudCreativity\JsonApi\Http\Client;
 use CloudCreativity\JsonApi\Contracts\Encoder\SerializerInterface;
 use CloudCreativity\JsonApi\Contracts\Http\Client\ClientInterface;
 use CloudCreativity\JsonApi\Contracts\Http\Responses\ResponseInterface;
-use CloudCreativity\JsonApi\Factories\Factory;
+use CloudCreativity\LaravelJsonApi\Contracts\Factories\FactoryInterface;
 use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\BadResponseException;
 use GuzzleHttp\Psr7\Request;
-use Psr\Http\Message\RequestInterface as PsrRequest;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use Neomerx\JsonApi\Contracts\Schema\ContainerInterface;
 use Neomerx\JsonApi\Exceptions\JsonApiException;
+use Psr\Http\Message\RequestInterface as PsrRequest;
 
 /**
  * Class GuzzleClient
@@ -49,13 +49,13 @@ class GuzzleClient implements ClientInterface
     /**
      * GuzzleClient constructor.
      *
-     * @param Factory $factory
+     * @param FactoryInterface $factory
      * @param Client $http
      * @param ContainerInterface $schemas
      * @param SerializerInterface $serializer
      */
     public function __construct(
-        Factory $factory,
+        FactoryInterface $factory,
         Client $http,
         ContainerInterface $schemas,
         SerializerInterface $serializer
