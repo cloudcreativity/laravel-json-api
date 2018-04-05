@@ -81,7 +81,7 @@ class RelationshipTest extends TestCase
         $this->assertFalse($object->isHasMany());
         $this->assertFalse($object->hasIdentifier());
 
-        $this->setExpectedException(RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         $object->getIdentifier();
     }
 

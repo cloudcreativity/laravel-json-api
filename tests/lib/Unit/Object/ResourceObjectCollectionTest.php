@@ -92,7 +92,7 @@ JSON_API;
      */
     public function testGetMissingResource(ResourceObjectCollection $resources)
     {
-        $this->setExpectedException(RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         $resources->get(ResourceIdentifier::create('posts', '999'));
     }
 

@@ -99,7 +99,7 @@ class SchemasRepositoryTest extends TestCase
 
         $this->assertEquals($this->defaults, $repository->getSchemas());
 
-        $this->setExpectedException(\RuntimeException::class);
+        $this->expectException(\RuntimeException::class);
         $repository->getSchemas('foo');
     }
 }
