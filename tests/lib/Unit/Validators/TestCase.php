@@ -68,7 +68,7 @@ class TestCase extends BaseTestCase
     {
         parent::setUp();
         $store = $this->createMock(StoreInterface::class);
-        $config = require __DIR__ . '/../../../../config/validation.php';
+        $config = require __DIR__ . '/../../../../config/json-api-errors.php';
 
         $store->method('isType')->willReturnCallback(function ($type) {
             return in_array($type, $this->resourceTypes, true);
