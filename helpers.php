@@ -62,17 +62,22 @@ namespace CloudCreativity\LaravelJsonApi {
 
 namespace {
 
+    use CloudCreativity\LaravelJsonApi\Api\Api;
+    use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\InboundRequestInterface;
+    use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
+    use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
+
     if (!function_exists('json_api')) {
         /**
          * Get the API handling the inbound request, or a named API.
          *
          * @param string|null $apiName
          *      the API name, or null to get the API handling the inbound request.
-         * @return \CloudCreativity\LaravelJsonApi\Api\Api
-         * @throws \CloudCreativity\JsonApi\Exceptions\RuntimeException
+         * @return Api
+         * @throws RuntimeException
          */
         function json_api($apiName = null) {
-            /** @var \CloudCreativity\LaravelJsonApi\Services\JsonApiService $service */
+            /** @var JsonApiService $service */
             $service = app('json-api');
 
             return $apiName ? $service->api($apiName) : $service->requestApiOrFail();
@@ -81,10 +86,10 @@ namespace {
         /**
          * Get the inbound JSON API request.
          *
-         * @return \CloudCreativity\JsonApi\Contracts\Http\Requests\InboundRequestInterface|null
+         * @return InboundRequestInterface|null
          */
         function json_api_request() {
-            /** @var \CloudCreativity\LaravelJsonApi\Services\JsonApiService $service */
+            /** @var JsonApiService $service */
             $service = app('json-api');
 
             return $service->request();

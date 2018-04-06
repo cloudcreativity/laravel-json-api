@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file. This projec
 
 ## Unreleased
 
+As we are now only developing JSON API within Laravel applications, we have deprecated our framework agnostic 
+`cloudcreativity/json-api` package. All the classes from that package have been merged into this package and
+renamed to the `CloudCreativity\LaravelJsonApi` namespace. This will allow us to more rapidly develop this
+Laravel package and simplify the code in subsequent releases.
+
 ### Added
 - New Eloquent relationship adapters allows full support for relationship endpoints.
 - Message bags can now have their keys mapped and/or dasherized when converting them to JSON API errors 
