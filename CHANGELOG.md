@@ -48,6 +48,8 @@ parameters do not apply (create, read, update and delete).
 Last page link is now excluded if there are pages, rather than linking to page zero.
 - [#67](https://github.com/cloudcreativity/laravel-json-api/issues/67)
 Pagination meta will no longer leak into error response if error occurs when encoding data.
+- [#111](https://github.com/cloudcreativity/laravel-json-api/issues/111)
+Sending an invalid content type header now returns a JSON API error object.
 
 ## [0.12.0] - 2018-02-08
 

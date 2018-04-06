@@ -57,7 +57,32 @@ class ContentNegotiationTest extends TestCase
         $this->patchJson("/api/v1/posts/{$data['id']}", ['data' => $data], [
             'Accept' => 'application/vnd.api+json',
             'Content-Type' => 'text/plain',
-        ])->assertStatus(415);
+        ])->assertStatus(415)->assertExactJson([
+            'errors' => [
+                [
+                    'title' => 'Invalid Content-Type Header',
+                    'status' => '415',
+                    'detail' => 'The specified content type is not supported.',
+                ],
+            ],
+        ]);
+    }
+
+    public function testMultipleMediaTypes()
+    {
+        $data = $this->willPatch();
+
+        $this->patchJson("/api/v1/posts/{$data['id']}", ['data' => $data], [
+            'Accept' => 'application/vnd.api+json',
+            'Content-Type' => 'application/vnd.api+json, text/plain',
+        ])->assertStatus(400)->assertExactJson([
+            'errors' => [
+                [
+                    'title' => 'Invalid Content-Type Header',
+                    'status' => '400',
+                ],
+            ],
+        ]);
     }
 
     /**

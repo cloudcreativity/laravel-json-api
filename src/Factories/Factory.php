@@ -34,6 +34,7 @@ use CloudCreativity\LaravelJsonApi\Contracts\Validators\QueryValidatorInterface;
 use CloudCreativity\LaravelJsonApi\Encoder\Encoder;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Http\Client\GuzzleClient;
+use CloudCreativity\LaravelJsonApi\Http\Headers\RestrictiveHeadersChecker;
 use CloudCreativity\LaravelJsonApi\Http\Query\ValidationQueryChecker;
 use CloudCreativity\LaravelJsonApi\Http\Requests\InboundRequest;
 use CloudCreativity\LaravelJsonApi\Http\Responses\ErrorResponse;
@@ -84,6 +85,14 @@ class Factory extends BaseFactory implements FactoryInterface
     {
         parent::__construct();
         $this->container = $container;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function createHeadersChecker(CodecMatcherInterface $codecMatcher)
+    {
+        return new RestrictiveHeadersChecker($codecMatcher, json_api()->getErrors());
     }
 
     /**
