@@ -39,7 +39,7 @@ class Schema extends EloquentSchema
                 self::SHOW_SELF => true,
                 self::SHOW_RELATED => true,
                 self::DATA => isset($includeRelationships['created-by']) ?
-                    $resource->person : $this->createBelongsToIdentity($resource, 'user'),
+                    $resource->user : $this->createBelongsToIdentity($resource, 'user'),
             ],
         ];
     }

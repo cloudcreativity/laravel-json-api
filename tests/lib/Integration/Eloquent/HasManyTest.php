@@ -3,6 +3,7 @@
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Eloquent;
 
 use DummyApp\Country;
+use DummyApp\Phone;
 use DummyApp\User;
 
 /**
@@ -281,9 +282,7 @@ class HasManyTest extends TestCase
         ]);
 
         $this->doReadRelated($country, 'users', ['sort' => 'name'])
-            ->assertReadHasMany('users', [$a, $b]);
-
-        $this->markTestIncomplete('@todo this assertion does not assert the order of the resources.');
+            ->assertReadHasMany('users', [$b, $a]);
     }
 
     public function testReadRelatedWithInvalidSort()
@@ -302,11 +301,15 @@ class HasManyTest extends TestCase
         $country = factory(Country::class)->create();
         $users = factory(User::class, 2)->create();
         $country->users()->saveMany($users);
+        $phone = factory(Phone::class)->create(['user_id' => $users[0]->getKey()]);
 
-        $this->doReadRelated($country, 'users', ['include' => 'phone'])
+        $response = $this
+            ->doReadRelated($country, 'users', ['include' => 'phone'])
             ->assertReadHasMany('users', $users);
 
-        $this->markTestIncomplete('@todo assert that phone is included.');
+        $response->assertDocument()
+            ->assertIncluded()
+            ->assertContainsOnly(['phones' => [$phone->getKey()]]);
     }
 
     public function testReadRelatedWithInvalidInclude()
@@ -325,10 +328,12 @@ class HasManyTest extends TestCase
         $users = factory(User::class, 3)->create();
         $country->users()->saveMany($users);
 
-        $this->doReadRelated($country, 'users', ['page' => ['number' => 1, 'size' => 2]])
+        $response = $this
+            ->doReadRelated($country, 'users', ['page' => ['number' => 1, 'size' => 2]])
             ->assertReadHasMany('users', $users->take(2));
 
-        $this->markTestIncomplete('@todo check the pagination meta.');
+        $response->assertDocument()
+            ->assertMetaSubset(['page' => ['current-page' => 1, 'per-page' => 2]]);
     }
 
     public function testReadRelatedWithInvalidPagination()

@@ -37,7 +37,7 @@
     },
     "require-dev": {
         "ext-sqlite3": "*",
-        "cloudcreativity/json-api-testing": "^0.3",
+        "cloudcreativity/json-api-testing": "^1.0",
         "guzzlehttp/guzzle": "^6.3",
         "orchestra/testbench": "3.4.*|3.5.*|3.6.*",
         "phpunit/phpunit": "^5.7|^6.0|^7.0"

@@ -30,13 +30,10 @@ class ResourceTest extends TestCase
         ]);
 
         $response = $this->doSearch(['sort' => '-title']);
-        $response->assertSearchResponse()->assertContainsOnly(['posts' => [$a->getKey(), $b->getKey()]]);
-
-        $json = $response->decodeResponseJson();
-        $actual = [array_get($json, 'data.0.id'), array_get($json, 'data.1.id')];
-        $this->assertEquals([$b->getKey(), $a->getKey()], $actual);
-
-        $this->markTestIncomplete('@todo assert-contains-only does not assert the order.');
+        $response->assertSearchResponse()->assertContainsExact([
+            ['type' => 'posts', 'id' => $b->getKey()],
+            ['type' => 'posts', 'id' => $a->getKey()],
+        ]);
     }
 
     public function testFilteredSearch()
@@ -79,9 +76,7 @@ class ResourceTest extends TestCase
 
     public function testSearchOneIsNull()
     {
-        $post = factory(Post::class)->create([
-            'slug' => 'my-first-post',
-        ]);
+        factory(Post::class)->create(['slug' => 'my-first-post']);
 
         $this->doSearch(['filter' => ['slug' => 'my-second-post']])
             ->assertReadHasOne(null);

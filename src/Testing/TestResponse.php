@@ -234,10 +234,14 @@ class TestResponse extends BaseTestResponse
     {
         $resourceType = $resourceType ?: $this->expectedResourceType();
 
+        $expected = collect($this->normalizeIds($expectedIds))->map(function ($id) use ($resourceType) {
+            return ['type' => $resourceType, 'id' => $id];
+        });
+
         $this->assertStatus(Response::HTTP_OK)
             ->assertDocument()
             ->assertResourceCollection()
-            ->assertContainsOnly([$resourceType => $this->normalizeIds($expectedIds)]);
+            ->assertContainsExact($expected->all());
 
         return $this;
     }
@@ -857,7 +861,9 @@ class TestResponse extends BaseTestResponse
      */
     protected function normalizeId($id)
     {
-        return ($id instanceof UrlRoutable) ? $id->getRouteKey() : $id;
+        $id = ($id instanceof UrlRoutable) ? $id->getRouteKey() : $id;
+
+        return (string) $id;
     }
 
 }

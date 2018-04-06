@@ -89,12 +89,11 @@ class MorphManyTest extends TestCase
         $b = factory(Comment::class)->create([
             'commentable_type' => Post::class,
             'commentable_id' => $post->getKey(),
+            'content' => 'A comment',
         ]);
 
         $this->doReadRelated($post, 'comments', ['sort' => 'content'])
             ->assertReadHasMany('comments', [$b, $a]);
-
-        $this->markTestIncomplete('@todo this assertion does not assert the order of resources.');
     }
 
     public function testReadRelatedWithInvalidSort()
@@ -116,10 +115,17 @@ class MorphManyTest extends TestCase
             'commentable_id' => $post->getKey(),
         ]);
 
-        $this->doReadRelated($post, 'comments', ['include' => 'created-by'])
+        $response = $this
+            ->doReadRelated($post, 'comments', ['include' => 'created-by'])
             ->assertReadHasMany('comments', $comments);
 
-        $this->markTestIncomplete('@todo assert that authors are included.');
+        $expected = $comments->map(function (Comment $comment) {
+            return $comment->user;
+        });
+
+        $response->assertDocument()
+            ->assertIncluded()
+            ->assertContainsOnly(['users' => $this->normalizeIds($expected)]);
     }
 
     public function testReadRelatedWithInvalidInclude()
@@ -141,10 +147,12 @@ class MorphManyTest extends TestCase
             'commentable_id' => $post->getKey(),
         ]);
 
-        $this->doReadRelated($post, 'comments', ['page' => ['number' => 1, 'size' => 2]])
+        $response = $this
+            ->doReadRelated($post, 'comments', ['page' => ['number' => 1, 'size' => 2]])
             ->assertReadHasMany('comments', $comments->take(2));
 
-        $this->markTestIncomplete('@todo assert page meta.');
+        $response->assertDocument()
+            ->assertMetaSubset(['page' => ['current-page' => 1, 'per-page' => 2]]);
     }
 
     public function testReadRelatedWithInvalidPagination()
