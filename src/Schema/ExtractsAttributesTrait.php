@@ -25,6 +25,7 @@ use DateTime;
  * Class ExtractsAttributesTrait
  *
  * @package CloudCreativity\LaravelJsonApi
+ * @deprecated
  */
 trait ExtractsAttributesTrait
 {
