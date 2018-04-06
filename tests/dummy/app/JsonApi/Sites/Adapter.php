@@ -2,12 +2,12 @@
 
 namespace DummyApp\JsonApi\Sites;
 
-use CloudCreativity\JsonApi\Adapter\AbstractResourceAdapter;
-use CloudCreativity\JsonApi\Adapter\HydratesAttributesTrait;
-use CloudCreativity\JsonApi\Contracts\Object\RelationshipsInterface;
-use CloudCreativity\JsonApi\Contracts\Object\ResourceObjectInterface;
-use CloudCreativity\JsonApi\Exceptions\RuntimeException;
-use CloudCreativity\JsonApi\Utils\Str;
+use CloudCreativity\LaravelJsonApi\Adapter\AbstractResourceAdapter;
+use CloudCreativity\LaravelJsonApi\Adapter\HydratesAttributesTrait;
+use CloudCreativity\LaravelJsonApi\Contracts\Object\RelationshipsInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectInterface;
+use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
+use CloudCreativity\LaravelJsonApi\Utils\Str;
 use DummyApp\Entities\Site;
 use DummyApp\Entities\SiteRepository;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;

@@ -5,7 +5,6 @@ namespace DummyApp\JsonApi\Countries;
 use CloudCreativity\LaravelJsonApi\Eloquent\AbstractAdapter;
 use CloudCreativity\LaravelJsonApi\Eloquent\HasMany;
 use DummyApp\Country;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 
 class Adapter extends AbstractAdapter

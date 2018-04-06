@@ -2,8 +2,6 @@
 
 namespace CloudCreativity\LaravelJsonApi\Resolver;
 
-use CloudCreativity\JsonApi\Resolver\NamespaceResolver;
-
 class UnitNamespaceResolver extends NamespaceResolver
 {
 

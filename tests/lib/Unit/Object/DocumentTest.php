@@ -2,9 +2,9 @@
 
 namespace CloudCreativity\Utils\Object;
 
-use CloudCreativity\JsonApi\Document\Error;
-use CloudCreativity\JsonApi\Object\ResourceObject;
-use CloudCreativity\JsonApi\Object\ResourceObjectCollection;
+use CloudCreativity\LaravelJsonApi\Document\Error;
+use CloudCreativity\LaravelJsonApi\Object\ResourceObject;
+use CloudCreativity\LaravelJsonApi\Object\ResourceObjectCollection;
 use CloudCreativity\LaravelJsonApi\Tests\Unit\TestCase;
 use Neomerx\JsonApi\Document\Link;
 use Neomerx\JsonApi\Exceptions\ErrorCollection;

@@ -18,13 +18,13 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Unit\Utils;
 
-use CloudCreativity\JsonApi\Utils\Str;
 use CloudCreativity\LaravelJsonApi\Tests\Unit\TestCase;
+use CloudCreativity\LaravelJsonApi\Utils\Str;
 
 /**
  * Class StrTest
  *
- * @package CloudCreativity\JsonApi
+ * @package CloudCreativity\LaravelJsonApi
  */
 class StrTest extends TestCase
 {

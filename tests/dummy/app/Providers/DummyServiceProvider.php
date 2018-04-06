@@ -3,8 +3,8 @@
 namespace DummyApp\Providers;
 
 use DummyApp\Entities\SiteRepository;
-use Illuminate\Support\ServiceProvider;
 use Illuminate\Database\Eloquent\Factory as ModelFactory;
+use Illuminate\Support\ServiceProvider;
 
 class DummyServiceProvider extends ServiceProvider
 {

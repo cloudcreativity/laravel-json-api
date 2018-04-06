@@ -19,8 +19,8 @@
 namespace CloudCreativity\LaravelJsonApi\Routing;
 
 use ArrayAccess;
-use CloudCreativity\JsonApi\Utils\Str;
 use CloudCreativity\LaravelJsonApi\Http\Controllers\JsonApiController;
+use CloudCreativity\LaravelJsonApi\Utils\Str;
 use Illuminate\Contracts\Routing\Registrar;
 use Illuminate\Routing\Route;
 use Illuminate\Support\Fluent;

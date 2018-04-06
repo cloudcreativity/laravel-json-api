@@ -18,9 +18,9 @@
 
 namespace CloudCreativity\LaravelJsonApi\Console\Commands;
 
-use CloudCreativity\JsonApi\Utils\Str;
 use CloudCreativity\LaravelJsonApi\Api\Api;
 use CloudCreativity\LaravelJsonApi\Api\Repository;
+use CloudCreativity\LaravelJsonApi\Utils\Str;
 use Illuminate\Console\GeneratorCommand;
 use Illuminate\Filesystem\Filesystem;
 use Symfony\Component\Console\Input\InputArgument;

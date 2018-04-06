@@ -17,7 +17,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Utils;
 
-use CloudCreativity\JsonApi\Exceptions\InvalidJsonException;
+use CloudCreativity\LaravelJsonApi\Exceptions\InvalidJsonException;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 

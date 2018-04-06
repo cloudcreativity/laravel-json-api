@@ -4,7 +4,6 @@ namespace DummyApp\JsonApi\Phones;
 
 use CloudCreativity\LaravelJsonApi\Eloquent\AbstractAdapter;
 use DummyApp\Phone;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 
 class Adapter extends AbstractAdapter

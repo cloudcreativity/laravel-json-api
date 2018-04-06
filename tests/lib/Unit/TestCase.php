@@ -18,8 +18,8 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Unit;
 
-use CloudCreativity\JsonApi\Contracts\Object\DocumentInterface;
-use CloudCreativity\JsonApi\Object\Document;
+use CloudCreativity\LaravelJsonApi\Contracts\Object\DocumentInterface;
+use CloudCreativity\LaravelJsonApi\Object\Document;
 use PHPUnit\Framework\TestCase as BaseTestCase;
 
 class TestCase extends BaseTestCase

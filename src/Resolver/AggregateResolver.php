@@ -2,8 +2,8 @@
 
 namespace CloudCreativity\LaravelJsonApi\Resolver;
 
-use CloudCreativity\JsonApi\Contracts\Resolver\ResolverInterface;
-use CloudCreativity\JsonApi\Exceptions\RuntimeException;
+use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
+use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use IteratorAggregate;
 
 class AggregateResolver implements ResolverInterface, IteratorAggregate

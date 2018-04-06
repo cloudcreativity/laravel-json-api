@@ -18,19 +18,19 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Unit\Utils;
 
-use CloudCreativity\JsonApi\Contracts\Document\MutableErrorInterface;
-use CloudCreativity\JsonApi\Document\Error;
-use CloudCreativity\JsonApi\Exceptions\MutableErrorCollection;
-use CloudCreativity\JsonApi\Repositories\ErrorRepository;
-use CloudCreativity\JsonApi\Utils\ErrorCreatorTrait;
-use CloudCreativity\JsonApi\Utils\Replacer;
+use CloudCreativity\LaravelJsonApi\Contracts\Document\MutableErrorInterface;
+use CloudCreativity\LaravelJsonApi\Document\Error;
+use CloudCreativity\LaravelJsonApi\Exceptions\MutableErrorCollection;
+use CloudCreativity\LaravelJsonApi\Repositories\ErrorRepository;
 use CloudCreativity\LaravelJsonApi\Tests\Unit\TestCase;
+use CloudCreativity\LaravelJsonApi\Utils\ErrorCreatorTrait;
+use CloudCreativity\LaravelJsonApi\Utils\Replacer;
 use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
 
 /**
  * Class ErrorCreatorTraitTest
  *
- * @package CloudCreativity\JsonApi
+ * @package CloudCreativity\LaravelJsonApi
  */
 class ErrorCreatorTraitTest extends TestCase
 {

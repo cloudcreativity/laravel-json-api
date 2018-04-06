@@ -14,8 +14,8 @@ Below is an example of a scenario which a user fails to login due to incorrect c
 ```php
 namespace App\Http\Controllers\Api\V1;
 
-use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface as JsonApiRequest;
-use CloudCreativity\JsonApi\Document\Error;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestInterface as JsonApiRequest;
+use CloudCreativity\LaravelJsonApi\Document\Error;
 
 class JsonWebTokensController extends Controller
 {

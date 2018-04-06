@@ -18,17 +18,17 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Unit\Object;
 
-use CloudCreativity\JsonApi\Object\Relationship;
-use CloudCreativity\JsonApi\Object\Relationships;
-use CloudCreativity\JsonApi\Object\ResourceIdentifier;
-use CloudCreativity\JsonApi\Object\ResourceObject;
+use CloudCreativity\LaravelJsonApi\Object\Relationship;
+use CloudCreativity\LaravelJsonApi\Object\Relationships;
+use CloudCreativity\LaravelJsonApi\Object\ResourceIdentifier;
+use CloudCreativity\LaravelJsonApi\Object\ResourceObject;
 use CloudCreativity\LaravelJsonApi\Tests\Unit\TestCase;
 use CloudCreativity\Utils\Object\StandardObject;
 
 /**
  * Class ResourceTest
  *
- * @package CloudCreativity\JsonApi
+ * @package CloudCreativity\LaravelJsonApi
  */
 class ResourceObjectTest extends TestCase
 {

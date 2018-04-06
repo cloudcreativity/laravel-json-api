@@ -18,14 +18,14 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Unit\Exceptions;
 
-use CloudCreativity\JsonApi\Document\Error;
-use CloudCreativity\JsonApi\Exceptions\ValidationException;
+use CloudCreativity\LaravelJsonApi\Document\Error;
+use CloudCreativity\LaravelJsonApi\Exceptions\ValidationException;
 use CloudCreativity\LaravelJsonApi\Tests\Unit\TestCase;
 
 /**
  * Class ValidationExceptionTest
  *
- * @package CloudCreativity\JsonApi
+ * @package CloudCreativity\LaravelJsonApi
  */
 class ValidationExceptionTest extends TestCase
 {

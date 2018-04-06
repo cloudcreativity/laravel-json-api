@@ -6,7 +6,6 @@ use CloudCreativity\LaravelJsonApi\Eloquent\AbstractAdapter;
 use CloudCreativity\LaravelJsonApi\Eloquent\HasOne;
 use CloudCreativity\LaravelJsonApi\Pagination\StandardStrategy;
 use DummyApp\User;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 
 class Adapter extends AbstractAdapter

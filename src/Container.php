@@ -17,12 +17,12 @@
 
 namespace CloudCreativity\LaravelJsonApi;
 
-use CloudCreativity\JsonApi\Contracts\Adapter\ResourceAdapterInterface;
-use CloudCreativity\JsonApi\Contracts\Authorizer\AuthorizerInterface;
-use CloudCreativity\JsonApi\Contracts\Resolver\ResolverInterface;
-use CloudCreativity\JsonApi\Contracts\Validators\ValidatorProviderInterface;
-use CloudCreativity\JsonApi\Exceptions\RuntimeException;
+use CloudCreativity\LaravelJsonApi\Contracts\Adapter\ResourceAdapterInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Authorizer\AuthorizerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorProviderInterface;
+use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use Illuminate\Contracts\Container\Container as IlluminateContainer;
 use Neomerx\JsonApi\Contracts\Schema\SchemaProviderInterface;
 

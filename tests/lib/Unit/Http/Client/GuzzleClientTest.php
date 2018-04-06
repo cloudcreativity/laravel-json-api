@@ -18,15 +18,14 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Unit\Http\Client;
 
-use CloudCreativity\JsonApi\Contracts\Encoder\SerializerInterface;
-use CloudCreativity\JsonApi\Contracts\Http\Client\ClientInterface;
-use CloudCreativity\JsonApi\Contracts\Object\ResourceObjectInterface;
-use CloudCreativity\JsonApi\Document\Error;
-use CloudCreativity\JsonApi\Http\Client\GuzzleClient;
-use CloudCreativity\JsonApi\Http\Responses\Response as ClientResponse;
-use CloudCreativity\JsonApi\Object\ResourceIdentifier;
-use CloudCreativity\LaravelJsonApi\Encoder\Encoder;
+use CloudCreativity\LaravelJsonApi\Contracts\Encoder\SerializerInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Client\ClientInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectInterface;
+use CloudCreativity\LaravelJsonApi\Document\Error;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
+use CloudCreativity\LaravelJsonApi\Http\Client\GuzzleClient;
+use CloudCreativity\LaravelJsonApi\Http\Responses\Response as ClientResponse;
+use CloudCreativity\LaravelJsonApi\Object\ResourceIdentifier;
 use CloudCreativity\LaravelJsonApi\Tests\Unit\TestCase;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\BadResponseException;
@@ -47,7 +46,7 @@ use function GuzzleHttp\Psr7\parse_query;
 /**
  * Class GuzzleClientTest
  *
- * @package CloudCreativity\JsonApi
+ * @package CloudCreativity\LaravelJsonApi
  */
 class GuzzleClientTest extends TestCase
 {

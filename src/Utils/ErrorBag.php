@@ -19,9 +19,8 @@
 namespace CloudCreativity\LaravelJsonApi\Utils;
 
 use Closure;
-use CloudCreativity\JsonApi\Document\Error;
-use CloudCreativity\JsonApi\Exceptions\InvalidArgumentException;
-use CloudCreativity\JsonApi\Utils\Str;
+use CloudCreativity\LaravelJsonApi\Document\Error;
+use CloudCreativity\LaravelJsonApi\Exceptions\InvalidArgumentException;
 use Illuminate\Contracts\Support\MessageBag;
 use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
 

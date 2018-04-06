@@ -2,10 +2,8 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration;
 
-use CloudCreativity\LaravelJsonApi\Routing\ApiGroup;
 use DummyApp\Post;
 use DummyPackage\Blog;
-use DummyPackage\ResourceProvider;
 
 class PackageTest extends TestCase
 {

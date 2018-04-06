@@ -1,8 +1,8 @@
 <?php
 
+use DummyPackage\Blog;
 use Faker\Generator as Faker;
 use Illuminate\Database\Eloquent\Factory as EloquentFactory;
-use DummyPackage\Blog;
 
 /** @var EloquentFactory $factory */
 

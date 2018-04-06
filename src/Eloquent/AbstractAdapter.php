@@ -19,25 +19,25 @@
 namespace CloudCreativity\LaravelJsonApi\Eloquent;
 
 use Carbon\Carbon;
-use CloudCreativity\JsonApi\Adapter\AbstractResourceAdapter;
-use CloudCreativity\JsonApi\Contracts\Adapter\HasManyAdapterInterface;
-use CloudCreativity\JsonApi\Contracts\Adapter\RelationshipAdapterInterface;
-use CloudCreativity\JsonApi\Contracts\Object\RelationshipsInterface;
-use CloudCreativity\JsonApi\Contracts\Object\ResourceObjectInterface;
-use CloudCreativity\JsonApi\Contracts\Pagination\PageInterface;
-use CloudCreativity\JsonApi\Contracts\Store\StoreAwareInterface;
-use CloudCreativity\JsonApi\Exceptions\RuntimeException;
-use CloudCreativity\JsonApi\Utils\Str;
+use CloudCreativity\LaravelJsonApi\Adapter\AbstractResourceAdapter;
+use CloudCreativity\LaravelJsonApi\Contracts\Adapter\HasManyAdapterInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Adapter\RelationshipAdapterInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Object\RelationshipsInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PageInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PagingStrategyInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreAwareInterface;
+use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Store\FindsManyResources;
+use CloudCreativity\LaravelJsonApi\Utils\Str;
 use CloudCreativity\Utils\Object\StandardObjectInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations;
 use Illuminate\Support\Collection;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\SortParameterInterface;
 use Neomerx\JsonApi\Encoder\Parameters\EncodingParameters;
-use Illuminate\Database\Eloquent\Relations;
 
 /**
  * Class EloquentAdapter

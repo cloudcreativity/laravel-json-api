@@ -18,7 +18,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Unit\Document;
 
-use CloudCreativity\JsonApi\Document\Error;
+use CloudCreativity\LaravelJsonApi\Document\Error;
 use CloudCreativity\LaravelJsonApi\Tests\Unit\TestCase;
 use Neomerx\JsonApi\Document\Error as BaseError;
 use Neomerx\JsonApi\Document\Link;
@@ -26,7 +26,7 @@ use Neomerx\JsonApi\Document\Link;
 /**
  * Class ErrorTest
  *
- * @package CloudCreativity\JsonApi
+ * @package CloudCreativity\LaravelJsonApi
  */
 class ErrorTest extends TestCase
 {

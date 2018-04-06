@@ -4,7 +4,6 @@ namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Eloquent;
 
 use DummyApp\Comment;
 use DummyApp\Post;
-use DummyApp\User;
 use DummyApp\Video;
 
 /**

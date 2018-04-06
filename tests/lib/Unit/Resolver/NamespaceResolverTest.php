@@ -17,7 +17,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Unit\Unit\Resolver;
 
-use CloudCreativity\JsonApi\Resolver\NamespaceResolver;
+use CloudCreativity\LaravelJsonApi\Resolver\NamespaceResolver;
 use PHPUnit\Framework\TestCase;
 
 class NamespaceResolverTest extends TestCase

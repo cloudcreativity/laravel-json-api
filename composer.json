@@ -47,8 +47,7 @@
     },
     "autoload": {
         "psr-4": {
-            "CloudCreativity\\LaravelJsonApi\\": "src/",
-            "CloudCreativity\\JsonApi\\": "lib/"
+            "CloudCreativity\\LaravelJsonApi\\": "src/"
         },
         "files": [
             "helpers.php"

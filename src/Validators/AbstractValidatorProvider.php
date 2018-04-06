@@ -18,17 +18,17 @@
 
 namespace CloudCreativity\LaravelJsonApi\Validators;
 
-use CloudCreativity\JsonApi\Contracts\Object\ResourceObjectInterface;
-use CloudCreativity\JsonApi\Contracts\Validators\AttributesValidatorInterface;
-use CloudCreativity\JsonApi\Contracts\Validators\QueryValidatorInterface;
-use CloudCreativity\JsonApi\Contracts\Validators\RelationshipsValidatorInterface;
-use CloudCreativity\JsonApi\Contracts\Validators\ResourceValidatorInterface;
-use CloudCreativity\JsonApi\Contracts\Validators\ValidatorProviderInterface;
-use CloudCreativity\JsonApi\Exceptions\RuntimeException;
-use CloudCreativity\JsonApi\Http\Query\ChecksQueryParameters;
 use CloudCreativity\LaravelJsonApi\Api\Api;
 use CloudCreativity\LaravelJsonApi\Contracts\Factories\FactoryInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Validators\AttributesValidatorInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Validators\QueryValidatorInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Validators\RelationshipsValidatorInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Validators\ResourceValidatorInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorFactoryInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorProviderInterface;
+use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
+use CloudCreativity\LaravelJsonApi\Http\Query\ChecksQueryParameters;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Support\Str;
 use Neomerx\JsonApi\Contracts\Http\Query\QueryCheckerInterface;

@@ -18,10 +18,10 @@
 
 namespace CloudCreativity\LaravelJsonApi\Api;
 
-use CloudCreativity\JsonApi\Exceptions\RuntimeException;
-use CloudCreativity\JsonApi\Resolver\NamespaceResolver;
+use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use CloudCreativity\LaravelJsonApi\Resolver\AggregateResolver;
+use CloudCreativity\LaravelJsonApi\Resolver\NamespaceResolver;
 use CloudCreativity\LaravelJsonApi\Resolver\UnitNamespaceResolver;
 use Illuminate\Contracts\Config\Repository as Config;
 

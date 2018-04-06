@@ -43,8 +43,8 @@ correctly.
 
 ```php
 /**
- * @param \CloudCreativity\JsonApi\Contracts\Store\StoreInterface $store
- * @param \CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface $request
+ * @param \CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface $store
+ * @param \CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestInterface $request
  * @return \Illuminate\Http\Response
  */
 public function index(StoreInterface $store, RequestInterface $request)
@@ -63,7 +63,7 @@ public function index(StoreInterface $store, RequestInterface $request)
 ```php
 /**
  * @param \App\JsonApi\Users\Hydrator $hydrator
- * @param \CloudCreativity\JsonApi\Contracts\Object\ResourceObjectInterface $resource
+ * @param \CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectInterface $resource
  * @return \Illuminate\Http\Response
  */
 public function create(Hydrator $hydrator, ResourceObjectInterface $resource)
@@ -98,7 +98,7 @@ public function read(User $record)
 ```php
 /**
  * @param \App\JsonApi\Users\Hydrator $hydrator
- * @param \CloudCreativity\JsonApi\Contracts\Object\ResourceObjectInterface $resource
+ * @param \CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectInterface $resource
  * @param \App\User $record
  * @return \Illuminate\Http\Response
  */
@@ -145,7 +145,7 @@ If you link one resource to another through relationship, you'll need this to re
 
 ```php
 /**
- * @param \CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface $request
+ * @param \CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestInterface $request
  * @param \App\User $record
  * @return \Illuminate\Http\Response
  */
@@ -166,7 +166,7 @@ This is for reading the relationship between two resources.
 
 ```php
 /**
- * @param \CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface $request
+ * @param \CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestInterface $request
  * @param \App\User $record
  * @return \Illuminate\Http\Response
  */

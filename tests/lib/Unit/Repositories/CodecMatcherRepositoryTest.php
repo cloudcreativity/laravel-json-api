@@ -18,8 +18,8 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Unit\Repositories;
 
-use CloudCreativity\JsonApi\Contracts\Repositories\CodecMatcherRepositoryInterface;
-use CloudCreativity\JsonApi\Repositories\CodecMatcherRepository;
+use CloudCreativity\LaravelJsonApi\Contracts\Repositories\CodecMatcherRepositoryInterface;
+use CloudCreativity\LaravelJsonApi\Repositories\CodecMatcherRepository;
 use CloudCreativity\LaravelJsonApi\Tests\Unit\TestCase;
 use Neomerx\JsonApi\Contracts\Codec\CodecMatcherInterface;
 use Neomerx\JsonApi\Decoders\ArrayDecoder;
@@ -32,7 +32,7 @@ use Neomerx\JsonApi\Http\Headers\Header;
 /**
  * Class CodecMatcherRepositoryTest
  *
- * @package CloudCreativity\JsonApi
+ * @package CloudCreativity\LaravelJsonApi
  */
 class CodecMatcherRepositoryTest extends TestCase
 {

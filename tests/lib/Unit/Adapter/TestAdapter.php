@@ -18,16 +18,16 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Unit\Adapter;
 
-use CloudCreativity\JsonApi\Adapter\AbstractResourceAdapter;
-use CloudCreativity\JsonApi\Adapter\HydratesAttributesTrait;
-use CloudCreativity\JsonApi\Contracts\Object\RelationshipsInterface;
-use CloudCreativity\JsonApi\Contracts\Object\ResourceObjectInterface;
+use CloudCreativity\LaravelJsonApi\Adapter\AbstractResourceAdapter;
+use CloudCreativity\LaravelJsonApi\Adapter\HydratesAttributesTrait;
+use CloudCreativity\LaravelJsonApi\Contracts\Object\RelationshipsInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 /**
  * Class TestAdapter
  *
- * @package CloudCreativity\JsonApi
+ * @package CloudCreativity\LaravelJsonApi
  */
 class TestAdapter extends AbstractResourceAdapter
 {

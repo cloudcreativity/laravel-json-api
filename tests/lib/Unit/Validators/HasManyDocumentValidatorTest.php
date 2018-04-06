@@ -18,16 +18,16 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Unit\Validators;
 
-use CloudCreativity\JsonApi\Contracts\Object\ResourceIdentifierInterface;
-use CloudCreativity\JsonApi\Contracts\Validators\DocumentValidatorInterface;
-use CloudCreativity\JsonApi\Object\Document;
-use CloudCreativity\JsonApi\Validators\ValidatorErrorFactory as Keys;
+use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceIdentifierInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Validators\DocumentValidatorInterface;
+use CloudCreativity\LaravelJsonApi\Object\Document;
+use CloudCreativity\LaravelJsonApi\Validators\ValidatorErrorFactory as Keys;
 use Neomerx\JsonApi\Contracts\Document\DocumentInterface;
 
 /**
  * Class HasManyDocumentValidatorTest
  *
- * @package CloudCreativity\JsonApi
+ * @package CloudCreativity\LaravelJsonApi
  */
 class HasManyDocumentValidatorTest extends TestCase
 {

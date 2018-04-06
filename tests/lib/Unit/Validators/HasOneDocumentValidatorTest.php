@@ -18,20 +18,20 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Unit\Validators;
 
-use CloudCreativity\JsonApi\Contracts\Object\ResourceIdentifierInterface;
-use CloudCreativity\JsonApi\Contracts\Validators\AcceptRelatedResourceInterface;
-use CloudCreativity\JsonApi\Contracts\Validators\DocumentValidatorInterface;
-use CloudCreativity\JsonApi\Document\Error;
-use CloudCreativity\JsonApi\Exceptions\MutableErrorCollection;
-use CloudCreativity\JsonApi\Object\Document;
-use CloudCreativity\JsonApi\Validators\AcceptImmutableRelationship;
-use CloudCreativity\JsonApi\Validators\ValidatorErrorFactory as Keys;
+use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceIdentifierInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Validators\AcceptRelatedResourceInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Validators\DocumentValidatorInterface;
+use CloudCreativity\LaravelJsonApi\Document\Error;
+use CloudCreativity\LaravelJsonApi\Exceptions\MutableErrorCollection;
+use CloudCreativity\LaravelJsonApi\Object\Document;
+use CloudCreativity\LaravelJsonApi\Validators\AcceptImmutableRelationship;
+use CloudCreativity\LaravelJsonApi\Validators\ValidatorErrorFactory as Keys;
 use Neomerx\JsonApi\Contracts\Document\DocumentInterface;
 
 /**
  * Class HasOneDocumentValidatorTest
  *
- * @package CloudCreativity\JsonApi
+ * @package CloudCreativity\LaravelJsonApi
  */
 class HasOneDocumentValidatorTest extends TestCase
 {

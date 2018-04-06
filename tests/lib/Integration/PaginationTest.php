@@ -2,9 +2,8 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration;
 
-use DummyApp\Post;
 use CloudCreativity\LaravelJsonApi\Pagination\StandardStrategy;
-use Illuminate\Database\Eloquent\Collection;
+use DummyApp\Post;
 
 class PaginationTest extends TestCase
 {

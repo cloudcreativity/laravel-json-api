@@ -18,18 +18,18 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Unit\Object;
 
-use CloudCreativity\JsonApi\Exceptions\RuntimeException;
-use CloudCreativity\JsonApi\Object\Relationship;
-use CloudCreativity\JsonApi\Object\ResourceIdentifier;
-use CloudCreativity\JsonApi\Object\ResourceIdentifierCollection;
+use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
+use CloudCreativity\LaravelJsonApi\Object\Relationship;
+use CloudCreativity\LaravelJsonApi\Object\ResourceIdentifier;
+use CloudCreativity\LaravelJsonApi\Object\ResourceIdentifierCollection;
 use CloudCreativity\LaravelJsonApi\Tests\Unit\TestCase;
-use stdClass;
 use CloudCreativity\Utils\Object\StandardObject;
+use stdClass;
 
 /**
  * Class RelationshipTest
  *
- * @package CloudCreativity\JsonApi
+ * @package CloudCreativity\LaravelJsonApi
  */
 class RelationshipTest extends TestCase
 {

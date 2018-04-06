@@ -18,8 +18,8 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Unit\Exceptions;
 
-use CloudCreativity\JsonApi\Document\Error;
-use CloudCreativity\JsonApi\Exceptions\MutableErrorCollection;
+use CloudCreativity\LaravelJsonApi\Document\Error;
+use CloudCreativity\LaravelJsonApi\Exceptions\MutableErrorCollection;
 use CloudCreativity\LaravelJsonApi\Tests\Unit\TestCase;
 use Neomerx\JsonApi\Document\Error as BaseError;
 use Neomerx\JsonApi\Exceptions\ErrorCollection;
@@ -27,7 +27,7 @@ use Neomerx\JsonApi\Exceptions\ErrorCollection;
 /**
  * Class ErrorCollectionTest
  *
- * @package CloudCreativity\JsonApi
+ * @package CloudCreativity\LaravelJsonApi
  */
 class MutableErrorCollectionTest extends TestCase
 {

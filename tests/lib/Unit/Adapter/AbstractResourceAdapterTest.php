@@ -18,7 +18,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Unit\Adapter;
 
-use CloudCreativity\JsonApi\Contracts\Store\StoreInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\LaravelJsonApi\Tests\Unit\TestCase;
 use DateTime;
 use DateTimeZone;
@@ -27,7 +27,7 @@ use Neomerx\JsonApi\Encoder\Parameters\EncodingParameters;
 /**
  * Class AbstractHydratorTest
  *
- * @package CloudCreativity\JsonApi
+ * @package CloudCreativity\LaravelJsonApi
  */
 class AbstractResourceAdapterTest extends TestCase
 {

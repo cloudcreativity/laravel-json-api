@@ -18,12 +18,13 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Unit\Validators;
 
-use CloudCreativity\JsonApi\Contracts\Store\StoreInterface;
-use CloudCreativity\JsonApi\Repositories\ErrorRepository;
-use CloudCreativity\JsonApi\Utils\Replacer;
-use CloudCreativity\JsonApi\Validators\ValidatorErrorFactory;
-use CloudCreativity\JsonApi\Validators\ValidatorFactory;
+use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
+use CloudCreativity\LaravelJsonApi\Repositories\ErrorRepository;
 use CloudCreativity\LaravelJsonApi\Tests\Unit\TestCase as BaseTestCase;
+use CloudCreativity\LaravelJsonApi\Utils\Replacer;
+use CloudCreativity\LaravelJsonApi\Validators\ValidatorErrorFactory;
+use CloudCreativity\LaravelJsonApi\Validators\ValidatorFactory;
+use Illuminate\Contracts\Validation\Factory;
 use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
 use Neomerx\JsonApi\Exceptions\ErrorCollection;
 use PHPUnit_Framework_MockObject_MockObject;
@@ -31,7 +32,7 @@ use PHPUnit_Framework_MockObject_MockObject;
 /**
  * Class TestCase
  *
- * @package CloudCreativity\JsonApi
+ * @package CloudCreativity\LaravelJsonApi
  */
 class TestCase extends BaseTestCase
 {
@@ -77,7 +78,11 @@ class TestCase extends BaseTestCase
         $this->errorRepository = new ErrorRepository(new Replacer());
         $this->errorRepository->configure($config);
         $this->errorFactory = new ValidatorErrorFactory($this->errorRepository);
-        $this->validatorFactory = new ValidatorFactory($this->errorFactory, $store);
+        $this->validatorFactory = new ValidatorFactory(
+            $this->errorFactory,
+            $store,
+            $this->createMock(Factory::class)
+        );
         $this->store = $store;
     }
 

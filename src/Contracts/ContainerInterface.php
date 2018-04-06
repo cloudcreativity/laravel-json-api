@@ -17,9 +17,9 @@
 
 namespace CloudCreativity\LaravelJsonApi\Contracts;
 
-use CloudCreativity\JsonApi\Contracts\Adapter\ResourceAdapterInterface;
-use CloudCreativity\JsonApi\Contracts\Authorizer\AuthorizerInterface;
-use CloudCreativity\JsonApi\Contracts\Validators\ValidatorProviderInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Adapter\ResourceAdapterInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Authorizer\AuthorizerInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorProviderInterface;
 use Neomerx\JsonApi\Contracts\Schema\ContainerInterface as BaseContainerInterface;
 
 /**

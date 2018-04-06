@@ -17,9 +17,9 @@
 
 namespace CloudCreativity\LaravelJsonApi\Eloquent;
 
-use CloudCreativity\JsonApi\Contracts\Adapter\RelationshipAdapterInterface;
-use CloudCreativity\JsonApi\Contracts\Store\StoreAwareInterface;
-use CloudCreativity\JsonApi\Store\StoreAwareTrait;
+use CloudCreativity\LaravelJsonApi\Contracts\Adapter\RelationshipAdapterInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreAwareInterface;
+use CloudCreativity\LaravelJsonApi\Store\StoreAwareTrait;
 use Illuminate\Database\Eloquent\Model;
 
 /**

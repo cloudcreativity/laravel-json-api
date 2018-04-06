@@ -25,7 +25,7 @@ use DateTimeZone;
 /**
  * Class SchemaTest
  *
- * @package CloudCreativity\JsonApi
+ * @package CloudCreativity\LaravelJsonApi
  */
 class SchemaTest extends TestCase
 {

@@ -18,14 +18,14 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Unit\Schema;
 
-use CloudCreativity\JsonApi\Schema\ExtractsAttributesTrait;
+use CloudCreativity\LaravelJsonApi\Schema\ExtractsAttributesTrait;
 use Neomerx\JsonApi\Factories\Factory;
 use Neomerx\JsonApi\Schema\SchemaProvider;
 
 /**
  * Class TestSchema
  *
- * @package CloudCreativity\JsonApi
+ * @package CloudCreativity\LaravelJsonApi
  */
 class TestSchema extends SchemaProvider
 {

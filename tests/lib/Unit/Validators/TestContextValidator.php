@@ -18,14 +18,14 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Unit\Validators;
 
-use CloudCreativity\JsonApi\Contracts\Object\ResourceObjectInterface;
-use CloudCreativity\JsonApi\Contracts\Validators\ResourceValidatorInterface;
-use CloudCreativity\JsonApi\Utils\ErrorsAwareTrait;
+use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Validators\ResourceValidatorInterface;
+use CloudCreativity\LaravelJsonApi\Utils\ErrorsAwareTrait;
 
 /**
  * Class TestContextValidator
  *
- * @package CloudCreativity\JsonApi
+ * @package CloudCreativity\LaravelJsonApi
  */
 class TestContextValidator implements ResourceValidatorInterface
 {

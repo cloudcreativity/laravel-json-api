@@ -18,15 +18,15 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Unit\Http\Responses;
 
-use CloudCreativity\JsonApi\Document\Error;
-use CloudCreativity\JsonApi\Http\Responses\ErrorResponse;
+use CloudCreativity\LaravelJsonApi\Document\Error;
+use CloudCreativity\LaravelJsonApi\Http\Responses\ErrorResponse;
 use CloudCreativity\LaravelJsonApi\Tests\Unit\TestCase;
 use Neomerx\JsonApi\Exceptions\JsonApiException;
 
 /**
  * Class ErrorResponseTest
  *
- * @package CloudCreativity\JsonApi
+ * @package CloudCreativity\LaravelJsonApi
  */
 class ErrorResponseTest extends TestCase
 {

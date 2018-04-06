@@ -18,14 +18,14 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Unit\Exceptions;
 
-use CloudCreativity\JsonApi\Document\Error;
-use CloudCreativity\JsonApi\Exceptions\AuthorizationException;
+use CloudCreativity\LaravelJsonApi\Document\Error;
+use CloudCreativity\LaravelJsonApi\Exceptions\AuthorizationException;
 use CloudCreativity\LaravelJsonApi\Tests\Unit\TestCase;
 
 /**
  * Class ErrorCollectionTest
  *
- * @package CloudCreativity\JsonApi
+ * @package CloudCreativity\LaravelJsonApi
  */
 class AuthorizationExceptionTest extends TestCase
 {

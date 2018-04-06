@@ -18,10 +18,10 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Unit\Authorizer;
 
-use CloudCreativity\JsonApi\Authorizer\ReadOnlyAuthorizer;
-use CloudCreativity\JsonApi\Object\Relationship;
-use CloudCreativity\JsonApi\Object\ResourceObject;
-use CloudCreativity\JsonApi\Repositories\ErrorRepository;
+use CloudCreativity\LaravelJsonApi\Authorizer\ReadOnlyAuthorizer;
+use CloudCreativity\LaravelJsonApi\Object\Relationship;
+use CloudCreativity\LaravelJsonApi\Object\ResourceObject;
+use CloudCreativity\LaravelJsonApi\Repositories\ErrorRepository;
 use CloudCreativity\LaravelJsonApi\Tests\Unit\TestCase;
 use CloudCreativity\Utils\Object\StandardObject;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
@@ -29,7 +29,7 @@ use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 /**
  * Class ReadOnlyAuthorizerTest
  *
- * @package CloudCreativity\JsonApi
+ * @package CloudCreativity\LaravelJsonApi
  */
 class ReadOnlyAuthorizerTest extends TestCase
 {

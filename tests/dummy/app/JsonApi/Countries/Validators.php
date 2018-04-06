@@ -2,7 +2,7 @@
 
 namespace DummyApp\JsonApi\Countries;
 
-use CloudCreativity\JsonApi\Contracts\Validators\RelationshipsValidatorInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Validators\RelationshipsValidatorInterface;
 use CloudCreativity\LaravelJsonApi\Validators\AbstractValidatorProvider;
 
 class Validators extends AbstractValidatorProvider

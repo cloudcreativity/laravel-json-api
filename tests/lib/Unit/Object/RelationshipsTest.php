@@ -18,16 +18,16 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Unit\Object;
 
-use CloudCreativity\JsonApi\Object\Relationship;
-use CloudCreativity\JsonApi\Object\Relationships;
-use CloudCreativity\JsonApi\Object\ResourceIdentifier;
+use CloudCreativity\LaravelJsonApi\Object\Relationship;
+use CloudCreativity\LaravelJsonApi\Object\Relationships;
+use CloudCreativity\LaravelJsonApi\Object\ResourceIdentifier;
 use CloudCreativity\LaravelJsonApi\Tests\Unit\TestCase;
 use stdClass;
 
 /**
  * Class RelationshipsTest
  *
- * @package CloudCreativity\JsonApi
+ * @package CloudCreativity\LaravelJsonApi
  */
 class RelationshipsTest extends TestCase
 {

@@ -3,11 +3,10 @@
 namespace DummyApp\JsonApi\Posts;
 
 use CloudCreativity\LaravelJsonApi\Eloquent\AbstractAdapter;
-use CloudCreativity\LaravelJsonApi\Eloquent\HasMany;
 use CloudCreativity\LaravelJsonApi\Eloquent\BelongsTo;
+use CloudCreativity\LaravelJsonApi\Eloquent\HasMany;
 use CloudCreativity\LaravelJsonApi\Pagination\StandardStrategy;
 use DummyApp\Post;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 
 class Adapter extends AbstractAdapter

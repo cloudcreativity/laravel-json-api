@@ -18,17 +18,17 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Unit\Store;
 
-use CloudCreativity\JsonApi\Contracts\Adapter\RelationshipAdapterInterface;
-use CloudCreativity\JsonApi\Contracts\Store\AdapterInterface;
-use CloudCreativity\JsonApi\Contracts\Store\StoreInterface;
-use CloudCreativity\JsonApi\Exceptions\RecordNotFoundException;
-use CloudCreativity\JsonApi\Exceptions\RuntimeException;
-use CloudCreativity\JsonApi\Object\ResourceIdentifier;
-use CloudCreativity\JsonApi\Object\ResourceIdentifierCollection;
-use CloudCreativity\JsonApi\Object\ResourceObject;
-use CloudCreativity\JsonApi\Pagination\Page;
-use CloudCreativity\JsonApi\Store\Store;
+use CloudCreativity\LaravelJsonApi\Contracts\Adapter\RelationshipAdapterInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Store\AdapterInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
+use CloudCreativity\LaravelJsonApi\Exceptions\RecordNotFoundException;
+use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
+use CloudCreativity\LaravelJsonApi\Object\ResourceIdentifier;
+use CloudCreativity\LaravelJsonApi\Object\ResourceIdentifierCollection;
+use CloudCreativity\LaravelJsonApi\Object\ResourceObject;
+use CloudCreativity\LaravelJsonApi\Pagination\Page;
+use CloudCreativity\LaravelJsonApi\Store\Store;
 use CloudCreativity\LaravelJsonApi\Tests\Unit\TestCase;
 use CloudCreativity\Utils\Object\StandardObject;
 use Neomerx\JsonApi\Encoder\Parameters\EncodingParameters;
@@ -37,7 +37,7 @@ use PHPUnit_Framework_MockObject_MockObject;
 /**
  * Class StoreTest
  *
- * @package CloudCreativity\JsonApi
+ * @package CloudCreativity\LaravelJsonApi
  */
 class StoreTest extends TestCase
 {

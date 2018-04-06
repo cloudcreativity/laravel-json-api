@@ -2,7 +2,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Unit;
 
-use CloudCreativity\JsonApi\Exceptions\InvalidJsonException;
+use CloudCreativity\LaravelJsonApi\Exceptions\InvalidJsonException;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
 use function CloudCreativity\LaravelJsonApi\http_contains_body;

@@ -18,16 +18,16 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Unit\Http\Requests;
 
-use CloudCreativity\JsonApi\Contracts\Object\ResourceIdentifierInterface;
-use CloudCreativity\JsonApi\Http\Requests\InboundRequest;
-use CloudCreativity\JsonApi\Object\Document;
+use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceIdentifierInterface;
+use CloudCreativity\LaravelJsonApi\Http\Requests\InboundRequest;
+use CloudCreativity\LaravelJsonApi\Object\Document;
 use CloudCreativity\LaravelJsonApi\Tests\Unit\TestCase;
 use Neomerx\JsonApi\Encoder\Parameters\EncodingParameters;
 
 /**
  * Class RequestTest
  *
- * @package CloudCreativity\JsonApi
+ * @package CloudCreativity\LaravelJsonApi
  */
 class InboundRequestTest extends TestCase
 {

@@ -18,8 +18,6 @@
 
 namespace CloudCreativity\LaravelJsonApi\Http\Responses;
 
-use CloudCreativity\JsonApi\Http\Responses\AbstractResponses;
-
 /**
  * Class Responses
  *

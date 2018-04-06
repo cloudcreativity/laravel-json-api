@@ -18,20 +18,20 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Unit\Object;
 
-use CloudCreativity\JsonApi\Contracts\Object\ResourceObjectCollectionInterface;
-use CloudCreativity\JsonApi\Exceptions\RuntimeException;
-use CloudCreativity\JsonApi\Object\Document;
-use CloudCreativity\JsonApi\Object\ResourceIdentifier;
-use CloudCreativity\JsonApi\Object\ResourceIdentifierCollection;
-use CloudCreativity\JsonApi\Object\ResourceObject as ResourceObject;
-use CloudCreativity\JsonApi\Object\ResourceObjectCollection;
+use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectCollectionInterface;
+use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
+use CloudCreativity\LaravelJsonApi\Object\Document;
+use CloudCreativity\LaravelJsonApi\Object\ResourceIdentifier;
+use CloudCreativity\LaravelJsonApi\Object\ResourceIdentifierCollection;
+use CloudCreativity\LaravelJsonApi\Object\ResourceObject as ResourceObject;
+use CloudCreativity\LaravelJsonApi\Object\ResourceObjectCollection;
 use CloudCreativity\LaravelJsonApi\Tests\Unit\TestCase;
 use stdClass;
 
 /**
  * Class ResourceCollectionTest
  *
- * @package CloudCreativity\JsonApi
+ * @package CloudCreativity\LaravelJsonApi
  */
 class ResourceObjectCollectionTest extends TestCase
 {

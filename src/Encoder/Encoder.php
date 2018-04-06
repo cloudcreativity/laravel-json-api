@@ -18,7 +18,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Encoder;
 
-use CloudCreativity\JsonApi\Contracts\Encoder\SerializerInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Encoder\SerializerInterface;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use Neomerx\JsonApi\Encoder\Encoder as BaseEncoder;
 use Neomerx\JsonApi\Encoder\Serialize\ArraySerializerTrait;

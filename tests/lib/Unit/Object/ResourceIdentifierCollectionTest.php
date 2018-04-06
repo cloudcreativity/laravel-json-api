@@ -18,14 +18,14 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Unit\Object;
 
-use CloudCreativity\JsonApi\Object\ResourceIdentifier;
-use CloudCreativity\JsonApi\Object\ResourceIdentifierCollection;
+use CloudCreativity\LaravelJsonApi\Object\ResourceIdentifier;
+use CloudCreativity\LaravelJsonApi\Object\ResourceIdentifierCollection;
 use CloudCreativity\LaravelJsonApi\Tests\Unit\TestCase;
 
 /**
  * Class ResourceIdentifierCollectionTest
  *
- * @package CloudCreativity\JsonApi
+ * @package CloudCreativity\LaravelJsonApi
  */
 class ResourceIdentifierCollectionTest extends TestCase
 {

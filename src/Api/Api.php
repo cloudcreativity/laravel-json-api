@@ -18,18 +18,18 @@
 
 namespace CloudCreativity\LaravelJsonApi\Api;
 
-use CloudCreativity\JsonApi\Contracts\Encoder\SerializerInterface;
-use CloudCreativity\JsonApi\Contracts\Http\Client\ClientInterface;
-use CloudCreativity\JsonApi\Contracts\Http\Responses\ErrorResponseInterface;
-use CloudCreativity\JsonApi\Contracts\Repositories\ErrorRepositoryInterface;
-use CloudCreativity\JsonApi\Contracts\Resolver\ResolverInterface;
-use CloudCreativity\JsonApi\Contracts\Store\StoreInterface;
-use CloudCreativity\JsonApi\Resolver\NamespaceResolver;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Encoder\SerializerInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Client\ClientInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Responses\ErrorResponseInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Repositories\ErrorRepositoryInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use CloudCreativity\LaravelJsonApi\Http\Responses\Responses;
 use CloudCreativity\LaravelJsonApi\Resolver\AggregateResolver;
+use CloudCreativity\LaravelJsonApi\Resolver\NamespaceResolver;
 use Neomerx\JsonApi\Contracts\Codec\CodecMatcherInterface;
 use Neomerx\JsonApi\Contracts\Encoder\EncoderInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;

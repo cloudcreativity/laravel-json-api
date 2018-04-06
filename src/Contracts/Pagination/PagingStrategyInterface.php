@@ -18,7 +18,6 @@
 
 namespace CloudCreativity\LaravelJsonApi\Contracts\Pagination;
 
-use CloudCreativity\JsonApi\Contracts\Pagination\PageInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 /**

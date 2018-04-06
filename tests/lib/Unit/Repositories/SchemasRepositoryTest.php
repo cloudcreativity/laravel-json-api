@@ -18,14 +18,14 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Unit\Repositories;
 
-use CloudCreativity\JsonApi\Repositories\SchemasRepository;
+use CloudCreativity\LaravelJsonApi\Repositories\SchemasRepository;
 use CloudCreativity\LaravelJsonApi\Tests\Unit\TestCase;
 use Neomerx\JsonApi\Factories\Factory;
 
 /**
  * Class SchemasRepositoryTest
  *
- * @package CloudCreativity\JsonApi
+ * @package CloudCreativity\LaravelJsonApi
  */
 class SchemasRepositoryTest extends TestCase
 {
