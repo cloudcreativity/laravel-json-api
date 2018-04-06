@@ -29,6 +29,9 @@ relationships.
 handling resources that related to Eloquent models.
 - Filter, sort and page query parameters are no longer allowed for requests on primary resources (create, read
 update and delete) because these query parameters do not apply to these requests.
+- When serializing Eloquent models, if no attributes are specified for serialization (a `null` value), only
+`Model::getVisible()` will now be used to work out what attributes must be serialized. Previously if `getVisible`
+returned an empty array, `getFillable` would be used instead.
 
 ### Removed
 - Delete Eloquent hydrator class as all hydration is now handled by adapters instead.

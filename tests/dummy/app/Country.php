@@ -18,6 +18,14 @@ class Country extends Model
     ];
 
     /**
+     * @var array
+     */
+    protected $visible = [
+        'name',
+        'code',
+    ];
+
+    /**
      * @return HasMany
      */
     public function users()

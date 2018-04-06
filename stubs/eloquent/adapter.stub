@@ -12,11 +12,11 @@ class Adapter extends AbstractAdapter
 {
 
     /**
-     * Resource attribute fields to hydrate the model with.
+     * Mapping of JSON API attribute field names to model keys.
      *
-     * @var array|null
+     * @var array
      */
-    protected $attributes = null;
+    protected $attributes = [];
 
     /**
      * Resource relationship fields to hydrate the model with.

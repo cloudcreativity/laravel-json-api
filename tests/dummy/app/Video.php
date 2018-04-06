@@ -29,6 +29,14 @@ class Video extends Model
     ];
 
     /**
+     * @var array
+     */
+    protected $visible = [
+        'title',
+        'description',
+    ];
+
+    /**
      * @return BelongsTo
      */
     public function user()

@@ -16,6 +16,13 @@ class Tag extends Model
     ];
 
     /**
+     * @var array
+     */
+    protected $visible = [
+        'name',
+    ];
+
+    /**
      * @return MorphToMany
      */
     public function posts()
