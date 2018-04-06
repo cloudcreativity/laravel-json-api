@@ -44,17 +44,22 @@ trait MakesJsonApiRequests
      *
      * @param $method
      * @param LinkInterface|string $uri
-     * @param array $data
+     * @param array|string $data
      * @param array $headers
      * @return TestResponse
      */
-    protected function jsonApi($method, $uri, array $data = [], array $headers = [])
+    protected function jsonApi($method, $uri, $data = [], array $headers = [])
     {
         if ($uri instanceof LinkInterface) {
             $uri = $uri->getSubHref();
         }
 
-        $content = $data ? json_encode($data) : null;
+        if (is_array($data) && !empty($data)) {
+            $content = json_encode($data);
+        } else {
+            $content = $data ?: null;
+        }
+
         $headers = $this->normalizeHeaders($headers, $content);
 
         /** @var TestResponse $response */
@@ -67,44 +72,44 @@ trait MakesJsonApiRequests
 
     /**
      * @param $uri
-     * @param array $data
+     * @param array|string $data
      * @param array $headers
      * @return TestResponse
      */
-    protected function getJsonApi($uri, array $data = [], array $headers = [])
+    protected function getJsonApi($uri, $data = [], array $headers = [])
     {
         return $this->jsonApi('GET', $uri, $data, $headers);
     }
 
     /**
      * @param $uri
-     * @param array $data
+     * @param array|string $data
      * @param array $headers
      * @return TestResponse
      */
-    protected function postJsonApi($uri, array $data = [], array $headers = [])
+    protected function postJsonApi($uri, $data = [], array $headers = [])
     {
         return $this->jsonApi('POST', $uri, $data, $headers);
     }
 
     /**
      * @param $uri
-     * @param array $data
+     * @param array|string $data
      * @param array $headers
      * @return TestResponse
      */
-    protected function patchJsonApi($uri, array $data = [], array $headers = [])
+    protected function patchJsonApi($uri, $data = [], array $headers = [])
     {
         return $this->jsonApi('PATCH', $uri, $data, $headers);
     }
 
     /**
      * @param $uri
-     * @param array $data
+     * @param array|string $data
      * @param array $headers
      * @return TestResponse
      */
-    protected function deleteJsonApi($uri, array $data = [], array $headers = [])
+    protected function deleteJsonApi($uri, $data = [], array $headers = [])
     {
         return $this->jsonApi('DELETE', $uri, $data, $headers);
     }

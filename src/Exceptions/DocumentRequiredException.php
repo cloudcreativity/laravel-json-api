@@ -2,6 +2,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Exceptions;
 
+use CloudCreativity\LaravelJsonApi\Document\Error;
 use Exception;
 use Neomerx\JsonApi\Exceptions\JsonApiException;
 
@@ -25,5 +26,11 @@ class DocumentRequiredException extends JsonApiException
     public function __construct($errors = [], Exception $previous = null)
     {
         parent::__construct($errors, self::HTTP_CODE_BAD_REQUEST, $previous);
+
+        $this->addError(Error::create([
+            Error::TITLE => 'Document Required',
+            Error::STATUS => self::HTTP_CODE_BAD_REQUEST,
+            Error::DETAIL => 'Expecting request to contain a JSON API document.',
+        ]));
     }
 }

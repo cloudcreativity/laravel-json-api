@@ -3,6 +3,7 @@
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration;
 
 use CloudCreativity\LaravelJsonApi\Exceptions\DocumentRequiredException;
+use CloudCreativity\LaravelJsonApi\Exceptions\InvalidJsonException;
 use CloudCreativity\LaravelJsonApi\Exceptions\NotFoundException;
 use DummyApp\Post;
 
@@ -44,10 +45,9 @@ class ErrorsTest extends TestCase
      */
     public function testDocumentRequired()
     {
-        $post = factory(Post::class)->create();
-        $uri = $this->api()->url()->update('posts', $post);
+        $uri = $this->api()->url()->create('posts');
 
-        $this->patchJsonApi($uri, [])->assertStatus(400)->assertExactJson([
+        $this->postJsonApi($uri, '')->assertStatus(400)->assertExactJson([
             'errors' => [
                 [
                     'title' => 'Document Required',
@@ -58,13 +58,47 @@ class ErrorsTest extends TestCase
         ]);
     }
 
+    /**
+     * Can override the default document required error.
+     */
     public function testCustomDocumentRequired()
     {
-        $post = factory(Post::class)->create();
-        $uri = $this->api()->url()->update('posts', $post);
+        $uri = $this->api()->url()->create('posts');
         $expected = $this->withCustomError(DocumentRequiredException::class);
 
-        $this->patchJsonApi($uri, [])->assertStatus(400)->assertExactJson($expected);
+        $this->postJsonApi($uri, '')->assertStatus(400)->assertExactJson($expected);
+    }
+
+    /**
+     * Returns a JSON API error when the submitted JSON is invalid.
+     */
+    public function testInvalidJson()
+    {
+        $uri = $this->api()->url()->create('posts');
+        $content = '{"data": {}';
+
+        $this->postJsonApi($uri, $content)->assertStatus(400)->assertExactJson([
+            'errors' => [
+                [
+                    'title' => 'Invalid JSON',
+                    'code' => 4,
+                    'status' => '400',
+                    'detail' => 'Syntax error',
+                ],
+            ],
+        ]);
+    }
+
+    /**
+     * Can override the invalid JSON error.
+     */
+    public function testCustomInvalidJson()
+    {
+        $uri = $this->api()->url()->create('posts');
+        $expected = $this->withCustomError(InvalidJsonException::class);
+        $content = '{"data": {}';
+
+        $this->postJsonApi($uri, $content)->assertStatus(400)->assertExactJson($expected);
     }
 
     /**

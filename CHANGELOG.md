@@ -52,6 +52,8 @@ Pagination meta will no longer leak into error response if error occurs when enc
 Sending an invalid content type header now returns a JSON API error object.
 - [#146](https://github.com/cloudcreativity/laravel-json-api/issues/146)
 Return a 404 JSON API error object and allow this to be overridden.
+- [#155](https://github.com/cloudcreativity/laravel-json-api/issues/155)
+Return a JSON API error when the request content cannot be JSON decoded.
 
 ## [0.12.0] - 2018-02-08
 

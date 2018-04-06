@@ -41,6 +41,7 @@ use Neomerx\JsonApi\Contracts\Http\Query\QueryParametersParserInterface;
 use Neomerx\JsonApi\Exceptions\JsonApiException;
 use Psr\Http\Message\ServerRequestInterface;
 use function CloudCreativity\LaravelJsonApi\http_contains_body;
+use function CloudCreativity\LaravelJsonApi\json_decode;
 
 /**
  * Class BootJsonApi
