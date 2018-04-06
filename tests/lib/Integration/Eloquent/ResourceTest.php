@@ -2,6 +2,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Eloquent;
 
+use Carbon\Carbon;
 use DummyApp\Comment;
 use DummyApp\Events\ResourceEvent;
 use DummyApp\Http\Controllers\PostsController;
@@ -165,6 +166,7 @@ class ResourceTest extends TestCase
     public function testUpdate()
     {
         $model = $this->createPost();
+        $published = new Carbon('2018-01-01 12:00:00');
 
         $data = [
             'type' => 'posts',
@@ -172,11 +174,23 @@ class ResourceTest extends TestCase
             'attributes' => [
                 'slug' => 'posts-test',
                 'title' => 'Foo Bar Baz Bat',
+                'foo' => 'bar', // attribute that does not exist.
+                'published' => $published->toW3cString(),
             ],
         ];
 
-        $this->doUpdate($data)->assertUpdateResponse($data);
-        $this->assertModelPatched($model, $data['attributes'], ['content']);
+        $expected = $data;
+        unset($expected['attributes']['foo']);
+
+        $this->doUpdate($data)->assertUpdateResponse($expected);
+
+        $this->assertDatabaseHas('posts', [
+            'id' => $model->getKey(),
+            'slug' => 'posts-test',
+            'title' => 'Foo Bar Baz Bat',
+            'content' => $model->content,
+            'published_at' => $published->toDateTimeString(),
+        ]);
     }
 
     /**

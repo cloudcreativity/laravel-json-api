@@ -17,6 +17,14 @@ class Post extends Model
         'title',
         'slug',
         'content',
+        'published_at',
+    ];
+
+    /**
+     * @var array
+     */
+    protected $dates = [
+        'published_at',
     ];
 
     /**

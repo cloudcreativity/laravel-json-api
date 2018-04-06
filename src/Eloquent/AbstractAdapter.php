@@ -70,46 +70,32 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     protected $primaryKey;
 
     /**
-     * JSON API attribute field names to hydrate.
+     * Mapping of JSON API attribute field names to model keys.
      *
-     * - Empty array = hydrate no attributes.
-     * - Non-empty array = hydrate the specified attribute keys (see below).
-     * - Null = calculate the attributes to hydrate using `Model::getFillable()`
+     * By default, JSON API attribute fields will automatically be converted to the
+     * underscored or camel cased equivalent for the model key. E.g. if the model
+     * uses snake case, the JSON API field `published-at` will be converted
+     * to `published_at`. If the model does not use snake case, it will be converted
+     * to `publishedAt`.
      *
-     * List the keys from the resource's attributes that should be transferred to your
-     * model using the `fill()` method. To map a resource attribute key to a different
-     * model key, use a key/value pair where the key is the resource attribute and the
-     * value is the model attribute.
+     * For any fields that do not directly convert to model keys, you can list them
+     * here. For example, if the JSON API field `published-at` needed to map to the
+     * `published_date` model key, then it can be listed as follows:
      *
-     * For example:
-     *
-     * ```
-     * $attributes = [
-     *  'foo',
-     *  'bar' => 'baz'
-     *  'foo-bar',
+     * ```php
+     * protected $attributes = [
+     *   'published-at' => 'published_date',
      * ];
      * ```
      *
-     * Will transfer the `foo` resource attribute to the model `foo` attribute, and the
-     * resource `bar` attribute to the model `baz` attribute. The `foo-bar` resource
-     * attribute will be converted to `foo_bar` if the Model uses snake case attributes,
-     * or `fooBar` if it does not use snake case.
-     *
-     * If this property is `null`, the attributes to hydrate will be calculated using
-     * `Model::getFillable()`.
-     *
-     * @var array|null
+     * @var array
      */
-    protected $attributes = null;
+    protected $attributes = [];
 
     /**
      * JSON API relationship field names to hydrate.
      *
-     * This hydrator can hydrate Eloquent `BelongsTo` and `BelongsToMany` relationships. To do so,
-     * add the relationship name to this array. As per the attributes above, you can map
-     * a resource relationship key to a different model key using a key/value pair. The model key
-     * must be the method on the model to get the relationship object.
+     * Lists the JSON API relationship field names that can be hydrated (modified).
      *
      * @var string[]
      */
@@ -118,7 +104,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     /**
      * The resource attributes that are dates.
      *
-     * If an array, a list of JSON API resource attributes that should be cast to dates.
+     * If an array, a list of JSON API attribute fields that should be cast to dates.
      * If `null`, the list will be calculated using `Model::getDates()`
      *
      * @var string[]|null
@@ -405,38 +391,6 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     }
 
     /**
-     * @param StandardObjectInterface $attributes
-     *      the attributes received from the client.
-     * @param Model $record
-     *      the model being hydrated
-     * @return array
-     *      the JSON API attribute keys to hydrate
-     * @deprecated use `hydrateAttributeFields`
-     */
-    protected function attributeKeys(StandardObjectInterface $attributes, $record)
-    {
-        return $this->hydrateAttributeFields($record);
-    }
-
-    /**
-     * Get the JSON API attribute fields that can be hydrated.
-     *
-     * @param Model $model
-     *      the model being hydrated.
-     * @return array
-     */
-    protected function hydrateAttributeFields($model)
-    {
-       if (is_array($this->attributes)) {
-           return $this->attributes;
-       }
-
-        return $this->attributes = collect($model->getFillable())->mapWithKeys(function ($modelKey) {
-            return [$this->fieldForModelKey($modelKey) => $modelKey];
-        })->all();
-    }
-
-    /**
      * Get the JSON API relationship fields that can be hydrated.
      *
      * @param Model $model
@@ -459,16 +413,13 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
 
         $data = [];
 
-        foreach ($this->attributeKeys($attributes, $record) as $resourceKey => $modelKey) {
-            if (is_numeric($resourceKey)) {
-                $resourceKey = $modelKey;
-                $modelKey = $this->keyForAttribute($modelKey, $record);
-            }
+        foreach ($attributes as $field => $value) {
+            $key = $this->keyForAttribute($field, $record);
 
-            if ($attributes->has($resourceKey)) {
-                $data[$modelKey] = $this->deserializeAttribute($attributes->get($resourceKey), $resourceKey, $record);
+            if ($record->isFillable($key)) {
+                $data[$key] = $this->deserializeAttribute($attributes->get($field), $field, $record);
             }
-        }
+         }
 
         $record->fill($data);
     }
@@ -494,20 +445,14 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      */
     protected function modelKeyForField($field)
     {
+        if (isset($this->attributes[$field])) {
+            return $this->attributes[$field];
+        }
+
         $model = $this->model;
+        $key = $model::$snakeAttributes ? Str::underscore($field) : Str::camelize($field);
 
-        return $model::$snakeAttributes ? Str::underscore($field) : Str::camelize($field);
-    }
-
-    /**
-     * Convert a model key to a JSON API resource field name.
-     *
-     * @param $key
-     * @return string
-     */
-    protected function fieldForModelKey($key)
-    {
-        return Str::dasherize($key);
+        return $this->attributes[$field] = $key;
     }
 
     /**
@@ -543,17 +488,17 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     /**
      * Is this resource key a date attribute?
      *
-     * @param $resourceKey
+     * @param $field
      * @param Model $record
      * @return bool
      */
-    protected function isDateAttribute($resourceKey, $record)
+    protected function isDateAttribute($field, $record)
     {
         if (is_null($this->dates)) {
-            return in_array(Str::underscore($resourceKey), $record->getDates(), true);
+            return in_array($this->modelKeyForField($field), $record->getDates(), true);
         }
 
-        return in_array($resourceKey, $this->dates, true);
+        return in_array($field, $this->dates, true);
     }
 
     /**

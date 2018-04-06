@@ -16,9 +16,7 @@ class Adapter extends AbstractAdapter
      * @var array
      */
     protected $attributes = [
-        'title',
-        'slug',
-        'content',
+        'published' => 'published_at',
     ];
 
     /**
