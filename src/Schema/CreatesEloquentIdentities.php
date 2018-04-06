@@ -61,14 +61,7 @@ trait CreatesEloquentIdentities
         }
 
         $related = $relation->getRelated()->replicate();
-
-        /** Laravel 5.4 */
-        if (method_exists($relation, 'getOwnerKey')) {
-            $related->{$relation->getOwnerKey()} = $id;
-        } /** Laravel 5.1|5.2|5.3 */
-        else {
-            $related->{$relation->getOtherKey()} = $id;
-        }
+        $related->{$relation->getOwnerKey()} = $id;
 
         return $related;
     }
