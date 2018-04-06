@@ -1,6 +1,8 @@
 <?php
 
 use CloudCreativity\LaravelJsonApi\Contracts\Document\MutableErrorInterface as Error;
+use CloudCreativity\LaravelJsonApi\Exceptions\DocumentRequiredException;
+use CloudCreativity\LaravelJsonApi\Exceptions\NotFoundException;
 use CloudCreativity\LaravelJsonApi\Validators\ValidatorErrorFactory as V;
 use CloudCreativity\LaravelJsonApi\Http\Headers\RestrictiveHeadersChecker as H;
 use Illuminate\Http\Response;
@@ -31,6 +33,23 @@ return [
         Error::TITLE => 'Invalid Content-Type Header',
         Error::STATUS => Response::HTTP_UNSUPPORTED_MEDIA_TYPE,
         Error::DETAIL => 'The specified content type is not supported.',
+    ],
+
+    /**
+     * The request record type/id does not match a record.
+     */
+    NotFoundException::class => [
+        Error::TITLE => 'Not Found',
+        Error::STATUS => Response::HTTP_NOT_FOUND,
+    ],
+
+    /**
+     * The request did not contain a JSON API document in its content.
+     */
+    DocumentRequiredException::class => [
+        Error::TITLE => 'Document Required',
+        Error::STATUS => Response::HTTP_BAD_REQUEST,
+        Error::DETAIL => 'Expecting request to contain a JSON API document.',
     ],
 
     /**

@@ -26,6 +26,7 @@ use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\InboundRequestInterfa
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\DocumentRequiredException;
 use CloudCreativity\LaravelJsonApi\Exceptions\InvalidJsonException;
+use CloudCreativity\LaravelJsonApi\Exceptions\NotFoundException;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use CloudCreativity\LaravelJsonApi\Object\Document;
 use CloudCreativity\LaravelJsonApi\Object\ResourceIdentifier;
@@ -226,7 +227,7 @@ class BootJsonApi
     ) {
         /** If the resource id is not valid, throw a 404 exception. */
         if ($resourceId && !$this->doesResourceExist($store, $resourceType, $resourceId)) {
-            throw new JsonApiException([], 404);
+            throw new NotFoundException();
         }
 
         /** Do content negotiation. */

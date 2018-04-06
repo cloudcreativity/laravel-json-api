@@ -80,7 +80,9 @@ class ExceptionParser implements ExceptionParserInterface
      */
     public function parse(Exception $e)
     {
-        if ($e instanceof JsonApiException) {
+        $repository = $this->getErrorRepository();
+
+        if ($e instanceof JsonApiException && !$repository->exists($this->getErrorKey($e))) {
             $errors = $e->getErrors();
             $httpCode = $e->getHttpCode();
         } else {
@@ -150,6 +152,10 @@ class ExceptionParser implements ExceptionParserInterface
      */
     protected function getDefaultHttpCode(Exception $e)
     {
+        if ($e instanceof JsonApiException) {
+            return $e->getHttpCode();
+        }
+
         return ($e instanceof HttpExceptionInterface) ?
             $e->getStatusCode() :
             Response::HTTP_INTERNAL_SERVER_ERROR;
