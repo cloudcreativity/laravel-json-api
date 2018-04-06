@@ -2,10 +2,10 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration;
 
-use CloudCreativity\JsonApi\Contracts\Object\DocumentInterface;
-use CloudCreativity\JsonApi\Contracts\Object\RelationshipInterface;
-use CloudCreativity\JsonApi\Contracts\Object\ResourceObjectInterface;
-use CloudCreativity\JsonApi\Exceptions\RuntimeException;
+use CloudCreativity\LaravelJsonApi\Contracts\Object\DocumentInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Object\RelationshipInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectInterface;
+use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 
 class ServicesTest extends TestCase
 {

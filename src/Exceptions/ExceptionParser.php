@@ -18,13 +18,13 @@
 
 namespace CloudCreativity\LaravelJsonApi\Exceptions;
 
-use CloudCreativity\JsonApi\Contracts\Document\MutableErrorInterface;
-use CloudCreativity\JsonApi\Contracts\Exceptions\ErrorIdAllocatorInterface;
-use CloudCreativity\JsonApi\Contracts\Exceptions\ExceptionParserInterface;
-use CloudCreativity\JsonApi\Contracts\Factories\FactoryInterface;
-use CloudCreativity\JsonApi\Contracts\Repositories\ErrorRepositoryInterface;
-use CloudCreativity\JsonApi\Exceptions\MutableErrorCollection as Errors;
-use CloudCreativity\JsonApi\Http\Responses\ErrorResponse;
+use CloudCreativity\LaravelJsonApi\Contracts\Document\MutableErrorInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Exceptions\ErrorIdAllocatorInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Exceptions\ExceptionParserInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Factories\FactoryInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Repositories\ErrorRepositoryInterface;
+use CloudCreativity\LaravelJsonApi\Exceptions\MutableErrorCollection as Errors;
+use CloudCreativity\LaravelJsonApi\Http\Responses\ErrorResponse;
 use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
 use Exception;
 use Illuminate\Http\Response;

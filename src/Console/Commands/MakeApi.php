@@ -18,7 +18,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Console\Commands;
 
-use CloudCreativity\JsonApi\Utils\Str;
+use CloudCreativity\LaravelJsonApi\Utils\Str;
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
 

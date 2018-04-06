@@ -18,7 +18,6 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration;
 
-use CloudCreativity\LaravelJsonApi\Routing\ApiGroup;
 use Neomerx\JsonApi\Document\Link;
 
 /**

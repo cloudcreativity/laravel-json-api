@@ -18,7 +18,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Utils;
 
-use CloudCreativity\JsonApi\Exceptions\MutableErrorCollection as Errors;
+use CloudCreativity\LaravelJsonApi\Exceptions\MutableErrorCollection as Errors;
 use Countable;
 use Generator;
 use Illuminate\Contracts\Support\Arrayable;

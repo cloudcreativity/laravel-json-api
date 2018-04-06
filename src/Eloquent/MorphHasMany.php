@@ -17,10 +17,10 @@
 
 namespace CloudCreativity\LaravelJsonApi\Eloquent;
 
-use CloudCreativity\JsonApi\Contracts\Adapter\HasManyAdapterInterface;
-use CloudCreativity\JsonApi\Contracts\Object\RelationshipInterface;
-use CloudCreativity\JsonApi\Contracts\Store\StoreAwareInterface;
-use CloudCreativity\JsonApi\Contracts\Store\StoreInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Adapter\HasManyAdapterInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Object\RelationshipInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreAwareInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 /**

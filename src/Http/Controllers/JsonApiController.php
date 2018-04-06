@@ -19,10 +19,10 @@
 namespace CloudCreativity\LaravelJsonApi\Http\Controllers;
 
 use Closure;
-use CloudCreativity\JsonApi\Contracts\Http\Requests\InboundRequestInterface;
-use CloudCreativity\JsonApi\Contracts\Object\RelationshipInterface;
-use CloudCreativity\JsonApi\Contracts\Object\ResourceObjectInterface;
-use CloudCreativity\JsonApi\Contracts\Store\StoreInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\InboundRequestInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Object\RelationshipInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;

@@ -19,13 +19,14 @@
 namespace CloudCreativity\LaravelJsonApi\Http\Middleware;
 
 use Closure;
-use CloudCreativity\JsonApi\Contracts\Authorizer\AuthorizerInterface;
-use CloudCreativity\JsonApi\Contracts\Http\Requests\InboundRequestInterface;
-use CloudCreativity\JsonApi\Contracts\Store\StoreInterface;
-use CloudCreativity\JsonApi\Exceptions\RuntimeException;
-use CloudCreativity\JsonApi\Http\Middleware\AuthorizesRequests;
+use CloudCreativity\LaravelJsonApi\Contracts\Authorizer\AuthorizerInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\InboundRequestInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
+use CloudCreativity\LaravelJsonApi\Exceptions\AuthorizationException;
+use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Http\Request;
+use Neomerx\JsonApi\Exceptions\ErrorCollection;
 
 /**
  * Class AuthorizeRequest
@@ -34,8 +35,6 @@ use Illuminate\Http\Request;
  */
 class AuthorizeRequest
 {
-
-    use AuthorizesRequests;
 
     /**
      * @var Container
@@ -82,5 +81,86 @@ class AuthorizeRequest
         }
 
         return $authorizer;
+    }
+
+
+    /**
+     * Authorize the request or throw an exception
+     *
+     * @param InboundRequestInterface $request
+     * @param StoreInterface $store
+     * @param AuthorizerInterface $authorizer
+     * @throws AuthorizationException
+     */
+    protected function authorize(
+        InboundRequestInterface $request,
+        StoreInterface $store,
+        AuthorizerInterface $authorizer
+    ) {
+        $result = $this->checkAuthorization($request, $store, $authorizer);
+
+        if (true !== $result) {
+            throw new AuthorizationException($result);
+        }
+    }
+
+    /**
+     * @param InboundRequestInterface $request
+     * @param StoreInterface $store
+     * @param AuthorizerInterface $authorizer
+     * @return ErrorCollection|bool
+     *      errors if the request is not authorized, true if authorized.
+     */
+    protected function checkAuthorization(
+        InboundRequestInterface $request,
+        StoreInterface $store,
+        AuthorizerInterface $authorizer
+    ) {
+        $parameters = $request->getParameters();
+        $document = $request->getDocument();
+        $identifier = $request->getResourceIdentifier();
+        $record = $identifier ? $store->findOrFail($identifier) : null;
+        $authorized = true;
+
+        /** Index */
+        if ($request->isIndex()) {
+            $authorized = $authorizer->canReadMany($request->getResourceType(), $parameters);
+        } /** Create Resource */
+        elseif ($request->isCreateResource()) {
+            $authorized = $authorizer->canCreate($request->getResourceType(), $document->getResource(), $parameters);
+        } /** Read Resource */
+        elseif ($request->isReadResource()) {
+            $authorized = $authorizer->canRead($record, $parameters);
+        } /** Update Resource */
+        elseif ($request->isUpdateResource()) {
+            $authorized = $authorizer->canUpdate($record, $document->getResource(), $parameters);
+        } /** Delete Resource */
+        elseif ($request->isDeleteResource()) {
+            $authorized = $authorizer->canDelete($record, $parameters);
+        } /** Read Related Resource */
+        elseif ($request->isReadRelatedResource()) {
+            $authorized = $authorizer->canReadRelatedResource(
+                $request->getRelationshipName(),
+                $record,
+                $parameters
+            );
+        } /** Read Relationship Data */
+        elseif ($request->isReadRelationship()) {
+            $authorized = $authorizer->canReadRelationship(
+                $request->getRelationshipName(),
+                $record,
+                $parameters
+            );
+        } /** Modify Relationship Data */
+        elseif ($request->isModifyRelationship()) {
+            $authorized = $authorizer->canModifyRelationship(
+                $request->getRelationshipName(),
+                $record,
+                $document->getRelationship(),
+                $parameters
+            );
+        }
+
+        return $authorized ?: $authorizer->getErrors();
     }
 }

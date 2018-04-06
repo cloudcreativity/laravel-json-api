@@ -18,7 +18,7 @@
 namespace CloudCreativity\LaravelJsonApi\Http\Middleware;
 
 use Closure;
-use CloudCreativity\JsonApi\Object\ResourceIdentifier;
+use CloudCreativity\LaravelJsonApi\Object\ResourceIdentifier;
 use CloudCreativity\LaravelJsonApi\Routing\ResourceRegistrar;
 use Illuminate\Http\Request;
 

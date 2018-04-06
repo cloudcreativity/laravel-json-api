@@ -3,8 +3,8 @@
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Issue67;
 
 use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
-use DummyApp\Post;
 use DummyApp\JsonApi\Posts\Schema as PostsSchema;
+use DummyApp\Post;
 
 class IssueTest extends TestCase
 {

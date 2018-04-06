@@ -2,8 +2,8 @@
 
 namespace DummyPackage;
 
-use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 use Illuminate\Database\Eloquent\Factory as ModelFactory;
+use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 
 class ServiceProvider extends BaseServiceProvider
 {

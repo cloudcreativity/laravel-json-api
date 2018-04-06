@@ -18,10 +18,10 @@
 
 namespace CloudCreativity\LaravelJsonApi\Pagination;
 
-use CloudCreativity\JsonApi\Contracts\Factories\FactoryInterface;
-use CloudCreativity\JsonApi\Contracts\Pagination\PageInterface;
-use CloudCreativity\JsonApi\Utils\Str;
+use CloudCreativity\LaravelJsonApi\Contracts\Factories\FactoryInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PageInterface;
 use CloudCreativity\LaravelJsonApi\Schema\CreatesLinks;
+use CloudCreativity\LaravelJsonApi\Utils\Str;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Contracts\Pagination\Paginator;
 use Neomerx\JsonApi\Contracts\Document\LinkInterface;

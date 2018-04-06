@@ -5,7 +5,6 @@ namespace DummyApp\JsonApi\Tags;
 use CloudCreativity\LaravelJsonApi\Eloquent\AbstractAdapter;
 use CloudCreativity\LaravelJsonApi\Eloquent\MorphHasMany;
 use DummyApp\Tag;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 
 class Adapter extends AbstractAdapter

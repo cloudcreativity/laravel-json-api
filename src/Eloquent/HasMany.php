@@ -17,9 +17,9 @@
 
 namespace CloudCreativity\LaravelJsonApi\Eloquent;
 
-use CloudCreativity\JsonApi\Contracts\Adapter\HasManyAdapterInterface;
-use CloudCreativity\JsonApi\Contracts\Object\RelationshipInterface;
-use CloudCreativity\JsonApi\Exceptions\RuntimeException;
+use CloudCreativity\LaravelJsonApi\Contracts\Adapter\HasManyAdapterInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Object\RelationshipInterface;
+use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations;

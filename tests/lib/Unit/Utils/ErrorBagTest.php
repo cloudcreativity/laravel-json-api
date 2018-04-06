@@ -18,7 +18,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Unit\Utils;
 
-use CloudCreativity\JsonApi\Document\Error;
+use CloudCreativity\LaravelJsonApi\Document\Error;
 use CloudCreativity\LaravelJsonApi\Utils\ErrorBag;
 use Illuminate\Support\MessageBag;
 use PHPUnit\Framework\TestCase;

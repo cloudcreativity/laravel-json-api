@@ -18,8 +18,8 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Unit\View;
 
-use CloudCreativity\JsonApi\Encoder\Encoder;
 use CloudCreativity\LaravelJsonApi\Api\Api;
+use CloudCreativity\LaravelJsonApi\Encoder\Encoder;
 use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
 use CloudCreativity\LaravelJsonApi\View\Renderer;
 use Neomerx\JsonApi\Encoder\Parameters\EncodingParameters;

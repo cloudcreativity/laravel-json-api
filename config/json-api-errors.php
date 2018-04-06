@@ -1,7 +1,7 @@
 <?php
 
-use CloudCreativity\JsonApi\Contracts\Document\MutableErrorInterface as Error;
-use CloudCreativity\JsonApi\Validators\ValidatorErrorFactory as V;
+use CloudCreativity\LaravelJsonApi\Contracts\Document\MutableErrorInterface as Error;
+use CloudCreativity\LaravelJsonApi\Validators\ValidatorErrorFactory as V;
 
 return [
 

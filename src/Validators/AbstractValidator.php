@@ -18,7 +18,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Validators;
 
-use CloudCreativity\JsonApi\Utils\ErrorsAwareTrait;
+use CloudCreativity\LaravelJsonApi\Utils\ErrorsAwareTrait;
 use Illuminate\Contracts\Validation\Factory;
 use Illuminate\Contracts\Validation\Validator;
 

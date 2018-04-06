@@ -17,11 +17,11 @@
 
 namespace CloudCreativity\LaravelJsonApi\Testing;
 
-use CloudCreativity\JsonApi\Exceptions\InvalidArgumentException;
 use CloudCreativity\JsonApi\Testing\DocumentTester;
 use CloudCreativity\JsonApi\Testing\ErrorsTester;
 use CloudCreativity\JsonApi\Testing\ResourceObjectsTester;
 use CloudCreativity\JsonApi\Testing\ResourceObjectTester;
+use CloudCreativity\LaravelJsonApi\Exceptions\InvalidArgumentException;
 use Illuminate\Contracts\Routing\UrlRoutable;
 use Illuminate\Foundation\Testing\TestResponse as BaseTestResponse;
 use Illuminate\Http\Response;

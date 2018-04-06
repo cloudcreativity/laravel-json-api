@@ -2,8 +2,8 @@
 
 namespace DummyApp\JsonApi\Sites;
 
-use CloudCreativity\JsonApi\Schema\ExtractsAttributesTrait;
-use CloudCreativity\JsonApi\Utils\Str;
+use CloudCreativity\LaravelJsonApi\Schema\ExtractsAttributesTrait;
+use CloudCreativity\LaravelJsonApi\Utils\Str;
 use DummyApp\Entities\Site;
 use InvalidArgumentException;
 use Neomerx\JsonApi\Schema\SchemaProvider;

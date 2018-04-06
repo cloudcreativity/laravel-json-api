@@ -2,7 +2,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Eloquent\Concerns;
 
-use CloudCreativity\JsonApi\Utils\Str;
+use CloudCreativity\LaravelJsonApi\Utils\Str;
 use Illuminate\Support\Collection;
 
 trait IncludesModels

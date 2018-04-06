@@ -2,8 +2,8 @@
 
 namespace DummyApp\Events;
 
-use CloudCreativity\JsonApi\Contracts\Object\ResourceObjectInterface;
 use CloudCreativity\LaravelJsonApi\Broadcasting\BroadcastsData;
+use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectInterface;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Queue\SerializesModels;

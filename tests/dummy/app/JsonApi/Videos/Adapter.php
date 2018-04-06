@@ -2,10 +2,9 @@
 
 namespace DummyApp\JsonApi\Videos;
 
-use CloudCreativity\JsonApi\Contracts\Object\ResourceObjectInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectInterface;
 use CloudCreativity\LaravelJsonApi\Store\EloquentAdapter;
 use DummyApp\Video;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 

@@ -18,8 +18,8 @@
 
 namespace CloudCreativity\LaravelJsonApi\Api;
 
-use CloudCreativity\JsonApi\Contracts\Resolver\ResolverInterface;
-use CloudCreativity\JsonApi\Resolver\NamespaceResolver;
+use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
+use CloudCreativity\LaravelJsonApi\Resolver\NamespaceResolver;
 use CloudCreativity\LaravelJsonApi\Resolver\UnitNamespaceResolver;
 use CloudCreativity\LaravelJsonApi\Routing\ApiGroup;
 use Illuminate\Contracts\Routing\Registrar;

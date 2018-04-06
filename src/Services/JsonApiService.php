@@ -19,12 +19,12 @@
 namespace CloudCreativity\LaravelJsonApi\Services;
 
 use Closure;
-use CloudCreativity\JsonApi\Contracts\Http\Requests\InboundRequestInterface;
-use CloudCreativity\JsonApi\Contracts\Http\Responses\ErrorResponseInterface;
-use CloudCreativity\JsonApi\Contracts\Utils\ErrorReporterInterface;
-use CloudCreativity\JsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Api\Api;
 use CloudCreativity\LaravelJsonApi\Api\Repository;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\InboundRequestInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Responses\ErrorResponseInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Utils\ErrorReporterInterface;
+use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Routing\ResourceRegistrar;
 use Exception;
 use Illuminate\Contracts\Container\Container;

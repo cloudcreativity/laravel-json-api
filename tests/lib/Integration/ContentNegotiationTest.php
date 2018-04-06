@@ -2,7 +2,6 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration;
 
-use CloudCreativity\LaravelJsonApi\Routing\ApiGroup;
 use DummyApp\Post;
 
 class ContentNegotiationTest extends TestCase
