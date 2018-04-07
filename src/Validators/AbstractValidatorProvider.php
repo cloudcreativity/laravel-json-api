@@ -86,6 +86,18 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
     protected $queryCustomAttributes = [];
 
     /**
+     * The allowed include paths.
+     *
+     * By default all relationship includes are disabled. By filling the keys of the
+     * relationships you can allow specific relations to be included.
+     *
+     * @example /api/v1/posts/1?include=author
+     *
+     * @var array
+     */
+    protected $allowedIncludePaths = [];
+
+    /**
      * The allowed filtering parameters.
      *
      * By default we set this to `null` to allow any filtering parameters, as we expect

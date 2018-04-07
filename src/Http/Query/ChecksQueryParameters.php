@@ -54,11 +54,7 @@ trait ChecksQueryParameters
      */
     protected function allowedIncludePaths()
     {
-        if (property_exists($this, 'allowedIncludePaths')) {
-            return $this->allowedIncludePaths;
-        }
-
-        return [];
+        $this->allowedIncludePaths;
     }
 
     /**

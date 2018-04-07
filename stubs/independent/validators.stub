@@ -14,6 +14,18 @@ class Validators extends AbstractValidatorProvider
     protected $resourceType = 'dummyResourceType';
 
     /**
+     * The allowed include paths.
+     *
+     * By default all relationship includes are disabled. By filling the keys of the
+     * relationships you can allow specific relations to be included.
+     *
+     * @example /api/v1/posts/1?include=author
+     *
+     * @var array
+     */
+    protected $allowedIncludePaths = [];
+
+    /**
      * Get the validation rules for the resource attributes.
      *
      * @param object|null $record
