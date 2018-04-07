@@ -2,9 +2,9 @@
 
 namespace DummyNamespace;
 
-use CloudCreativity\JsonApi\Adapter\AbstractResourceAdapter;
-use CloudCreativity\JsonApi\Contracts\Object\RelationshipsInterface;
-use CloudCreativity\JsonApi\Contracts\Object\ResourceObjectInterface;
+use CloudCreativity\LaravelJsonApi\Adapter\AbstractResourceAdapter;
+use CloudCreativity\LaravelJsonApi\Contracts\Object\RelationshipsInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectInterface;
 use CloudCreativity\Utils\Object\StandardObjectInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
