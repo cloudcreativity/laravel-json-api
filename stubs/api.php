@@ -38,7 +38,7 @@ return [
     | `'posts' => App\Post::class`
     */
     'resources' => [
-        'posts' => 'App\Post',
+        'posts' => App\Post::class,
     ],
 
     /*
@@ -106,7 +106,7 @@ return [
     'codecs' => [
         'encoders' => [
             'application/vnd.api+json',
-            'text/plain' => JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES,
+            'text/plain' => JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_PRESERVE_ZERO_FRACTION,
         ],
         'decoders' => [
             'application/vnd.api+json',
