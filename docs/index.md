@@ -34,17 +34,15 @@ of your PHP classes as *records*.
 
 Each resource type has the following units that serve a particular purpose:
 
-1. **Adapter**: Defines how to load a record using a JSON API resource identifier, and how to query for many records 
-when the client fetches many resources.
-2. **Hydrator**: Deserializes data from a JSON API resource into the record to which it relates.
-3. **Schema**: Serializes a record into its JSON API representation.
-4. **Validators**: Provides validator instances to validate JSON API query parameters and HTTP content body.
+1. **Adapter**: Defines how to query and update records in your application's storage (e.g. database).
+2. **Schema**: Serializes a record into its JSON API representation.
+3. **Validators**: Provides validator instances to validate JSON API query parameters and HTTP content body.
 
 Optionally you can also add an **Authorizer** instance to authorize incoming JSON API request, either for multiple 
 resource types or for a specific resource type.
 
-This may sound like a lot of units, but we believe the single purpose approach makes these highly testable and easy to 
-reason about! 
+Although this may sound like a lot of units, our development approach is to use single-purpose units that
+are easy to reason about.
 
 ### Why *Records* not *Models*?
 
