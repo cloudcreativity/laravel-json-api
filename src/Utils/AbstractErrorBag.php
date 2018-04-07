@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2017 Cloud Creativity Limited
+ * Copyright 2018 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Utils;
 
-use CloudCreativity\JsonApi\Exceptions\MutableErrorCollection as Errors;
+use CloudCreativity\LaravelJsonApi\Exceptions\MutableErrorCollection as Errors;
 use Countable;
 use Generator;
 use Illuminate\Contracts\Support\Arrayable;

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2017 Cloud Creativity Limited
+ * Copyright 2018 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,13 +18,13 @@
 
 namespace CloudCreativity\LaravelJsonApi\Exceptions;
 
-use CloudCreativity\JsonApi\Contracts\Document\MutableErrorInterface;
-use CloudCreativity\JsonApi\Contracts\Exceptions\ErrorIdAllocatorInterface;
-use CloudCreativity\JsonApi\Contracts\Exceptions\ExceptionParserInterface;
-use CloudCreativity\JsonApi\Contracts\Factories\FactoryInterface;
-use CloudCreativity\JsonApi\Contracts\Repositories\ErrorRepositoryInterface;
-use CloudCreativity\JsonApi\Exceptions\MutableErrorCollection as Errors;
-use CloudCreativity\JsonApi\Http\Responses\ErrorResponse;
+use CloudCreativity\LaravelJsonApi\Contracts\Document\MutableErrorInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Exceptions\ErrorIdAllocatorInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Exceptions\ExceptionParserInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Factories\FactoryInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Repositories\ErrorRepositoryInterface;
+use CloudCreativity\LaravelJsonApi\Exceptions\MutableErrorCollection as Errors;
+use CloudCreativity\LaravelJsonApi\Http\Responses\ErrorResponse;
 use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
 use Exception;
 use Illuminate\Http\Response;
@@ -80,7 +80,9 @@ class ExceptionParser implements ExceptionParserInterface
      */
     public function parse(Exception $e)
     {
-        if ($e instanceof JsonApiException) {
+        $repository = $this->getErrorRepository();
+
+        if ($e instanceof JsonApiException && !$repository->exists($this->getErrorKey($e))) {
             $errors = $e->getErrors();
             $httpCode = $e->getHttpCode();
         } else {
@@ -150,6 +152,10 @@ class ExceptionParser implements ExceptionParserInterface
      */
     protected function getDefaultHttpCode(Exception $e)
     {
+        if ($e instanceof JsonApiException) {
+            return $e->getHttpCode();
+        }
+
         return ($e instanceof HttpExceptionInterface) ?
             $e->getStatusCode() :
             Response::HTTP_INTERNAL_SERVER_ERROR;

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2017 Cloud Creativity Limited
+ * Copyright 2018 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,17 +44,22 @@ trait MakesJsonApiRequests
      *
      * @param $method
      * @param LinkInterface|string $uri
-     * @param array $data
+     * @param array|string $data
      * @param array $headers
      * @return TestResponse
      */
-    protected function jsonApi($method, $uri, array $data = [], array $headers = [])
+    protected function jsonApi($method, $uri, $data = [], array $headers = [])
     {
         if ($uri instanceof LinkInterface) {
             $uri = $uri->getSubHref();
         }
 
-        $content = $data ? json_encode($data) : null;
+        if (is_array($data) && !empty($data)) {
+            $content = json_encode($data);
+        } else {
+            $content = $data ?: null;
+        }
+
         $headers = $this->normalizeHeaders($headers, $content);
 
         /** @var TestResponse $response */
@@ -67,44 +72,44 @@ trait MakesJsonApiRequests
 
     /**
      * @param $uri
-     * @param array $data
+     * @param array|string $data
      * @param array $headers
      * @return TestResponse
      */
-    protected function getJsonApi($uri, array $data = [], array $headers = [])
+    protected function getJsonApi($uri, $data = [], array $headers = [])
     {
         return $this->jsonApi('GET', $uri, $data, $headers);
     }
 
     /**
      * @param $uri
-     * @param array $data
+     * @param array|string $data
      * @param array $headers
      * @return TestResponse
      */
-    protected function postJsonApi($uri, array $data = [], array $headers = [])
+    protected function postJsonApi($uri, $data = [], array $headers = [])
     {
         return $this->jsonApi('POST', $uri, $data, $headers);
     }
 
     /**
      * @param $uri
-     * @param array $data
+     * @param array|string $data
      * @param array $headers
      * @return TestResponse
      */
-    protected function patchJsonApi($uri, array $data = [], array $headers = [])
+    protected function patchJsonApi($uri, $data = [], array $headers = [])
     {
         return $this->jsonApi('PATCH', $uri, $data, $headers);
     }
 
     /**
      * @param $uri
-     * @param array $data
+     * @param array|string $data
      * @param array $headers
      * @return TestResponse
      */
-    protected function deleteJsonApi($uri, array $data = [], array $headers = [])
+    protected function deleteJsonApi($uri, $data = [], array $headers = [])
     {
         return $this->jsonApi('DELETE', $uri, $data, $headers);
     }
@@ -116,11 +121,11 @@ trait MakesJsonApiRequests
      */
     protected function normalizeHeaders(array $headers, $content = null)
     {
-        $defaultHeaders = ['Accept' => MediaTypeInterface::JSON_API_MEDIA_TYPE];
+        $defaultHeaders = ['Accept' => $this->acceptMediaType()];
 
         if (!is_null($content)) {
             $defaultHeaders['CONTENT_LENGTH'] = mb_strlen($content, '8bit');
-            $defaultHeaders['CONTENT_TYPE'] = MediaTypeInterface::JSON_API_MEDIA_TYPE;
+            $defaultHeaders['CONTENT_TYPE'] = $this->contentMediaType();
         }
 
         return array_merge($defaultHeaders, $headers);
@@ -134,7 +139,7 @@ trait MakesJsonApiRequests
     {
         $resourceType = property_exists($this, 'resourceType') ? $this->resourceType : null;
 
-        return new TestResponse($response, $resourceType);
+        return new TestResponse($response, $resourceType, $this->expectedMediaType());
     }
 
     /**
@@ -321,6 +326,234 @@ trait MakesJsonApiRequests
     }
 
     /**
+     * @param $resourceId
+     * @param $relationshipName
+     * @param array $params
+     * @param array $headers
+     * @return TestResponse
+     */
+    protected function doReadRelated($resourceId, $relationshipName, array $params = [], array $headers = [])
+    {
+        $params = $this->addDefaultRouteParams($params);
+        $uri = $this->api()->url()->relatedResource($this->resourceType(), $resourceId, $relationshipName, $params);
+
+        return $this->getJsonApi($uri, [], $headers);
+    }
+
+    /**
+     * Assert that the related resource route has not been registered for the supplied relationship name.
+     *
+     * @param $relationshipName
+     * @return void
+     */
+    protected function assertCannotReadRelated($relationshipName)
+    {
+        $readable = true;
+
+        try {
+            $this->api()->url()->relatedResource(
+                $this->resourceType(),
+                '1',
+                $relationshipName,
+                $this->addDefaultRouteParams([])
+            );
+        } catch (InvalidArgumentException $ex) {
+            $readable = false;
+        }
+
+        $this->assertFalse($readable, "Related resource $relationshipName route exists.");
+    }
+
+    /**
+     * @param $resourceId
+     * @param $relationshipName
+     * @param array $params
+     * @param array $headers
+     * @return TestResponse
+     */
+    protected function doReadRelationship($resourceId, $relationshipName, array $params = [], array $headers = [])
+    {
+        $params = $this->addDefaultRouteParams($params);
+        $uri = $this->api()->url()->readRelationship($this->resourceType(), $resourceId, $relationshipName, $params);
+
+        return $this->getJsonApi($uri, [], $headers);
+    }
+
+    /**
+     * Assert that the read relationship route has not been registered for the supplied relationship name.
+     *
+     * @param $relationshipName
+     * @return void
+     */
+    protected function assertCannotReadRelationship($relationshipName)
+    {
+        $readable = true;
+
+        try {
+            $this->api()->url()->readRelationship(
+                $this->resourceType(),
+                '1',
+                $relationshipName,
+                $this->addDefaultRouteParams([])
+            );
+        } catch (InvalidArgumentException $ex) {
+            $readable = false;
+        }
+
+        $this->assertFalse($readable, "Read relationship $relationshipName route exists.");
+    }
+
+    /**
+     * @param mixed $resourceId
+     * @param string $relationshipName
+     * @param array|null $data
+     * @param array $params
+     * @param array $headers
+     * @return TestResponse
+     */
+    protected function doReplaceRelationship(
+        $resourceId,
+        $relationshipName,
+        $data,
+        array $params = [],
+        array $headers = []
+    ) {
+        $params = $this->addDefaultRouteParams($params);
+        $uri = $this->api()->url()->replaceRelationship(
+            $this->resourceType(),
+            $resourceId,
+            $relationshipName,
+            $params
+        );
+
+        return $this->patchJsonApi($uri, ['data' => $data], $headers);
+    }
+
+    /**
+     * Assert that the replace relationship route has not been registered for the supplied relationship name.
+     *
+     * @param $relationshipName
+     * @return void
+     */
+    protected function assertCannotReplaceRelationship($relationshipName)
+    {
+        $replaceable = true;
+
+        try {
+            $this->api()->url()->replaceRelationship(
+                $this->resourceType(),
+                '1',
+                $relationshipName,
+                $this->addDefaultRouteParams([])
+            );
+        } catch (InvalidArgumentException $ex) {
+            $replaceable = false;
+        }
+
+        $this->assertFalse($replaceable, "Replace relationship $relationshipName route exists.");
+    }
+
+    /**
+     * @param mixed $resourceId
+     * @param string $relationshipName
+     * @param array|null $data
+     * @param array $params
+     * @param array $headers
+     * @return TestResponse
+     */
+    protected function doAddToRelationship(
+        $resourceId,
+        $relationshipName,
+        $data,
+        array $params = [],
+        array $headers = []
+    ) {
+        $params = $this->addDefaultRouteParams($params);
+        $uri = $this->api()->url()->addRelationship(
+            $this->resourceType(),
+            $resourceId,
+            $relationshipName,
+            $params
+        );
+
+        return $this->postJsonApi($uri, ['data' => $data], $headers);
+    }
+
+    /**
+     * Assert that the add-to relationship route has not been registered for the supplied relationship name.
+     *
+     * @param $relationshipName
+     * @return void
+     */
+    protected function assertCannotAddToRelationship($relationshipName)
+    {
+        $replaceable = true;
+
+        try {
+            $this->api()->url()->addRelationship(
+                $this->resourceType(),
+                '1',
+                $relationshipName,
+                $this->addDefaultRouteParams([])
+            );
+        } catch (InvalidArgumentException $ex) {
+            $replaceable = false;
+        }
+
+        $this->assertFalse($replaceable, "Add to relationship $relationshipName route exists.");
+    }
+
+    /**
+     * @param mixed $resourceId
+     * @param string $relationshipName
+     * @param array|null $data
+     * @param array $params
+     * @param array $headers
+     * @return TestResponse
+     */
+    protected function doRemoveFromRelationship(
+        $resourceId,
+        $relationshipName,
+        $data,
+        array $params = [],
+        array $headers = []
+    ) {
+        $params = $this->addDefaultRouteParams($params);
+        $uri = $this->api()->url()->removeRelationship(
+            $this->resourceType(),
+            $resourceId,
+            $relationshipName,
+            $params
+        );
+
+        return $this->deleteJsonApi($uri, ['data' => $data], $headers);
+    }
+
+    /**
+     * Assert that the remove-from relationship route has not been registered for the supplied relationship name.
+     *
+     * @param $relationshipName
+     * @return void
+     */
+    protected function assertCannotRemoveFromRelationship($relationshipName)
+    {
+        $replaceable = true;
+
+        try {
+            $this->api()->url()->removeRelationship(
+                $this->resourceType(),
+                '1',
+                $relationshipName,
+                $this->addDefaultRouteParams([])
+            );
+        } catch (InvalidArgumentException $ex) {
+            $replaceable = false;
+        }
+
+        $this->assertFalse($replaceable, "Remove from relationship $relationshipName route exists.");
+    }
+
+    /**
      * @return mixed
      */
     protected function resourceType()
@@ -332,6 +565,42 @@ trait MakesJsonApiRequests
         }
 
         return $resourceType;
+    }
+
+    /**
+     * Get the media type to use for the Accept header.
+     *
+     * @return string
+     */
+    protected function acceptMediaType()
+    {
+        $mediaType = property_exists($this, 'acceptMediaType') ? $this->acceptMediaType : null;
+
+        return $mediaType ?: MediaTypeInterface::JSON_API_MEDIA_TYPE;
+    }
+
+    /**
+     * Get the media type to use for the Content-Type header.
+     *
+     * @return string
+     */
+    protected function contentMediaType()
+    {
+        $mediaType = property_exists($this, 'contentMediaType') ? $this->contentMediaType : null;
+
+        return $mediaType ?: $this->acceptMediaType();
+    }
+
+    /**
+     * Get the expected media type for a response that contains body.
+     *
+     * @return string
+     */
+    protected function expectedMediaType()
+    {
+        $mediaType = property_exists($this, 'responseMediaType') ? $this->responseMediaType : null;
+
+        return $mediaType ?: $this->acceptMediaType();
     }
 
     /**

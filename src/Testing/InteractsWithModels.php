@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2017 Cloud Creativity Limited
+ * Copyright 2018 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -83,7 +83,7 @@ trait InteractsWithModels
     protected function assertModelPatched(Model $model, array $changedAttributes, $unchangedKeys = [])
     {
         /** We need to ensure values are cast to database values */
-        $expected = $model->newInstance($changedAttributes)->getAttributes();
+        $expected = $model->newInstance()->forceFill($changedAttributes)->getAttributes();
         $attributes = $model->getAttributes();
 
         foreach ((array) $unchangedKeys as $attr) {

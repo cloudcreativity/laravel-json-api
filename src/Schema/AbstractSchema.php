@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2017 Cloud Creativity Limited
+ * Copyright 2018 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,17 +18,19 @@
 
 namespace CloudCreativity\LaravelJsonApi\Schema;
 
+use CloudCreativity\LaravelJsonApi\Eloquent\Concerns\CreatesIdentities;
 use Neomerx\JsonApi\Schema\SchemaProvider;
 
 /**
  * Class AbstractSchema
  *
  * @package CloudCreativity\LaravelJsonApi
+ * @deprecated extend `SchemaProvider` directly and apply traits as needed.
  */
 abstract class AbstractSchema extends SchemaProvider
 {
 
-    use CreatesEloquentIdentities,
+    use CreatesIdentities,
         CreatesLinks;
 
     /**

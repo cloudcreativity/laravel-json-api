@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2017 Cloud Creativity Limited
+ * Copyright 2018 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,9 @@
 
 namespace CloudCreativity\LaravelJsonApi\Utils;
 
-use CloudCreativity\JsonApi\Document\Error;
+use Closure;
+use CloudCreativity\LaravelJsonApi\Document\Error;
+use CloudCreativity\LaravelJsonApi\Exceptions\InvalidArgumentException;
 use Illuminate\Contracts\Support\MessageBag;
 use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
 
@@ -46,6 +48,28 @@ class ErrorBag extends AbstractErrorBag
     private $isParameter;
 
     /**
+     * @var bool
+     */
+    private $dasherize;
+
+    /**
+     * @var array|Closure
+     */
+    private $keyMap;
+
+    /**
+     * Fluent constructor.
+     *
+     * @param MessageBag $messages
+     * @param ErrorInterface|null $prototype
+     * @return ErrorBag
+     */
+    public static function create(MessageBag $messages, ErrorInterface $prototype = null)
+    {
+        return new self($messages, $prototype);
+    }
+
+    /**
      * ErrorBag constructor.
      *
      * @param MessageBag $messages
@@ -65,6 +89,69 @@ class ErrorBag extends AbstractErrorBag
         $this->prototype = $prototype ? Error::cast($prototype) : new Error();
         $this->sourcePrefix = $sourcePrefix ? (string) $sourcePrefix : null;
         $this->isParameter = (bool) $isParameter;
+        $this->dasherize = false;
+        $this->keyMap = [];
+    }
+
+    /**
+     * @param $prefix
+     * @return self
+     */
+    public function withSourcePrefix($prefix)
+    {
+        $copy = clone $this;
+        $copy->sourcePrefix = $prefix ? (string) $prefix : null;
+
+        return $copy;
+    }
+
+    /**
+     * @return self
+     */
+    public function withDasherizedKeys()
+    {
+        $copy = clone $this;
+        $copy->dasherize = true;
+
+        return $copy;
+    }
+
+    /**
+     * @return self
+     */
+    public function withPointers()
+    {
+        $copy = clone $this;
+        $copy->isParameter = false;
+
+        return $copy;
+    }
+
+    /**
+     * @return self
+     */
+    public function withParameters()
+    {
+        $copy = clone $this;
+        $copy->isParameter = true;
+
+        return $copy;
+    }
+
+    /**
+     * @param array|Closure $map
+     * @return self
+     */
+    public function withKeyMap($map)
+    {
+        if (!is_array($map) && !$map instanceof Closure) {
+            throw new InvalidArgumentException('Expecting an array or closure.');
+        }
+
+        $copy = clone $this;
+        $copy->keyMap = $map;
+
+        return $copy;
     }
 
     /**
@@ -92,17 +179,46 @@ class ErrorBag extends AbstractErrorBag
      */
     protected function createSourcePointer($key)
     {
-        $key = str_replace('.', '/', $key);
+        $key = $this->normalizeKey($key, '/');
 
         return $this->sourcePrefix ? sprintf('%s/%s', $this->sourcePrefix, $key) : $key;
     }
 
     /**
      * @param $key
-     * @return mixed
+     * @return string
      */
     protected function createSourceParameter($key)
     {
+        $key = $this->normalizeKey($key);
+
         return $this->sourcePrefix ? sprintf('%s.%s', $this->sourcePrefix, $key) : $key;
+    }
+
+    /**
+     * @param $key
+     * @param string $glue
+     * @return string
+     */
+    private function normalizeKey($key, $glue = '.')
+    {
+        $key = $this->mapKey($key);
+
+        return collect(explode('.', $key))->map(function ($key) {
+            return $this->dasherize ? Str::dasherize($key) : $key;
+        })->implode($glue);
+    }
+
+    /**
+     * @param string $key
+     * @return string
+     */
+    private function mapKey($key)
+    {
+        if ($this->keyMap instanceof Closure) {
+            return call_user_func($this->keyMap, $key);
+        }
+
+        return isset($this->keyMap[$key]) ? $this->keyMap[$key] : $key;
     }
 }

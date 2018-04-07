@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2017 Cloud Creativity Limited
+ * Copyright 2018 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,9 +27,8 @@ use IteratorAggregate;
  * Class ResourceProviders
  *
  * @package CloudCreativity\LaravelJsonApi
- * @todo make final as this is not meant to be extended.
  */
-class ResourceProviders implements IteratorAggregate
+final class ResourceProviders implements IteratorAggregate
 {
 
     /**

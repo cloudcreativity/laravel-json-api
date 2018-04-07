@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2017 Cloud Creativity Limited
+ * Copyright 2018 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,11 @@
 
 namespace CloudCreativity\LaravelJsonApi\Api;
 
-use CloudCreativity\JsonApi\Exceptions\RuntimeException;
+use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
+use CloudCreativity\LaravelJsonApi\Resolver\AggregateResolver;
+use CloudCreativity\LaravelJsonApi\Resolver\NamespaceResolver;
+use CloudCreativity\LaravelJsonApi\Resolver\UnitNamespaceResolver;
 use Illuminate\Contracts\Config\Repository as Config;
 
 /**
@@ -72,16 +75,13 @@ class Repository
         $rootNamespace = $this->normalizeRootNamespace(array_get($config, 'namespace'));
         $byResource = (bool) array_get($config, 'by-resource', true);
         $resources = (array) array_get($config, 'resources');
-        $resources = ResourceMap::create($rootNamespace, $resources, $byResource)->all();
 
         $api = new Api(
             $this->factory,
+            new AggregateResolver($this->createResolver($rootNamespace, $resources, $byResource)),
             $apiName,
-            $rootNamespace,
-            $resources,
             (array) array_get($config, 'codecs'),
             $this->normalizeUrl((array) array_get($config, 'url'), $host),
-            $byResource,
             (bool) array_get($config, 'use-eloquent', true),
             array_get($config, 'supported-ext'),
             $this->mergeErrors((array) array_get($config, 'errors'))
@@ -103,6 +103,19 @@ class Repository
             $this->factory,
             $this->config->get($this->configKey($apiName, 'providers'))
         );
+    }
+
+    /**
+     * @param $rootNamespace
+     * @param array $resources
+     * @param $byResource
+     * @return NamespaceResolver
+     */
+    private function createResolver($rootNamespace, array $resources, $byResource)
+    {
+        return $byResource ?
+            new NamespaceResolver($rootNamespace, $resources) :
+            new UnitNamespaceResolver($rootNamespace, $resources);
     }
 
     /**

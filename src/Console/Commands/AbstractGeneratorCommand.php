@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2017 Cloud Creativity Limited
+ * Copyright 2018 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,9 @@
 
 namespace CloudCreativity\LaravelJsonApi\Console\Commands;
 
-use CloudCreativity\JsonApi\Utils\Str;
 use CloudCreativity\LaravelJsonApi\Api\Api;
 use CloudCreativity\LaravelJsonApi\Api\Repository;
-use CloudCreativity\LaravelJsonApi\Utils\Fqn;
+use CloudCreativity\LaravelJsonApi\Utils\Str;
 use Illuminate\Console\GeneratorCommand;
 use Illuminate\Filesystem\Filesystem;
 use Symfony\Component\Console\Input\InputArgument;
@@ -126,12 +125,10 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
      */
     protected function qualifyClass($name)
     {
-        return call_user_func(
-            Fqn::class . '::' . $this->type,
-            $this->getResourceName(),
-            $this->getRootNamespace(),
-            $this->isByResource()
-        );
+        $resolver = $this->getApi()->getDefaultResolver();
+        $method = "get{$this->type}ByResourceType";
+
+        return $resolver->{$method}($this->getResourceName());
     }
 
     /**
@@ -275,14 +272,6 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
     private function isByResource()
     {
         return $this->getApi()->isByResource();
-    }
-
-    /**
-     * @return string
-     */
-    private function getRootNamespace()
-    {
-        return $this->getApi()->getRootNamespace();
     }
 
     /**

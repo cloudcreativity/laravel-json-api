@@ -2,14 +2,28 @@
 
 namespace DummyNamespace;
 
+use CloudCreativity\LaravelJsonApi\Eloquent\AbstractAdapter;
 use CloudCreativity\LaravelJsonApi\Pagination\StandardStrategy;
-use CloudCreativity\LaravelJsonApi\Store\EloquentAdapter;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use DummyApplicationNamespace\DummyModel;
 
-class Adapter extends EloquentAdapter
+class Adapter extends AbstractAdapter
 {
+
+    /**
+     * Mapping of JSON API attribute field names to model keys.
+     *
+     * @var array
+     */
+    protected $attributes = [];
+
+    /**
+     * Resource relationship fields to hydrate the model with.
+     *
+     * @var array
+     */
+    protected $relationships = [];
 
     /**
      * Adapter constructor.
@@ -26,16 +40,7 @@ class Adapter extends EloquentAdapter
      * @param Collection $filters
      * @return void
      */
-    protected function filter(Builder $query, Collection $filters)
-    {
-        // TODO
-    }
-
-    /**
-     * @param Collection $filters
-     * @return mixed
-     */
-    protected function isSearchOne(Collection $filters)
+    protected function filter($query, Collection $filters)
     {
         // TODO
     }
