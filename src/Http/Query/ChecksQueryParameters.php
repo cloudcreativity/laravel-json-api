@@ -54,7 +54,7 @@ trait ChecksQueryParameters
      */
     protected function allowedIncludePaths()
     {
-        $this->allowedIncludePaths;
+        return $this->allowedIncludePaths;
     }
 
     /**
