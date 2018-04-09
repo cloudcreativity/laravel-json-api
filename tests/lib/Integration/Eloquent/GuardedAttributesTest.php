@@ -19,7 +19,7 @@ namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Eloquent;
 
 use DummyApp\Video;
 
-class ClientGeneratedIdTest extends TestCase
+class GuardedAttributesTest extends TestCase
 {
 
     /**
@@ -27,41 +27,29 @@ class ClientGeneratedIdTest extends TestCase
      */
     protected $resourceType = 'videos';
 
-    public function testCreateWithClientId()
+    /**
+     * An adapter must be allowed to 'guard' some fields - i.e. prevent them
+     * from being filled to the model. The video adapter in our dummy app is
+     * set to guard the `url` field if the model already exists.
+     */
+    public function test()
     {
-        $video = factory(Video::class)->make();
+        /** @var Video $video */
+        $video = factory(Video::class)->create();
 
         $data = [
             'type' => 'videos',
             'id' => $video->getKey(),
             'attributes' => [
-                'url' => $video->url,
-                'title' => $video->title,
-                'description' => $video->description,
+                'url' => 'http://www.example.com',
+                'title' => 'My Video',
+                'description' => 'This is my video.',
             ],
         ];
 
         $expected = $data;
-        $expected['relationships'] = [
-            'uploaded-by' => [
-                'data' => [
-                    'type' => 'users',
-                    'id' => $video->user_id,
-                ],
-            ],
-        ];
+        $expected['attributes']['url'] = $video->url;
 
-        $this->actingAs($video->user);
-
-        $this->doCreate($data)
-            ->assertCreated($expected);
-
-        $this->assertModelCreated($video, $video->getKey());
+        $this->doUpdate($data)->assertUpdated($expected);
     }
-
-    public function testCreateWithInvalidClientId()
-    {
-        $this->markTestIncomplete('@todo when it is possible to validate client ids.');
-    }
-
 }

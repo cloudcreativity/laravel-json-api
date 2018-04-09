@@ -39,6 +39,7 @@ class Video extends Model
      * @var array
      */
     protected $fillable = [
+        'url',
         'title',
         'description',
     ];
@@ -47,6 +48,7 @@ class Video extends Model
      * @var array
      */
     protected $visible = [
+        'url',
         'title',
         'description',
     ];

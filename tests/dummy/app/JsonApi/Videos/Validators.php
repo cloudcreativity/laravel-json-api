@@ -37,9 +37,18 @@ class Validators extends AbstractValidatorProvider
      */
     protected function attributeRules($record = null)
     {
-        return [
-            //
+        $required = $record ? 'filled' : 'required';
+
+        $rules = [
+            'title' => "$required|string",
+            'description' => "$required|string",
         ];
+
+        if (!$record) {
+            $rules['url'] = 'required|url';
+        }
+
+        return $rules;
     }
 
     /**

@@ -103,6 +103,7 @@ $factory->define(DummyApp\User::class, function (Faker $faker) {
 $factory->define(DummyApp\Video::class, function (Faker $faker) {
     return [
         'uuid' => $faker->unique()->uuid,
+        'url' => $faker->url,
         'title' => $faker->words(3, true),
         'description' => $faker->paragraph,
         'user_id' => function () {

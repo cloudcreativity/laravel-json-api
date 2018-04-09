@@ -66,6 +66,10 @@ $attributes = [
 ];
 ```
 
+If you need to prevent JSON API fields from being transferred to your model, add them to the `$guarded` 
+attribute on your adapter. If you need to programmatically work out if fields should not be transferred,
+overload the `getGuarded` method.
+
 Any relationships that you are listing in the `$relationships` property will now need a relationship method
 implemented. Refer to the relationship documentation as this is a new feature.
 

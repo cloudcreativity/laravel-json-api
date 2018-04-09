@@ -20,12 +20,12 @@ namespace DummyApp\JsonApi\Videos;
 use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectInterface;
 use CloudCreativity\LaravelJsonApi\Store\EloquentAdapter;
 use DummyApp\Video;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 
 class Adapter extends EloquentAdapter
 {
-
 
     /**
      * Adapter constructor.
@@ -54,6 +54,15 @@ class Adapter extends EloquentAdapter
     protected function filter($query, Collection $filters)
     {
         // TODO: Implement filter() method.
+    }
+
+    /**
+     * @param Model $record
+     * @return array
+     */
+    protected function getGuarded($record)
+    {
+        return $record->exists ? ['url'] : [];
     }
 
 }

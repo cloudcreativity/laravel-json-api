@@ -381,11 +381,13 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
         $data = [];
 
         foreach ($attributes as $field => $value) {
-            $key = $this->keyForAttribute($field, $record);
-
-            if ($record->isFillable($key)) {
-                $data[$key] = $this->deserializeAttribute($attributes->get($field), $field, $record);
+            /** Skip any JSON API fields that are not to be filled. */
+            if ($this->isGuarded($field, $record)) {
+                continue;
             }
+
+            $key = $this->keyForAttribute($field, $record);
+            $data[$key] = $this->deserializeAttribute($value, $field, $record);
          }
 
         $record->fill($data);
@@ -406,6 +408,9 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
 
     /**
      * @inheritDoc
+     *
+     * @todo iterate over resource fields and use `isGuarded` to skip; remove `hydrateRelationshipFields`
+     * This would require the ability for validators to reject any unrecognised relationship fields.
      */
     protected function hydrateRelationships(
         $record,
@@ -431,6 +436,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      * @param Model $record
      * @param ResourceObjectInterface $resource
      * @param EncodingParametersInterface $parameters
+     * @todo see todo for `hydrateRelationships`
      */
     protected function hydrateRelated(
         $record,

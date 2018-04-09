@@ -48,6 +48,13 @@ trait DeserializesAttributes
     protected $attributes = [];
 
     /**
+     * JSON API fields to skip when filling a model with values from a resource.
+     *
+     * @var string[]
+     */
+    protected $guarded = [];
+
+    /**
      * The resource attributes that are dates.
      *
      * A list of JSON API attribute fields that should be cast to dates. If this is
@@ -125,5 +132,28 @@ trait DeserializesAttributes
         }
 
         return in_array($field, $this->dates, true);
+    }
+
+    /**
+     * Get the JSON API fields to skip when filling the supplied model.
+     *
+     * @param Model $record
+     * @return string[]
+     */
+    protected function getGuarded($record)
+    {
+        return $this->guarded;
+    }
+
+    /**
+     * Is the JSON API field to be ignored when filling the supplied model?
+     *
+     * @param $field
+     * @param $record
+     * @return bool
+     */
+    protected function isGuarded($field, $record)
+    {
+        return in_array($field, $this->getGuarded($record));
     }
 }

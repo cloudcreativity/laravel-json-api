@@ -50,6 +50,7 @@ class CreateTables extends Migration
         Schema::create('videos', function (Blueprint $table) {
             $table->uuid('uuid');
             $table->timestamps();
+            $table->string('url');
             $table->string('title');
             $table->text('description');
             $table->unsignedInteger('user_id');

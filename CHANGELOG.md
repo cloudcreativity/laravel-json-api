@@ -19,6 +19,8 @@ the Eloquent adapter.
 - Resources no longer need to have a controller as the generic JSON API controller will now handle any resource.
 Any resource that does not have a controller must use `false` as its `controller` option when registering the 
 resource routes.
+- Eloquent adapters can now *guard* JSON API fields via their `$guarded` attribute. Guarded fields will be skipped
+when filling attributes into the model.
 
 ### Changed
 - Split adapter into resource and relationship adapter, and created classes to specifically deal with Eloquent
