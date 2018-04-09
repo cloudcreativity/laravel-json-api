@@ -20,7 +20,6 @@ namespace CloudCreativity\LaravelJsonApi\Testing;
 
 use CloudCreativity\LaravelJsonApi\Api\Api;
 use Illuminate\Contracts\Routing\UrlRoutable;
-use Illuminate\Foundation\Testing\Concerns\MakesHttpRequests;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
 use Neomerx\JsonApi\Contracts\Document\DocumentInterface as Keys;
@@ -36,8 +35,6 @@ use RuntimeException;
  */
 trait MakesJsonApiRequests
 {
-
-    use MakesHttpRequests;
 
     /**
      * Visit the given URI with a JSON API request.
