@@ -27,6 +27,7 @@ use PHPUnit\Framework\Constraint\LogicalNot;
  * Class InteractsWithModels
  *
  * @package CloudCreativity\LaravelJsonApi
+ * @deprecated use `assertDatabaseHas` or `assertDatabaseMissing` etc.
  */
 trait InteractsWithModels
 {

@@ -44,6 +44,7 @@ returned an empty array, `getFillable` would be used instead.
 - The Eloquent controller is deprecated in favour using the JSON API controller directly.
 - The `Schema\EloquentSchema` is deprecated in favour of using the `Eloquent\AbstractSchema`.
 - The `Store\EloquentAdapter` is deprecated in favour of using the `Eloquent\AbstractAdapter`.
+- The `Testing\InteractsWithModels` trait is deprecated in favour of Laravel database assertion helpers.
 
 ### Fixed
 - [#128](https://github.com/cloudcreativity/laravel-json-api/issues/128) 
