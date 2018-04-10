@@ -28,32 +28,31 @@ you need to ensure that no prefix has already been applied.
 
 ## Controller
 
-By default, routing will assume that the controller for a resource type is the resource type name suffixed with 
-`Controller`. E.g. for a `posts` resource type, the controller will be `PostsController`. The options array to 
-the `JsonApi::register` method takes the same options as a route group, so you can set the namespace using the 
-`namespace` option.
+By default no controller is required because this package contains a standard controller for processing JSON API
+requests. However it is possible to specify your own controller, using the `controller` option.
 
-If you need to override the default name for a resource type's controller, use the `controller` option as follows:
+For example, the following would use the `PostsController` in the `Api` namespace:
 
 ```php
 JsonApi::register('default', ['namespace' => 'Api'], function ($api, $router) {
-    $api->resource('posts', ['controller' => 'CustomPostsController']);
-    $api->resource('comments');
+    $api->resource('posts', ['controller' => 'PostsController']);
 });
 ```
+
+For more information on controllers, see the [Controllers chapter](./controllers.md).
 
 ## Resource Routes
 
 The JSON API spec defines the routes for each resource type. Calling `$api->resource('posts')` will therefore
 register the following routes:
 
-| URL | Route Name | Controller Action |
-| :-- | :-- | :-- |
-| `GET /posts` | `posts.index` | `index` |
-| `POST /posts` | `posts.create` | `create` |
-| `GET /posts/{record}` | `posts.read` | `read` |
-| `PATCH /posts/{record}` | `posts.update` | `update` |
-| `DELETE /posts/{record}` | `posts.delete` | `delete` |
+| URL | Route Name |
+| :-- | :-- |
+| `GET /posts` | `posts.index` |
+| `POST /posts` | `posts.create` |
+| `GET /posts/{record}` | `posts.read` |
+| `PATCH /posts/{record}` | `posts.update` |
+| `DELETE /posts/{record}` | `posts.delete` |
 
 To register only some of these routes, use the `only` or `except` options as follows:
 
@@ -98,11 +97,11 @@ JsonApi::register('default', ['namespace' => 'Api'], function ($api, $router) {
 
 The following has-one routes are registered (using the `author` relationship on the `posts` resource as an example):
 
-| URL | Route Name | Controller Action |
-| :-- | :-- | :-- |
-| `GET /posts/{record}/author` | `posts.relationships.author` | `readRelatedResource` |
-| `GET /posts/{record}/relationships/author` | `posts.relationships.author.read` | `readRelationship` |
-| `PATCH /posts/{record}/relationships/author` | `posts.relationships.author.replace` | `replaceRelationship` |
+| URL | Route Name |
+| :-- | :-- |
+| `GET /posts/{record}/author` | `posts.relationships.author` |
+| `GET /posts/{record}/relationships/author` | `posts.relationships.author.read` |
+| `PATCH /posts/{record}/relationships/author` | `posts.relationships.author.replace` |
 
 To register only some of these, use the `only` or `except` options with the relationship. E.g.
 
@@ -121,13 +120,13 @@ JsonApi::register('default', ['namespace' => 'Api'], function ($api, $router) {
 
 The following has-one routes are registered (using the `comments` relationship on the `posts` resource as an example):
 
-| URL | Route Name | Controller Action |
-| :-- | :-- | :-- |
-| `GET /posts/{record}/comments` | `posts.relationships.comments` | `readRelatedResource` |
-| `GET /posts/{record}/relationships/comments` | `posts.relationships.comments.read` | `readRelationship` |
-| `PATCH /posts/{record}/relationships/comments` | `posts.relationships.comments.replace` | `replaceRelationship` |
-| `POST /posts/{record}/relationships/comments` | `posts.relationships.comments.add` | `addToRelationship` |
-| `DELETE /posts/{record}/relationships/comments` | `posts.relationships.comments.remove` | `removeFromRelationship` |
+| URL | Route Name |
+| :-- | :-- |
+| `GET /posts/{record}/comments` | `posts.relationships.comments` |
+| `GET /posts/{record}/relationships/comments` | `posts.relationships.comments.read` |
+| `PATCH /posts/{record}/relationships/comments` | `posts.relationships.comments.replace` |
+| `POST /posts/{record}/relationships/comments` | `posts.relationships.comments.add` |
+| `DELETE /posts/{record}/relationships/comments` | `posts.relationships.comments.remove` |
 
 To register only some of these, use the `only` or `except` options with the relationship. E.g.
 

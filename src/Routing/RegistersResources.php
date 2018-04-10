@@ -100,11 +100,11 @@ trait RegistersResources
      */
     protected function controller()
     {
-        if ($controller = $this->options->get('controller')) {
+        if (is_string($controller = $this->options->get('controller'))) {
             return $controller;
         }
 
-        if (false === $controller) {
+        if (true !== $controller) {
             return $this->options['controller'] = '\\' . JsonApiController::class;
         }
 

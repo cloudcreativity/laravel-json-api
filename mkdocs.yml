@@ -33,4 +33,6 @@ pages:
     - Errors: features/errors.md
     - Helpers: features/helpers.md
     - HTTP Clients: features/http-clients.md
+    - Packages: features/packages.md
+    - Responses: features/responses.md
     - Views: features/views.md

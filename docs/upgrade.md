@@ -33,6 +33,23 @@ The following trait has also moved to a different namespace:
 
 - `Hydrator\HydratesAttributesTrait` moved to `Adapter\HydratesAttributesTrait`
 
+### Routing
+
+Controllers are now optional by default. If no controller option is provided when registering a resource,
+the `JsonApiController` from this package will be used.
+
+To use the previous behaviour (whereby the controller name is generated using the resource name), pass
+`true` as the controller option:
+
+```php
+JsonApi::register('default', ['namespace' => 'Api'], function ($api, $router) {
+    $api->resource('posts', ['controller' => true]);
+});
+```
+
+As per previous versions, the `controller` option can also be a string controller name. Refer to the
+[Controllers documentation](./basics/controllers.md) for more details.
+
 ### Hydrators
 
 Hydrators have been merged into the Adapter classes. This simplifies things by making a single class that is

@@ -91,8 +91,7 @@ class RoutingTest extends TestCase
             });
         });
 
-        $expected = '\\' . PostsController::class . $action;
-        $this->assertMatch($method, $url, $expected);
+        $this->assertMatch($method, $url, '\\' . JsonApiController::class . $action);
     }
 
     /**
@@ -101,19 +100,19 @@ class RoutingTest extends TestCase
      * @param $action
      * @dataProvider defaultsProvider
      */
-    public function testCustomController($method, $url, $action)
+    public function testControllerIsTrue($method, $url, $action)
     {
-        $expected = '\Foo\Bar';
-
-        $this->withRoutes(function () use ($expected) {
-            JsonApi::register('default', [], function (ApiGroup $api) use ($expected) {
+        $this->withRoutes(function () {
+            JsonApi::register('default', [], function (ApiGroup $api) {
                 $api->resource('posts', [
-                    'controller' => $expected,
+                    'controller' => true,
                     'has-one' => 'author',
                     'has-many' => 'comments',
                 ]);
             });
         });
+
+        $expected = '\DummyApp\Http\Controllers\PostsController';
 
         $this->assertMatch($method, $url, $expected . $action);
     }
@@ -124,14 +123,14 @@ class RoutingTest extends TestCase
      * @param $action
      * @dataProvider defaultsProvider
      */
-    public function testControllerIsOptional($method, $url, $action)
+    public function testControllerIsString($method, $url, $action)
     {
-        $expected = '\\' . JsonApiController::class;
+        $expected = '\Foo\Bar';
 
         $this->withRoutes(function () use ($expected) {
             JsonApi::register('default', [], function (ApiGroup $api) use ($expected) {
                 $api->resource('posts', [
-                    'controller' => false,
+                    'controller' => $expected,
                     'has-one' => 'author',
                     'has-many' => 'comments',
                 ]);
