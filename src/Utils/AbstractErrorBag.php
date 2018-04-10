@@ -100,13 +100,22 @@ abstract class AbstractErrorBag implements Countable, IteratorAggregate, Message
      */
     public function getErrors()
     {
-        return new Errors($this->toArray());
+        return new Errors($this->all());
+    }
+
+    /**
+     * @return ErrorInterface[]
+     * @deprecated use `all`
+     */
+    public function toArray()
+    {
+        return $this->all();
     }
 
     /**
      * @return ErrorInterface[]
      */
-    public function toArray()
+    public function all()
     {
         return iterator_to_array($this);
     }

@@ -94,6 +94,71 @@ class ErrorBag extends AbstractErrorBag
     }
 
     /**
+     * Set the title for the JSON API errors.
+     *
+     * @param string $title
+     * @return $this
+     */
+    public function withTitle($title)
+    {
+        $this->prototype->setTitle($title);
+
+        return $this;
+    }
+
+    /**
+     * Set the status for the JSON API errors.
+     *
+     * @param int|string $status
+     * @return $this
+     */
+    public function withStatus($status)
+    {
+        $this->prototype->setStatus($status);
+
+        return $this;
+    }
+
+    /**
+     * Set the code for the JSON API errors.
+     *
+     * @param int|string $code
+     * @return $this
+     */
+    public function withCode($code)
+    {
+        $this->prototype->setCode($code);
+
+        return $this;
+    }
+
+    /**
+     * Set the meta for the JSON API errors.
+     *
+     * @param mixed $meta
+     * @return $this
+     */
+    public function withMeta($meta)
+    {
+        $this->prototype->setMeta($meta);
+
+        return $this;
+    }
+
+    /**
+     * Set the links for the JSON API errors.
+     *
+     * @param array $links
+     * @return $this
+     */
+    public function withLinks(array $links)
+    {
+        $this->prototype->setLinks($links);
+
+        return $this;
+    }
+
+    /**
      * @param $prefix
      * @return self
      */

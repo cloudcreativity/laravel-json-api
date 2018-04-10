@@ -29,7 +29,7 @@ Once you have done this, run the following command to remove the deprecated pack
 $ composer remove cloudcreativity/json-api
 ```
 
-The following have also moved to different namespaces and again a search/replace will help fix any references:
+The following trait has also moved to a different namespace:
 
 - `Hydrator\HydratesAttributesTrait` moved to `Adapter\HydratesAttributesTrait`
 
@@ -46,15 +46,15 @@ following modifications...
 
 The `$attributes` property now only needs to list JSON API resource attributes that are mapped to a different
 name on the model. All other resource attributes are automatically transferred to the snake case or camel case
-equivalent and filled into your model. This means that the attributes need to be mass-assignable.
+equivalent and filled into your model.
 
-For example, if you previouly had this on your hydrator:
+For example, if you previously had this on your hydrator:
 
 ```php
 $attributes = [
     'title',
     'slug',
-    'published-at' => 'published-date',
+    'published-at' => 'published_date',
 ];
 ```
 
@@ -62,16 +62,30 @@ You would only need the attributes to now be:
 
 ```php
 $attributes = [
-    'published-at' => 'published-date',
+    'published-at' => 'published_date',
 ];
 ```
 
 If you need to prevent JSON API fields from being transferred to your model, add them to the `$guarded` 
 attribute on your adapter. If you need to programmatically work out if fields should not be transferred,
-overload the `getGuarded` method.
+overload the `getGuarded` or `isGuarded` method.
 
 Any relationships that you are listing in the `$relationships` property will now need a relationship method
-implemented. Refer to the relationship documentation as this is a new feature.
+implemented. Refer to the relationship documentation as this is a new feature. As an example, if you had
+this on your hydrator:
+
+```php
+protected $relationships = ['author'];
+```
+
+You would need to transfer that property to the adapter and add the following method:
+
+```php
+protected function author()
+{
+    return $this->belongsTo();
+}
+```
 
 ### Eloquent Adapters
 
@@ -94,12 +108,12 @@ Adapters now support reading and writing relationships. Refer to the documentati
 ### Controllers
 
 The `EloquentController` no longer has any constructor dependencies. Previously you were injecting a model
-and optionally a hydrator. These can be removed. Note that the Eloquent Controller has been deprecated as it
+and optionally a hydrator. These must be removed. Note that the Eloquent Controller has been deprecated as it
 now does not have any unique code - you can extend `JsonApiController` directly.
 
 If you were overloading any of the methods in either `EloquentController` or `JsonApiController`, you may find
 that some of the method signatures have been modified. Refer to the `JsonApiController` for the new signatures.
 
-Note that we have now implemented fully support for relationships, and the updated `JsonApiController` will 
+Note that we have now implemented full support for relationships, and the updated `JsonApiController` will
 handle these automatically. If you had a custom implementation for relationship endpoints, you will need to
 refer to the documentation on relationships.

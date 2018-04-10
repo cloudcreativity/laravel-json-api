@@ -97,6 +97,30 @@ class ErrorBagTest extends TestCase
         $this->assertEquals($expected, current($bag->toArray()));
     }
 
+    public function testSetters()
+    {
+        $expected = Error::create()
+            ->setTitle('Invalid Attributes')
+            ->setStatus(422)
+            ->setCode('invalid')
+            ->setMeta(['foo' => 'bar'])
+            ->setLinks($links = ['details' => 'http://www.example.com'])
+            ->setSourcePointer('/data/attributes/foo')
+            ->setDetail('Some detail');
+
+        $messages = new MessageBag(['foo' => 'Some detail']);
+
+        $bag = ErrorBag::create($messages)
+            ->withTitle('Invalid Attributes')
+            ->withStatus(422)
+            ->withCode('invalid')
+            ->withMeta(['foo' => 'bar'])
+            ->withLinks($links)
+            ->withSourcePrefix('/data/attributes');
+
+        $this->assertEquals($expected, current($bag->all()));
+    }
+
     /**
      * @return array
      */
@@ -130,7 +154,7 @@ class ErrorBagTest extends TestCase
             ->withKeyMap($mapping)
             ->withDasherizedKeys();
 
-        $this->assertEquals($error, current($bag->toArray()));
+        $this->assertEquals($error, current($bag->all()));
     }
 
     public function testSourceParameter()
