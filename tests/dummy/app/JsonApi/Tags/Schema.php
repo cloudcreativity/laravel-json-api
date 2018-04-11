@@ -28,18 +28,8 @@ class Schema extends AbstractSchema
     protected $resourceType = 'tags';
 
     /**
-     * @param object $resource
-     * @param bool $isPrimary
-     * @param array $includeRelationships
-     * @return array
+     * @var array
      */
-    public function getRelationships($resource, $isPrimary, array $includeRelationships)
-    {
-        return [
-            'taggables' => [
-                self::SHOW_SELF => true,
-                self::SHOW_RELATED => true,
-            ],
-        ];
-    }
+    protected $relationships = ['taggables'];
+
 }

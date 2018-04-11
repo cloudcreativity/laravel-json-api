@@ -62,7 +62,7 @@ class HasOneTest extends TestCase
         $expected = $data;
         unset($expected['attributes']['password']);
 
-        $id = $this->doCreate($data)->assertCreatedWithId($expected);
+        $id = $this->doCreate($data, ['include' => 'phone'])->assertCreatedWithId($expected);
 
         $this->assertNotNull($refreshed = User::find($id));
         $this->assertNull($refreshed->phone);
@@ -98,7 +98,7 @@ class HasOneTest extends TestCase
         $expected = $data;
         unset($expected['attributes']['password']);
 
-        $id = $this->doCreate($data)->assertCreatedWithId($expected);
+        $id = $this->doCreate($data, ['include' => 'phone'])->assertCreatedWithId($expected);
 
         $this->assertDatabaseHas('phones', [
             'id' => $phone->getKey(),
@@ -124,7 +124,7 @@ class HasOneTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data)->assertUpdated($data);
+        $this->doUpdate($data, ['include' => 'phone'])->assertUpdated($data);
 
         $this->assertDatabaseHas('phones', [
             'id' => $phone->getKey(),
@@ -155,7 +155,7 @@ class HasOneTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data)->assertUpdated($data);
+        $this->doUpdate($data, ['include' => 'phone'])->assertUpdated($data);
 
         $this->assertDatabaseHas('phones', [
             'id' => $phone->getKey(),
@@ -186,7 +186,7 @@ class HasOneTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data)->assertUpdated($data);
+        $this->doUpdate($data, ['include' => 'phone'])->assertUpdated($data);
 
         $this->assertDatabaseHas('phones', [
             'id' => $existing->getKey(),
@@ -225,7 +225,7 @@ class HasOneTest extends TestCase
             ],
         ];
 
-        $this->doReadRelated($user, 'phone')->assertReadHasOne($data);
+        $this->doReadRelated($user, 'phone', ['include' => 'user'])->assertReadHasOne($data);
     }
 
     /**

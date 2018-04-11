@@ -53,7 +53,7 @@ class ClientGeneratedIdTest extends TestCase
 
         $this->actingAs($video->user);
 
-        $this->doCreate($data)
+        $this->doCreate($data, ['include' => 'uploaded-by'])
             ->assertCreated($expected);
 
         $this->assertModelCreated($video, $video->getKey());

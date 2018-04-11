@@ -64,7 +64,7 @@ class ControllerHooksTest extends TestCase
             ],
         ];
 
-        $id = $this->doCreate($data)->assertCreatedWithId($data);
+        $id = $this->doCreate($data)->assertCreatedWithId();
 
         Event::assertDispatched(ResourceEvent::class, function ($event) use ($data) {
             return 'saving' === $event->hook && $data === $event->resource->toArray();

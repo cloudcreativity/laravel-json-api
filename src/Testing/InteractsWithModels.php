@@ -44,6 +44,7 @@ trait InteractsWithModels
      * @param string|null $keyName
      *      the key name to use for the resource id - defaults to `Model::getKeyName()`
      * @return $this
+     * @deprecated
      */
     protected function assertModelCreated(
         Model $model,
@@ -80,6 +81,7 @@ trait InteractsWithModels
      * @param string|string[] $unchangedKeys
      *      the keys of the attributes that should not have changed.
      * @return $this
+     * @deprecated
      */
     protected function assertModelPatched(Model $model, array $changedAttributes, $unchangedKeys = [])
     {
@@ -101,6 +103,7 @@ trait InteractsWithModels
      *
      * @param Model $model
      * @return $this
+     * @deprecated
      */
     protected function assertModelDeleted(Model $model)
     {
@@ -112,6 +115,7 @@ trait InteractsWithModels
      *
      * @param Model $model
      * @return $this
+     * @deprecated
      */
     protected function assertModelTrashed(Model $model)
     {
@@ -139,6 +143,7 @@ trait InteractsWithModels
      * @param Model $model
      * @param array $data
      * @return $this
+     * @deprecated
      */
     protected function assertDatabaseHasModel(Model $model, array $data)
     {
@@ -153,7 +158,7 @@ trait InteractsWithModels
      * @param Model $model
      * @param array $data
      * @return $this
-     * @todo update method when dropping support for Laravel 5.4
+     * @deprecated
      */
     protected function assertDatabaseMissingModel(Model $model, array $data)
     {

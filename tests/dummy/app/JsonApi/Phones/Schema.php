@@ -18,7 +18,6 @@
 namespace DummyApp\JsonApi\Phones;
 
 use CloudCreativity\LaravelJsonApi\Eloquent\AbstractSchema;
-use DummyApp\Phone;
 
 class Schema extends AbstractSchema
 {
@@ -36,18 +35,7 @@ class Schema extends AbstractSchema
     ];
 
     /**
-     * @param Phone $resource
-     * @param bool $isPrimary
-     * @param array $includeRelationships
-     * @return array
+     * @var array
      */
-    public function getRelationships($resource, $isPrimary, array $includeRelationships)
-    {
-        return [
-            'user' => [
-                self::DATA => isset($includeRelationships['user']) ?
-                    $resource->user : $this->createBelongsToIdentity($resource, 'user'),
-            ],
-        ];
-    }
+    protected $relationships = ['user'];
 }

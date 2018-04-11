@@ -19,5 +19,12 @@ class Schema extends AbstractSchema
      */
     protected $attributes = null;
 
+    /**
+     * Model relationships to serialize.
+     *
+     * @var array
+     */
+    protected $relationships = [];
+
 }
 

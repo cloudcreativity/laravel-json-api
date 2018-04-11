@@ -128,8 +128,6 @@ class ResourceTest extends TestCase
      */
     public function testCreate()
     {
-        /** @var Tag $tag */
-        $tag = factory(Tag::class)->create();
         $model = $this->createPost(false);
 
         $data = [
@@ -149,11 +147,18 @@ class ResourceTest extends TestCase
             ],
         ];
 
-        $id = $this
-            ->doCreate($data)
-            ->assertCreateResponse($data);
+        $expected = $data;
+        unset($expected['relationships']);
 
-        $this->assertModelCreated($model, $id, ['title', 'slug', 'content', 'author_id']);
+        $id = $this->doCreate($data)->assertCreatedWithId($expected);
+
+        $this->assertDatabaseHas('posts', [
+            'id' => $id,
+            'title' => $model->title,
+            'slug' => $model->slug,
+            'content' => $model->content,
+            'author_id' => $model->author_id,
+        ]);
     }
 
     /**
@@ -165,6 +170,37 @@ class ResourceTest extends TestCase
         $model->tags()->create(['name' => 'Important']);
 
         $this->doRead($model)->assertReadResponse($this->serialize($model));
+    }
+
+    /**
+     * Test reading a resource with included resources. We expect the relationships
+     * data identifiers to be serialized in the response so that the compound document
+     * has full resource linkage, in accordance with the spec.
+     */
+    public function testReadWithInclude()
+    {
+        $model = $this->createPost();
+        $tag = $model->tags()->create(['name' => 'Important']);
+
+        $expected = $this->serialize($model);
+
+        $expected['relationships']['author']['data'] = [
+            'type' => 'users',
+            'id' => (string) $model->author_id,
+        ];
+
+        $expected['relationships']['tags']['data'] = [
+            ['type' => 'tags', 'id' => (string) $tag->getKey()],
+        ];
+
+        $expected['relationships']['comments']['data'] = [];
+
+        $response = $this->doRead($model, ['include' => 'author,tags,comments'])->assertRead($expected);
+
+        $response->assertDocument()->assertIncluded()->assertContainsOnly([
+            'users' => [$model->author_id],
+            'tags' => [$tag->getKey()],
+        ]);
     }
 
     /**
@@ -245,7 +281,7 @@ class ResourceTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data)->assertUpdateResponse($data);
+        $this->doUpdate($data, ['include' => 'tags'])->assertUpdated($data);
 
         $this->assertDatabaseHas('taggables', [
             'taggable_type' => Post::class,
@@ -286,9 +322,11 @@ class ResourceTest extends TestCase
      */
     private function serialize(Post $model)
     {
+        $self = "http://localhost/api/v1/posts/{$model->getKey()}";
+
         return [
             'type' => 'posts',
-            'id' => $id = (string) $model->getKey(),
+            'id' => (string) $model->getKey(),
             'attributes' => [
                 'title' => $model->title,
                 'slug' => $model->slug,
@@ -296,22 +334,26 @@ class ResourceTest extends TestCase
             ],
             'relationships' => [
                 'author' => [
-                    'data' => [
-                        'type' => 'users',
-                        'id' => (string) $model->author_id,
+                    'links' => [
+                        'self' => "$self/relationships/author",
+                        'related' => "$self/author",
                     ],
                 ],
                 'tags' => [
-                    'data' => $model->tags->map(function (Tag $tag) {
-                        return ['type' => 'tags', 'id' => (string) $tag->getKey()];
-                    })->all(),
+                    'links' => [
+                        'self' => "$self/relationships/tags",
+                        'related' => "$self/tags",
+                    ],
                 ],
                 'comments' => [
                     'links' => [
-                        'self' => "http://localhost/api/v1/posts/$id/relationships/comments",
-                        'related' => "http://localhost/api/v1/posts/$id/comments",
+                        'self' => "$self/relationships/comments",
+                        'related' => "$self/comments",
                     ],
                 ],
+            ],
+            'links' => [
+                'self' => $self,
             ],
         ];
     }

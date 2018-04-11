@@ -281,7 +281,7 @@ class TestResponse extends BaseTestResponse
      *      array representation of the expected attributes of the resource.
      * @return $this
      */
-    public function assertCreated(array $expected)
+    public function assertCreated(array $expected = [])
     {
         if (!isset($expected['type'])) {
             $expected['type'] = $this->expectedResourceType();
@@ -302,7 +302,7 @@ class TestResponse extends BaseTestResponse
      * @param array $expected
      * @return string
      */
-    public function assertCreatedWithId(array $expected)
+    public function assertCreatedWithId(array $expected = [])
     {
         $this->assertCreated($expected);
         $id = array_get($this->decodeResponseJson(), 'data.id');

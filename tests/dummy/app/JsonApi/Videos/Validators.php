@@ -29,6 +29,11 @@ class Validators extends AbstractValidatorProvider
     protected $resourceType = 'videos';
 
     /**
+     * @var array
+     */
+    protected $allowedIncludePaths = ['uploaded-by'];
+
+    /**
      * Get the validation rules for the resource attributes.
      *
      * @param object|null $record

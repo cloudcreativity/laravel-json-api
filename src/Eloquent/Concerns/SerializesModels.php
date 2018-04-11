@@ -18,11 +18,13 @@
 namespace CloudCreativity\LaravelJsonApi\Eloquent\Concerns;
 
 use Carbon\Carbon;
+use Closure;
 use CloudCreativity\LaravelJsonApi\Utils\Str;
 use DateTime;
 use Illuminate\Database\Eloquent\Model;
+use Neomerx\JsonApi\Schema\SchemaProvider;
 
-trait SerializesAttributes
+trait SerializesModels
 {
 
     /**
@@ -82,6 +84,35 @@ trait SerializesAttributes
     protected $attributes = null;
 
     /**
+     * The model relationships to serialize.
+     *
+     * @var array
+     */
+    protected $relationships = [];
+
+    /**
+     * @param Model $record
+     * @param bool $isPrimary
+     * @param array $includedRelationships
+     * @return array
+     */
+    public function getRelationships($record, $isPrimary, array $includedRelationships)
+    {
+        $relations = [];
+
+        foreach ($this->relationshipKeys($record) as $modelKey => $field) {
+            if (is_numeric($modelKey)) {
+                $modelKey = $field;
+                $field = $this->fieldForRelationship($field);
+            }
+
+            $relations[$field] = $this->getRelation($record, $modelKey, $field, $includedRelationships);
+        }
+
+        return $relations;
+    }
+
+    /**
      * Get attributes that are included for every model class.
      *
      * @param Model $model
@@ -132,6 +163,23 @@ trait SerializesAttributes
     }
 
     /**
+     * @param Model $model
+     * @param string $modelKey
+     * @param string $field
+     * @param array $includedRelationships
+     * @return array
+     */
+    protected function getRelation($model, $modelKey, $field, array $includedRelationships)
+    {
+        return [
+            SchemaProvider::SHOW_SELF => true,
+            SchemaProvider::SHOW_RELATED => true,
+            SchemaProvider::SHOW_DATA => isset($includedRelationships[$field]),
+            SchemaProvider::DATA => $this->extractRelationship($model, $modelKey),
+        ];
+    }
+
+    /**
      * Get the attributes to serialize for the provided model.
      *
      * @param Model $model
@@ -147,6 +195,15 @@ trait SerializesAttributes
     }
 
     /**
+     * @param $model
+     * @return array
+     */
+    protected function relationshipKeys($model)
+    {
+        return $this->relationships;
+    }
+
+    /**
      * Convert a model key into a resource field name.
      *
      * @param $modelKey
@@ -155,6 +212,15 @@ trait SerializesAttributes
     protected function fieldForAttribute($modelKey)
     {
         return $this->hyphenated ? Str::dasherize($modelKey) : $modelKey;
+    }
+
+    /**
+     * @param $modelKey
+     * @return string
+     */
+    protected function fieldForRelationship($modelKey)
+    {
+        return $this->fieldForAttribute($modelKey);
     }
 
     /**
@@ -167,6 +233,18 @@ trait SerializesAttributes
         $value = $model->{$modelKey};
 
         return $this->serializeAttribute($value, $model, $modelKey);
+    }
+
+    /**
+     * @param $model
+     * @param $modelKey
+     * @return Closure
+     */
+    protected function extractRelationship($model, $modelKey)
+    {
+        return function () use ($model, $modelKey) {
+            return $model->{$modelKey};
+        };
     }
 
     /**

@@ -29,6 +29,11 @@ class Validators extends AbstractValidatorProvider
     protected $resourceType = 'phones';
 
     /**
+     * @var array
+     */
+    protected $allowedIncludePaths = ['user'];
+
+    /**
      * Get the validation rules for the resource attributes.
      *
      * @param object|null $record

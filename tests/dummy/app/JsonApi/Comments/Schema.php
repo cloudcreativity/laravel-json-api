@@ -40,6 +40,7 @@ class Schema extends EloquentSchema
      * @param bool $isPrimary
      * @param array $includeRelationships
      * @return array
+     * @todo have left this in so that deprecated methods are tested.
      */
     public function getRelationships($resource, $isPrimary, array $includeRelationships)
     {

@@ -42,6 +42,7 @@ trait CreatesEloquentIdentities
      * @param Model $model
      * @param $relationshipKey
      * @return Model
+     * @deprecated
      */
     protected function createBelongsToIdentity(Model $model, $relationshipKey)
     {
@@ -75,6 +76,7 @@ trait CreatesEloquentIdentities
      * @param string|null $keyName
      *      the key to set as the id - defaults to `Model::getKeyName()`
      * @return Model|null
+     * @deprecated
      */
     protected function createModelIdentity(
         $modelClass,

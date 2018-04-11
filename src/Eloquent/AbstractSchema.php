@@ -34,7 +34,7 @@ abstract class AbstractSchema extends SchemaProvider
 
     use CreatesLinks,
         CreatesEloquentIdentities,
-        Concerns\SerializesAttributes;
+        Concerns\SerializesModels;
 
     /**
      * The API this schema relates to.

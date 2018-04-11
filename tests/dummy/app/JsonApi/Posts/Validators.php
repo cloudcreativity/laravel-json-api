@@ -65,6 +65,7 @@ class Validators extends AbstractValidatorProvider
         'author',
         'comments',
         'comments.created-by',
+        'tags',
     ];
 
     /**

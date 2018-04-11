@@ -60,7 +60,7 @@ class BelongsToTest extends TestCase
         ];
 
         $id = $this
-            ->doCreate($data)
+            ->doCreate($data, ['include' => 'author'])
             ->assertCreatedWithId($data);
 
         $this->assertDatabaseHas('posts', [
@@ -92,7 +92,7 @@ class BelongsToTest extends TestCase
         ];
 
         $id = $this
-            ->doCreate($data)
+            ->doCreate($data, ['include' => 'author'])
             ->assertCreatedWithId($data);
 
         $this->assertDatabaseHas('posts', [
@@ -121,7 +121,7 @@ class BelongsToTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data)->assertUpdated($data);
+        $this->doUpdate($data, ['include' => 'author'])->assertUpdated($data);
 
         $this->assertDatabaseHas('posts', [
             'id' => $post->getKey(),
@@ -157,7 +157,7 @@ class BelongsToTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data)->assertUpdated($data);
+        $this->doUpdate($data, ['include' => 'author'])->assertUpdated($data);
 
         $this->assertDatabaseHas('posts', [
             'id' => $post->getKey(),
@@ -192,7 +192,7 @@ class BelongsToTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data)->assertUpdated($data);
+        $this->doUpdate($data, ['include' => 'author'])->assertUpdated($data);
 
         $this->assertDatabaseHas('posts', [
             'id' => $post->getKey(),

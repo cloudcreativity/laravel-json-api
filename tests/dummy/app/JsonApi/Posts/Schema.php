@@ -39,31 +39,27 @@ class Schema extends EloquentSchema
     ];
 
     /**
-     * @param Post $resource
+     * @var array
+     */
+    protected $relationships = [
+        'author',
+        'comments',
+        'tags',
+    ];
+
+    /**
+     * @param Post $record
      * @param bool $isPrimary
-     * @param array $includeRelationships
+     * @param array $includedRelationships
      * @return array
      */
-    public function getRelationships($resource, $isPrimary, array $includeRelationships)
+    public function getRelationships($record, $isPrimary, array $includedRelationships)
     {
-        return [
-            'author' => [
-                self::SHOW_SELF => true,
-                self::SHOW_RELATED => true,
-                self::DATA => isset($includeRelationships['author']) ?
-                    $resource->author : $this->createBelongsToIdentity($resource, 'author'),
-            ],
-            'comments' => [
-                self::SHOW_SELF => true,
-                self::SHOW_RELATED => true,
-            ],
-            'tags' => [
-                self::SHOW_SELF => true,
-                self::SHOW_RELATED => true,
-                self::DATA => function () use ($resource) {
-                    return $resource->tags;
-                },
-            ],
-        ];
+        $relationships = parent::getRelationships($record, $isPrimary, $includedRelationships);
+        $relationships['comments'][self::META] = function () use ($record, $isPrimary) {
+            return $isPrimary ? ['count' => $record->comments()->count()] : null;
+        };
+
+        return $relationships;
     }
 }

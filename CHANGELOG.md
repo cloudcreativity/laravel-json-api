@@ -18,6 +18,9 @@ the Eloquent adapter.
 - The Eloquent adapter now applies eager loading when reading or updating a specific resource.
 - Eloquent adapters can now *guard* JSON API fields via their `$guarded` attribute. Guarded fields will be skipped
 when filling attributes into the model.
+- Added standard serialization of relationships within Eloquent schemas. This always serializes `self` and
+`related` links for listed model relationships, and only adds the relationship `data` if the relationship is
+being included in a compound document.
 
 ### Changed
 - By default resources no longer need to have a controller as the generic JSON API controller will now
