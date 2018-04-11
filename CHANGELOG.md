@@ -46,6 +46,7 @@ returned an empty array, `getFillable` would be used instead.
 - The `Store\EloquentAdapter` is deprecated in favour of using the `Eloquent\AbstractAdapter`.
 - The `Testing\InteractsWithModels` trait is deprecated in favour of Laravel database assertion helpers.
 - The `ErrorBag::toArray` method is deprecated in favour of `ErrorBag::all`.
+- The `Schema\CreatesEloquentIdentities` trait is deprecated.
 
 ### Fixed
 - [#128](https://github.com/cloudcreativity/laravel-json-api/issues/128) 

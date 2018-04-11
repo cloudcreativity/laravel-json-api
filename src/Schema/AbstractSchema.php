@@ -18,7 +18,6 @@
 
 namespace CloudCreativity\LaravelJsonApi\Schema;
 
-use CloudCreativity\LaravelJsonApi\Eloquent\Concerns\CreatesIdentities;
 use Neomerx\JsonApi\Schema\SchemaProvider;
 
 /**
@@ -30,7 +29,7 @@ use Neomerx\JsonApi\Schema\SchemaProvider;
 abstract class AbstractSchema extends SchemaProvider
 {
 
-    use CreatesIdentities,
+    use CreatesEloquentIdentities,
         CreatesLinks;
 
     /**

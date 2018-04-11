@@ -16,18 +16,19 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\LaravelJsonApi\Eloquent\Concerns;
+namespace CloudCreativity\LaravelJsonApi\Schema;
 
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * Trait CreatesIdentities
+ * Trait CreatesEloquentIdentities
  *
  * @package CloudCreativity\LaravelJsonApi
+ * @deprecated
  */
-trait CreatesIdentities
+trait CreatesEloquentIdentities
 {
 
     /**

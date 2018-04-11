@@ -19,6 +19,7 @@
 namespace CloudCreativity\LaravelJsonApi\Eloquent;
 
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
+use CloudCreativity\LaravelJsonApi\Schema\CreatesEloquentIdentities;
 use CloudCreativity\LaravelJsonApi\Schema\CreatesLinks;
 use Illuminate\Database\Eloquent\Model;
 use Neomerx\JsonApi\Schema\SchemaProvider;
@@ -32,7 +33,7 @@ abstract class AbstractSchema extends SchemaProvider
 {
 
     use CreatesLinks,
-        Concerns\CreatesIdentities,
+        CreatesEloquentIdentities,
         Concerns\SerializesAttributes;
 
     /**
