@@ -124,17 +124,20 @@ trait SerializesModels
 
         if ($this->hasCreatedAtAttribute($model)) {
             $createdAt = $model->getCreatedAtColumn();
-            $defaults[$this->fieldForAttribute($createdAt)] = $this->extractAttribute($model, $createdAt);
+            $field = $this->fieldForAttribute($createdAt);
+            $defaults[$field] = $this->extractAttribute($model, $createdAt, $field);
         }
 
         if ($this->hasUpdatedAtAttribute($model)) {
             $updatedAt = $model->getUpdatedAtColumn();
-            $defaults[$this->fieldForAttribute($updatedAt)] = $this->extractAttribute($model, $updatedAt);
+            $field = $this->fieldForAttribute($updatedAt);
+            $defaults[$field] = $this->extractAttribute($model, $updatedAt, $field);
         }
 
         if ($this->hasDeletedAtAttribute($model)) {
             $deletedAt = $model->getDeletedAtColumn();
-            $defaults[$this->fieldForAttribute($deletedAt)] = $this->extractAttribute($model, $deletedAt);
+            $field = $this->fieldForAttribute($deletedAt);
+            $defaults[$field] = $this->extractAttribute($model, $deletedAt, $field);
         }
 
         return $defaults;
@@ -156,7 +159,7 @@ trait SerializesModels
                 $field = $this->fieldForAttribute($field);
             }
 
-            $attributes[$field] = $this->extractAttribute($model, $modelKey);
+            $attributes[$field] = $this->extractAttribute($model, $modelKey, $field);
         }
 
         return $attributes;
@@ -226,13 +229,14 @@ trait SerializesModels
     /**
      * @param Model $model
      * @param $modelKey
+     * @param $field
      * @return string
      */
-    protected function extractAttribute(Model $model, $modelKey)
+    protected function extractAttribute(Model $model, $modelKey, $field)
     {
         $value = $model->{$modelKey};
 
-        return $this->serializeAttribute($value, $model, $modelKey);
+        return $this->serializeAttribute($value, $model, $modelKey, $field);
     }
 
     /**
@@ -251,19 +255,19 @@ trait SerializesModels
      * @param $value
      * @param Model $model
      * @param $modelKey
+     * @param $field
      * @return string
      */
-    protected function serializeAttribute($value, Model $model, $modelKey)
+    protected function serializeAttribute($value, Model $model, $modelKey, $field)
     {
-        if ($value instanceof DateTime) {
-            $value = $this->serializeDateTime($value, $model);
-        }
-
-        $field = $this->fieldForAttribute($modelKey);
         $method = 'serialize' . Str::classify($field) . 'Field';
 
         if (method_exists($this, $method)) {
             return $this->{$method}($value, $model);
+        }
+
+        if ($value instanceof DateTime) {
+            $value = $this->serializeDateTime($value, $model);
         }
 
         return $value;

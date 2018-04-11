@@ -328,6 +328,8 @@ class ResourceTest extends TestCase
             'type' => 'posts',
             'id' => (string) $model->getKey(),
             'attributes' => [
+                'created-at' => $model->created_at->toW3cString(),
+                'updated-at' => $model->updated_at->toW3cString(),
                 'title' => $model->title,
                 'slug' => $model->slug,
                 'content' => $model->content,
