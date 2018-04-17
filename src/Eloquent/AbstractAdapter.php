@@ -70,9 +70,12 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     protected $primaryKey;
 
     /**
-     * JSON API relationship field names to hydrate.
+     * JSON API relationship field names that can be filled in the model.
      *
-     * Lists the JSON API relationship field names that can be hydrated (modified).
+     * Lists the JSON API relationship field names that can be filled into the model.
+     * This is required because it is not common to allow relationship keys to be
+     * filled in an Eloquent model (for belongs-to), plus to-many relations are not
+     * fillable from Eloquent's perspective.
      *
      * @var string[]
      */

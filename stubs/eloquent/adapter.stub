@@ -19,7 +19,7 @@ class Adapter extends AbstractAdapter
     protected $attributes = [];
 
     /**
-     * Resource relationship fields to hydrate the model with.
+     * Resource relationship fields that can be filled.
      *
      * @var array
      */

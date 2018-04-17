@@ -1,17 +1,20 @@
 # Upgrade Guide 
 
-As we are currently on pre-1.0 releases, when you upgrade you will also need to specify that package
-dependencies need to be upgraded. Use the following commands:
+## Alpha Release Cycle
 
-```bash
-$ composer require cloudcreativity/laravel-json-api:1.0.0-alpha.1
-$ composer require --dev cloudcreativity/json-api-testing:^0.4
-```
+
 
 ## Upgrading to 0.12 to 1.0.0-alpha.1
 
 The main new feature introduced in this release is proper handling of reading and modifying resource
 relationships. We have also worked our way through a number of the issues on the 1.0.0 milestone.
+
+Use the following commands:
+
+```bash
+$ composer require cloudcreativity/laravel-json-api:1.0.0-alpha.1
+$ composer require --dev cloudcreativity/json-api-testing:^0.4
+```
 
 ### Namespaces
 
