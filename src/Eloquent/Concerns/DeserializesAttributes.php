@@ -95,7 +95,7 @@ trait DeserializesAttributes
     protected function deserializeAttribute($value, $field, $record)
     {
         if ($this->isDateAttribute($field, $record)) {
-            return $this->deserializeDate($value);
+            return $this->deserializeDate($value, $field, $record);
         }
 
         $method = 'deserialize' . Str::classify($field) . 'Field';
@@ -111,9 +111,14 @@ trait DeserializesAttributes
      * Convert a JSON date into a PHP date time object.
      *
      * @param $value
+     *      the value in the JSON API resource attribute field.
+     * @param string $field
+     *      the JSON API field name being deserialized.
+     * @param Model $record
+     *      the domain record being filled.
      * @return Carbon|null
      */
-    protected function deserializeDate($value)
+    protected function deserializeDate($value, $field, $record)
     {
         return !is_null($value) ? new Carbon($value) : null;
     }

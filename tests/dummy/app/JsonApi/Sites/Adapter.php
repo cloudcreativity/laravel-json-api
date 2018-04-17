@@ -21,7 +21,6 @@ use CloudCreativity\LaravelJsonApi\Adapter\AbstractResourceAdapter;
 use CloudCreativity\LaravelJsonApi\Adapter\HydratesAttributesTrait;
 use CloudCreativity\LaravelJsonApi\Contracts\Object\RelationshipsInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectInterface;
-use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Utils\Str;
 use DummyApp\Entities\Site;
 use DummyApp\Entities\SiteRepository;
@@ -73,14 +72,6 @@ class Adapter extends AbstractResourceAdapter
         $this->repository->remove($record);
 
         return true;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function related($field)
-    {
-        throw new RuntimeException('Not supported');
     }
 
     /**

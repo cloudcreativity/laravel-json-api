@@ -56,7 +56,7 @@ interface RelationshipAdapterInterface
     public function relationship($record, EncodingParametersInterface $parameters);
 
     /**
-     * Update a domain record's relationship with data from the supplied relationship object.
+     * Update a domain record's relationship when filling a resource's relationships.
      *
      * For a has-one relationship, this changes the relationship to match the supplied relationship
      * object.
