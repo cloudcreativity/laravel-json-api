@@ -114,9 +114,9 @@ interface ResourceAdapterInterface
     /**
      * Get the relationship adapter for the specified relationship.
      *
-     * @param $relationshipName
+     * @param $field
      * @return RelationshipAdapterInterface
      */
-    public function related($relationshipName);
+    public function related($field);
 
 }

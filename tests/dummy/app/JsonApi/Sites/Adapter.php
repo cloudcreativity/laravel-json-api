@@ -78,7 +78,7 @@ class Adapter extends AbstractResourceAdapter
     /**
      * @inheritDoc
      */
-    public function related($relationshipName)
+    public function related($field)
     {
         throw new RuntimeException('Not supported');
     }

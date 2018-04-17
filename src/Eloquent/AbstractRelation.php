@@ -47,31 +47,26 @@ abstract class AbstractRelation implements RelationshipAdapterInterface, StoreAw
     /**
      * @var string|null
      */
-    protected $relationshipName;
+    protected $field;
 
     /**
      * AbstractRelation constructor.
      *
      * @param Model $model
      * @param $key
-     * @param null $relationshipName
      */
-    public function __construct(Model $model, $key, $relationshipName = null)
+    public function __construct(Model $model, $key)
     {
         $this->model = $model;
         $this->key = $key;
-        $this->relationshipName = $relationshipName;
     }
 
     /**
-     * Set the relationship name.
-     *
-     * @param $name
-     * @return $this
+     * @inheritdoc
      */
-    public function withRelationshipName($name)
+    public function withFieldName($name)
     {
-        $this->relationshipName = $name;
+        $this->field = $name;
 
         return $this;
     }

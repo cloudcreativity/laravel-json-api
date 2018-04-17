@@ -37,9 +37,9 @@ class MorphHasMany implements HasManyAdapterInterface, StoreAwareInterface
     private $adapters;
 
     /**
-     * MorphToManyAdapter constructor.
+     * MorphHasMany constructor.
      *
-     * @param HasManyAdapterInterface[] ...$adapters
+     * @param HasManyAdapterInterface ...$adapters
      */
     public function __construct(HasManyAdapterInterface ...$adapters)
     {
@@ -65,12 +65,10 @@ class MorphHasMany implements HasManyAdapterInterface, StoreAwareInterface
      * @param $name
      * @return void
      */
-    public function withRelationshipName($name)
+    public function withFieldName($name)
     {
         foreach ($this->adapters as $adapter) {
-            if (method_exists($adapter, 'withRelationshipName')) {
-                $adapter->withRelationshipName($name);
-            }
+            $adapter->withFieldName($name);
         }
     }
 

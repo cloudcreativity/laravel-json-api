@@ -287,21 +287,19 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     /**
      * @inheritDoc
      */
-    public function related($relationshipName)
+    public function related($field)
     {
-        $method = Str::camelize($relationshipName);
+        $method = Str::camelize($field);
         $relation = method_exists($this, $method) ? $this->{$method}() : null;
 
         if (!$relation instanceof RelationshipAdapterInterface) {
             throw new RuntimeException("Unrecognised relationship name: $method");
         }
 
+        $relation->withFieldName($field);
+
         if ($relation instanceof StoreAwareInterface) {
             $relation->withStore($this->store());
-        }
-
-        if (method_exists($relation, 'withRelationshipName')) {
-            $relation->withRelationshipName($relationshipName);
         }
 
         return $relation;

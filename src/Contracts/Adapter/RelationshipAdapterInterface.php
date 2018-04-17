@@ -24,6 +24,14 @@ interface RelationshipAdapterInterface
 {
 
     /**
+     * Set the field name that the relationship relates to.
+     *
+     * @param string $field
+     * @return $this
+     */
+    public function withFieldName($field);
+
+    /**
      * Query related resources for the specified domain record.
      *
      * For example, if a client was querying the `comments` relationship of a `posts` resource.

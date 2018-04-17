@@ -101,7 +101,7 @@ class TestAdapter extends AbstractResourceAdapter
     /**
      * @inheritDoc
      */
-    public function related($relationshipName)
+    public function related($field)
     {
         // TODO: Implement related() method.
     }
