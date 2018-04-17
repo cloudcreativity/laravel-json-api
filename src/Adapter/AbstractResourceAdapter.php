@@ -18,11 +18,14 @@
 
 namespace CloudCreativity\LaravelJsonApi\Adapter;
 
+use CloudCreativity\LaravelJsonApi\Contracts\Adapter\RelationshipAdapterInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\ResourceAdapterInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Object\RelationshipsInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreAwareInterface;
+use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Store\StoreAwareTrait;
+use CloudCreativity\LaravelJsonApi\Utils\Str;
 use CloudCreativity\Utils\Object\StandardObjectInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
@@ -53,6 +56,7 @@ abstract class AbstractResourceAdapter implements ResourceAdapterInterface, Stor
      * @param $record
      * @param StandardObjectInterface $attributes
      * @return void
+     * @todo rename this `fillAttributes` to use more Laravel terminology.
      */
     abstract protected function hydrateAttributes($record, StandardObjectInterface $attributes);
 
@@ -61,6 +65,7 @@ abstract class AbstractResourceAdapter implements ResourceAdapterInterface, Stor
      * @param RelationshipsInterface $relationships
      * @param EncodingParametersInterface $parameters
      * @return void
+     * @todo rename this `fillRelationships` to use more Laravel terminology.
      */
     abstract protected function hydrateRelationships(
         $record,
@@ -115,6 +120,27 @@ abstract class AbstractResourceAdapter implements ResourceAdapterInterface, Stor
         }
 
         return $record;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function related($field)
+    {
+        $method = Str::camelize($field);
+        $relation = method_exists($this, $method) ? $this->{$method}() : null;
+
+        if (!$relation instanceof RelationshipAdapterInterface) {
+            throw new RuntimeException("Unrecognised relationship name: $method");
+        }
+
+        $relation->withFieldName($field);
+
+        if ($relation instanceof StoreAwareInterface) {
+            $relation->withStore($this->store());
+        }
+
+        return $relation;
     }
 
 }
