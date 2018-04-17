@@ -28,10 +28,10 @@ class Arr
     /**
      * Recursively camelize all keys in the provided array.
      *
-     * @param array $data
+     * @param array|null $data
      * @return array
      */
-    public static function camelize(array $data)
+    public static function camelize($data)
     {
         return collect($data)->mapWithKeys(function ($value, $key) {
             $key = Str::camelize($key);
@@ -47,10 +47,10 @@ class Arr
     /**
      * Recursively dasherize all keys in the provided array.
      *
-     * @param array $data
+     * @param array|null $data
      * @return array
      */
-    public static function dasherize(array $data)
+    public static function dasherize($data)
     {
         return collect($data)->mapWithKeys(function ($value, $key) {
             $key = Str::dasherize($key);
@@ -66,10 +66,10 @@ class Arr
     /**
      * Recursively decamelize all keys in the provided array.
      *
-     * @param array $data
+     * @param array|null $data
      * @return array
      */
-    public static function decamelize(array $data)
+    public static function decamelize($data)
     {
         return collect($data)->mapWithKeys(function ($value, $key) {
             $key = Str::decamelize($key);
@@ -85,10 +85,10 @@ class Arr
     /**
      * Recursively underscore all keys in the provided array.
      *
-     * @param array $data
+     * @param array|null $data
      * @return array
      */
-    public static function underscore(array $data)
+    public static function underscore($data)
     {
         return collect($data)->mapWithKeys(function ($value, $key) {
             $key = Str::underscore($key);

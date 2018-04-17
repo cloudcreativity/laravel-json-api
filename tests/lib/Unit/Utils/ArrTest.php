@@ -125,4 +125,30 @@ class ArrTest extends TestCase
             ],
         ], $actual);
     }
+
+    /**
+     * @return array
+     */
+    public function methodsProvider()
+    {
+        return [
+            ['camelize'],
+            ['decamelize'],
+            ['dasherize'],
+            ['underscore'],
+        ];
+    }
+
+    /**
+     * Test that the conversion methods accept null as a value.
+     *
+     * @param $method
+     * @dataProvider methodsProvider
+     */
+    public function testNull($method)
+    {
+        $actual = call_user_func(Arr::class . "::{$method}", null);
+
+        $this->assertSame([], $actual);
+    }
 }
