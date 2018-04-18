@@ -19,7 +19,7 @@
 namespace CloudCreativity\LaravelJsonApi\Http\Controllers;
 
 use Closure;
-use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\InboundRequestInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Object\RelationshipInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
@@ -53,10 +53,10 @@ class JsonApiController extends Controller
 
     /**
      * @param StoreInterface $store
-     * @param InboundRequestInterface $request
+     * @param RequestInterface $request
      * @return Response
      */
-    public function index(StoreInterface $store, InboundRequestInterface $request)
+    public function index(StoreInterface $store, RequestInterface $request)
     {
         return $this->reply()->content(
             $this->doSearch($store, $request)
@@ -74,10 +74,10 @@ class JsonApiController extends Controller
 
     /**
      * @param StoreInterface $store
-     * @param InboundRequestInterface $request
+     * @param RequestInterface $request
      * @return Response
      */
-    public function create(StoreInterface $store, InboundRequestInterface $request)
+    public function create(StoreInterface $store, RequestInterface $request)
     {
         $record = $this->transaction(function () use ($store, $request) {
             return $this->doCreate(
@@ -97,11 +97,11 @@ class JsonApiController extends Controller
 
     /**
      * @param StoreInterface $store
-     * @param InboundRequestInterface $request
+     * @param RequestInterface $request
      * @param object $record
      * @return Response
      */
-    public function update(StoreInterface $store, InboundRequestInterface $request, $record)
+    public function update(StoreInterface $store, RequestInterface $request, $record)
     {
         $record = $this->transaction(function () use ($store, $request, $record) {
             return $this->doUpdate(
@@ -121,11 +121,11 @@ class JsonApiController extends Controller
 
     /**
      * @param StoreInterface $store
-     * @param InboundRequestInterface $request
+     * @param RequestInterface $request
      * @param $record
      * @return Response
      */
-    public function delete(StoreInterface $store, InboundRequestInterface $request, $record)
+    public function delete(StoreInterface $store, RequestInterface $request, $record)
     {
         $result = $this->transaction(function () use ($store, $request, $record) {
             return $this->doDelete($store, $record, $request->getParameters());
@@ -140,11 +140,11 @@ class JsonApiController extends Controller
 
     /**
      * @param StoreInterface $store
-     * @param InboundRequestInterface $request
+     * @param RequestInterface $request
      * @param object $record
      * @return Response
      */
-    public function readRelatedResource(StoreInterface $store, InboundRequestInterface $request, $record)
+    public function readRelatedResource(StoreInterface $store, RequestInterface $request, $record)
     {
         $related = $store->queryRelated(
             $record,
@@ -157,11 +157,11 @@ class JsonApiController extends Controller
 
     /**
      * @param StoreInterface $store
-     * @param InboundRequestInterface $request
+     * @param RequestInterface $request
      * @param $record
      * @return Response
      */
-    public function readRelationship(StoreInterface $store, InboundRequestInterface $request, $record)
+    public function readRelationship(StoreInterface $store, RequestInterface $request, $record)
     {
         $related = $store->queryRelationship(
             $record,
@@ -174,11 +174,11 @@ class JsonApiController extends Controller
 
     /**
      * @param StoreInterface $store
-     * @param InboundRequestInterface $request
+     * @param RequestInterface $request
      * @param $record
      * @return Response
      */
-    public function replaceRelationship(StoreInterface $store, InboundRequestInterface $request, $record)
+    public function replaceRelationship(StoreInterface $store, RequestInterface $request, $record)
     {
         $result = $this->transaction(function () use ($store, $request, $record) {
             return $this->doReplaceRelationship(
@@ -199,11 +199,11 @@ class JsonApiController extends Controller
 
     /**
      * @param StoreInterface $store
-     * @param InboundRequestInterface $request
+     * @param RequestInterface $request
      * @param $record
      * @return Response
      */
-    public function addToRelationship(StoreInterface $store, InboundRequestInterface $request, $record)
+    public function addToRelationship(StoreInterface $store, RequestInterface $request, $record)
     {
         $result = $this->transaction(function () use ($store, $request, $record) {
             return $store->addToRelationship(
@@ -223,11 +223,11 @@ class JsonApiController extends Controller
 
     /**
      * @param StoreInterface $store
-     * @param InboundRequestInterface $request
+     * @param RequestInterface $request
      * @param $record
      * @return Response
      */
-    public function removeFromRelationship(StoreInterface $store, InboundRequestInterface $request, $record)
+    public function removeFromRelationship(StoreInterface $store, RequestInterface $request, $record)
     {
         $result = $this->transaction(function () use ($store, $request, $record) {
             return $store->removeFromRelationship(
@@ -247,10 +247,10 @@ class JsonApiController extends Controller
 
     /**
      * @param StoreInterface $store
-     * @param InboundRequestInterface $request
+     * @param RequestInterface $request
      * @return mixed
      */
-    protected function doSearch(StoreInterface $store, InboundRequestInterface $request)
+    protected function doSearch(StoreInterface $store, RequestInterface $request)
     {
         return $store->queryRecords($request->getResourceType(), $request->getParameters());
     }

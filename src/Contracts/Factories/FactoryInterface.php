@@ -21,7 +21,7 @@ namespace CloudCreativity\LaravelJsonApi\Contracts\Factories;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Encoder\SerializerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\Client\ClientInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\InboundRequestInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\Responses\ResponseInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Object\DocumentInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PageInterface;
@@ -74,7 +74,7 @@ interface FactoryInterface extends BaseFactoryInterface
      * @param bool $relationships
      * @param DocumentInterface|null $document
      * @param EncodingParametersInterface|null $parameters
-     * @return InboundRequestInterface
+     * @return RequestInterface
      */
     public function createInboundRequest(
         $method,

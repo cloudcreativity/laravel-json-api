@@ -19,7 +19,7 @@
 namespace CloudCreativity\LaravelJsonApi\Http\Middleware;
 
 use Closure;
-use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\InboundRequestInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\DocumentValidatorInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorProviderInterface;
@@ -92,7 +92,7 @@ class ValidateRequest
      * (`$resource`) because the inbound document always relates to this primary
      * resource, even if modifying a relationship.
      *
-     * @param InboundRequestInterface $inboundRequest
+     * @param RequestInterface $inboundRequest
      * @param StoreInterface $store
      * @param ValidatorProviderInterface $resource
      *      validators for the primary resource.
@@ -102,7 +102,7 @@ class ValidateRequest
      * @throws JsonApiException
      */
     public function validate(
-        InboundRequestInterface $inboundRequest,
+        RequestInterface $inboundRequest,
         StoreInterface $store,
         ValidatorProviderInterface $resource,
         ValidatorProviderInterface $related = null
@@ -122,12 +122,12 @@ class ValidateRequest
     }
 
     /**
-     * @param InboundRequestInterface $request
+     * @param RequestInterface $request
      * @param ValidatorProviderInterface $validators
      * @throws JsonApiException
      */
     protected function checkQueryParameters(
-        InboundRequestInterface $request,
+        RequestInterface $request,
         ValidatorProviderInterface $validators
     ) {
         $checker = $this->queryChecker($validators, $request);
@@ -135,13 +135,13 @@ class ValidateRequest
     }
 
     /**
-     * @param InboundRequestInterface $request
+     * @param RequestInterface $request
      * @param ValidatorProviderInterface $validators
      * @param object|null $record
      * @throws JsonApiException
      */
     protected function checkDocumentIsAcceptable(
-        InboundRequestInterface $request,
+        RequestInterface $request,
         ValidatorProviderInterface $validators,
         $record = null
     ) {
@@ -159,13 +159,13 @@ class ValidateRequest
 
     /**
      * @param ValidatorProviderInterface $validators
-     * @param InboundRequestInterface $request
+     * @param RequestInterface $request
      * @param object|null $record
      * @return DocumentValidatorInterface|null
      */
     protected function documentAcceptanceValidator(
         ValidatorProviderInterface $validators,
-        InboundRequestInterface $request,
+        RequestInterface $request,
         $record = null
     ) {
         $resourceId = $request->getResourceId();
@@ -187,10 +187,10 @@ class ValidateRequest
 
     /**
      * @param ValidatorProviderInterface $validators
-     * @param InboundRequestInterface $request
+     * @param RequestInterface $request
      * @return QueryCheckerInterface
      */
-    protected function queryChecker(ValidatorProviderInterface $validators, InboundRequestInterface $request)
+    protected function queryChecker(ValidatorProviderInterface $validators, RequestInterface $request)
     {
         if ($request->isIndex()) {
             return $validators->searchQueryChecker();

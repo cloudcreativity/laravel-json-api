@@ -55,7 +55,9 @@ namespace CloudCreativity\LaravelJsonApi {
          */
         function http_contains_body(RequestInterface $request, ResponseInterface $response = null)
         {
-            return $response ? Helpers::doesResponseHaveBody($request, $response) : Helpers::doesRequestHaveBody($request);
+            return $response ?
+                Helpers::doesResponseHaveBody($request, $response) :
+                Helpers::doesRequestHaveBody($request);
         }
     }
 }
@@ -63,7 +65,7 @@ namespace CloudCreativity\LaravelJsonApi {
 namespace {
 
     use CloudCreativity\LaravelJsonApi\Api\Api;
-    use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\InboundRequestInterface;
+    use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestInterface;
     use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
     use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
 
@@ -86,7 +88,7 @@ namespace {
         /**
          * Get the inbound JSON API request.
          *
-         * @return InboundRequestInterface|null
+         * @return RequestInterface|null
          */
         function json_api_request() {
             /** @var JsonApiService $service */

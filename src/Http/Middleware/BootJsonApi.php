@@ -22,7 +22,7 @@ use Closure;
 use CloudCreativity\LaravelJsonApi\Api\Api;
 use CloudCreativity\LaravelJsonApi\Api\Repository;
 use CloudCreativity\LaravelJsonApi\Contracts\Factories\FactoryInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\InboundRequestInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\DocumentRequiredException;
 use CloudCreativity\LaravelJsonApi\Exceptions\InvalidJsonException;
@@ -140,8 +140,8 @@ class BootJsonApi
             $httpRequest->is('*/relationships/*')
         );
 
-        $this->container->instance(InboundRequestInterface::class, $inboundRequest);
-        $this->container->alias(InboundRequestInterface::class, 'json-api.request');
+        $this->container->instance(RequestInterface::class, $inboundRequest);
+        $this->container->alias(RequestInterface::class, 'json-api.request');
     }
 
     /**
@@ -153,8 +153,8 @@ class BootJsonApi
     {
         /** Override the current page resolution */
         AbstractPaginator::currentPageResolver(function ($pageName) {
-            /** @var InboundRequestInterface $request */
-            $request = app(InboundRequestInterface::class);
+            /** @var RequestInterface $request */
+            $request = app(RequestInterface::class);
             $pagination = (array) $request->getParameters()->getPaginationParameters();
 
             return isset($pagination[$pageName]) ? $pagination[$pageName] : null;
@@ -213,7 +213,7 @@ class BootJsonApi
      * @param string|null $resourceId
      * @param string|null $relationshipName
      * @param bool $relationships
-     * @return InboundRequestInterface
+     * @return RequestInterface
      * @throws JsonApiException
      */
     protected function parseServerRequest(
@@ -310,10 +310,10 @@ class BootJsonApi
      * - Add to resource relationship
      * - Remove from resource relationship
      *
-     * @param InboundRequestInterface $request
+     * @param RequestInterface $request
      * @return bool
      */
-    protected function isExpectingDocument(InboundRequestInterface $request)
+    protected function isExpectingDocument(RequestInterface $request)
     {
         return $request->isCreateResource() ||
             $request->isUpdateResource() ||

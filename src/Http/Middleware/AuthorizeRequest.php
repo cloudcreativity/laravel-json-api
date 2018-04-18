@@ -20,7 +20,7 @@ namespace CloudCreativity\LaravelJsonApi\Http\Middleware;
 
 use Closure;
 use CloudCreativity\LaravelJsonApi\Contracts\Authorizer\AuthorizerInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\InboundRequestInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\AuthorizationException;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
@@ -60,7 +60,7 @@ class AuthorizeRequest
     public function handle($request, Closure $next, $authorizer)
     {
         $this->authorize(
-            $this->container->make(InboundRequestInterface::class),
+            $this->container->make(RequestInterface::class),
             $this->container->make(StoreInterface::class),
             $this->resolveAuthorizer($authorizer)
         );
@@ -87,13 +87,13 @@ class AuthorizeRequest
     /**
      * Authorize the request or throw an exception
      *
-     * @param InboundRequestInterface $request
+     * @param RequestInterface $request
      * @param StoreInterface $store
      * @param AuthorizerInterface $authorizer
      * @throws AuthorizationException
      */
     protected function authorize(
-        InboundRequestInterface $request,
+        RequestInterface $request,
         StoreInterface $store,
         AuthorizerInterface $authorizer
     ) {
@@ -105,14 +105,14 @@ class AuthorizeRequest
     }
 
     /**
-     * @param InboundRequestInterface $request
+     * @param RequestInterface $request
      * @param StoreInterface $store
      * @param AuthorizerInterface $authorizer
      * @return ErrorCollection|bool
      *      errors if the request is not authorized, true if authorized.
      */
     protected function checkAuthorization(
-        InboundRequestInterface $request,
+        RequestInterface $request,
         StoreInterface $store,
         AuthorizerInterface $authorizer
     ) {

@@ -21,7 +21,7 @@ namespace CloudCreativity\LaravelJsonApi\Services;
 use Closure;
 use CloudCreativity\LaravelJsonApi\Api\Api;
 use CloudCreativity\LaravelJsonApi\Api\Repository;
-use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\InboundRequestInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\Responses\ErrorResponseInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Utils\ErrorReporterInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
@@ -71,7 +71,7 @@ class JsonApiService implements ErrorReporterInterface
     /**
      * Get the JSON API request, if there is one.
      *
-     * @return InboundRequestInterface|null
+     * @return RequestInterface|null
      */
     public function request()
     {
@@ -83,7 +83,7 @@ class JsonApiService implements ErrorReporterInterface
     }
 
     /**
-     * @return InboundRequestInterface
+     * @return RequestInterface
      */
     public function requestOrFail()
     {
@@ -180,7 +180,7 @@ class JsonApiService implements ErrorReporterInterface
     /**
      * Get the current JSON API request, if one has been bound into the container.
      *
-     * @return InboundRequestInterface
+     * @return RequestInterface
      * @deprecated use `request()`
      */
     public function getRequest()
