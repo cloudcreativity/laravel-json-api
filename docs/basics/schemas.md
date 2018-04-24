@@ -1,5 +1,7 @@
 # Resource Object Schemas
 
+## Introduction
+
 Resource objects are the JSON API representations of your application's domain records (instances of PHP classes).
 Every PHP class that can appear in your JSON API documents must have a `Schema` class. This schema defines how
 to convert the PHP object into a JSON API resource object.
