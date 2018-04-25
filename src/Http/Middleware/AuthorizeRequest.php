@@ -23,6 +23,7 @@ use CloudCreativity\LaravelJsonApi\Contracts\Authorizer\AuthorizerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\AuthorizationException;
+use CloudCreativity\LaravelJsonApi\Exceptions\NotFoundException;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Object\Document;
 use Illuminate\Contracts\Container\Container;
@@ -120,7 +121,13 @@ class AuthorizeRequest
         $parameters = $request->getParameters();
         $document = new Document($request->getDocument());
         $identifier = $request->getResourceIdentifier();
-        $record = $identifier ? $store->findOrFail($identifier) : null;
+        $record = $identifier ? $store->find($identifier) : null;
+
+        /** If the record for the identifier does not exist, we need to exit as we cannot authorize. */
+        if ($identifier && !$record) {
+            throw new NotFoundException();
+        }
+
         $authorized = true;
 
         /** Index */
