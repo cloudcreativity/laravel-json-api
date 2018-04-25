@@ -60,7 +60,7 @@ class ResourceGroup
     {
         $router->group($this->groupAction(), function (Registrar $router) {
             /** Primary resource routes. */
-            $router->group(['middleware' => 'json-api.validate'], function ($router) {
+            $router->group([], function ($router) {
                 $this->addResourceRoutes($router);
             });
 
@@ -91,7 +91,6 @@ class ResourceGroup
 
         return array_merge($middleware, array_filter([
             $authorizer ? "json-api.authorize:$authorizer" : null,
-            'json-api.bindings',
         ]));
     }
 

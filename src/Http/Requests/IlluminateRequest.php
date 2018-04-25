@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Copyright 2018 Cloud Creativity Limited
  *
@@ -20,94 +19,61 @@ namespace CloudCreativity\LaravelJsonApi\Http\Requests;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Object\DocumentInterface;
+use CloudCreativity\LaravelJsonApi\Exceptions\InvalidJsonException;
 use CloudCreativity\LaravelJsonApi\Object\ResourceIdentifier;
+use CloudCreativity\LaravelJsonApi\Routing\ResourceRegistrar;
+use Illuminate\Http\Request;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
-use Neomerx\JsonApi\Encoder\Parameters\EncodingParameters;
+use Neomerx\JsonApi\Contracts\Http\HttpFactoryInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use function CloudCreativity\LaravelJsonApi\http_contains_body;
+use function CloudCreativity\LaravelJsonApi\json_decode;
 
 /**
- * Class InboundRequest
+ * Class IlluminateRequest
  *
  * @package CloudCreativity\LaravelJsonApi
  */
-class InboundRequest implements RequestInterface
+class IlluminateRequest implements RequestInterface
 {
 
     /**
-     * The HTTP method.
-     *
-     * @var string
+     * @var Request
      */
-    private $method;
+    private $request;
 
     /**
-     * The requested resource type.
-     *
-     * @var string
+     * @var ServerRequestInterface
      */
-    private $resourceType;
+    private $serverRequest;
 
     /**
-     * The requested resource id.
-     *
-     * @var string|null
+     * @var HttpFactoryInterface
      */
-    private $resourceId;
+    private $factory;
 
     /**
-     * The requested resource relationship.
-     *
-     * @var string|null
-     */
-    private $relationshipName;
-
-    /**
-     * Whether the keyword 'relationships' is in the URL.
-     *
-     * @var bool
-     */
-    private $relationships;
-
-    /**
-     * The inbound JSON API document.
-     *
-     * @var DocumentInterface|null
+     * @var DocumentInterface|bool|null
      */
     private $document;
 
     /**
-     * The inbound encoding parameters.
-     *
-     * @var EncodingParametersInterface
+     * @var EncodingParametersInterface|null
      */
     private $parameters;
 
     /**
-     * InboundRequest constructor.
+     * IlluminateRequest constructor.
      *
-     * @param $method
-     * @param $resourceType
-     * @param string|null $resourceId
-     * @param string|null $relationshipName
-     * @param bool $relationships
-     * @param DocumentInterface|null $document
-     * @param EncodingParametersInterface|null $parameters
+     * @param Request $request
+     * @param ServerRequestInterface $serverRequest
+     * @param HttpFactoryInterface $factory
      */
-    public function __construct(
-        $method,
-        $resourceType,
-        $resourceId = null,
-        $relationshipName = null,
-        $relationships = false,
-        DocumentInterface $document = null,
-        EncodingParametersInterface $parameters = null
-    ) {
-        $this->method = strtoupper($method);
-        $this->resourceType = $resourceType;
-        $this->resourceId = $resourceId;
-        $this->relationshipName = $relationshipName;
-        $this->relationships = (bool) $relationships;
-        $this->document = $document;
-        $this->parameters = $parameters ?: new EncodingParameters();
+    public function __construct(Request $request, ServerRequestInterface $serverRequest, HttpFactoryInterface $factory)
+    {
+        $this->request = $request;
+        $this->serverRequest = $serverRequest;
+        $this->factory = $factory;
     }
 
     /**
@@ -115,7 +81,7 @@ class InboundRequest implements RequestInterface
      */
     public function getResourceType()
     {
-        return $this->resourceType;
+        return $this->request->route(ResourceRegistrar::PARAM_RESOURCE_TYPE);
     }
 
     /**
@@ -123,7 +89,7 @@ class InboundRequest implements RequestInterface
      */
     public function getResourceId()
     {
-        return $this->resourceId;
+        return $this->request->route(ResourceRegistrar::PARAM_RESOURCE_ID);
     }
 
     /**
@@ -131,11 +97,11 @@ class InboundRequest implements RequestInterface
      */
     public function getResourceIdentifier()
     {
-        if (!$this->resourceId) {
+        if (!$resourceId = $this->getResourceId()) {
             return null;
         }
 
-        return ResourceIdentifier::create($this->resourceType, $this->resourceId);
+        return ResourceIdentifier::create($this->getResourceType(), $resourceId);
     }
 
     /**
@@ -143,7 +109,15 @@ class InboundRequest implements RequestInterface
      */
     public function getRelationshipName()
     {
-        return $this->relationshipName;
+        return $this->request->route(ResourceRegistrar::PARAM_RELATIONSHIP_NAME);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getInverseResourceType()
+    {
+        return $this->request->route(ResourceRegistrar::PARAM_RELATIONSHIP_INVERSE_TYPE);
     }
 
     /**
@@ -151,7 +125,11 @@ class InboundRequest implements RequestInterface
      */
     public function getParameters()
     {
-        return $this->parameters;
+        if ($this->parameters) {
+            return $this->parameters;
+        }
+
+        return $this->parameters = $this->parseParameters();
     }
 
     /**
@@ -159,6 +137,10 @@ class InboundRequest implements RequestInterface
      */
     public function getDocument()
     {
+        if (is_null($this->document)) {
+            $this->document = $this->decodeDocument();
+        }
+
         return $this->document ? clone $this->document : null;
     }
 
@@ -215,7 +197,7 @@ class InboundRequest implements RequestInterface
      */
     public function hasRelationships()
     {
-        return $this->relationships;
+        return $this->request->is('*/relationships/*');
     }
 
     /**
@@ -263,7 +245,7 @@ class InboundRequest implements RequestInterface
     /**
      * @return bool
      */
-    protected function isResource()
+    private function isResource()
     {
         return !empty($this->getResourceId());
     }
@@ -271,7 +253,7 @@ class InboundRequest implements RequestInterface
     /**
      * @return bool
      */
-    protected function isRelationship()
+    private function isRelationship()
     {
         return !empty($this->getRelationshipName());
     }
@@ -283,9 +265,34 @@ class InboundRequest implements RequestInterface
      *      the expected method - case insensitive.
      * @return bool
      */
-    protected function isMethod($method)
+    private function isMethod($method)
     {
-        return $this->method === strtoupper($method);
+        return strtoupper($this->request->method()) === strtoupper($method);
+    }
+
+    /**
+     * Extract the JSON API document from the request.
+     *
+     * @return object|null
+     * @throws InvalidJsonException
+     */
+    private function decodeDocument()
+    {
+        if (!http_contains_body($this->serverRequest)) {
+            return null;
+        }
+
+        return json_decode((string) $this->serverRequest->getBody());
+    }
+
+    /**
+     * @return EncodingParametersInterface
+     */
+    private function parseParameters()
+    {
+        $parser = $this->factory->createQueryParametersParser();
+
+        return $parser->parseQueryParameters($this->serverRequest->getQueryParams());
     }
 
 }

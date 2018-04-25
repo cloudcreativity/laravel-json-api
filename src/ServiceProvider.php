@@ -20,21 +20,17 @@ namespace CloudCreativity\LaravelJsonApi;
 
 use CloudCreativity\LaravelJsonApi\Api\Repository;
 use CloudCreativity\LaravelJsonApi\Console\Commands;
+use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Exceptions\ExceptionParserInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Factories\FactoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Object\DocumentInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Object\RelationshipInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Repositories\ErrorRepositoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\ExceptionParser;
-use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use CloudCreativity\LaravelJsonApi\Http\Middleware\AuthorizeRequest;
 use CloudCreativity\LaravelJsonApi\Http\Middleware\BootJsonApi;
-use CloudCreativity\LaravelJsonApi\Http\Middleware\SubstituteBindings;
-use CloudCreativity\LaravelJsonApi\Http\Middleware\ValidateRequest;
+use CloudCreativity\LaravelJsonApi\Http\Requests\IlluminateRequest;
 use CloudCreativity\LaravelJsonApi\Http\Responses\Responses;
 use CloudCreativity\LaravelJsonApi\Routing\ResourceRegistrar;
 use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
@@ -109,8 +105,6 @@ class ServiceProvider extends BaseServiceProvider
     {
         $router->aliasMiddleware('json-api', BootJsonApi::class);
         $router->aliasMiddleware('json-api.authorize', AuthorizeRequest::class);
-        $router->aliasMiddleware('json-api.validate', ValidateRequest::class);
-        $router->aliasMiddleware('json-api.bindings', SubstituteBindings::class);
     }
 
     /**
@@ -195,32 +189,19 @@ class ServiceProvider extends BaseServiceProvider
      */
     protected function bindInboundRequest()
     {
+        $this->app->singleton(RequestInterface::class, IlluminateRequest::class);
+        $this->app->alias(RequestInterface::class, 'json-api.request');
+
         $this->app->bind(StoreInterface::class, function () {
             return json_api()->getStore();
         });
 
-        $this->app->bind(ErrorRepositoryInterface::class, function (Application $app) {
+        $this->app->bind(ErrorRepositoryInterface::class, function () {
             return json_api()->getErrors();
         });
 
-        $this->app->bind(DocumentInterface::class, function () {
-            if (!$request = json_api_request()) {
-                throw new RuntimeException('No inbound JSON API request.');
-            }
-
-            if (!$document = $request->getDocument()) {
-                throw new RuntimeException('No request document on inbound JSON API request.');
-            }
-
-            return $document;
-        });
-
-        $this->app->bind(ResourceObjectInterface::class, function (Application $app) {
-            return $app->make(DocumentInterface::class)->getResource();
-        });
-
-        $this->app->bind(RelationshipInterface::class, function (Application $app) {
-            return $app->make(DocumentInterface::class)->getRelationship();
+        $this->app->bind(ContainerInterface::class, function () {
+            return json_api()->getContainer();
         });
     }
 
