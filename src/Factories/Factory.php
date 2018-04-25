@@ -26,7 +26,6 @@ use CloudCreativity\LaravelJsonApi\Container;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Encoder\SerializerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Factories\FactoryInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Object\DocumentInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Repositories\ErrorRepositoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
@@ -36,7 +35,6 @@ use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Http\Client\GuzzleClient;
 use CloudCreativity\LaravelJsonApi\Http\Headers\RestrictiveHeadersChecker;
 use CloudCreativity\LaravelJsonApi\Http\Query\ValidationQueryChecker;
-use CloudCreativity\LaravelJsonApi\Http\Requests\InboundRequest;
 use CloudCreativity\LaravelJsonApi\Http\Responses\ErrorResponse;
 use CloudCreativity\LaravelJsonApi\Http\Responses\Response;
 use CloudCreativity\LaravelJsonApi\Http\Responses\Responses;
@@ -121,30 +119,6 @@ class Factory extends BaseFactory implements FactoryInterface
 
         return $encoder;
     }
-
-    /**
-     * @inheritdoc
-     */
-    public function createInboundRequest(
-        $method,
-        $resourceType,
-        $resourceId = null,
-        $relationshipName = null,
-        $relationships = false,
-        DocumentInterface $document = null,
-        EncodingParametersInterface $parameters = null
-    ) {
-        return new InboundRequest(
-            $method,
-            $resourceType,
-            $resourceId,
-            $relationshipName,
-            $relationships,
-            $document,
-            $parameters
-        );
-    }
-
 
     /**
      * @inheritDoc
