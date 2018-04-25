@@ -106,7 +106,7 @@ class ResourceGroup
 
         $authorizer = $this->resolver->getAuthorizerByResourceType($this->resourceType);
 
-        return class_exists($authorizer) ?: $this->options->get('default-authorizer');
+        return class_exists($authorizer) ? $authorizer : $this->options->get('default-authorizer');
     }
 
     /**
