@@ -24,6 +24,7 @@ use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\AuthorizationException;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
+use CloudCreativity\LaravelJsonApi\Object\Document;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Http\Request;
 use Neomerx\JsonApi\Exceptions\ErrorCollection;
@@ -117,7 +118,7 @@ class AuthorizeRequest
         AuthorizerInterface $authorizer
     ) {
         $parameters = $request->getParameters();
-        $document = $request->getDocument();
+        $document = new Document($request->getDocument());
         $identifier = $request->getResourceIdentifier();
         $record = $identifier ? $store->findOrFail($identifier) : null;
         $authorized = true;
