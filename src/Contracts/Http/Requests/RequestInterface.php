@@ -18,7 +18,6 @@
 
 namespace CloudCreativity\LaravelJsonApi\Contracts\Http\Requests;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Object\DocumentInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceIdentifierInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
@@ -60,6 +59,16 @@ interface RequestInterface
     public function getRelationshipName();
 
     /**
+     * What is the inverse resource type for a relationship?
+     *
+     * For example, a `GET /posts/1/author`, the string returned by this method
+     * would be `users` if the related author is a `users` JSON API resource type.
+     *
+     * @return string|null
+     */
+    public function getInverseResourceType();
+
+    /**
      * Get the encoding parameters from the request.
      *
      * @return EncodingParametersInterface
@@ -69,7 +78,7 @@ interface RequestInterface
     /**
      * Get the JSON API document from the request, if there is one.
      *
-     * @return DocumentInterface|null
+     * @return object|null
      */
     public function getDocument();
 

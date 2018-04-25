@@ -36,6 +36,7 @@ class ResourceRegistrar
     const PARAM_RESOURCE_TYPE = 'resource_type';
     const PARAM_RESOURCE_ID = 'record';
     const PARAM_RELATIONSHIP_NAME = 'relationship_name';
+    const PARAM_RELATIONSHIP_INVERSE_TYPE = 'relationship_inverse_type';
 
     /**
      * @var Registrar

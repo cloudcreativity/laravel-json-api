@@ -66,11 +66,9 @@ class RelationshipsGroup
     {
         $inverse = isset($options['inverse']) ? $options['inverse'] : str_plural($name);
 
-        $router->group([
-            'middleware' => "json-api.validate:$inverse"
-        ], function (Registrar $router) use ($name, $options) {
+        $router->group([], function (Registrar $router) use ($name, $options, $inverse) {
             foreach ($options['actions'] as $action) {
-                $this->relationshipRoute($router, $name, $action);
+                $this->relationshipRoute($router, $name, $action, $inverse);
             }
         });
     }
@@ -79,9 +77,11 @@ class RelationshipsGroup
      * @param Registrar $router
      * @param $relationship
      * @param $action
+     * @param $inverse
+     *      the inverse resource type
      * @return Route
      */
-    protected function relationshipRoute(Registrar $router, $relationship, $action)
+    protected function relationshipRoute(Registrar $router, $relationship, $action, $inverse)
     {
         $route = $this->createRoute(
             $router,
@@ -91,6 +91,7 @@ class RelationshipsGroup
         );
 
         $route->defaults(ResourceRegistrar::PARAM_RELATIONSHIP_NAME, $relationship);
+        $route->defaults(ResourceRegistrar::PARAM_RELATIONSHIP_INVERSE_TYPE, $inverse);
 
         return $route;
     }

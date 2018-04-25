@@ -65,28 +65,6 @@ interface FactoryInterface extends BaseFactoryInterface
     public function createSerializer(SchemaContainerInterface $container, EncoderOptions $encoderOptions = null);
 
     /**
-     * Create an inbound request object from the supplied parameters.
-     *
-     * @param $method
-     * @param $resourceType
-     * @param null $resourceId
-     * @param null $relationshipName
-     * @param bool $relationships
-     * @param DocumentInterface|null $document
-     * @param EncodingParametersInterface|null $parameters
-     * @return RequestInterface
-     */
-    public function createInboundRequest(
-        $method,
-        $resourceType,
-        $resourceId = null,
-        $relationshipName = null,
-        $relationships = false,
-        DocumentInterface $document = null,
-        EncodingParametersInterface $parameters = null
-    );
-
-    /**
      * Create a JSON API response object from a PSR response.
      *
      * @param PsrRequest $request
