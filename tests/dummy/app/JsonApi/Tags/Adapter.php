@@ -26,13 +26,6 @@ class Adapter extends AbstractAdapter
 {
 
     /**
-     * @var array
-     */
-    protected $relationships = [
-        'taggables',
-    ];
-
-    /**
      * Adapter constructor.
      */
     public function __construct()

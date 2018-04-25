@@ -141,6 +141,21 @@ class Adapter extends AbstractAdapter
 }
 ```
 
+Alternatively, you can white-list JSON API fields that can be filled by adding them to the `$fillable` property
+on your adapter. For example, if we only wanted the `title`, `content` and `published-at` fields to be filled:
+
+```php
+class Adapter extends AbstractAdapter
+{
+    protected $fillable = ['title', 'content', 'published-at'];
+
+    // ...
+}
+```
+
+> Need to programmatically work out the list of fields that are fillable or guarded? Overload the `getGuarded` or
+`getFillable` methods.
+
 #### Dates
 
 By default the adapter will cast values to date time objects based on whether the model attribute it is filling
@@ -215,26 +230,9 @@ These map to Eloquent relations as follow:
 | `morphToMany` | `hasMany` |
 | `morphedByMany` | `morphMany` |
 
-As relationships are not typically defined as *fillable* on Eloquent models, you must define which relations
-are fillable on your adapter. This is done by listing fillable relations in your `$relationships` property, using
-the field name of the JSON API relation. For example:
-
-```php
-class Adapter extends AbstractAdapter
-{
-
-    /**
-     * Resource relationship fields that can be filled.
-     *
-     * @var array
-     */
-    protected $relationships = ['author', 'tags'];
-
-    // ...
-}
-```
-
-> Use the JSON API field name for the relationship, **not** the Eloquent relation name.
+All relationships that you define on your adapter are treated as fillable by default when creating or updating
+a resource object. If you want to prevent a relationship from being filled, add the JSON API field name to your
+`$fillable` or `$guarded` adapter properties as described above in *Mass Assignment*.
 
 #### Belongs-To
 

@@ -38,14 +38,6 @@ class Adapter extends AbstractAdapter
     /**
      * @var array
      */
-    protected $relationships = [
-        'created-by',
-        'commentable',
-    ];
-
-    /**
-     * @var array
-     */
     protected $includePaths = [
         'created-by' => 'user',
     ];

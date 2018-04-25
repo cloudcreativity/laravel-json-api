@@ -19,13 +19,6 @@ class Adapter extends AbstractAdapter
     protected $attributes = [];
 
     /**
-     * Resource relationship fields that can be filled.
-     *
-     * @var array
-     */
-    protected $relationships = [];
-
-    /**
      * Adapter constructor.
      *
      * @param StandardStrategy $paging

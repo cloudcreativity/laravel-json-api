@@ -48,6 +48,13 @@ trait DeserializesAttributes
     protected $attributes = [];
 
     /**
+     * JSON API fields that are fillable into the model.
+     *
+     * @var string[]
+     */
+    protected $fillable = [];
+
+    /**
      * JSON API fields to skip when filling a model with values from a resource.
      *
      * @var string[]
@@ -140,14 +147,38 @@ trait DeserializesAttributes
     }
 
     /**
-     * Get the JSON API fields to skip when filling the supplied model.
+     * Is the JSON API field allowed to be filled into the supplied model?
      *
-     * @param Model $record
-     * @return string[]
+     * @param $field
+     * @param $record
+     * @return bool
      */
-    protected function getGuarded($record)
+    protected function isFillable($field, $record)
     {
-        return $this->guarded;
+        /** If the field is listed in the fillable fields, it can be filled. */
+        if (in_array($field, $fillable = $this->getFillable($record))) {
+            return true;
+        }
+
+        /** If the field is listed in the guarded fields, it cannot be filled. */
+        if ($this->isGuarded($field, $record)) {
+            return false;
+        }
+
+        /** Otherwise we can fill if everything is fillable. */
+        return empty($fillable);
+    }
+
+    /**
+     * Is the JSON API field not allowed to be filled into the supplied model?
+     *
+     * @param $field
+     * @param $record
+     * @return bool
+     */
+    protected function isNotFillable($field, $record)
+    {
+        return !$this->isFillable($field, $record);
     }
 
     /**
@@ -160,5 +191,27 @@ trait DeserializesAttributes
     protected function isGuarded($field, $record)
     {
         return in_array($field, $this->getGuarded($record));
+    }
+
+    /**
+     * Get the JSON API fields that are allowed to be filled into a model.
+     *
+     * @param $record
+     * @return string[]
+     */
+    protected function getFillable($record)
+    {
+        return $this->fillable;
+    }
+
+    /**
+     * Get the JSON API fields to skip when filling the supplied model.
+     *
+     * @param Model $record
+     * @return string[]
+     */
+    protected function getGuarded($record)
+    {
+        return $this->guarded;
     }
 }

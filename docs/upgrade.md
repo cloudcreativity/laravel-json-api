@@ -104,8 +104,8 @@ $attributes = [
 ```
 
 If you need to prevent JSON API fields from being transferred to your model, add them to the `$guarded` 
-attribute on your adapter. If you need to programmatically work out if fields should not be transferred,
-overload the `getGuarded` or `isGuarded` method.
+or `$fillable` attributes on your adapter. Refer to the [mass assignment](./basics/adapters.md)
+section in the adapters chapter.
 
 Any relationships that you are listing in the `$relationships` property will now need a relationship method
 implemented. Refer to the
@@ -116,11 +116,9 @@ as this is a new feature. As an example, if you had this on your hydrator:
 protected $relationships = ['author'];
 ```
 
-You would need to transfer that property to the adapter and add the following method:
+You would need to add the following method to your adapter:
 
 ```php
-protected $relationships = ['author'];
-
 protected function author()
 {
     return $this->belongsTo();

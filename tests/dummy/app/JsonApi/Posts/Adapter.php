@@ -37,14 +37,6 @@ class Adapter extends AbstractAdapter
     /**
      * @var array
      */
-    protected $relationships = [
-        'author',
-        'tags',
-    ];
-
-    /**
-     * @var array
-     */
     protected $defaultPagination = [
         'number' => 1,
         'size' => 10,

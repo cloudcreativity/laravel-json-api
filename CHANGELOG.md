@@ -16,8 +16,8 @@ in the `ErrorBag` class.
 - JSON API resource paths are now automatically converted to model relationship paths for eager loading in
 the Eloquent adapter.
 - The Eloquent adapter now applies eager loading when reading or updating a specific resource.
-- Eloquent adapters can now *guard* JSON API fields via their `$guarded` attribute. Guarded fields will be skipped
-when filling attributes into the model.
+- Eloquent adapters can now *guard* JSON API fields via their `$guarded` and `$fillable` properties. These
+are used when filling attributes and relationships.
 - Added standard serialization of relationships within Eloquent schemas. This always serializes `self` and
 `related` links for listed model relationships, and only adds the relationship `data` if the relationship is
 being included in a compound document.

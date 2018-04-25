@@ -25,7 +25,6 @@ use CloudCreativity\LaravelJsonApi\Contracts\Object\RelationshipsInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PageInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PagingStrategyInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreAwareInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Store\FindsManyResources;
 use CloudCreativity\LaravelJsonApi\Utils\Str;
@@ -68,18 +67,6 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      * @var string|null
      */
     protected $primaryKey;
-
-    /**
-     * JSON API relationship field names that can be filled in the model.
-     *
-     * Lists the JSON API relationship field names that can be filled into the model.
-     * This is required because it is not common to allow relationship keys to be
-     * filled in an Eloquent model (for belongs-to), plus to-many relations are not
-     * fillable from Eloquent's perspective.
-     *
-     * @var string[]
-     */
-    protected $relationships = [];
 
     /**
      * The filter param for a find-many request.
@@ -238,15 +225,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     {
         /** @var Model $record */
         $record = parent::update($record, $resource, $parameters);
-        $relationshipPaths = $this->getRelationshipPaths($this->extractIncludePaths($parameters));
-
-        /** Eager load anything that needs to be loaded. */
-        if (method_exists($record, 'loadMissing')) {
-            $record->loadMissing($relationshipPaths);
-        } else {
-            /** @todo remove this when dropping support for Laravel 5.4 */
-            $record->load($relationshipPaths);
-        }
+        $this->load($record, $parameters);
 
         return $record;
     }
@@ -338,18 +317,6 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     }
 
     /**
-     * Get the JSON API relationship fields that can be hydrated.
-     *
-     * @param Model $model
-     *      the model being hydrated.
-     * @return array
-     */
-    protected function hydrateRelationshipFields($model)
-    {
-        return (array) $this->relationships;
-    }
-
-    /**
      * @inheritDoc
      */
     protected function hydrateAttributes($record, StandardObjectInterface $attributes)
@@ -362,7 +329,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
 
         foreach ($attributes as $field => $value) {
             /** Skip any JSON API fields that are not to be filled. */
-            if ($this->isGuarded($field, $record)) {
+            if ($this->isNotFillable($field, $record)) {
                 continue;
             }
 
@@ -388,17 +355,20 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
 
     /**
      * @inheritDoc
-     *
-     * @todo iterate over resource fields and use `isGuarded` to skip; remove `hydrateRelationshipFields`
-     * This would require the ability for validators to reject any unrecognised relationship fields.
      */
     protected function hydrateRelationships(
         $record,
         RelationshipsInterface $relationships,
         EncodingParametersInterface $parameters
     ) {
-        foreach ($this->hydrateRelationshipFields($record) as $field) {
-            if (!$relationships->has($field)) {
+        foreach ($relationships->getAll() as $field => $relationship) {
+            /** Skip any fields that are not fillable. */
+            if ($this->isNotFillable($field, $record)) {
+                continue;
+            }
+
+            /** Skip any fields that are not relations */
+            if (!$this->isRelation($field)) {
                 continue;
             }
 
@@ -416,7 +386,6 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      * @param Model $record
      * @param ResourceObjectInterface $resource
      * @param EncodingParametersInterface $parameters
-     * @todo see todo for `hydrateRelationships`
      */
     protected function hydrateRelated(
         $record,
@@ -426,8 +395,14 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
         $relationships = $resource->getRelationships();
         $changed = false;
 
-        foreach ($this->hydrateRelationshipFields($record) as $field) {
-            if (!$relationships->has($field)) {
+        foreach ($relationships->getAll() as $field => $value) {
+            /** Skip any fields that are not fillable. */
+            if ($this->isNotFillable($field, $record)) {
+                continue;
+            }
+
+            /** Skip any fields that are not relations */
+            if (!$this->isRelation($field)) {
                 continue;
             }
 

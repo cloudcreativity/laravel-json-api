@@ -26,11 +26,6 @@ class Adapter extends AbstractAdapter
 {
 
     /**
-     * @var array
-     */
-    protected $relationships = ['users'];
-
-    /**
      * Adapter constructor.
      */
     public function __construct()

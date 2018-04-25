@@ -127,8 +127,8 @@ abstract class AbstractResourceAdapter implements ResourceAdapterInterface, Stor
      */
     public function related($field)
     {
-        $method = Str::camelize($field);
-        $relation = method_exists($this, $method) ? $this->{$method}() : null;
+        $method = $this->methodForRelation($field);
+        $relation = $method ? $this->{$method}() : null;
 
         if (!$relation instanceof RelationshipAdapterInterface) {
             throw new RuntimeException("Unrecognised relationship name: $method");
@@ -141,6 +141,26 @@ abstract class AbstractResourceAdapter implements ResourceAdapterInterface, Stor
         }
 
         return $relation;
+    }
+
+    /**
+     * @param $field
+     * @return bool
+     */
+    protected function isRelation($field)
+    {
+        return !empty($this->methodForRelation($field));
+    }
+
+    /**
+     * @param $field
+     * @return string|null
+     */
+    protected function methodForRelation($field)
+    {
+        $method = Str::camelize($field);
+
+        return method_exists($this, $method) ? $method : null;
     }
 
 }

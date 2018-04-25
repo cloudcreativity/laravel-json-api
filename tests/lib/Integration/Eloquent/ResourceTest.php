@@ -291,6 +291,38 @@ class ResourceTest extends TestCase
     }
 
     /**
+     * Test that if a client sends a relation that does not exist, it is ignored
+     * rather than causing an internal server error.
+     */
+    public function testUpdateWithUnrecognisedRelationship()
+    {
+        $post = factory(Post::class)->create();
+
+        $data = [
+            'type' => 'posts',
+            'id' => (string) $post->getKey(),
+            'attributes' => [
+                'title' => 'Hello World',
+            ],
+            'relationships' => [
+                'edited-by' => [
+                    'data' => [
+                        'type' => 'users',
+                        'id' => (string) $post->author_id,
+                    ],
+                ],
+            ],
+        ];
+
+        $this->doUpdate($data)->assertStatus(200);
+
+        $this->assertDatabaseHas('posts', [
+            'id' => $post->getKey(),
+            'title' => 'Hello World',
+        ]);
+    }
+
+    /**
      * Test the delete resource route.
      */
     public function testDelete()

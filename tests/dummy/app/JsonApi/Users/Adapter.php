@@ -32,11 +32,6 @@ class Adapter extends AbstractAdapter
     protected $with = ['phone'];
 
     /**
-     * @var array
-     */
-    protected $relationships = ['phone'];
-
-    /**
      * Adapter constructor.
      *
      * @param StandardStrategy $paging
