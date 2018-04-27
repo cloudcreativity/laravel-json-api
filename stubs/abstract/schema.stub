@@ -3,7 +3,6 @@
 namespace DummyNamespace;
 
 use Neomerx\JsonApi\Schema\SchemaProvider;
-use DummyApplicationNamespace\DummyRecord;
 
 class DummyClass extends SchemaProvider
 {
@@ -14,7 +13,8 @@ class DummyClass extends SchemaProvider
     protected $resourceType = 'dummyResourceType';
 
     /**
-     * @param DummyRecord $resource
+     * @param $resource
+     *      the domain record being serialized.
      * @return string
      */
     public function getId($resource)
@@ -23,7 +23,8 @@ class DummyClass extends SchemaProvider
     }
 
     /**
-     * @param DummyRecord $resource
+     * @param $resource
+     *      the domain record being serialized.
      * @return array
      */
     public function getAttributes($resource)

@@ -296,8 +296,8 @@ class GeneratorsTest extends TestCase
     {
         $content = $this->assertSchema();
         $this->assertContains('Schema\SchemaProvider', $content);
-        $this->assertContains('use DummyApp\Company;', $content);
-        $this->assertContains('@param Company $resource', $content);
+        $this->assertNotContains('use DummyApp\Company;', $content);
+        $this->assertContains('@param $resource', $content);
     }
 
     /**
@@ -337,8 +337,8 @@ class GeneratorsTest extends TestCase
         $content = $this->files->get($file);
 
         $this->assertContains("protected \$resourceType = 'companies';", $content);
-        $this->assertContains('use DummyApp\Company;', $content);
-        $this->assertContains('@param Company|null $record', $content);
+        $this->assertNotContains('use DummyApp\Company;', $content);
+        $this->assertContains('@param $record', $content);
 
         if ($this->byResource) {
             $this->assertContains('namespace DummyApp\JsonApi\Companies;', $content);

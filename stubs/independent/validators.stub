@@ -4,7 +4,6 @@ namespace DummyNamespace;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\RelationshipsValidatorInterface;
 use CloudCreativity\LaravelJsonApi\Validators\AbstractValidatorProvider;
-use DummyApplicationNamespace\DummyRecord;
 
 class DummyClass extends AbstractValidatorProvider
 {
@@ -17,7 +16,7 @@ class DummyClass extends AbstractValidatorProvider
     /**
      * Get the validation rules for the resource attributes.
      *
-     * @param DummyRecord|null $record
+     * @param $record
      *      the record being updated, or null if it is a create request.
      * @return array
      */
@@ -32,7 +31,7 @@ class DummyClass extends AbstractValidatorProvider
      * Define the validation rules for the resource relationships.
      *
      * @param RelationshipsValidatorInterface $relationships
-     * @param DummyRecord|null $record
+     * @param $record
      *      the record being updated, or null if it is a create request.
      * @return void
      */
