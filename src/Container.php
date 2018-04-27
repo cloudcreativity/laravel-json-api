@@ -89,7 +89,7 @@ class Container implements ContainerInterface
      */
     public function getSchemaByType($type)
     {
-        $resourceType = $this->resolver->getResourceType($type);
+        $resourceType = $this->getResourceType($type);
 
         return $this->getSchemaByResourceType($resourceType);
     }
@@ -128,7 +128,7 @@ class Container implements ContainerInterface
      */
     public function getAdapterByType($type)
     {
-        $resourceType = $this->resolver->getResourceType($type);
+        $resourceType = $this->getResourceType($type);
 
         return $this->getAdapterByResourceType($resourceType);
     }
@@ -167,7 +167,7 @@ class Container implements ContainerInterface
      */
     public function getValidatorsByType($type)
     {
-        $resourceType = $this->resolver->getResourceType($type);
+        $resourceType = $this->getResourceType($type);
 
         return $this->getValidatorsByResourceType($resourceType);
     }
@@ -206,7 +206,7 @@ class Container implements ContainerInterface
      */
     public function getAuthorizerByType($type)
     {
-        $resourceType = $this->resolver->getResourceType($type);
+        $resourceType = $this->getResourceType($type);
 
         return $this->getAuthorizerByResourceType($resourceType);
     }
@@ -230,6 +230,21 @@ class Container implements ContainerInterface
         $this->setCreatedAuthorizer($resourceType, $authorizer);
 
         return $authorizer;
+    }
+
+    /**
+     * Get the JSON API resource type for the provided PHP type.
+     *
+     * @param $type
+     * @return null|string
+     */
+    protected function getResourceType($type)
+    {
+        if (!$resourceType = $this->resolver->getResourceType($type)) {
+            throw new RuntimeException("No JSON API resource type registered for PHP class {$type}.");
+        }
+
+        return $resourceType;
     }
 
     /**
