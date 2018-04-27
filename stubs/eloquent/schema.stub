@@ -4,7 +4,7 @@ namespace DummyNamespace;
 
 use CloudCreativity\LaravelJsonApi\Eloquent\AbstractSchema;
 
-class Schema extends AbstractSchema
+class DummyClass extends AbstractSchema
 {
 
     /**

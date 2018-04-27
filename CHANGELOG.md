@@ -65,6 +65,8 @@ Sending an invalid content type header now returns a JSON API error object.
 Return a 404 JSON API error object and allow this to be overridden.
 - [#155](https://github.com/cloudcreativity/laravel-json-api/issues/155)
 Return a JSON API error when the request content cannot be JSON decoded.
+- [#169](https://github.com/cloudcreativity/laravel-json-api/issues/169)
+Generating a resource when the `by-resource` option was set to `false` had the wrong class name in the generated file.
 
 ## [0.12.0] - 2018-02-08
 

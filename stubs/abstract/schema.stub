@@ -3,8 +3,9 @@
 namespace DummyNamespace;
 
 use Neomerx\JsonApi\Schema\SchemaProvider;
+use DummyApplicationNamespace\DummyRecord;
 
-class Schema extends SchemaProvider
+class DummyClass extends SchemaProvider
 {
 
     /**
@@ -13,8 +14,8 @@ class Schema extends SchemaProvider
     protected $resourceType = 'dummyResourceType';
 
     /**
-     * @param object $resource
-     * @return mixed
+     * @param DummyRecord $resource
+     * @return string
      */
     public function getId($resource)
     {
@@ -22,8 +23,8 @@ class Schema extends SchemaProvider
     }
 
     /**
-     * @param object $resource
-     * @return mixed
+     * @param DummyRecord $resource
+     * @return array
      */
     public function getAttributes($resource)
     {

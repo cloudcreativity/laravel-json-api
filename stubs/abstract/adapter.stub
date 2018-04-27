@@ -8,7 +8,7 @@ use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectInterface;
 use CloudCreativity\Utils\Object\StandardObjectInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
-class Adapter extends AbstractResourceAdapter
+class DummyClass extends AbstractResourceAdapter
 {
 
     /**
