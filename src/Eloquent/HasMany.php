@@ -41,6 +41,11 @@ class HasMany extends AbstractRelation implements HasManyAdapterInterface
      */
     public function query($record, EncodingParametersInterface $parameters)
     {
+        /** If we do not need to pass to the inverse adapter, we can just return the whole relationship. */
+        if (!$this->requiresInverseAdapter($record, $parameters)) {
+            return $record->{$this->key};
+        }
+
         $relation = $this->getRelation($record);
         $adapter = $this->store()->adapterFor($relation->getModel());
 
@@ -126,6 +131,21 @@ class HasMany extends AbstractRelation implements HasManyAdapterInterface
         }
 
         $record->refresh(); // in case the relationship has been cached
+    }
+
+    /**
+     * Does the query need to be passed to the inverse adapter?
+     *
+     * @param $record
+     * @param EncodingParametersInterface $parameters
+     * @return bool
+     */
+    private function requiresInverseAdapter($record, EncodingParametersInterface $parameters)
+    {
+        return !empty($parameters->getFilteringParameters()) ||
+            !empty($parameters->getSortParameters()) ||
+            !empty($parameters->getPaginationParameters()) ||
+            !empty($parameters->getIncludePaths());
     }
 
     /**
