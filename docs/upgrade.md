@@ -6,7 +6,7 @@ We are now on `1.0.0` alpha releases. We are planning incremental changes during
 will involve only small upgrades. We will do one final large upgrade when we switch from alpha to beta releases,
 and then we are planning on tagging `1.0.0` after a limited number of beta tags.
 
-## Upgrading to 0.12 to 1.0.0-alpha.1
+## Upgrading from 0.12 to 1.0.0-alpha.1
 
 The main new feature introduced in this release is proper handling of reading and modifying resource
 relationships. We have also worked our way through a number of the issues on the 1.0.0 milestone.
@@ -143,4 +143,16 @@ protected function filter($query, Collection $filters) {}
 
 Adapters now support reading and writing relationships. Refer to the
 [adapters documentation](./basics/adapters.md) on using this new feature.
+
+### Eloquent Schemas
+
+There have been some internal changes to the Eloquent schema. The main one that may affect your schemas is
+that the default attributes to serialize are now those returned by `$model->getVisible()`. Previously
+`$model->getFillable()` was used.
+
+> We will mention now that **we plan to deprecate Eloquent schemas during the alpha release cycle.** If making
+these changes will take a while, we recommend that you spend the time converting your Eloquent
+schemas to generic schemas.
+
+Schemas are now documented, so refer to the [Schemas chapter](./basics/schemas.md) for more information.
 

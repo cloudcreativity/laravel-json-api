@@ -9,6 +9,10 @@ to convert the PHP object into a JSON API resource object.
 This package provides an Eloquent schema for rapid development of resources that relate to Eloquent models. However
 schemas can be defined for any PHP class by extending a generic schema.
 
+> Note that Eloquent schemas will be deprecated during the `1.0.0-alpha` release series. We therefore recommend
+that you use generic schemas for any new schemas that you are creating. Eloquent schemas are described in this
+chapter in case you are using them for any existing schemas.
+
 ## Defining Resources
 
 Your API's configuration contains a list of resources that appear in its JSON API documents in its `resources` array. 
