@@ -20,6 +20,7 @@ namespace CloudCreativity\LaravelJsonApi\Tests\Integration;
 use DummyApp\Events\ResourceEvent;
 use DummyApp\Post;
 use Illuminate\Support\Facades\Event;
+use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 class ControllerHooksTest extends TestCase
 {
@@ -33,6 +34,15 @@ class ControllerHooksTest extends TestCase
     {
         parent::setUp();
         Event::fake([ResourceEvent::class]);
+    }
+
+    /**
+     * A search must invoke the `searching` hook.
+     */
+    public function testSearching()
+    {
+        $this->doSearch()->assertStatus(200);
+        $this->assertHookInvoked('searching');
     }
 
     /**
@@ -64,27 +74,9 @@ class ControllerHooksTest extends TestCase
             ],
         ];
 
-        $id = $this->doCreate($data)->assertCreatedWithId();
+        $this->doCreate($data)->assertStatus(201);
 
-        Event::assertDispatched(ResourceEvent::class, function ($event) use ($data) {
-            return 'saving' === $event->hook && $data === $event->resource->toArray();
-        });
-
-        Event::assertDispatched(ResourceEvent::class, function ($event) use ($data) {
-            return 'creating' === $event->hook && $data === $event->resource->toArray();
-        });
-
-        Event::assertDispatched(ResourceEvent::class, function ($event) use ($id, $data) {
-            return 'saved' === $event->hook &&
-                $id == $event->record->id &&
-                $data === $event->resource->toArray();
-        });
-
-        Event::assertDispatched(ResourceEvent::class, function ($event) use ($id, $data) {
-            return 'created' === $event->hook &&
-                $id == $event->record->id &&
-                $data === $event->resource->toArray();
-        });
+        $this->assertHooksInvoked('saving', 'creating', 'saved', 'created');
     }
 
     public function testUnsuccessfulCreate()
@@ -99,8 +91,18 @@ class ControllerHooksTest extends TestCase
         ];
 
         $this->doCreate($data)->assertStatus(422);
+        $this->assertNoHooksInvoked();
+    }
 
-        Event::assertNotDispatched(ResourceEvent::class);
+    /**
+     * A successful read must dispatch the `reading` hook.
+     */
+    public function testRead()
+    {
+        $post = factory(Post::class)->create();
+
+        $this->doRead($post)->assertStatus(200);
+        $this->assertHookInvoked('reading');
     }
 
     /**
@@ -124,30 +126,7 @@ class ControllerHooksTest extends TestCase
         ];
 
         $this->doUpdate($data)->assertStatus(200);
-
-        Event::assertDispatched(ResourceEvent::class, function ($event) use ($post, $data) {
-            return 'saving' === $event->hook &&
-                $post->is($event->record) &&
-                $data === $event->resource->toArray();
-        });
-
-        Event::assertDispatched(ResourceEvent::class, function ($event) use ($post, $data) {
-            return 'updating' === $event->hook &&
-                $post->is($event->record) &&
-                $data === $event->resource->toArray();
-        });
-
-        Event::assertDispatched(ResourceEvent::class, function ($event) use ($post, $data) {
-            return 'saved' === $event->hook &&
-                $post->is($event->record) &&
-                $data === $event->resource->toArray();
-        });
-
-        Event::assertDispatched(ResourceEvent::class, function ($event) use ($post, $data) {
-            return 'updated' === $event->hook &&
-                $post->is($event->record) &&
-                $data === $event->resource->toArray();
-        });
+        $this->assertHooksInvoked('saving', 'updating', 'saved', 'updated');
     }
 
     public function testUnsuccessfulUpdate()
@@ -161,8 +140,7 @@ class ControllerHooksTest extends TestCase
         ];
 
         $this->doUpdate($data)->assertStatus(422);
-
-        Event::assertNotDispatched(ResourceEvent::class);
+        $this->assertNoHooksInvoked();
     }
 
     /**
@@ -174,23 +152,52 @@ class ControllerHooksTest extends TestCase
     public function testDelete()
     {
         $post = factory(Post::class)->create();
+
         $this->doDelete($post)->assertStatus(204);
-
-        Event::assertDispatched(ResourceEvent::class, function ($event) use ($post) {
-            return 'deleting' === $event->hook &&
-                $post->is($event->record);
-        });
-
-        Event::assertDispatched(ResourceEvent::class, function ($event) use ($post) {
-            return 'deleted' === $event->hook &&
-                $post->id == $event->record;
-        });
+        $this->assertHooksInvoked('deleting', 'deleted');
     }
 
     public function testUnsuccessfulDelete()
     {
         $this->doDelete('999')->assertStatus(404);
+        $this->assertNoHooksInvoked();
+    }
 
+    /**
+     * @param mixed ...$names
+     */
+    private function assertHooksInvoked(...$names)
+    {
+        foreach ($names as $name) {
+            $this->assertHookInvoked($name);
+        }
+    }
+
+    /**
+     * @param $name
+     */
+    private function assertHookInvoked($name)
+    {
+        Event::assertDispatched(ResourceEvent::class, function ($event) use ($name) {
+            return $name === $event->hook;
+        });
+    }
+
+    /**
+     * @param $name
+     */
+    private function assertHookNotInvoked($name)
+    {
+        Event::assertNotDispatched(ResourceEvent::class, function ($event) use ($name) {
+            return $name === $event->hook;
+        });
+    }
+
+    /**
+     * @return void
+     */
+    private function assertNoHooksInvoked()
+    {
         Event::assertNotDispatched(ResourceEvent::class);
     }
 }

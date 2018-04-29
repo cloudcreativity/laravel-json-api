@@ -6,6 +6,17 @@ We are now on `1.0.0` alpha releases. We are planning incremental changes during
 will involve only small upgrades. We will do one final large upgrade when we switch from alpha to beta releases,
 and then we are planning on tagging `1.0.0` after a limited number of beta tags.
 
+## 1.0.0-alpha.1 to 1.0.0-alpha.2
+
+### Controllers
+
+Controller hooks now receive the `ValidatedRequest` instance instead of the resource object submitted by the
+client. This will affect your application if you were using this argument in any hooks, or if overloaded some of
+the `protected` methods in the `JsonApiController`. It will not affect your application if you did not type-hint
+this argument in any of the hooks, or overload any protected methods.
+
+Refer to the [updated Controllers chapter](./basics/controllers.md) for examples.
+
 ## Upgrading from 0.12 to 1.0.0-alpha.1
 
 The main new feature introduced in this release is proper handling of reading and modifying resource

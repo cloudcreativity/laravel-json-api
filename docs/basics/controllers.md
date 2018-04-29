@@ -87,63 +87,69 @@ class PostsController extends JsonApiController
 ### Resource Hooks
 
 The controller allows you to hook into resource lifecycle by invoking the following methods if they are implemented:
-`creating`, `created`, `updating`, `updated`, `saving`, `saved`, `deleting`, `deleted`. These methods allow you
-to easily dispatch events and/or jobs as needed.
+`searching`, `reading`, `creating`, `created`, `updating`, `updated`, `saving`, `saved`, `deleting`, `deleted`.
+These methods allow you to easily implement authorization, trigger events and/or dispatch jobs as needed.
+
+The `searching` and `reading` hooks are invoked when resource(s) are being accessed, i.e. a `GET` request. The
+`searching` hook is invoked when reading any resources (the *index* action), while `reading` is invoked when
+reading a specific record (the *read* action).
 
 The `creating` and `created` hooks will be invoked when a resource is being created, i.e. a `POST` request. The
 `updating` and `updated` hooks are invoked for a `PATCH` request on an existing resource. The `saving` and `saved`
 hooks are called for both `POST` and `PATCH` requests.
 
-The `created`, `updating`, `updated` and `saved` hooks receive the domain record as their first argument, and the
-resource submitted by the client as their second argument. For example:
+The `searching` and `creating` hooks receive the JSON API request submitted by the client as their only argument, 
+for example:
 
 ```php
-/**
- * @param App\Post $record
- * @param CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectInterface $resource
- */
-protected function updated($record, $resource)
+use CloudCreativity\LaravelJsonApi\Http\Controllers\JsonApiController;
+use CloudCreativity\LaravelJsonApi\Http\Requests\ValidatedRequest;
+
+class PostsController extends JsonApiController
 {
-    // ...
+
+    protected function creating(ValidatedRequest $request)
+    {
+        // ...
+    }
 }
 ```
 
-The `saving` hook receives the same arguments (the record and the resource). However the record will be `null` if
+> The `creating` hook only receives the request because at the point it is invoked, the record does not exist.
+
+The `reading`, `created`, `updating`, `updated`, `saved`, `deleting` and `deleted` hooks receive the domain record 
+as their first argument, and the JSON API request as the second argument. For example:
+
+```php
+use App\Post;
+use CloudCreativity\LaravelJsonApi\Http\Controllers\JsonApiController;
+use CloudCreativity\LaravelJsonApi\Http\Requests\ValidatedRequest;
+
+class PostsController extends JsonApiController
+{
+
+    protected function updated(Post $post, ValidatedRequest $request)
+    {
+        // ...
+    }
+}
+```
+
+The `saving` hook receives the same arguments (the record and the request). However the record will be `null` if
 the resource is being created because it does not exist at this point. For example:
 
 ```php
-/**
- * @param App\Post|null $record
- *     the record if updating, or null if creating.
- * @param CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectInterface $resource
- */
-protected function saving($record, $resource)
+use App\Post;
+use CloudCreativity\LaravelJsonApi\Http\Controllers\JsonApiController;
+use CloudCreativity\LaravelJsonApi\Http\Requests\ValidatedRequest;
+
+class PostsController extends JsonApiController
 {
-    // ...
-}
-```
 
-The `creating` hook only receives the resource because the record does not exist at this point. For example:
-
-```php
-/**
- * @param CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectInterface $resource
- */
-protected function creating($resource)
-{
-    // ...
-}
-```
-
-The `deleting` and `deleted` hooks receive the record as their only argument:
-
-```php
-/**
- * @param App\Post $record
- */
-protected function deleted($record)
-{
-    // ...
+    protected function saving(?Post $post, ValidatedRequest $request)
+    {
+        // ...
+    }
 }
 ```
 

@@ -20,7 +20,6 @@ namespace CloudCreativity\LaravelJsonApi\Http\Controllers;
 
 use Closure;
 use CloudCreativity\LaravelJsonApi\Contracts\Object\RelationshipInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\LaravelJsonApi\Http\Requests\ValidatedRequest;
 use Illuminate\Http\Response;
@@ -52,6 +51,8 @@ class JsonApiController extends Controller
     protected $useTransactions = true;
 
     /**
+     * Index action.
+     *
      * @param StoreInterface $store
      * @param ValidatedRequest $request
      * @return Response
@@ -64,15 +65,25 @@ class JsonApiController extends Controller
     }
 
     /**
+     * Read resource action.
+     *
      * @param ValidatedRequest $request
      * @return Response
      */
     public function read(ValidatedRequest $request)
     {
-        return $this->reply()->content($request->getRecord());
+        $record = $request->getRecord();
+
+        if (method_exists($this, 'reading')) {
+            $this->reading($record, $request);
+        }
+
+        return $this->reply()->content($record);
     }
 
     /**
+     * Create resource action.
+     *
      * @param StoreInterface $store
      * @param ValidatedRequest $request
      * @return Response
@@ -80,12 +91,7 @@ class JsonApiController extends Controller
     public function create(StoreInterface $store, ValidatedRequest $request)
     {
         $record = $this->transaction(function () use ($store, $request) {
-            return $this->doCreate(
-                $store,
-                $request->getResourceType(),
-                $request->getDocument()->getResource(),
-                $request->getParameters()
-            );
+            return $this->doCreate($store, $request);
         });
 
         if ($record instanceof Response) {
@@ -96,6 +102,8 @@ class JsonApiController extends Controller
     }
 
     /**
+     * Update resource action.
+     *
      * @param StoreInterface $store
      * @param ValidatedRequest $request
      * @return Response
@@ -103,12 +111,7 @@ class JsonApiController extends Controller
     public function update(StoreInterface $store, ValidatedRequest $request)
     {
         $record = $this->transaction(function () use ($store, $request) {
-            return $this->doUpdate(
-                $store,
-                $request->getRecord(),
-                $request->getDocument()->getResource(),
-                $request->getParameters()
-            );
+            return $this->doUpdate($store, $request);
         });
 
         if ($record instanceof Response) {
@@ -119,6 +122,8 @@ class JsonApiController extends Controller
     }
 
     /**
+     * Delete resource action.
+     *
      * @param StoreInterface $store
      * @param ValidatedRequest $request
      * @return Response
@@ -126,7 +131,7 @@ class JsonApiController extends Controller
     public function delete(StoreInterface $store, ValidatedRequest $request)
     {
         $result = $this->transaction(function () use ($store, $request) {
-            return $this->doDelete($store, $request->getRecord(), $request->getParameters());
+            return $this->doDelete($store, $request);
         });
 
         if ($result instanceof Response) {
@@ -137,6 +142,8 @@ class JsonApiController extends Controller
     }
 
     /**
+     * Read related resource action.
+     *
      * @param StoreInterface $store
      * @param ValidatedRequest $request
      * @return Response
@@ -153,6 +160,8 @@ class JsonApiController extends Controller
     }
 
     /**
+     * Read relationship data action.
+     *
      * @param StoreInterface $store
      * @param ValidatedRequest $request
      * @return Response
@@ -169,6 +178,8 @@ class JsonApiController extends Controller
     }
 
     /**
+     * Replace relationship data action.
+     *
      * @param StoreInterface $store
      * @param ValidatedRequest $request
      * @return Response
@@ -193,6 +204,8 @@ class JsonApiController extends Controller
     }
 
     /**
+     * Add to relationship data action.
+     *
      * @param StoreInterface $store
      * @param ValidatedRequest $request
      * @return Response
@@ -216,6 +229,8 @@ class JsonApiController extends Controller
     }
 
     /**
+     * Remove from relationship data action.
+     *
      * @param StoreInterface $store
      * @param ValidatedRequest $request
      * @return Response
@@ -239,96 +254,108 @@ class JsonApiController extends Controller
     }
 
     /**
+     * Search resources.
+     *
      * @param StoreInterface $store
      * @param ValidatedRequest $request
      * @return mixed
      */
     protected function doSearch(StoreInterface $store, ValidatedRequest $request)
     {
+        if (method_exists($this, 'searching')) {
+            $this->searching($request);
+        }
+
         return $store->queryRecords($request->getResourceType(), $request->getParameters());
     }
 
     /**
+     * Create a resource.
+     *
      * @param StoreInterface $store
-     * @param string $resourceType
-     * @param ResourceObjectInterface $resource
-     * @param EncodingParametersInterface $parameters
+     * @param ValidatedRequest $request
      * @return object|Response
      *      the created record or a HTTP response.
      */
-    protected function doCreate(
-        StoreInterface $store,
-        $resourceType,
-        ResourceObjectInterface $resource,
-        EncodingParametersInterface $parameters
-    ) {
-        $response = $this->beforeCommit($resource);
+    protected function doCreate(StoreInterface $store, ValidatedRequest $request)
+    {
+        $response = $this->beforeCommit($request);
 
         if ($response instanceof Response) {
             return $response;
         }
 
-        $record = $store->createRecord($resourceType, $resource, $parameters);
-        $response = $this->afterCommit($resource, $record, false);
+        $record = $store->createRecord(
+            $request->getResourceType(),
+            $request->getDocument()->getResource(),
+            $request->getParameters()
+        );
+
+        $response = $this->afterCommit($request, $record, false);
 
         return ($response instanceof Response) ? $response : $record;
     }
 
     /**
+     * Update a resource.
+     *
      * @param StoreInterface $store
-     * @param $record
-     * @param ResourceObjectInterface $resource
-     * @param EncodingParametersInterface $parameters
+     * @param ValidatedRequest $request
      * @return object|Response
      *      the updated record or a HTTP response.
      */
-    protected function doUpdate(
-        StoreInterface $store,
-        $record,
-        ResourceObjectInterface $resource,
-        EncodingParametersInterface $parameters
-    ) {
-        $response = $this->beforeCommit($resource, $record);
+    protected function doUpdate(StoreInterface $store, ValidatedRequest $request)
+    {
+        $response = $this->beforeCommit($request);
 
         if ($response instanceof Response) {
             return $response;
         }
 
-        $record = $store->updateRecord($record, $resource, $parameters);
-        $response = $this->afterCommit($resource, $record, true);
+        $record = $store->updateRecord(
+            $request->getRecord(),
+            $request->getDocument()->getResource(),
+            $request->getParameters()
+        );
+
+        $response = $this->afterCommit($request, $record, true);
 
         return ($response instanceof Response) ? $response : $record;
     }
 
     /**
+     * Delete a resource.
+     *
      * @param StoreInterface $store
-     * @param $record
-     * @param EncodingParametersInterface $parameters
+     * @param ValidatedRequest $request
      * @return Response|null
      *      an HTTP response or null.
      */
-    protected function doDelete(StoreInterface $store, $record, EncodingParametersInterface $parameters)
+    protected function doDelete(StoreInterface $store, ValidatedRequest $request)
     {
+        $record = $request->getRecord();
         $response = null;
 
         if (method_exists($this, 'deleting')) {
-            $response = $this->deleting($record);
+            $response = $this->deleting($record, $request);
         }
 
         if ($response instanceof Response) {
             return $response;
         }
 
-        $store->deleteRecord($record, $parameters);
+        $store->deleteRecord($record, $request->getParameters());
 
         if (method_exists($this, 'deleted')) {
-            $response = $this->deleted($record);
+            $response = $this->deleted($record, $request);
         }
 
         return $response;
     }
 
     /**
+     * Replace a relationship.
+     *
      * @param StoreInterface $store
      * @param $record
      * @param $relationshipKey
@@ -355,6 +382,8 @@ class JsonApiController extends Controller
     }
 
     /**
+     * Add to a relationship.
+     *
      * @param StoreInterface $store
      * @param $record
      * @param $relationshipKey
@@ -381,6 +410,8 @@ class JsonApiController extends Controller
     }
 
     /**
+     * Remove from a relationship.
+     *
      * @param StoreInterface $store
      * @param $record
      * @param $relationshipKey
@@ -406,6 +437,8 @@ class JsonApiController extends Controller
     }
 
     /**
+     * Execute the closure within an optional transaction.
+     *
      * @param Closure $closure
      * @return mixed
      */
@@ -419,43 +452,43 @@ class JsonApiController extends Controller
     }
 
     /**
-     * @param ResourceObjectInterface $resource
-     * @param object|null $record
+     * @param ValidatedRequest $request
      * @return Response|null
      */
-    private function beforeCommit(ResourceObjectInterface $resource, $record = null)
+    private function beforeCommit(ValidatedRequest $request)
     {
-        $result = method_exists($this, 'saving') ? $this->saving($record, $resource) : null;
+        $record = $request->getRecord();
+        $result = method_exists($this, 'saving') ? $this->saving($record, $request) : null;
 
         if ($result instanceof Response) {
             return $result;
         }
 
         if (is_null($record) && method_exists($this, 'creating')) {
-            $result = $this->creating($resource);
+            $result = $this->creating($request);
         } elseif ($record && method_exists($this, 'updating')) {
-            $result = $this->updating($record, $resource);
+            $result = $this->updating($record, $request);
         }
 
         return $result;
     }
 
     /**
-     * @param ResourceObjectInterface $resource
+     * @param ValidatedRequest $request
      * @param $record
      * @param $updating
      * @return Response|null
      */
-    private function afterCommit(ResourceObjectInterface $resource, $record, $updating)
+    private function afterCommit(ValidatedRequest $request, $record, $updating)
     {
         $fn = !$updating ? 'created' : 'updated';
-        $result = method_exists($this, $fn) ? $this->{$fn}($record, $resource) : null;
+        $result = method_exists($this, $fn) ? $this->{$fn}($record, $request) : null;
 
         if ($result instanceof Response) {
             return $result;
         }
 
-        return method_exists($this, 'saved') ? $this->saved($record, $resource) : null;
+        return method_exists($this, 'saved') ? $this->saved($record, $request) : null;
     }
 
 }

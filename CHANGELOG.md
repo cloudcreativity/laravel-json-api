@@ -4,8 +4,15 @@ All notable changes to this project will be documented in this file. This projec
 
 ## Unreleased
 
+### Added
+- The Eloquent controller now has the following additional hooks:
+  - `searching` for an *index* action.
+  - `reading` for a *read* action.
+
 ### Changed
 - Generating an Eloquent schema will now generate a class that extends `SchemaProvider`, i.e. the generic schema.
+- Existing Eloquent controller hooks now receive the whole validate JSON API request rather than just the resource
+object submitted by the client.
 
 ### Deprecated
 - Eloquent schemas are now deprecated in favour of using generic schemas. This is because of the amount of

@@ -18,6 +18,7 @@
 namespace DummyApp\Http\Controllers;
 
 use CloudCreativity\LaravelJsonApi\Http\Controllers\JsonApiController;
+use CloudCreativity\LaravelJsonApi\Http\Requests\ValidatedRequest;
 use DummyApp\Events\ResourceEvent;
 use DummyApp\Post;
 
@@ -25,72 +26,91 @@ class PostsController extends JsonApiController
 {
 
     /**
-     * @param Post|null $record
-     * @param $resource
+     * @param ValidatedRequest $request
      */
-    public function saving($record, $resource)
+    public function searching(ValidatedRequest $request)
     {
-        event(new ResourceEvent('saving', $record, $resource));
-    }
-
-    /**
-     * @param $resource
-     */
-    public function creating($resource)
-    {
-        event(new ResourceEvent('creating', null, $resource));
+        event(new ResourceEvent('searching', null, $request));
     }
 
     /**
      * @param Post $record
-     * @param $resource
+     * @param ValidatedRequest $request
      */
-    public function updating(Post $record, $resource)
+    public function reading(Post $record, ValidatedRequest $request)
     {
-        event(new ResourceEvent('updating', $record, $resource));
+        event(new ResourceEvent('reading', $record, $request));
+    }
+
+    /**
+     * @param $record
+     * @param ValidatedRequest $request
+     */
+    public function saving($record, ValidatedRequest $request)
+    {
+        event(new ResourceEvent('saving', $record, $request));
+    }
+
+    /**
+     * @param ValidatedRequest $request
+     */
+    public function creating(ValidatedRequest $request)
+    {
+        event(new ResourceEvent('creating', null, $request));
     }
 
     /**
      * @param Post $record
-     * @param $resource
+     * @param ValidatedRequest $request
      */
-    public function saved(Post $record, $resource)
+    public function updating(Post $record, ValidatedRequest $request)
     {
-        event(new ResourceEvent('saved', $record, $resource));
+        event(new ResourceEvent('updating', $record, $request));
     }
 
     /**
      * @param Post $record
-     * @param $resource
+     * @param ValidatedRequest $request
      */
-    public function created(Post $record, $resource)
+    public function saved(Post $record, ValidatedRequest $request)
     {
-        event(new ResourceEvent('created', $record, $resource));
+        event(new ResourceEvent('saved', $record, $request));
     }
 
     /**
      * @param Post $record
-     * @param $resource
+     * @param ValidatedRequest $request
      */
-    public function updated(Post $record, $resource)
+    public function created(Post $record, ValidatedRequest $request)
     {
-        event(new ResourceEvent('updated', $record, $resource));
+        event(new ResourceEvent('created', $record, $request));
     }
 
     /**
      * @param Post $record
+     * @param ValidatedRequest $request
      */
-    public function deleting(Post $record)
+    public function updated(Post $record, ValidatedRequest $request)
     {
-        event(new ResourceEvent('deleting', $record));
+        event(new ResourceEvent('updated', $record, $request));
     }
 
     /**
      * @param Post $record
+     * @param ValidatedRequest $request
      */
-    public function deleted(Post $record)
+    public function deleting(Post $record, ValidatedRequest $request)
     {
-        event(new ResourceEvent('deleted', $record->getKey()));
+        event(new ResourceEvent('deleting', $record, $request));
+    }
+
+    /**
+     * @param Post $record
+     * @param ValidatedRequest $request
+     */
+    public function deleted(Post $record, ValidatedRequest $request)
+    {
+        event(new ResourceEvent('deleted', $record->getKey(), $request));
     }
 
 }
