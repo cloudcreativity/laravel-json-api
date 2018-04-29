@@ -142,9 +142,10 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
         $stub = $this->files->get($this->getStub());
 
         $this->replaceNamespace($stub, $name)
+            ->replaceClassName($stub, $name)
             ->replaceResourceType($stub, $this->getResourceName())
             ->replaceApplicationNamespace($stub)
-            ->replaceModel($stub, $this->getResourceName());
+            ->replaceRecord($stub, $this->getResourceName());
 
         return $stub;
     }
@@ -234,9 +235,9 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
      * @param $resource
      * @return $this
      */
-    private function replaceModel(&$stub, $resource)
+    private function replaceRecord(&$stub, $resource)
     {
-        $stub = str_replace('DummyModel', Str::classify(str_singular($resource)), $stub);
+        $stub = str_replace('DummyRecord', Str::classify(str_singular($resource)), $stub);
 
         return $this;
     }
@@ -251,6 +252,19 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
     {
         $namespace = rtrim($this->laravel->getNamespace(), '\\');
         $stub = str_replace('DummyApplicationNamespace', $namespace, $stub);
+
+        return $this;
+    }
+
+    /**
+     * Replace the class name.
+     *
+     * @param $stub
+     * @return $this
+     */
+    private function replaceClassName(&$stub, $name)
+    {
+        $stub = $this->replaceClass($stub, $name);
 
         return $this;
     }

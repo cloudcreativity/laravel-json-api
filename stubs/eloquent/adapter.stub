@@ -6,9 +6,9 @@ use CloudCreativity\LaravelJsonApi\Eloquent\AbstractAdapter;
 use CloudCreativity\LaravelJsonApi\Pagination\StandardStrategy;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
-use DummyApplicationNamespace\DummyModel;
+use DummyApplicationNamespace\DummyRecord;
 
-class Adapter extends AbstractAdapter
+class DummyClass extends AbstractAdapter
 {
 
     /**
@@ -25,7 +25,7 @@ class Adapter extends AbstractAdapter
      */
     public function __construct(StandardStrategy $paging)
     {
-        parent::__construct(new DummyModel(), $paging);
+        parent::__construct(new DummyRecord(), $paging);
     }
 
     /**

@@ -33,6 +33,11 @@ class GeneratorsTest extends TestCase
     private $files;
 
     /**
+     * @var bool
+     */
+    private $byResource = true;
+
+    /**
      * @return void
      */
     protected function setUp()
@@ -49,8 +54,17 @@ class GeneratorsTest extends TestCase
     {
         parent::tearDown();
 
-        if ($this->files->exists($dir = "{$this->path}/app/JsonApi/Companies")) {
-            $this->files->deleteDirectory($dir);
+        $directories = [
+            "{$this->path}/app/JsonApi/Companies",
+            "{$this->path}/app/JsonApi/Adapters",
+            "{$this->path}/app/JsonApi/Schemas",
+            "{$this->path}/app/JsonApi/Validators",
+        ];
+
+        foreach ($directories as $dir) {
+            if ($this->files->exists($dir)) {
+                $this->files->deleteDirectory($dir);
+            }
         }
 
         if ($this->files->exists($file = "{$this->path}/config/json-api-v1.php")) {
@@ -108,6 +122,21 @@ class GeneratorsTest extends TestCase
     }
 
     /**
+     * Test generating an Eloquent resource with the `by-resource` option set to `false`.
+     */
+    public function testEloquentResourceNotByResource()
+    {
+        $this->withEloquent()->notByResource();
+
+        $result = $this->artisan('make:json-api:resource', [
+            'resource' => 'companies',
+        ]);
+
+        $this->assertSame(0, $result);
+        $this->assertEloquentResource();
+    }
+
+    /**
      * If Eloquent is not the default, running the generator without specifying
      * anything will create generic classes.
      */
@@ -141,6 +170,21 @@ class GeneratorsTest extends TestCase
     }
 
     /**
+     * Test generating generic resources with the `by-resource` option set to `false`.
+     */
+    public function testGenericResourceNotByResource()
+    {
+        $this->withoutEloquent()->notByResource();
+
+        $result = $this->artisan('make:json-api:resource', [
+            'resource' => 'companies',
+        ]);
+
+        $this->assertSame(0, $result);
+        $this->assertGenericResource();
+    }
+
+    /**
      * @return $this
      */
     private function withEloquent()
@@ -156,6 +200,17 @@ class GeneratorsTest extends TestCase
     private function withoutEloquent()
     {
         config()->set('json-api-default.use-eloquent', false);
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    private function notByResource()
+    {
+        $this->byResource = false;
+        config()->set('json-api-default.by-resource', false);
 
         return $this;
     }
@@ -206,9 +261,20 @@ class GeneratorsTest extends TestCase
      */
     private function assertAdapter()
     {
-        $this->assertFileExists($file = "{$this->path}/app/JsonApi/Companies/Adapter.php");
+        $file = $this->byResource ?
+            "{$this->path}/app/JsonApi/Companies/Adapter.php" :
+            "{$this->path}/app/JsonApi/Adapters/Company.php";
+
+        $this->assertFileExists($file);
         $content = $this->files->get($file);
-        $this->assertContains('namespace DummyApp\JsonApi\Companies;', $content);
+
+        if ($this->byResource) {
+            $this->assertContains('namespace DummyApp\JsonApi\Companies;', $content);
+            $this->assertContains('class Adapter extends', $content);
+        } else {
+            $this->assertContains('namespace DummyApp\JsonApi\Adapters;', $content);
+            $this->assertContains('class Company extends', $content);
+        }
 
         return $content;
     }
@@ -230,6 +296,8 @@ class GeneratorsTest extends TestCase
     {
         $content = $this->assertSchema();
         $this->assertContains('Schema\SchemaProvider', $content);
+        $this->assertNotContains('use DummyApp\Company;', $content);
+        $this->assertContains('@param $resource', $content);
     }
 
     /**
@@ -237,10 +305,21 @@ class GeneratorsTest extends TestCase
      */
     private function assertSchema()
     {
-        $this->assertFileExists($file = "{$this->path}/app/JsonApi/Companies/Schema.php");
+        $file = $this->byResource ?
+            "{$this->path}/app/JsonApi/Companies/Schema.php" :
+            "{$this->path}/app/JsonApi/Schemas/Company.php";
+
+        $this->assertFileExists($file);
         $content = $this->files->get($file);
-        $this->assertContains('namespace DummyApp\JsonApi\Companies;', $content);
         $this->assertContains("protected \$resourceType = 'companies';", $content);
+
+        if ($this->byResource) {
+            $this->assertContains('namespace DummyApp\JsonApi\Companies;', $content);
+            $this->assertContains('class Schema extends', $content);
+        } else {
+            $this->assertContains('namespace DummyApp\JsonApi\Schemas;', $content);
+            $this->assertContains('class Company extends', $content);
+        }
 
         return $content;
     }
@@ -250,11 +329,23 @@ class GeneratorsTest extends TestCase
      */
     private function assertValidators()
     {
-        $this->assertFileExists($file = "{$this->path}/app/JsonApi/Companies/Validators.php");
+        $file = $this->byResource ?
+            "{$this->path}/app/JsonApi/Companies/Validators.php" :
+            "{$this->path}/app/JsonApi/Validators/Company.php";
 
+        $this->assertFileExists($file);
         $content = $this->files->get($file);
 
-        $this->assertContains('namespace DummyApp\JsonApi\Companies;', $content);
         $this->assertContains("protected \$resourceType = 'companies';", $content);
+        $this->assertNotContains('use DummyApp\Company;', $content);
+        $this->assertContains('@param $record', $content);
+
+        if ($this->byResource) {
+            $this->assertContains('namespace DummyApp\JsonApi\Companies;', $content);
+            $this->assertContains('class Validators extends', $content);
+        } else {
+            $this->assertContains('namespace DummyApp\JsonApi\Validators;', $content);
+            $this->assertContains('class Company extends', $content);
+        }
     }
 }
