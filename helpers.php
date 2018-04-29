@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2017 Cloud Creativity Limited
+ * Copyright 2018 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,31 +16,86 @@
  * limitations under the License.
  */
 
-if (!function_exists('json_api')) {
-    /**
-     * Get the API handling the inbound request, or a named API.
-     *
-     * @param string|null $apiName
-     *      the API name, or null to get the API handling the inbound request.
-     * @return \CloudCreativity\LaravelJsonApi\Api\Api
-     * @throws \CloudCreativity\JsonApi\Exceptions\RuntimeException
-     */
-    function json_api($apiName = null) {
-        /** @var \CloudCreativity\LaravelJsonApi\Services\JsonApiService $service */
-        $service = app('json-api');
+namespace CloudCreativity\LaravelJsonApi {
 
-        return $apiName ? $service->api($apiName) : $service->requestApiOrFail();
-    }
+    use CloudCreativity\LaravelJsonApi\Exceptions\InvalidJsonException;
+    use CloudCreativity\LaravelJsonApi\Utils\Helpers;
+    use Psr\Http\Message\RequestInterface;
+    use Psr\Http\Message\ResponseInterface;
 
-    /**
-     * Get the inbound JSON API request.
-     *
-     * @return \CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface|null
-     */
-    function json_api_request() {
-        /** @var \CloudCreativity\LaravelJsonApi\Services\JsonApiService $service */
-        $service = app('json-api');
+    if (!function_exists('\CloudCreativity\LaravelJsonApi\json_decode')) {
 
-        return $service->request();
+        /**
+         * Decodes a JSON string.
+         *
+         * @param string $content
+         * @param bool $assoc
+         * @param int $depth
+         * @param int $options
+         * @return object|array
+         * @throws InvalidJsonException
+         */
+        function json_decode($content, $assoc = false, $depth = 512, $options = 0)
+        {
+            return Helpers::decode($content, $assoc, $depth, $options);
+        }
+
+        /**
+         * Does the HTTP message contain body content?
+         *
+         * If only a request is provided, the method will determine if the request contains body.
+         *
+         * If a request and response is provided, the method will determine if the response contains
+         * body. Determining this for a response is dependent on the request method, which is why
+         * the request is also required.
+         *
+         * @param RequestInterface $request
+         * @param ResponseInterface $response
+         * @return bool
+         */
+        function http_contains_body(RequestInterface $request, ResponseInterface $response = null)
+        {
+            return $response ?
+                Helpers::doesResponseHaveBody($request, $response) :
+                Helpers::doesRequestHaveBody($request);
+        }
     }
 }
+
+namespace {
+
+    use CloudCreativity\LaravelJsonApi\Api\Api;
+    use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestInterface;
+    use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
+    use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
+
+    if (!function_exists('json_api')) {
+        /**
+         * Get the API handling the inbound request, or a named API.
+         *
+         * @param string|null $apiName
+         *      the API name, or null to get the API handling the inbound request.
+         * @return Api
+         * @throws RuntimeException
+         */
+        function json_api($apiName = null) {
+            /** @var JsonApiService $service */
+            $service = app('json-api');
+
+            return $apiName ? $service->api($apiName) : $service->requestApiOrFail();
+        }
+
+        /**
+         * Get the inbound JSON API request.
+         *
+         * @return RequestInterface|null
+         */
+        function json_api_request() {
+            /** @var JsonApiService $service */
+            $service = app('json-api');
+
+            return $service->request();
+        }
+    }
+}
+

@@ -2,9 +2,9 @@
 
 namespace DummyNamespace;
 
-use CloudCreativity\LaravelJsonApi\Schema\EloquentSchema;
+use CloudCreativity\LaravelJsonApi\Eloquent\AbstractSchema;
 
-class Schema extends EloquentSchema
+class DummyClass extends AbstractSchema
 {
 
     /**
@@ -13,9 +13,18 @@ class Schema extends EloquentSchema
     protected $resourceType = 'dummyResourceType';
 
     /**
+     * Model attributes to serialize.
+     *
      * @var array|null
      */
     protected $attributes = null;
+
+    /**
+     * Model relationships to serialize.
+     *
+     * @var array
+     */
+    protected $relationships = [];
 
 }
 

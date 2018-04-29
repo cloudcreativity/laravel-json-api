@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2017 Cloud Creativity Limited
+ * Copyright 2018 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,53 +18,113 @@
 
 namespace CloudCreativity\LaravelJsonApi\Utils;
 
-use Illuminate\Support\Str as IlluminateStr;
-
 /**
  * Class Str
  *
  * @package CloudCreativity\LaravelJsonApi
- * @deprecated use `CloudCreativity\JsonApi\Utils\Str`
  */
 class Str
 {
 
     /**
-     * Dasherize a string
+     * @var array
+     */
+    private static $dasherized = [];
+
+    /**
+     * @var array
+     */
+    private static $decamelized = [];
+
+    /**
+     * @var array
+     */
+    private static $underscored = [];
+
+    /**
+     * @var array
+     */
+    private static $camelized = [];
+
+    /**
+     * @var array
+     */
+    private static $classified = [];
+
+    /**
+     * Replaces underscores or camel case with dashes.
      *
-     * The JSON API spec recommends using hyphens for member names. This method
-     * converts snake case or camel case strings to their hyphenated equivalent.
-     *
-     * @param $value
+     * @param string $value
      * @return string
      */
     public static function dasherize($value)
     {
-        return self::snake($value, '-');
+        if (isset(self::$dasherized[$value])) {
+            return self::$dasherized[$value];
+        }
+
+        return self::$dasherized[$value] = str_replace('_', '-', self::decamelize($value));
     }
 
     /**
-     * Snake case a dasherized string
+     * Converts a camel case string into all lower case separated by underscores.
      *
-     * @param $value
-     * @param string $delimiter
+     * @param string $value
      * @return string
      */
-    public static function snake($value, $delimiter = '_')
+    public static function decamelize($value)
     {
-        $value = IlluminateStr::camel($value);
+        if (isset(self::$decamelized[$value])) {
+            return self::$decamelized[$value];
+        }
 
-        return IlluminateStr::snake($value, $delimiter);
+        return self::$decamelized[$value] = strtolower(preg_replace('/(.)(?=[A-Z])/u', '$1_', $value));
     }
 
     /**
-     * Camel case a dasherized string
+     * Converts a camel case or dasherized string into a lower cased and underscored string.
      *
      * @param $value
      * @return string
      */
-    public static function camel($value)
+    public static function underscore($value)
     {
-        return IlluminateStr::camel($value);
+        if (isset(self::$underscored[$value])) {
+            return self::$underscored[$value];
+        }
+
+        return self::$underscored[$value] = str_replace('-', '_', self::decamelize($value));
+    }
+
+    /**
+     * Gets the lower camel case form of a string.
+     *
+     * @param string $value
+     * @return string
+     */
+    public static function camelize($value)
+    {
+        if (isset(self::$camelized[$value])) {
+            return self::$camelized[$value];
+        }
+
+        return self::$camelized[$value] = lcfirst(self::classify($value));
+    }
+
+    /**
+     * Gets the upper camel case form of a string.
+     *
+     * @param string $value
+     * @return string
+     */
+    public static function classify($value)
+    {
+        if (isset(self::$classified[$value])) {
+            return self::$classified[$value];
+        }
+
+        $converted = ucwords(str_replace(['-', '_'], ' ', $value));
+
+        return self::$classified[$value] = str_replace(' ', '', $converted);
     }
 }

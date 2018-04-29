@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2017 Cloud Creativity Limited
+ * Copyright 2018 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,8 @@
 namespace CloudCreativity\LaravelJsonApi\Routing;
 
 use ArrayAccess;
-use CloudCreativity\JsonApi\Utils\Str;
+use CloudCreativity\LaravelJsonApi\Http\Controllers\JsonApiController;
+use CloudCreativity\LaravelJsonApi\Utils\Str;
 use Illuminate\Contracts\Routing\Registrar;
 use Illuminate\Routing\Route;
 use Illuminate\Support\Fluent;
@@ -99,8 +100,12 @@ trait RegistersResources
      */
     protected function controller()
     {
-        if ($controller = $this->options->get('controller')) {
+        if (is_string($controller = $this->options->get('controller'))) {
             return $controller;
+        }
+
+        if (true !== $controller) {
+            return $this->options['controller'] = '\\' . JsonApiController::class;
         }
 
         return $this->options['controller'] = Str::classify($this->resourceType) . 'Controller';

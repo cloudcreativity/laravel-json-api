@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2017 Cloud Creativity Limited
+ * Copyright 2018 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,17 +19,18 @@
 namespace CloudCreativity\LaravelJsonApi\Http\Middleware;
 
 use Closure;
-use CloudCreativity\JsonApi\Contracts\Factories\FactoryInterface;
-use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface;
-use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterpreterInterface;
-use CloudCreativity\JsonApi\Http\Middleware\NegotiatesContent;
 use CloudCreativity\LaravelJsonApi\Api\Api;
 use CloudCreativity\LaravelJsonApi\Api\Repository;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestInterface;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\AbstractPaginator;
+use Neomerx\JsonApi\Contracts\Codec\CodecMatcherInterface;
+use Neomerx\JsonApi\Contracts\Http\HttpFactoryInterface;
+use Neomerx\JsonApi\Exceptions\JsonApiException;
 use Psr\Http\Message\ServerRequestInterface;
+use function CloudCreativity\LaravelJsonApi\http_contains_body;
 
 /**
  * Class BootJsonApi
@@ -38,8 +39,6 @@ use Psr\Http\Message\ServerRequestInterface;
  */
 class BootJsonApi
 {
-
-    use NegotiatesContent;
 
     /**
      * @var Container
@@ -78,11 +77,8 @@ class BootJsonApi
         /** Build and register the API */
         $api = $this->bindApi($namespace, $request->getSchemeAndHttpHost());
 
-        /** Do content negotiation, which matches encoders/decoders */
+        /** Do content negotiation. */
         $this->doContentNegotiation($factory, $serverRequest, $api->getCodecMatcher());
-
-        /** Build and register the JSON API request */
-        $this->bindRequest($factory, $serverRequest, $api);
 
         /** Set up the Laravel paginator to read from JSON API request instead */
         $this->bindPageResolver();
@@ -110,24 +106,6 @@ class BootJsonApi
     }
 
     /**
-     * @param FactoryInterface $factory
-     * @param ServerRequestInterface $serverRequest
-     * @param Api $api
-     * @return RequestInterface
-     */
-    protected function bindRequest(FactoryInterface $factory, ServerRequestInterface $serverRequest, Api $api)
-    {
-        /** @var RequestInterpreterInterface $interpreter */
-        $interpreter = $this->container->make(RequestInterpreterInterface::class);
-
-        $request = $factory->createRequest($serverRequest, $interpreter, $api->getStore());
-        $this->container->instance(RequestInterface::class, $request);
-        $this->container->alias(RequestInterface::class, 'json-api.request');
-
-        return $request;
-    }
-
-    /**
      * Override the page resolver to read the page parameter from the JSON API request.
      *
      * @return void
@@ -143,4 +121,25 @@ class BootJsonApi
             return isset($pagination[$pageName]) ? $pagination[$pageName] : null;
         });
     }
+
+    /**
+     * Perform content negotiation.
+     *
+     * @param HttpFactoryInterface $httpFactory
+     * @param ServerRequestInterface $request
+     * @param CodecMatcherInterface $codecMatcher
+     * @throws JsonApiException
+     * @see http://jsonapi.org/format/#content-negotiation
+     */
+    protected function doContentNegotiation(
+        HttpFactoryInterface $httpFactory,
+        ServerRequestInterface $request,
+        CodecMatcherInterface $codecMatcher
+    ) {
+        $parser = $httpFactory->createHeaderParametersParser();
+        $checker = $httpFactory->createHeadersChecker($codecMatcher);
+
+        $checker->checkHeaders($parser->parse($request, http_contains_body($request)));
+    }
+
 }

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2017 Cloud Creativity Limited
+ * Copyright 2018 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,13 +19,12 @@
 namespace CloudCreativity\LaravelJsonApi\Services;
 
 use Closure;
-use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface;
-use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterpreterInterface;
-use CloudCreativity\JsonApi\Contracts\Http\Responses\ErrorResponseInterface;
-use CloudCreativity\JsonApi\Contracts\Utils\ErrorReporterInterface;
-use CloudCreativity\JsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Api\Api;
 use CloudCreativity\LaravelJsonApi\Api\Repository;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Responses\ErrorResponseInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Utils\ErrorReporterInterface;
+use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Routing\ResourceRegistrar;
 use Exception;
 use Illuminate\Contracts\Container\Container;
@@ -152,17 +151,6 @@ class JsonApiService implements ErrorReporterInterface
         /** @var ErrorReporterInterface $reporter */
         $reporter = $this->container->make(ErrorReporterInterface::class);
         $reporter->report($response, $e);
-    }
-
-    /**
-     * Get a request interpreter instance.
-     *
-     * @return RequestInterpreterInterface
-     * @deprecated resolve the request interpreter directly from the container.
-     */
-    public function getRequestInterpreter()
-    {
-        return $this->container->make(RequestInterpreterInterface::class);
     }
 
     /**

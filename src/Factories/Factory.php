@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2017 Cloud Creativity Limited
+ * Copyright 2018 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,46 +18,68 @@
 
 namespace CloudCreativity\LaravelJsonApi\Factories;
 
-use CloudCreativity\JsonApi\Contracts\Repositories\ErrorRepositoryInterface;
-use CloudCreativity\JsonApi\Contracts\Store\StoreInterface;
-use CloudCreativity\JsonApi\Exceptions\RuntimeException;
-use CloudCreativity\JsonApi\Factories\Factory as BaseFactory;
 use CloudCreativity\LaravelJsonApi\Api\LinkGenerator;
 use CloudCreativity\LaravelJsonApi\Api\ResourceProvider;
 use CloudCreativity\LaravelJsonApi\Api\Url;
 use CloudCreativity\LaravelJsonApi\Api\UrlGenerator;
+use CloudCreativity\LaravelJsonApi\Container;
+use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Encoder\SerializerInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Factories\FactoryInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Repositories\ErrorRepositoryInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Validators\QueryValidatorInterface;
+use CloudCreativity\LaravelJsonApi\Encoder\Encoder;
+use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
+use CloudCreativity\LaravelJsonApi\Http\Client\GuzzleClient;
+use CloudCreativity\LaravelJsonApi\Http\Headers\RestrictiveHeadersChecker;
+use CloudCreativity\LaravelJsonApi\Http\Query\ValidationQueryChecker;
+use CloudCreativity\LaravelJsonApi\Http\Responses\ErrorResponse;
+use CloudCreativity\LaravelJsonApi\Http\Responses\Response;
 use CloudCreativity\LaravelJsonApi\Http\Responses\Responses;
-use CloudCreativity\LaravelJsonApi\Schema\Container as SchemaContainer;
-use CloudCreativity\LaravelJsonApi\Store\Container as AdapterContainer;
+use CloudCreativity\LaravelJsonApi\Object\Document;
+use CloudCreativity\LaravelJsonApi\Pagination\Page;
+use CloudCreativity\LaravelJsonApi\Repositories\CodecMatcherRepository;
+use CloudCreativity\LaravelJsonApi\Repositories\ErrorRepository;
+use CloudCreativity\LaravelJsonApi\Store\Store;
+use CloudCreativity\LaravelJsonApi\Utils\Replacer;
 use CloudCreativity\LaravelJsonApi\Validators\ValidatorErrorFactory;
 use CloudCreativity\LaravelJsonApi\Validators\ValidatorFactory;
-use Illuminate\Contracts\Container\Container;
+use Illuminate\Contracts\Container\Container as IlluminateContainer;
 use Illuminate\Contracts\Routing\UrlGenerator as IlluminateUrlGenerator;
 use Illuminate\Contracts\Validation\Factory as ValidatorFactoryContract;
 use Neomerx\JsonApi\Contracts\Codec\CodecMatcherInterface;
+use Neomerx\JsonApi\Contracts\Document\LinkInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use Neomerx\JsonApi\Contracts\Http\Headers\SupportedExtensionsInterface;
 use Neomerx\JsonApi\Contracts\Schema\ContainerInterface as SchemaContainerInterface;
+use Neomerx\JsonApi\Encoder\EncoderOptions;
+use Neomerx\JsonApi\Factories\Factory as BaseFactory;
+use Psr\Http\Message\RequestInterface as PsrRequest;
+use Psr\Http\Message\ResponseInterface as PsrResponse;
+use function CloudCreativity\LaravelJsonApi\http_contains_body;
+use function CloudCreativity\LaravelJsonApi\json_decode;
 
 /**
  * Class Factory
  *
  * @package CloudCreativity\LaravelJsonApi
  */
-class Factory extends BaseFactory
+class Factory extends BaseFactory implements FactoryInterface
 {
 
     /**
-     * @var Container
+     * @var IlluminateContainer
      */
     protected $container;
 
     /**
      * Factory constructor.
      *
-     * @param Container $container
+     * @param IlluminateContainer $container
      */
-    public function __construct(Container $container)
+    public function __construct(IlluminateContainer $container)
     {
         parent::__construct();
         $this->container = $container;
@@ -66,23 +88,151 @@ class Factory extends BaseFactory
     /**
      * @inheritdoc
      */
-    public function createContainer(array $providers = [])
+    public function createHeadersChecker(CodecMatcherInterface $codecMatcher)
     {
-        $container = new SchemaContainer($this->container, $this, $providers);
-        $container->setLogger($this->logger);
-
-        return $container;
+        return new RestrictiveHeadersChecker($codecMatcher, json_api()->getErrors());
     }
 
     /**
      * @inheritdoc
      */
-    public function createAdapterContainer(array $adapters)
+    public function createExtendedContainer(ResolverInterface $resolver)
     {
-        $container = new AdapterContainer($this->container);
-        $container->registerMany($adapters);
+        return new Container($this->container, $resolver);
+    }
 
-        return $container;
+    /**
+     * @inheritdoc
+     */
+    public function createEncoder(SchemaContainerInterface $container, EncoderOptions $encoderOptions = null)
+    {
+        return $this->createSerializer($container, $encoderOptions);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function createSerializer(SchemaContainerInterface $container, EncoderOptions $encoderOptions = null)
+    {
+        $encoder = new Encoder($this, $container, $encoderOptions);
+        $encoder->setLogger($this->logger);
+
+        return $encoder;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function createResponse(PsrRequest $request, PsrResponse $response)
+    {
+        return new Response($response, $this->createDocumentObject($request, $response));
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function createErrorResponse($errors, $defaultHttpCode, array $headers = [])
+    {
+        return new ErrorResponse($errors, $defaultHttpCode, $headers);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function createDocumentObject(PsrRequest $request, PsrResponse $response = null)
+    {
+        if (!http_contains_body($request, $response)) {
+            return null;
+        }
+
+        return new Document(json_decode($response ? $response->getBody() : $request->getBody()));
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function createClient($httpClient, SchemaContainerInterface $container, SerializerInterface $encoder)
+    {
+        return new GuzzleClient($this, $httpClient, $container, $encoder);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function createConfiguredCodecMatcher(SchemaContainerInterface $schemas, array $codecs, $urlPrefix = null)
+    {
+        $repository = new CodecMatcherRepository($this);
+        $repository->configure($codecs);
+
+        return $repository
+            ->registerSchemas($schemas)
+            ->registerUrlPrefix($urlPrefix)
+            ->getCodecMatcher();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function createStore(ContainerInterface $container)
+    {
+        return new Store($container);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function createErrorRepository(array $errors)
+    {
+        $repository = new ErrorRepository($this->createReplacer());
+        $repository->configure($errors);
+
+        return $repository;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function createReplacer()
+    {
+        return new Replacer();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function createExtendedQueryChecker(
+        $allowUnrecognized = false,
+        array $includePaths = null,
+        array $fieldSetTypes = null,
+        array $sortParameters = null,
+        array $pagingParameters = null,
+        array $filteringParameters = null,
+        QueryValidatorInterface $validator = null
+    ) {
+        $checker = $this->createQueryChecker(
+            $allowUnrecognized,
+            $includePaths,
+            $fieldSetTypes,
+            $sortParameters,
+            $pagingParameters,
+            $filteringParameters
+        );
+
+        return new ValidationQueryChecker($checker, $validator);
+    }
+    /**
+     * @inheritDoc
+     */
+    public function createPage(
+        $data,
+        LinkInterface $first = null,
+        LinkInterface $previous = null,
+        LinkInterface $next = null,
+        LinkInterface $last = null,
+        $meta = null,
+        $metaKey = null
+    ) {
+        return new Page($data, $first, $previous, $next, $last, $meta, $metaKey);
     }
 
     /**

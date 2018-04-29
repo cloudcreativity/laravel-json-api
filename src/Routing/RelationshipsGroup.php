@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2017 Cloud Creativity Limited
+ * Copyright 2018 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,23 +47,41 @@ class RelationshipsGroup
 
     /**
      * @param Registrar $router
+     * @return void
      */
     public function addRelationships(Registrar $router)
     {
         foreach ($this->relationships() as $relationship => $options) {
-            foreach ($options['actions'] as $action) {
-                $this->relationshipRoute($router, $relationship, $action);
-            }
+            $this->addRelationship($router, $relationship, $options);
         }
+    }
+
+    /**
+     * @param Registrar $router
+     * @param $name
+     * @param array $options
+     * @return void
+     */
+    protected function addRelationship(Registrar $router, $name, array $options)
+    {
+        $inverse = isset($options['inverse']) ? $options['inverse'] : str_plural($name);
+
+        $router->group([], function (Registrar $router) use ($name, $options, $inverse) {
+            foreach ($options['actions'] as $action) {
+                $this->relationshipRoute($router, $name, $action, $inverse);
+            }
+        });
     }
 
     /**
      * @param Registrar $router
      * @param $relationship
      * @param $action
+     * @param $inverse
+     *      the inverse resource type
      * @return Route
      */
-    protected function relationshipRoute(Registrar $router, $relationship, $action)
+    protected function relationshipRoute(Registrar $router, $relationship, $action, $inverse)
     {
         $route = $this->createRoute(
             $router,
@@ -73,6 +91,7 @@ class RelationshipsGroup
         );
 
         $route->defaults(ResourceRegistrar::PARAM_RELATIONSHIP_NAME, $relationship);
+        $route->defaults(ResourceRegistrar::PARAM_RELATIONSHIP_INVERSE_TYPE, $inverse);
 
         return $route;
     }

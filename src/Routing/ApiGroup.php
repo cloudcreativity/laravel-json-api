@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2017 Cloud Creativity Limited
+ * Copyright 2018 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@
 namespace CloudCreativity\LaravelJsonApi\Routing;
 
 use CloudCreativity\LaravelJsonApi\Api\Api;
-use CloudCreativity\LaravelJsonApi\Api\ApiResource;
 use Illuminate\Contracts\Routing\Registrar;
 use Illuminate\Support\Fluent;
 
@@ -81,7 +80,7 @@ class ApiGroup
      */
     protected function resourceGroup($resourceType, array $options)
     {
-        return new ResourceGroup($resourceType, $this->apiResource($resourceType), new Fluent($options));
+        return new ResourceGroup($resourceType, $this->api->getResolver(), new Fluent($options));
     }
 
     /**
@@ -105,12 +104,4 @@ class ApiGroup
         ];
     }
 
-    /**
-     * @param $resourceType
-     * @return ApiResource
-     */
-    protected function apiResource($resourceType)
-    {
-        return $this->api->getResources()->get($resourceType);
-    }
 }

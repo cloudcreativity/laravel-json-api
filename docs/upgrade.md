@@ -1,213 +1,158 @@
 # Upgrade Guide 
 
-As we are currently on pre-1.0 releases, when you upgrade you will also need to specify that package
-dependencies need to be upgraded. Use the following command:
+## Alpha Release Cycle
+
+We are now on `1.0.0` alpha releases. We are planning incremental changes during the alpha release cycle that
+will involve only small upgrades. We will do one final large upgrade when we switch from alpha to beta releases,
+and then we are planning on tagging `1.0.0` after a limited number of beta tags.
+
+## Upgrading from 0.12 to 1.0.0-alpha.1
+
+The main new feature introduced in this release is proper handling of reading and modifying resource
+relationships. We have also worked our way through a number of the issues on the 1.0.0 milestone.
+
+Use the following commands:
 
 ```bash
-$ composer require cloudcreativity/laravel-json-api:^0.12 --update-with-dependencies
+$ composer require cloudcreativity/laravel-json-api:1.0.0-alpha.1
+$ composer require --dev cloudcreativity/json-api-testing:^0.4
 ```
 
-## Upgrading to 0.12 from 0.11
+### Namespaces
 
-There are no major changes in this upgrade, we have tagged a new version to mark adding in support
-for Laravel 5.6.
+As we are now only developing JSON API within Laravel applications, we have deprecated our framework agnostic
+`cloudcreativity/json-api` package. All the classes from that package have been merged into this package and
+renamed to the `CloudCreativity\LaravelJsonApi` namespace. This will allow us to more rapidly develop this
+Laravel package and simplify the code in subsequent releases.
 
-The only additional step is to upgrade our testing package if you are using it to `v0.3`. There are
-no major changes in this testing package - `v0.3` just adds in support for PHPUnit 7.0.
+Use the search/replace feature of your code editor to replace all occurrences of `CloudCreativity\JsonApi` with
+`CloudCreativity\LaravelJsonApi`.
+
+Once you have done this, run the following command to remove the deprecated package:
 
 ```bash
-$ composer require --dev cloudcreativity/json-api-testing:^0.3
-``` 
-
-## Upgrading to 0.11 from 0.10
-
-Version `0.11` now supports Laravel 5.5 in addition to 5.4.
-
-### Package Discovery
-
-If you are on Laravel 5.5, you no longer need to add the service provider and facade to your `app.php` config as
-we have added package discovery configuration. Feel free to remove the service provider and facade from your
-config file.
-
-### Testing
-
-The test helper classes have been extracted to a separate package to allow us to support both PHPUnit 5.7 and 6. 
-The new package can be installed using composer.
-
-For PHPUnit 5.7:
-
-```bash
-$ composer require --dev cloudcreativity/json-api-testing:^0.1
+$ composer remove cloudcreativity/json-api
 ```
 
-For PHPUnit 6:
+The following trait has also moved to a different namespace:
 
-```bash
-$ composer require --dev cloudcreativity/json-api-testing:^0.2
-```
-
-We have removed all test helper methods on the `TestResponse` class that were marked as deprecated in `0.10`. 
-You will need to update your tests if you have not already done so:
-
-  - `seeStatusCode()`: use `assertStatus()`
-  - `seeDataCollection()`: use `assertDataCollection()`
-  - `seeDataResource()`: use `assertDataResource()`
-  - `seeDataResourceIdentifier()`: use `assertDataResourceIdentifier()`
-  - `seeDocument()`: use `assertDocument()`
-  - `seeErrors()`: use `assertErrors()` 
-
-## Upgrading to 0.10 from 0.9
-
-### Facade
-
-If you are using the facade, you will need to change you `app.aliases` config to this:
-
-```php
-'aliases' => [
-    // ...
-    'JsonApi' => CloudCreativity\LaravelJsonApi\Facades\JsonApi::class,
-],
-```
-
-We made this change so that you can import the class name as `JsonApi` via a `use` statement.
-
-### Config
-
-In each JSON API config file you will need to remove the `url-prefix` option and replace with this:
-
-```php
-/*
-|--------------------------------------------------------------------------
-| URL
-|--------------------------------------------------------------------------
-|
-| The API's url, made up of a host, URL namespace and route name prefix.
-|
-| If a JSON API is handling an inbound request, the host will always be
-| detected from the inbound HTTP request. In other circumstances
-| (e.g. broadcasting), the host will be taken from the setting here.
-| If it is `null`, the `app.url` config setting is used as the default.
-|
-| The name setting is the prefix for route names within this API.
-|
-*/
-'url' => [
-    'host' => null,
-    'namespace' => '/api/v1',
-    'name' => 'api:v1:',
-],
-```
+- `Hydrator\HydratesAttributesTrait` moved to `Adapter\HydratesAttributesTrait`
 
 ### Routing
 
-#### Registering APIs
+Controllers are now optional by default. If no controller option is provided when registering a resource,
+the `JsonApiController` from this package will be used.
 
-You now need to use `JsonApi::register()` to register routes for an API. This is because the `api()` method
-is now used to get an API instance.
-
-The `register()` method will also now automatically apply the URL prefix and route name prefix from your config 
-file when registering routes.
-
-For example, this:
+To use the previous behaviour (whereby the controller name is generated using the resource name), pass
+`true` as the controller option:
 
 ```php
-JsonApi::api('v1', ['prefix' => '/api/v1', 'as' => 'api-v1::', 'namespace' => 'ApiV1'], function ($api) {
-    $api->resource('posts');
-    $api->resource('comments');
+JsonApi::register('default', ['namespace' => 'Api'], function ($api, $router) {
+    $api->resource('posts', ['controller' => true]);
 });
 ```
 
-Is now:
+As per previous versions, the `controller` option can also be a string controller name. Refer to the
+[Controllers documentation](./basics/controllers.md) for more details.
+
+### Controllers
+
+The `EloquentController` no longer has any constructor dependencies. Previously you were injecting a model
+and optionally a hydrator. These must be removed. Note that the Eloquent Controller has been deprecated as it
+now does not have any unique code - you can extend `JsonApiController` directly.
+
+If you were overloading any of the methods in either `EloquentController` or `JsonApiController`, you may find
+that some of the method signatures have been modified. Refer to the `JsonApiController` for the new signatures.
+
+Note that we have now implemented full support for relationships, and the updated `JsonApiController` will
+handle these automatically. If you had a custom implementation for relationship endpoints, you will need to
+refer to the documentation on relationships.
+
+### Hydrators
+
+Hydrators have been merged into the Adapter classes. This simplifies things by making a single class that is
+responsible for reading and writing resources to/from your application's storage.
+
+> We suggest taking a look at the newly added [adapters documentation](./basics/adapters.md).
+
+If you have any non-Eloquent adapters, you will need to implement the new methods on the adapter interface. We
+suggest you check out the documentation on Adapters for guidance.
+
+For Eloquent hydrators, transfer any properties and code from you hydrator into your adapter class. Then make the 
+following modifications...
+
+The `$attributes` property now only needs to list JSON API resource attributes that are mapped to a different
+name on the model. All other resource attributes are automatically transferred to the snake case or camel case
+equivalent and filled into your model.
+
+For example, if you previously had this on your hydrator:
 
 ```php
-JsonApi::register('v1', ['namespace' => 'ApiV1'], function ($api) {
-    $api->resource('posts');
-    $api->resource('comments');
-});
+$attributes = [
+    'title',
+    'slug',
+    'published-at' => 'published_date',
+];
 ```
 
-> The URL prefix in your JSON API config is **always** relative to the root URL on a host, i.e. from `/`. 
-This means when registering your routes, you need to ensure that no prefix has already been applied. The default
-Laravel installation has an `api` prefix for API routes and you will need to remove this from your `mapApiRoutes()`
-method in your `RouteServiceProvider` if your JSON API routes are being registered in your `routes/api.php` file.
-
-#### Route Parameters
-
-The `resource_id` route parameter has been renamed to `record`. This is because we are now substituting bindings
-so that the `$record` variable passed to controller actions is the actual record (object), rather than the id.
-
-### Non-Eloquent Controllers
-
-The `ReplyTrait` has been renamed to:
-`CloudCreativity\LaravelJsonApi\Http\Controllers\CreatesResponses`
-
-This new trait has the same method `reply()` so you will not need to make any changes to your controllers.
-
-We have massively improved the injection of dependencies into controller actions. There should be no breaking changes
-to your current controller action methods, but you may want to consult the chapter on non-Eloquent controllers to
-see how we now recommend implementing controller methods.
-
-### Testing
-
-We have upgraded the testing helpers to remove the dependency with `laravel/browser-kit-testing`. All the test
-assertions have been moved to `CloudCreativity\LaravelJsonApi\TestResponse` (that extends the Illuminate class).
-We have merged our `InteractsWithResources` trait into `MakesJsonApiRequests` because there were so few methods 
-remaining. We have also removed the abstract methods and replaced with properties.
-
-For example, this:
+You would only need the attributes to now be:
 
 ```php
-use CloudCreativity\LaravelJsonApi\Testing\InteractsWithResources;
+$attributes = [
+    'published-at' => 'published_date',
+];
+```
 
-class PostsTest extends TestCase
+If you need to prevent JSON API fields from being transferred to your model, add them to the `$guarded` 
+or `$fillable` attributes on your adapter. Refer to the [mass assignment](./basics/adapters.md)
+section in the adapters chapter.
+
+Any relationships that you are listing in the `$relationships` property will now need a relationship method
+implemented. Refer to the
+[adapter relationship documentation](./basics/adapters.md#Relationships)
+as this is a new feature. As an example, if you had this on your hydrator:
+
+```php
+protected $relationships = ['author'];
+```
+
+You would need to add the following method to your adapter:
+
+```php
+protected function author()
 {
-
-  use InteractsWithResources;
-  
-  protected function getResourceType()
-  {
-      return 'posts';
-  }
-  
-  protected function getRoutePrefix()
-  {
-      return 'api-v1::';
-  }
+    return $this->belongsTo();
 }
 ```
 
-Must be changed to this:
+### Eloquent Adapters
+
+Several methods have had their type-hinting of an Eloquent query builder removed, as the method may now also
+receive an Eloquent relation. This affects your `filter` method, and may affect other methods you may have
+overloaded. The change is as follows:
 
 ```php
-use CloudCreativity\LaravelJsonApi\Testing\MakesJsonApiRequests;
-
-class PostsTest extends TestCase
-{
-
-  use MakesJsonApiRequests;
-  
-  protected $resourceType = 'posts';
-  
-  protected $api = null;
-}
+protected function filter(Builder $query, Collection $filters) {}
 ```
 
-The new `$api` property specifies the API you are testing. If you do not define the property or set it to `null`, 
-the `default` API will be used.
+becomes this:
 
-When you call the following methods, they will return an instance of our `TestResponse`, rather than `$this`. The
-test response is no longer assigned to a `$response` property on the test case (i.e. we made the same change as
-Laravel):
+```php
+protected function filter($query, Collection $filters) {}
+```
 
-- `jsonApi()`
-- `doSearch()`
-- `doCreate()`
-- `doRead()`
-- `doUpdate()`
-- `doDelete()`
+Adapters now support reading and writing relationships. Refer to the
+[adapters documentation](./basics/adapters.md) on using this new feature.
 
-The same assertion methods have been moved to the `TestResponse`, with the following modifications:
+### Eloquent Schemas
 
-- `assertIndexResponse`: use either `assertResourceResponse` or `assertResourcesResponse` to check whether the
-`data` member has either a singular resource of the expected type, or a collection of resources.
-- All methods starting `see...` have been deprecated and replaced with `assert...`. 
+There have been some internal changes to the Eloquent schema. The main one that may affect your schemas is
+that the default attributes to serialize are now those returned by `$model->getVisible()`. Previously
+`$model->getFillable()` was used.
+
+> We will mention now that **we plan to deprecate Eloquent schemas during the alpha release cycle.** If making
+these changes will take a while, we recommend that you spend the time converting your Eloquent
+schemas to generic schemas.
+
+Schemas are now documented, so refer to the [Schemas chapter](./basics/schemas.md) for more information.
+

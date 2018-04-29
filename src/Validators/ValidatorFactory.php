@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2017 Cloud Creativity Limited
+ * Copyright 2018 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,13 @@
 
 namespace CloudCreativity\LaravelJsonApi\Validators;
 
-use CloudCreativity\JsonApi\Contracts\Store\StoreInterface;
-use CloudCreativity\JsonApi\Contracts\Validators\ValidatorErrorFactoryInterface;
-use CloudCreativity\JsonApi\Validators\ValidatorFactory as BaseFactory;
+use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Validators\AcceptRelatedResourceInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Validators\AttributesValidatorInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Validators\RelationshipsValidatorInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Validators\RelationshipValidatorInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Validators\ResourceValidatorInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorErrorFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorFactoryInterface;
 use Illuminate\Contracts\Validation\Factory;
 
@@ -29,8 +33,13 @@ use Illuminate\Contracts\Validation\Factory;
  *
  * @package CloudCreativity\LaravelJsonApi
  */
-class ValidatorFactory extends BaseFactory implements ValidatorFactoryInterface
+class ValidatorFactory implements ValidatorFactoryInterface
 {
+
+    /**
+     * @var Factory
+     */
+    private $validatorFactory;
 
     /**
      * @var ValidatorErrorFactoryInterface
@@ -38,9 +47,9 @@ class ValidatorFactory extends BaseFactory implements ValidatorFactoryInterface
     protected $validationErrors;
 
     /**
-     * @var Factory
+     * @var StoreInterface
      */
-    private $validatorFactory;
+    private $store;
 
     /**
      * ValidatorFactory constructor.
@@ -54,8 +63,114 @@ class ValidatorFactory extends BaseFactory implements ValidatorFactoryInterface
         StoreInterface $store,
         Factory $validatorFactory
     ) {
-        parent::__construct($validationErrors, $store);
+        $this->store = $store;
+        $this->validationErrors = $validationErrors;
         $this->validatorFactory = $validatorFactory;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function resourceDocument(ResourceValidatorInterface $resource = null)
+    {
+        return new ResourceDocumentValidator(
+            $this->validationErrors,
+            $resource ?: $this->resource()
+        );
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function relationshipDocument(RelationshipValidatorInterface $relationship = null)
+    {
+        return new RelationshipDocumentValidator(
+            $this->validationErrors,
+            $relationship ?: $this->relationship()
+        );
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function resource(
+        $expectedType = null,
+        $expectedId = null,
+        AttributesValidatorInterface $attributes = null,
+        RelationshipsValidatorInterface $relationships = null,
+        ResourceValidatorInterface $context = null
+    ) {
+        return new ResourceValidator(
+            $this->validationErrors,
+            $expectedType,
+            $expectedId,
+            $attributes,
+            $relationships ?: $this->relationships(),
+            $context
+        );
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function relationships()
+    {
+        return new RelationshipsValidator($this->validationErrors, $this);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function relationship($expectedType = null, $allowEmpty = true, $acceptable = null)
+    {
+        return new RelationshipValidator(
+            $this->validationErrors,
+            $this->store,
+            $expectedType,
+            $allowEmpty,
+            $acceptable
+        );
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function hasOne($expectedType, $allowEmpty = true, $acceptable = null)
+    {
+        return new HasOneValidator(
+            $this->validationErrors,
+            $this->store,
+            $expectedType,
+            $allowEmpty,
+            $this->acceptableRelationship($acceptable)
+        );
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function hasMany($expectedType, $allowEmpty = false, $acceptable = null)
+    {
+        return new HasManyValidator(
+            $this->validationErrors,
+            $this->store,
+            $expectedType,
+            $allowEmpty,
+            $this->acceptableRelationship($acceptable)
+        );
+    }
+
+    /**
+     * @param $acceptable
+     * @return AcceptRelatedResourceInterface|null
+     */
+    protected function acceptableRelationship($acceptable)
+    {
+        if (!is_null($acceptable) && !$acceptable instanceof AcceptRelatedResourceInterface) {
+            $acceptable = new AcceptRelatedResourceCallback($acceptable);
+        }
+
+        return $acceptable;
     }
 
     /**

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2017 Cloud Creativity Limited
+ * Copyright 2018 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,13 +19,16 @@
 namespace CloudCreativity\LaravelJsonApi\Http\Middleware;
 
 use Closure;
-use CloudCreativity\JsonApi\Contracts\Authorizer\AuthorizerInterface;
-use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface;
-use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterpreterInterface;
-use CloudCreativity\JsonApi\Exceptions\RuntimeException;
-use CloudCreativity\JsonApi\Http\Middleware\AuthorizesRequests;
+use CloudCreativity\LaravelJsonApi\Contracts\Authorizer\AuthorizerInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
+use CloudCreativity\LaravelJsonApi\Exceptions\AuthorizationException;
+use CloudCreativity\LaravelJsonApi\Exceptions\NotFoundException;
+use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
+use CloudCreativity\LaravelJsonApi\Object\Document;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Http\Request;
+use Neomerx\JsonApi\Exceptions\ErrorCollection;
 
 /**
  * Class AuthorizeRequest
@@ -34,8 +37,6 @@ use Illuminate\Http\Request;
  */
 class AuthorizeRequest
 {
-
-    use AuthorizesRequests;
 
     /**
      * @var Container
@@ -61,8 +62,8 @@ class AuthorizeRequest
     public function handle($request, Closure $next, $authorizer)
     {
         $this->authorize(
-            $this->container->make(RequestInterpreterInterface::class),
             $this->container->make(RequestInterface::class),
+            $this->container->make(StoreInterface::class),
             $this->resolveAuthorizer($authorizer)
         );
 
@@ -82,5 +83,92 @@ class AuthorizeRequest
         }
 
         return $authorizer;
+    }
+
+
+    /**
+     * Authorize the request or throw an exception
+     *
+     * @param RequestInterface $request
+     * @param StoreInterface $store
+     * @param AuthorizerInterface $authorizer
+     * @throws AuthorizationException
+     */
+    protected function authorize(
+        RequestInterface $request,
+        StoreInterface $store,
+        AuthorizerInterface $authorizer
+    ) {
+        $result = $this->checkAuthorization($request, $store, $authorizer);
+
+        if (true !== $result) {
+            throw new AuthorizationException($result);
+        }
+    }
+
+    /**
+     * @param RequestInterface $request
+     * @param StoreInterface $store
+     * @param AuthorizerInterface $authorizer
+     * @return ErrorCollection|bool
+     *      errors if the request is not authorized, true if authorized.
+     */
+    protected function checkAuthorization(
+        RequestInterface $request,
+        StoreInterface $store,
+        AuthorizerInterface $authorizer
+    ) {
+        $parameters = $request->getParameters();
+        $document = new Document($request->getDocument());
+        $identifier = $request->getResourceIdentifier();
+        $record = $identifier ? $store->find($identifier) : null;
+
+        /** If the record for the identifier does not exist, we need to exit as we cannot authorize. */
+        if ($identifier && !$record) {
+            throw new NotFoundException();
+        }
+
+        $authorized = true;
+
+        /** Index */
+        if ($request->isIndex()) {
+            $authorized = $authorizer->canReadMany($request->getResourceType(), $parameters);
+        } /** Create Resource */
+        elseif ($request->isCreateResource()) {
+            $authorized = $authorizer->canCreate($request->getResourceType(), $document->getResource(), $parameters);
+        } /** Read Resource */
+        elseif ($request->isReadResource()) {
+            $authorized = $authorizer->canRead($record, $parameters);
+        } /** Update Resource */
+        elseif ($request->isUpdateResource()) {
+            $authorized = $authorizer->canUpdate($record, $document->getResource(), $parameters);
+        } /** Delete Resource */
+        elseif ($request->isDeleteResource()) {
+            $authorized = $authorizer->canDelete($record, $parameters);
+        } /** Read Related Resource */
+        elseif ($request->isReadRelatedResource()) {
+            $authorized = $authorizer->canReadRelatedResource(
+                $request->getRelationshipName(),
+                $record,
+                $parameters
+            );
+        } /** Read Relationship Data */
+        elseif ($request->isReadRelationship()) {
+            $authorized = $authorizer->canReadRelationship(
+                $request->getRelationshipName(),
+                $record,
+                $parameters
+            );
+        } /** Modify Relationship Data */
+        elseif ($request->isModifyRelationship()) {
+            $authorized = $authorizer->canModifyRelationship(
+                $request->getRelationshipName(),
+                $record,
+                $document->getRelationship(),
+                $parameters
+            );
+        }
+
+        return $authorized ?: $authorizer->getErrors();
     }
 }

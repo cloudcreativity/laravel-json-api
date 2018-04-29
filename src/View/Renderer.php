@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2017 Cloud Creativity Limited
+ * Copyright 2018 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\View;
 
-use CloudCreativity\JsonApi\Encoder\Encoder;
+use CloudCreativity\LaravelJsonApi\Encoder\Encoder;
 use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
 use Neomerx\JsonApi\Encoder\Parameters\EncodingParameters;
 
