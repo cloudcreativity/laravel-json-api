@@ -2,6 +2,20 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## Unreleased
+
+### Changed
+- Generating an Eloquent schema will now generate a class that extends `SchemaProvider`, i.e. the generic schema.
+
+### Deprecated
+- Eloquent schemas are now deprecated in favour of using generic schemas. This is because of the amount of
+processing involved without any benefit, as generic schemas are straight-forward to construct. The following
+classes/traits are deprecated:
+  - `Eloquent\AbstractSchema`
+  - `Eloquent\SerializesModels`
+  - `Schema\CreatesLinks`
+  - `Schema\EloquentSchema` (was deprecated in `1.0.0-alpha.1`).
+
 ## [1.0.0-alpha.1] - 2018-04-29
 
 As we are now only developing JSON API within Laravel applications, we have deprecated our framework agnostic 

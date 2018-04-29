@@ -24,6 +24,12 @@ use DateTime;
 use Illuminate\Database\Eloquent\Model;
 use Neomerx\JsonApi\Schema\SchemaProvider;
 
+/**
+ * Trait SerializesModels
+ *
+ * @package CloudCreativity\LaravelJsonApi
+ * @deprecated
+ */
 trait SerializesModels
 {
 

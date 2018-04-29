@@ -285,8 +285,7 @@ class GeneratorsTest extends TestCase
     private function assertEloquentSchema()
     {
         $content = $this->assertSchema();
-        $this->assertContains('Eloquent\AbstractSchema', $content);
-
+        $this->assertContains('return (string) $resource->getKey();', $content);
     }
 
     /**
@@ -295,9 +294,7 @@ class GeneratorsTest extends TestCase
     private function assertGenericSchema()
     {
         $content = $this->assertSchema();
-        $this->assertContains('Schema\SchemaProvider', $content);
-        $this->assertNotContains('use DummyApp\Company;', $content);
-        $this->assertContains('@param $resource', $content);
+        $this->assertNotContains('return (string) $resource->getKey();', $content);
     }
 
     /**
@@ -311,6 +308,8 @@ class GeneratorsTest extends TestCase
 
         $this->assertFileExists($file);
         $content = $this->files->get($file);
+
+        $this->assertContains('extends SchemaProvider', $content);
         $this->assertContains("protected \$resourceType = 'companies';", $content);
 
         if ($this->byResource) {
