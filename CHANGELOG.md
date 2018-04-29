@@ -5,9 +5,11 @@ All notable changes to this project will be documented in this file. This projec
 ## Unreleased
 
 ### Added
-- The Eloquent controller now has the following additional hooks:
+- The JSON API controller now has the following additional hooks:
   - `searching` for an *index* action.
   - `reading` for a *read* action.
+- [#163](https://github.com/cloudcreativity/laravel-json-api/issues/163)
+Added relationship hooks to the JSON API controller.
 
 ### Changed
 - Generating an Eloquent schema will now generate a class that extends `SchemaProvider`, i.e. the generic schema.

@@ -19,13 +19,22 @@ namespace CloudCreativity\LaravelJsonApi\Tests\Integration;
 
 use DummyApp\Events\ResourceEvent;
 use DummyApp\Post;
+use DummyApp\Tag;
 use Illuminate\Support\Facades\Event;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 class ControllerHooksTest extends TestCase
 {
 
+    /**
+     * @var string
+     */
     protected $resourceType = 'posts';
+
+    /**
+     * @var array
+     */
+    private $events;
 
     /**
      * @return void
@@ -33,7 +42,12 @@ class ControllerHooksTest extends TestCase
     protected function setUp()
     {
         parent::setUp();
-        Event::fake([ResourceEvent::class]);
+
+        $this->events = [];
+
+        app('events')->listen(ResourceEvent::class, function (ResourceEvent $event) {
+            $this->events[] = $event->hook;
+        });
     }
 
     /**
@@ -76,7 +90,7 @@ class ControllerHooksTest extends TestCase
 
         $this->doCreate($data)->assertStatus(201);
 
-        $this->assertHooksInvoked('saving', 'creating', 'saved', 'created');
+        $this->assertHooksInvoked('saving', 'creating', 'created', 'saved');
     }
 
     public function testUnsuccessfulCreate()
@@ -126,7 +140,7 @@ class ControllerHooksTest extends TestCase
         ];
 
         $this->doUpdate($data)->assertStatus(200);
-        $this->assertHooksInvoked('saving', 'updating', 'saved', 'updated');
+        $this->assertHooksInvoked('saving', 'updating', 'updated', 'saved');
     }
 
     public function testUnsuccessfulUpdate()
@@ -163,14 +177,56 @@ class ControllerHooksTest extends TestCase
         $this->assertNoHooksInvoked();
     }
 
+    public function testReadRelated()
+    {
+        $post = factory(Post::class)->create();
+
+        $this->doReadRelated($post, 'author')->assertStatus(200);
+        $this->assertHooksInvoked('reading-relationship', 'reading-author');
+    }
+
+    public function testReadRelationship()
+    {
+        $post = factory(Post::class)->create();
+
+        $this->doReadRelationship($post, 'author')->assertStatus(200);
+        $this->assertHooksInvoked('reading-relationship', 'reading-author');
+    }
+
+    public function testReplaceRelationship()
+    {
+        $post = factory(Post::class)->create();
+
+        $this->doReplaceRelationship($post, 'author', null)->assertStatus(204);
+        $this->assertHooksInvoked('replacing', 'replacing-author', 'replaced-author', 'replaced');
+    }
+
+    public function testAddToRelationship()
+    {
+        $post = factory(Post::class)->create();
+        $tag = ['type' => 'tags', 'id' => (string) factory(Tag::class)->create()->getKey()];
+
+        $this->doAddToRelationship($post, 'tags', [$tag])->assertStatus(204);
+        $this->assertHooksInvoked('adding', 'adding-tags', 'added-tags', 'added');
+    }
+
+    public function testRemoveFromRelationship()
+    {
+        $post = factory(Post::class)->create();
+        /** @var Tag $tag */
+        $tag = $post->tags()->create(['name' => 'news']);
+        $identifier = ['type' => 'tags', 'id' => (string) $tag->getKey()];
+
+        $this->doRemoveFromRelationship($post, 'tags', [$identifier])->assertStatus(204);
+        $this->assertHooksInvoked('removing', 'removing-tags', 'removed-tags', 'removed');
+    }
+
     /**
      * @param mixed ...$names
      */
     private function assertHooksInvoked(...$names)
     {
-        foreach ($names as $name) {
-            $this->assertHookInvoked($name);
-        }
+        $this->assertSame($this->events, $names);
     }
 
     /**
@@ -178,19 +234,7 @@ class ControllerHooksTest extends TestCase
      */
     private function assertHookInvoked($name)
     {
-        Event::assertDispatched(ResourceEvent::class, function ($event) use ($name) {
-            return $name === $event->hook;
-        });
-    }
-
-    /**
-     * @param $name
-     */
-    private function assertHookNotInvoked($name)
-    {
-        Event::assertNotDispatched(ResourceEvent::class, function ($event) use ($name) {
-            return $name === $event->hook;
-        });
+        $this->assertSame($this->events, [$name]);
     }
 
     /**
@@ -198,6 +242,6 @@ class ControllerHooksTest extends TestCase
      */
     private function assertNoHooksInvoked()
     {
-        Event::assertNotDispatched(ResourceEvent::class);
+        $this->assertEmpty($this->events);
     }
 }

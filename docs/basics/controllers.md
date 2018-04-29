@@ -86,9 +86,22 @@ class PostsController extends JsonApiController
 
 ### Resource Hooks
 
-The controller allows you to hook into resource lifecycle by invoking the following methods if they are implemented:
-`searching`, `reading`, `creating`, `created`, `updating`, `updated`, `saving`, `saved`, `deleting`, `deleted`.
-These methods allow you to easily implement authorization, trigger events and/or dispatch jobs as needed.
+The controller allows you to hook into the resource lifecycle by invoking the following methods if they are 
+implemented:
+
+- `searching`
+- `reading`
+- `saving`
+- `creating`
+- `updating`
+- `created`
+- `updated`
+- `saved`
+- `deleting`
+- `deleted`
+
+These methods allow you to easily implement application specific actions, such as firing events or dispatching
+jobs.
 
 The `searching` and `reading` hooks are invoked when resource(s) are being accessed, i.e. a `GET` request. The
 `searching` hook is invoked when reading any resources (the *index* action), while `reading` is invoked when
@@ -147,6 +160,64 @@ class PostsController extends JsonApiController
 {
 
     protected function saving(?Post $post, ValidatedRequest $request)
+    {
+        // ...
+    }
+}
+```
+
+### Relationship Hooks
+
+The controller also allows you to hook into the relationship lifecycle by invoking the following methods if they are
+implemented:
+
+- `readingRelationship`
+- `reading{Field}`
+- `replacing`
+- `replacing{Field}`
+- `replaced{Field}`
+- `replaced`
+- `adding`
+- `adding{Field}`
+- `added{Field`
+- `added`
+- `removing`
+- `removing{Field}`
+- `removed{Field}`
+- `removed`
+
+These methods allow you to easily implement application specific actions, such as firing events or dispatching
+jobs.
+
+In the above method names `{Field}` refers to the camel-cased JSON API field name for the relationship. For example,
+if reading the `author` relationship on a `posts` resource, the `readingRelationship` and/or `readingAuthor`
+methods will be invoked if they exist.
+
+The `reading...` methods are invoked when accessing the related resource or the relationship data, i.e. a `GET`
+relationship request. The `replacing...` methods are invoked when changing the entire relationship in a
+`PATCH` relationship request.
+
+For *to-many* relationships, the `adding...` methods are invoked when adding resources to the relationship
+using a `POST` relationship request. The `removing...` methods are invoked when removing resource from the
+relationship using a `DELETE` relationship request.
+
+All the relationship hooks receive the primary record being read as their first argument, and the JSON API request
+received from the client as the second. For example:
+
+```php
+use App\Post;
+use CloudCreativity\LaravelJsonApi\Http\Controllers\JsonApiController;
+use CloudCreativity\LaravelJsonApi\Http\Requests\ValidatedRequest;
+
+class PostsController extends JsonApiController
+{
+
+    protected function replacing(Post $post, ValidatedRequest $request)
+    {
+        // ...
+    }
+
+    protected function addingTags(Post $post, ValidatedRequest $request)
     {
         // ...
     }
