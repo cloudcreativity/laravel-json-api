@@ -28,16 +28,21 @@ class Handler extends BaseHandler
     use HandlesErrors;
 
     /**
+     * @var array
+     */
+    protected $dontReport = [
+        JsonApiException::class,
+    ];
+
+    /**
      * @param Exception $e
      * @throws Exception
      */
     public function report(Exception $e)
     {
-        if (!$e instanceof JsonApiException) {
+        if ($this->shouldReport($e)) {
             throw $e;
         }
-
-        parent::report($e);
     }
 
     /**

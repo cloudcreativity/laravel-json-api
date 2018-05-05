@@ -18,6 +18,7 @@
 use CloudCreativity\LaravelJsonApi\Contracts\Document\MutableErrorInterface as Error;
 use CloudCreativity\LaravelJsonApi\Http\Headers\RestrictiveHeadersChecker as H;
 use CloudCreativity\LaravelJsonApi\Validators\ValidatorErrorFactory as V;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Response;
 
 return [
@@ -211,6 +212,14 @@ return [
     V::QUERY_PARAMETERS_MESSAGES => [
         Error::TITLE => 'Invalid Query Parameter',
         Error::STATUS => Response::HTTP_BAD_REQUEST,
+    ],
+
+    /**
+     * Error used when a request is unauthorized.
+     */
+    AuthenticationException::class => [
+        Error::TITLE => 'Unauthenticated',
+        Error::STATUS => Response::HTTP_UNAUTHORIZED,
     ],
 
     /**

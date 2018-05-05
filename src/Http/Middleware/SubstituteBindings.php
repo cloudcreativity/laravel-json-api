@@ -24,6 +24,11 @@ use CloudCreativity\LaravelJsonApi\Routing\ResourceRegistrar;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
 
+/**
+ * Class SubstituteBindings
+ *
+ * @package CloudCreativity\LaravelJsonApi
+ */
 class SubstituteBindings
 {
 
