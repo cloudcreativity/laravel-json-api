@@ -211,6 +211,25 @@ class AggregateResolver implements ResolverInterface, IteratorAggregate
     /**
      * @inheritDoc
      */
+    public function getAuthorizerByName($name)
+    {
+        /** @var ResolverInterface $resolver */
+        foreach ($this as $resolver) {
+            if (!$authorizer = $resolver->getAuthorizerByName($name)) {
+                continue;
+            }
+
+            if (class_exists($authorizer)) {
+                return $authorizer;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function getValidatorsByType($type)
     {
         $resolver = $this->resolverByType($type);

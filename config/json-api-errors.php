@@ -18,6 +18,7 @@
 use CloudCreativity\LaravelJsonApi\Contracts\Document\MutableErrorInterface as Error;
 use CloudCreativity\LaravelJsonApi\Http\Headers\RestrictiveHeadersChecker as H;
 use CloudCreativity\LaravelJsonApi\Validators\ValidatorErrorFactory as V;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Response;
 
@@ -215,11 +216,19 @@ return [
     ],
 
     /**
-     * Error used when a request is unauthorized.
+     * Error used when a user is not authenticated.
      */
     AuthenticationException::class => [
         Error::TITLE => 'Unauthenticated',
         Error::STATUS => Response::HTTP_UNAUTHORIZED,
+    ],
+
+    /**
+     * Error used when a request is not authorized.
+     */
+    AuthorizationException::class => [
+        Error::TITLE => 'Unauthorized',
+        Error::STATUS => Response::HTTP_FORBIDDEN,
     ],
 
     /**

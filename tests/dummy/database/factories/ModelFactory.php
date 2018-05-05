@@ -78,8 +78,14 @@ $factory->define(DummyApp\Post::class, function (Faker $faker) {
         'slug' => $faker->unique()->slug,
         'content' => $faker->text,
         'author_id' => function () {
-            return factory(DummyApp\User::class)->create()->getKey();
+            return factory(DummyApp\User::class)->states('author')->create()->getKey();
         },
+    ];
+});
+
+$factory->state(DummyApp\Post::class, 'published', function (Faker $faker) {
+    return [
+        'published_at' => $faker->dateTimeBetween('-1 month', 'now'),
     ];
 });
 
@@ -96,7 +102,12 @@ $factory->define(DummyApp\User::class, function (Faker $faker) {
         'name' => $faker->name,
         'email' => $faker->unique()->email,
         'password' => bcrypt(str_random(10)),
+        'author' => false,
     ];
+});
+
+$factory->state(DummyApp\User::class, 'author', function () {
+    return ['author' => true];
 });
 
 /** Video */

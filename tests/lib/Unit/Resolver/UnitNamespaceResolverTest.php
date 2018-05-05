@@ -90,4 +90,9 @@ class UnitNamespaceResolverTest extends TestCase
         $this->assertSame($auth, $this->resolver->getAuthorizerByType($type));
         $this->assertSame($auth, $this->resolver->getAuthorizerByResourceType($resourceType));
     }
+
+    public function testNamedAuthorizer()
+    {
+        $this->assertSame('DummyApp\JsonApi\Authorizers\Generic', $this->resolver->getAuthorizerByName('generic'));
+    }
 }

@@ -28,7 +28,7 @@ use CloudCreativity\LaravelJsonApi\Contracts\Repositories\ErrorRepositoryInterfa
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\ExceptionParser;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
-use CloudCreativity\LaravelJsonApi\Http\Middleware\AuthorizeRequest;
+use CloudCreativity\LaravelJsonApi\Http\Middleware\Authorize;
 use CloudCreativity\LaravelJsonApi\Http\Middleware\BootJsonApi;
 use CloudCreativity\LaravelJsonApi\Http\Middleware\SubstituteBindings;
 use CloudCreativity\LaravelJsonApi\Http\Requests\IlluminateRequest;
@@ -106,7 +106,7 @@ class ServiceProvider extends BaseServiceProvider
     {
         $router->aliasMiddleware('json-api', BootJsonApi::class);
         $router->aliasMiddleware('json-api.bindings', SubstituteBindings::class);
-        $router->aliasMiddleware('json-api.authorize', AuthorizeRequest::class);
+        $router->aliasMiddleware('json-api.auth', Authorize::class);
     }
 
     /**

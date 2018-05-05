@@ -16,6 +16,13 @@ Added relationship hooks to the JSON API controller.
 - Existing Eloquent controller hooks now receive the whole validate JSON API request rather than just the resource
 object submitted by the client.
 
+### Removed
+- The previous authorizer implementation has been removed in favour of the new one. The following were deleted:
+  - `Contract\Authorizer\AuthorizerInterface`
+  - `Authorizer\AbstractAuthorizer`
+  - `Authorizer\ReadOnlyAuthorizer`
+  - `Exceptions\AuthorizationException`
+
 ### Deprecated
 - Eloquent schemas are now deprecated in favour of using generic schemas. This is because of the amount of
 processing involved without any benefit, as generic schemas are straight-forward to construct. The following

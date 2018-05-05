@@ -19,6 +19,7 @@
 namespace CloudCreativity\LaravelJsonApi\Http\Controllers;
 
 use Closure;
+use CloudCreativity\LaravelJsonApi\Auth\AuthorizesRequests;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\LaravelJsonApi\Http\Requests\ValidatedRequest;
 use CloudCreativity\LaravelJsonApi\Utils\Str;
@@ -33,7 +34,7 @@ use Illuminate\Routing\Controller;
 class JsonApiController extends Controller
 {
 
-    use CreatesResponses;
+    use CreatesResponses, AuthorizesRequests;
 
     /**
      * The database connection name to use for transactions, or null for the default connection.

@@ -4,11 +4,9 @@ namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Auth;
 
 use CloudCreativity\LaravelJsonApi\Facades\JsonApi;
 use CloudCreativity\LaravelJsonApi\Routing\ApiGroup;
-use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
-use DummyApp\User;
 use Illuminate\Support\Facades\Route;
 
-class MiddlewareAuthTest extends TestCase
+class AuthTest extends TestCase
 {
 
     /**
@@ -26,7 +24,7 @@ class MiddlewareAuthTest extends TestCase
      */
     public function testApiAuthDisallowed()
     {
-        $this->withApiAuth()->doSearch()->assertStatus(401)->assertExactJson([
+        $this->withApiMiddleware()->doSearch()->assertStatus(401)->assertExactJson([
             'errors' => [
                 [
                     'title' => 'Unauthenticated',
@@ -41,10 +39,10 @@ class MiddlewareAuthTest extends TestCase
      */
     public function testApiAuthAllowed()
     {
-        $this->withApiAuth()
+        $this->withApiMiddleware()
             ->actingAsUser()
             ->doSearch()
-            ->assertStatus(200);
+            ->assertSuccessful();
     }
 
     /**
@@ -73,7 +71,7 @@ class MiddlewareAuthTest extends TestCase
         }
 
         $this->resourceType = $resourceType;
-        $response = $this->withResourceAuth()->doSearch()->assertStatus($expected);
+        $response = $this->withResourceMiddleware()->doSearch()->assertStatus($expected);
 
         if (200 !== $expected) {
             $response->assertExactJson([
@@ -88,21 +86,11 @@ class MiddlewareAuthTest extends TestCase
     }
 
     /**
-     * @return $this
-     */
-    private function actingAsUser()
-    {
-        $this->actingAs(factory(User::class)->create());
-
-        return $this;
-    }
-
-    /**
      * Set up authentication on the whole API.
      *
      * @return $this
      */
-    private function withApiAuth()
+    private function withApiMiddleware()
     {
         Route::group([
             'namespace' => 'DummyApp\\Http\\Controllers',
@@ -122,7 +110,7 @@ class MiddlewareAuthTest extends TestCase
      *
      * @return $this
      */
-    private function withResourceAuth()
+    private function withResourceMiddleware()
     {
         Route::group([
             'namespace' => 'DummyApp\\Http\\Controllers',
@@ -137,4 +125,5 @@ class MiddlewareAuthTest extends TestCase
 
         return $this;
     }
+
 }

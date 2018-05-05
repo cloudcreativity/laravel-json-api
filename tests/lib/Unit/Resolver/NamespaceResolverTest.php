@@ -133,4 +133,9 @@ class NamespaceResolverTest extends TestCase
             'comments',
         ], $this->resolver->getAllResourceTypes());
     }
+
+    public function testNamedAuthorizer()
+    {
+        $this->assertSame('App\JsonApi\GenericAuthorizer', $this->resolver->getAuthorizerByName('generic'));
+    }
 }

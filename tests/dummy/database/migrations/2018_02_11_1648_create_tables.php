@@ -32,6 +32,7 @@ class CreateTables extends Migration
             $table->string('name');
             $table->string('email')->unique();
             $table->string('password');
+            $table->boolean('author');
             $table->rememberToken();
             $table->timestamps();
             $table->unsignedInteger('country_id')->nullable();

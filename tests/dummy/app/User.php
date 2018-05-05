@@ -35,6 +35,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'author',
     ];
 
     /**
@@ -45,6 +46,20 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+    ];
+
+    /**
+     * @var array
+     */
+    protected $casts = [
+        'author' => 'bool',
+    ];
+
+    /**
+     * @var array
+     */
+    protected $attributes = [
+        'author' => false,
     ];
 
     /**
