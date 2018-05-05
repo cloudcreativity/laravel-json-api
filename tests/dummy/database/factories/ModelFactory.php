@@ -102,12 +102,15 @@ $factory->define(DummyApp\User::class, function (Faker $faker) {
         'name' => $faker->name,
         'email' => $faker->unique()->email,
         'password' => bcrypt(str_random(10)),
-        'author' => false,
     ];
 });
 
 $factory->state(DummyApp\User::class, 'author', function () {
     return ['author' => true];
+});
+
+$factory->state(DummyApp\User::class, 'admin', function () {
+    return ['admin' => true];
 });
 
 /** Video */

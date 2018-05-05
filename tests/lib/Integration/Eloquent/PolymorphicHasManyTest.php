@@ -39,6 +39,15 @@ class PolymorphicHasManyTest extends TestCase
      */
     protected $resourceType = 'tags';
 
+    /**
+     * @return void
+     */
+    protected function setUp()
+    {
+        parent::setUp();
+        $this->actingAsUser('admin', 'author');
+    }
+
     public function testCreateWithEmpty()
     {
         $tag = factory(Tag::class)->make();

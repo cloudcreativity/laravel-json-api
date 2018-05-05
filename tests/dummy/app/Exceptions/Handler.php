@@ -19,6 +19,8 @@ namespace DummyApp\Exceptions;
 
 use CloudCreativity\LaravelJsonApi\Exceptions\HandlesErrors;
 use Exception;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Auth\AuthenticationException;
 use Neomerx\JsonApi\Exceptions\JsonApiException;
 use Orchestra\Testbench\Exceptions\Handler as BaseHandler;
 
@@ -32,6 +34,8 @@ class Handler extends BaseHandler
      */
     protected $dontReport = [
         JsonApiException::class,
+        AuthenticationException::class,
+        AuthorizationException::class,
     ];
 
     /**

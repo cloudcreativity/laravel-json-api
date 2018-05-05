@@ -1,41 +1,32 @@
 <?php
+/**
+ * Copyright 2018 Cloud Creativity Limited
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Auth;
 
-use CloudCreativity\LaravelJsonApi\Facades\JsonApi;
-use CloudCreativity\LaravelJsonApi\Routing\ApiGroup;
 use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
-use DummyApp\Post;
-use Illuminate\Support\Facades\Route;
+use DummyApp\Tag;
 
-class AuthorizerTest extends TestCase
+class ResourceAuthorizerTest extends TestCase
 {
-
-    /**
-     * @var bool
-     */
-    protected $appRoutes = false;
 
     /**
      * @var string
      */
-    protected $resourceType = 'posts';
-
-    /**
-     * @return void
-     */
-    protected function setUp()
-    {
-        parent::setUp();
-
-        Route::group([
-            'namespace' => 'DummyApp\\Http\\Controllers',
-        ], function () {
-            JsonApi::register('default', ['middleware' => "json-api.auth:generic"], function (ApiGroup $api) {
-                $api->resource('posts');
-            });
-        });
-    }
+    protected $resourceType = 'tags';
 
     public function testIndexUnauthenticated()
     {
@@ -59,11 +50,9 @@ class AuthorizerTest extends TestCase
     public function testCreateUnauthenticated()
     {
         $data = [
-            'type' => 'posts',
+            'type' => 'tags',
             'attributes' => [
-                'title' => 'Hello World',
-                'content' => '...',
-                'slug' => 'hello-world',
+                'name' => 'News',
             ],
         ];
 
@@ -108,9 +97,9 @@ class AuthorizerTest extends TestCase
 
     public function testReadUnauthenticated()
     {
-        $post = factory(Post::class)->states('published')->create();
+        $tag = factory(Tag::class)->create();
 
-        $this->doRead($post)->assertStatus(401)->assertExactJson([
+        $this->doRead($tag)->assertStatus(401)->assertExactJson([
             'errors' => [
                 [
                     'title' => 'Unauthenticated',
@@ -120,37 +109,23 @@ class AuthorizerTest extends TestCase
         ]);
     }
 
-    public function testReadUnauthorized()
-    {
-        $post = factory(Post::class)->create();
-
-        $this->actingAsUser()->doRead($post)->assertStatus(403)->assertExactJson([
-            'errors' => [
-                [
-                    'title' => 'Unauthorized',
-                    'status' => '403',
-                ],
-            ],
-        ]);
-    }
-
     public function testReadAllowed()
     {
-        $post = factory(Post::class)->create();
+        $tag = factory(Tag::class)->create();
 
-        $this->actingAs($post->author)
-            ->doRead($post)
+        $this->actingAsUser('admin')
+            ->doRead($tag)
             ->assertStatus(200);
     }
 
     public function testUpdateUnauthenticated()
     {
-        $post = factory(Post::class)->states('published')->create();
+        $tag = factory(Tag::class)->create();
         $data = [
-            'type' => 'posts',
-            'id' => (string) $post->getKey(),
+            'type' => 'tags',
+            'id' => (string) $tag->getKey(),
             'attributes' => [
-                'title' => 'Hello World'
+                'name' => 'News',
             ],
         ];
 
@@ -166,12 +141,12 @@ class AuthorizerTest extends TestCase
 
     public function testUpdateUnauthorized()
     {
-        $post = factory(Post::class)->create();
+        $tag = factory(Tag::class)->create();
         $data = [
-            'type' => 'posts',
-            'id' => (string) $post->getKey(),
+            'type' => 'tags',
+            'id' => (string) $tag->getKey(),
             'attributes' => [
-                'title' => 'Hello World'
+                'name' => 'News',
             ],
         ];
 
@@ -187,16 +162,16 @@ class AuthorizerTest extends TestCase
 
     public function testUpdateAllowed()
     {
-        $post = factory(Post::class)->create();
+        $tag = factory(Tag::class)->create();
         $data = [
-            'type' => 'posts',
-            'id' => (string) $post->getKey(),
+            'type' => 'tags',
+            'id' => (string) $tag->getKey(),
             'attributes' => [
-                'title' => 'Hello World'
+                'name' => 'News',
             ],
         ];
 
-        $this->actingAs($post->author)
+        $this->actingAsUser('admin')
             ->doUpdate($data)
             ->assertStatus(200);
     }
@@ -204,9 +179,9 @@ class AuthorizerTest extends TestCase
 
     public function testDeleteUnauthenticated()
     {
-        $post = factory(Post::class)->states('published')->create();
+        $tag = factory(Tag::class)->create();
 
-        $this->doDelete($post)->assertStatus(401)->assertExactJson([
+        $this->doDelete($tag)->assertStatus(401)->assertExactJson([
             'errors' => [
                 [
                     'title' => 'Unauthenticated',
@@ -215,14 +190,14 @@ class AuthorizerTest extends TestCase
             ],
         ]);
 
-        $this->assertDatabaseHas('posts', ['id' => $post->getKey()]);
+        $this->assertDatabaseHas('tags', ['id' => $tag->getKey()]);
     }
 
     public function testDeleteUnauthorized()
     {
-        $post = factory(Post::class)->create();
+        $tag = factory(Tag::class)->create();
 
-        $this->actingAsUser()->doDelete($post)->assertStatus(403)->assertExactJson([
+        $this->actingAsUser()->doDelete($tag)->assertStatus(403)->assertExactJson([
             'errors' => [
                 [
                     'title' => 'Unauthorized',
@@ -231,18 +206,18 @@ class AuthorizerTest extends TestCase
             ],
         ]);
 
-        $this->assertDatabaseHas('posts', ['id' => $post->getKey()]);
+        $this->assertDatabaseHas('tags', ['id' => $tag->getKey()]);
     }
 
     public function testDeleteAllowed()
     {
-        $post = factory(Post::class)->create();
+        $tag = factory(Tag::class)->create();
 
-        $this->actingAs($post->author)
-            ->doDelete($post)
+        $this->actingAsUser('admin')
+            ->doDelete($tag)
             ->assertStatus(204);
 
-        $this->assertDatabaseMissing('posts', ['id' => $post->getKey()]);
+        $this->assertDatabaseMissing('tags', ['id' => $tag->getKey()]);
     }
 
 }

@@ -36,6 +36,7 @@ class User extends Authenticatable
         'email',
         'password',
         'author',
+        'admin',
     ];
 
     /**
@@ -53,6 +54,7 @@ class User extends Authenticatable
      */
     protected $casts = [
         'author' => 'bool',
+        'admin' => 'bool',
     ];
 
     /**
@@ -60,6 +62,7 @@ class User extends Authenticatable
      */
     protected $attributes = [
         'author' => false,
+        'admin' => false,
     ];
 
     /**

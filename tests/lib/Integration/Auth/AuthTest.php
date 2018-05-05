@@ -4,6 +4,7 @@ namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Auth;
 
 use CloudCreativity\LaravelJsonApi\Facades\JsonApi;
 use CloudCreativity\LaravelJsonApi\Routing\ApiGroup;
+use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
 use Illuminate\Support\Facades\Route;
 
 class AuthTest extends TestCase
