@@ -15,6 +15,7 @@ pages:
     - Adapters: basics/adapters.md
     - Schemas: basics/schemas.md
     - Validation: basics/validators.md
+    - Security: basics/security.md
     - Testing: basics/testing.md
   - Fetching Data:
     - Fetching Resources: fetching/resources.md
