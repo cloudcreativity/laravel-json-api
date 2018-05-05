@@ -52,6 +52,13 @@ interface RequestInterface
     public function getResourceIdentifier();
 
     /**
+     * Get the domain object that the request relates to.
+     *
+     * @return object|null
+     */
+    public function getResource();
+
+    /**
      * What resource relationship does the request relate to?
      *
      * @return string|null

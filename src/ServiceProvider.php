@@ -30,6 +30,7 @@ use CloudCreativity\LaravelJsonApi\Exceptions\ExceptionParser;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use CloudCreativity\LaravelJsonApi\Http\Middleware\AuthorizeRequest;
 use CloudCreativity\LaravelJsonApi\Http\Middleware\BootJsonApi;
+use CloudCreativity\LaravelJsonApi\Http\Middleware\SubstituteBindings;
 use CloudCreativity\LaravelJsonApi\Http\Requests\IlluminateRequest;
 use CloudCreativity\LaravelJsonApi\Http\Responses\Responses;
 use CloudCreativity\LaravelJsonApi\Routing\ResourceRegistrar;
@@ -104,6 +105,7 @@ class ServiceProvider extends BaseServiceProvider
     protected function bootMiddleware(Router $router)
     {
         $router->aliasMiddleware('json-api', BootJsonApi::class);
+        $router->aliasMiddleware('json-api.bindings', SubstituteBindings::class);
         $router->aliasMiddleware('json-api.authorize', AuthorizeRequest::class);
     }
 

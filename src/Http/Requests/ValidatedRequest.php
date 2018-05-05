@@ -24,7 +24,6 @@ use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\DocumentValidatorInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorProviderInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\DocumentRequiredException;
-use CloudCreativity\LaravelJsonApi\Exceptions\NotFoundException;
 use CloudCreativity\LaravelJsonApi\Exceptions\ValidationException;
 use CloudCreativity\LaravelJsonApi\Object\Document;
 use Illuminate\Contracts\Validation\ValidatesWhenResolved;
@@ -151,9 +150,7 @@ class ValidatedRequest implements ValidatesWhenResolved
      */
     public function validateResolved()
     {
-        /** Check that the record exists if there is a resource id. */
-        $this->record = $this->checkRecord();
-
+        $this->record = $this->request->getResource();
         $inverse = $this->request->getInverseResourceType();
 
         $resourceValidators = $this->container->getValidatorsByResourceType(
@@ -204,35 +201,6 @@ class ValidatedRequest implements ValidatesWhenResolved
 
         /** Check the JSON API document is acceptable */
         $this->checkDocumentIsAcceptable($resource);
-    }
-
-    /**
-     * Check that the record exists.
-     *
-     * @return object|null
-     */
-    protected function checkRecord()
-    {
-        if (!$identifier = $this->request->getResourceIdentifier()) {
-            return null;
-        }
-
-        /** If the request is a read record request, we need to do this so eager loading occurs. */
-        if ($this->request->isReadResource()) {
-            $record = $this->store->readRecord(
-                $this->request->getResourceType(),
-                $this->request->getResourceId(),
-                $this->request->getParameters()
-            );
-        } else {
-            $record = $this->store->find($this->request->getResourceIdentifier());
-        }
-
-        if (!$record) {
-            throw new NotFoundException();
-        }
-
-        return $record;
     }
 
     /**

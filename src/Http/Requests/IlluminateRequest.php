@@ -18,7 +18,6 @@
 namespace CloudCreativity\LaravelJsonApi\Http\Requests;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Object\DocumentInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\InvalidJsonException;
 use CloudCreativity\LaravelJsonApi\Object\ResourceIdentifier;
 use CloudCreativity\LaravelJsonApi\Routing\ResourceRegistrar;
@@ -53,7 +52,12 @@ class IlluminateRequest implements RequestInterface
     private $factory;
 
     /**
-     * @var DocumentInterface|bool|null
+     * @var string|null
+     */
+    private $resourceId;
+
+    /**
+     * @var object|bool|null
      */
     private $document;
 
@@ -89,7 +93,12 @@ class IlluminateRequest implements RequestInterface
      */
     public function getResourceId()
     {
-        return $this->request->route(ResourceRegistrar::PARAM_RESOURCE_ID);
+        /** Cache the resource id because binding substitutions will override it. */
+        if (is_null($this->resourceId)) {
+            $this->resourceId = $this->request->route(ResourceRegistrar::PARAM_RESOURCE_ID) ?: false;
+        }
+
+        return $this->resourceId ?: null;
     }
 
     /**
@@ -102,6 +111,16 @@ class IlluminateRequest implements RequestInterface
         }
 
         return ResourceIdentifier::create($this->getResourceType(), $resourceId);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getResource()
+    {
+        $resource = $this->request->route(ResourceRegistrar::PARAM_RESOURCE_ID);
+
+        return is_object($resource) ? $resource : null;
     }
 
     /**
