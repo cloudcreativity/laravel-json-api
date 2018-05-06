@@ -25,11 +25,13 @@ use CloudCreativity\LaravelJsonApi\Contracts\Exceptions\ExceptionParserInterface
 use CloudCreativity\LaravelJsonApi\Contracts\Factories\FactoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Repositories\ErrorRepositoryInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\ExceptionParser;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
-use CloudCreativity\LaravelJsonApi\Http\Middleware\AuthorizeRequest;
+use CloudCreativity\LaravelJsonApi\Http\Middleware\Authorize;
 use CloudCreativity\LaravelJsonApi\Http\Middleware\BootJsonApi;
+use CloudCreativity\LaravelJsonApi\Http\Middleware\SubstituteBindings;
 use CloudCreativity\LaravelJsonApi\Http\Requests\IlluminateRequest;
 use CloudCreativity\LaravelJsonApi\Http\Responses\Responses;
 use CloudCreativity\LaravelJsonApi\Routing\ResourceRegistrar;
@@ -63,6 +65,7 @@ class ServiceProvider extends BaseServiceProvider
     protected $generatorCommands = [
         Commands\MakeAdapter::class,
         Commands\MakeApi::class,
+        Commands\MakeAuthorizer::class,
         Commands\MakeResource::class,
         Commands\MakeSchema::class,
         Commands\MakeValidators::class,
@@ -104,7 +107,8 @@ class ServiceProvider extends BaseServiceProvider
     protected function bootMiddleware(Router $router)
     {
         $router->aliasMiddleware('json-api', BootJsonApi::class);
-        $router->aliasMiddleware('json-api.authorize', AuthorizeRequest::class);
+        $router->aliasMiddleware('json-api.bindings', SubstituteBindings::class);
+        $router->aliasMiddleware('json-api.auth', Authorize::class);
     }
 
     /**
@@ -194,6 +198,10 @@ class ServiceProvider extends BaseServiceProvider
 
         $this->app->bind(StoreInterface::class, function () {
             return json_api()->getStore();
+        });
+
+        $this->app->bind(ResolverInterface::class, function () {
+            return json_api()->getResolver();
         });
 
         $this->app->bind(ErrorRepositoryInterface::class, function () {

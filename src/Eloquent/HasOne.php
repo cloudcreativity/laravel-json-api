@@ -61,6 +61,8 @@ class HasOne extends BelongsTo
     {
         $this->update($record, $relationship, $parameters);
         $record->refresh(); // in case the relationship has been cached.
+
+        return $record;
     }
 
     /**

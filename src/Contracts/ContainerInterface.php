@@ -18,7 +18,7 @@
 namespace CloudCreativity\LaravelJsonApi\Contracts;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\ResourceAdapterInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Authorizer\AuthorizerInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Auth\AuthorizerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorProviderInterface;
 use Neomerx\JsonApi\Contracts\Schema\ContainerInterface as BaseContainerInterface;
 
@@ -108,5 +108,13 @@ interface ContainerInterface extends BaseContainerInterface
      *      the authorizer, if there is one.
      */
     public function getAuthorizerByResourceType($resourceType);
+
+    /**
+     * Get a multi-resource authorizer by name.
+     *
+     * @param string $name
+     * @return AuthorizerInterface
+     */
+    public function getAuthorizerByName($name);
 
 }

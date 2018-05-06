@@ -21,6 +21,7 @@ use CloudCreativity\LaravelJsonApi\Routing\ApiGroup;
 JsonApi::register('default', [], function (ApiGroup $api) {
     $api->resource('comments', [
         'controller' => true,
+        'middleware' => 'auth',
         'has-one' => 'commentable',
     ]);
     $api->resource('countries', [

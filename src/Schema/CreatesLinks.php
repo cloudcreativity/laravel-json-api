@@ -24,6 +24,7 @@ use CloudCreativity\LaravelJsonApi\Api\LinkGenerator;
  * Trait CreatesLinks
  *
  * @package CloudCreativity\LaravelJsonApi
+ * @deprecated 2.0.0 Use the `json_api` helper function instead.
  */
 trait CreatesLinks
 {

@@ -453,7 +453,7 @@ trait MakesJsonApiRequests
     /**
      * @param mixed $resourceId
      * @param string $relationshipName
-     * @param array|null $data
+     * @param array $data
      * @param array $params
      * @param array $headers
      * @return TestResponse
@@ -461,7 +461,7 @@ trait MakesJsonApiRequests
     protected function doAddToRelationship(
         $resourceId,
         $relationshipName,
-        $data,
+        array $data,
         array $params = [],
         array $headers = []
     ) {

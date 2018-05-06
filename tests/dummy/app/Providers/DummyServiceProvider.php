@@ -18,7 +18,12 @@
 namespace DummyApp\Providers;
 
 use DummyApp\Entities\SiteRepository;
+use DummyApp\Policies\PostPolicy;
+use DummyApp\Policies\UserPolicy;
+use DummyApp\Post;
+use DummyApp\User;
 use Illuminate\Database\Eloquent\Factory as ModelFactory;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
 class DummyServiceProvider extends ServiceProvider
@@ -40,6 +45,9 @@ class DummyServiceProvider extends ServiceProvider
 
         $this->loadMigrationsFrom(__DIR__ . '/../../database/migrations');
         $this->app->make(ModelFactory::class)->load(__DIR__ . '/../../database/factories');
+
+        Gate::policy(Post::class, PostPolicy::class);
+        Gate::policy(User::class, UserPolicy::class);
     }
 
     /**

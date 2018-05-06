@@ -18,12 +18,11 @@
 namespace DummyApp\Events;
 
 use CloudCreativity\LaravelJsonApi\Broadcasting\BroadcastsData;
-use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectInterface;
+use CloudCreativity\LaravelJsonApi\Http\Requests\ValidatedRequest;
 use Illuminate\Broadcasting\Channel;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Queue\SerializesModels;
 
-class ResourceEvent implements ShouldBroadcast
+class ResourceEvent
 {
 
     use SerializesModels, BroadcastsData;
@@ -34,27 +33,30 @@ class ResourceEvent implements ShouldBroadcast
     public $hook;
 
     /**
-     * @var object
+     * @var object|null
      */
     public $record;
 
     /**
-     * @var ResourceObjectInterface
+     * @var ValidatedRequest|null
      */
-    public $resource;
+    public $request;
 
     /**
      * ResourceEvent constructor.
      *
      * @param string $hook
      * @param object|null $record
-     * @param ResourceObjectInterface|null $resource
+     * @param ValidatedRequest|null $request
      */
-    public function __construct($hook, $record, ResourceObjectInterface $resource = null)
-    {
+    public function __construct(
+        $hook,
+        $record,
+        ValidatedRequest $request = null
+    ) {
         $this->hook = $hook;
         $this->record = $record;
-        $this->resource = $resource;
+        $this->request = $request;
     }
 
     /**

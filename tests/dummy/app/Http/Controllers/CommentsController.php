@@ -18,7 +18,25 @@
 namespace DummyApp\Http\Controllers;
 
 use CloudCreativity\LaravelJsonApi\Http\Controllers\EloquentController;
+use CloudCreativity\LaravelJsonApi\Http\Requests\ValidatedRequest;
+use DummyApp\Post;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Auth\AuthenticationException;
 
 class CommentsController extends EloquentController
 {
+
+    /**
+     * @param ValidatedRequest $request
+     * @throws AuthenticationException
+     * @throws AuthorizationException
+     */
+    protected function creating(ValidatedRequest $request)
+    {
+        $data = $request->get("data.relationships.commentable.data");
+
+        if ($data && 'posts' === $data->type) {
+            $this->can('comment', Post::find($data->id));
+        }
+    }
 }

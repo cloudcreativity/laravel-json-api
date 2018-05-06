@@ -19,7 +19,7 @@
 namespace CloudCreativity\LaravelJsonApi\Console\Commands;
 
 /**
- * Class SchemaMakeCommand
+ * Class MakeSchema
  *
  * @package CloudCreativity\LaravelJsonApi
  */

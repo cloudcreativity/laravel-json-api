@@ -65,4 +65,12 @@ class Post extends Model
     {
         return $this->morphToMany(Tag::class, 'taggable');
     }
+
+    /**
+     * @return bool
+     */
+    protected function getPublishedAttribute()
+    {
+        return isset($this->attributes['published_at']);
+    }
 }

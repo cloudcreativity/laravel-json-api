@@ -19,11 +19,12 @@ namespace CloudCreativity\LaravelJsonApi\Tests\Unit;
 
 use CloudCreativity\LaravelJsonApi\Container;
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\ResourceAdapterInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Authorizer\AuthorizerInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Auth\AuthorizerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorProviderInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use Illuminate\Container\Container as IlluminateContainer;
+use League\Flysystem\AdapterInterface;
 use Neomerx\JsonApi\Contracts\Schema\SchemaProviderInterface;
 
 class ContainerTest extends TestCase
@@ -213,7 +214,7 @@ class ContainerTest extends TestCase
         $this->container->getValidatorsByResourceType('posts');
     }
 
-    public function testAuthorizer()
+    public function testResourceAuthorizer()
     {
         $authorizer = $this->createMock(AuthorizerInterface::class);
 
@@ -233,7 +234,7 @@ class ContainerTest extends TestCase
         $this->assertSame($authorizer, $this->container->getAuthorizer(new \stdClass()));
     }
 
-    public function testAuthorizerCreateReturnsNull()
+    public function testResourceAuthorizerCreateReturnsNull()
     {
         $this->resolver->method('getAuthorizerByResourceType')->willReturn(AuthorizerInterface::class);
         $this->illuminateContainer->expects($this->never())->method('make')->with(AuthorizerInterface::class);
@@ -243,20 +244,51 @@ class ContainerTest extends TestCase
         $this->assertNull($this->container->getAuthorizer(new \stdClass()));
     }
 
-    public function testAuthorizerForInvalidResourceType()
+    public function testResourceAuthorizerForInvalidResourceType()
     {
         $this->illuminateContainer->expects($this->never())->method('make');
         $this->assertNull($this->container->getAuthorizerByResourceType('comments'));
     }
 
-    public function testAuthorizerIsNotAuthorizer()
+    public function testResourceAuthorizerIsNotResourceAuthorizer()
     {
-        $this->resolver->method('getAuthorizerByResourceType')->willReturn(\stdClass::class);
+        $mock = $this->createMock(AdapterInterface::class);
+        $this->resolver->method('getAuthorizerByResourceType')->willReturn(get_class($mock));
+        $this->illuminateContainer->method('make')->willReturn($mock);
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage(get_class($mock));
+
+        $this->container->getAuthorizerByResourceType('posts');
+    }
+
+    public function testNamedAuthorizer()
+    {
+        $authorizer = $this->createMock(AuthorizerInterface::class);
+
+        $this->illuminateContainer
+            ->expects($this->once())
+            ->method('make')
+            ->with(get_class($authorizer))
+            ->willReturn($authorizer);
+
+        $this->resolver
+            ->expects($this->once())
+            ->method('getAuthorizerByName')
+            ->with('generic')
+            ->willReturn(get_class($authorizer));
+
+        $this->assertSame($authorizer, $this->container->getAuthorizerByName('generic'));
+    }
+
+    public function testNamedAuthorizerIsNotAnAuthorizer()
+    {
+        $this->resolver->method('getAuthorizerByName')->willReturn(\stdClass::class);
         $this->illuminateContainer->method('make')->willReturn(new \stdClass());
 
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage(\stdClass::class);
 
-        $this->container->getAuthorizerByResourceType('posts');
+        $this->container->getAuthorizerByName('generic');
     }
 }

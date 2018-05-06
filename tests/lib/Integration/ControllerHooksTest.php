@@ -19,12 +19,20 @@ namespace CloudCreativity\LaravelJsonApi\Tests\Integration;
 
 use DummyApp\Events\ResourceEvent;
 use DummyApp\Post;
-use Illuminate\Support\Facades\Event;
+use DummyApp\Tag;
 
 class ControllerHooksTest extends TestCase
 {
 
+    /**
+     * @var string
+     */
     protected $resourceType = 'posts';
+
+    /**
+     * @var array
+     */
+    private $events;
 
     /**
      * @return void
@@ -32,7 +40,21 @@ class ControllerHooksTest extends TestCase
     protected function setUp()
     {
         parent::setUp();
-        Event::fake([ResourceEvent::class]);
+
+        $this->events = [];
+
+        app('events')->listen(ResourceEvent::class, function (ResourceEvent $event) {
+            $this->events[] = $event->hook;
+        });
+    }
+
+    /**
+     * A search must invoke the `searching` hook.
+     */
+    public function testSearching()
+    {
+        $this->doSearch()->assertStatus(200);
+        $this->assertHookInvoked('searching');
     }
 
     /**
@@ -64,27 +86,9 @@ class ControllerHooksTest extends TestCase
             ],
         ];
 
-        $id = $this->doCreate($data)->assertCreatedWithId();
+        $this->doCreate($data)->assertStatus(201);
 
-        Event::assertDispatched(ResourceEvent::class, function ($event) use ($data) {
-            return 'saving' === $event->hook && $data === $event->resource->toArray();
-        });
-
-        Event::assertDispatched(ResourceEvent::class, function ($event) use ($data) {
-            return 'creating' === $event->hook && $data === $event->resource->toArray();
-        });
-
-        Event::assertDispatched(ResourceEvent::class, function ($event) use ($id, $data) {
-            return 'saved' === $event->hook &&
-                $id == $event->record->id &&
-                $data === $event->resource->toArray();
-        });
-
-        Event::assertDispatched(ResourceEvent::class, function ($event) use ($id, $data) {
-            return 'created' === $event->hook &&
-                $id == $event->record->id &&
-                $data === $event->resource->toArray();
-        });
+        $this->assertHooksInvoked('saving', 'creating', 'created', 'saved');
     }
 
     public function testUnsuccessfulCreate()
@@ -99,8 +103,18 @@ class ControllerHooksTest extends TestCase
         ];
 
         $this->doCreate($data)->assertStatus(422);
+        $this->assertNoHooksInvoked();
+    }
 
-        Event::assertNotDispatched(ResourceEvent::class);
+    /**
+     * A successful read must dispatch the `reading` hook.
+     */
+    public function testRead()
+    {
+        $post = factory(Post::class)->create();
+
+        $this->doRead($post)->assertStatus(200);
+        $this->assertHookInvoked('reading');
     }
 
     /**
@@ -124,30 +138,7 @@ class ControllerHooksTest extends TestCase
         ];
 
         $this->doUpdate($data)->assertStatus(200);
-
-        Event::assertDispatched(ResourceEvent::class, function ($event) use ($post, $data) {
-            return 'saving' === $event->hook &&
-                $post->is($event->record) &&
-                $data === $event->resource->toArray();
-        });
-
-        Event::assertDispatched(ResourceEvent::class, function ($event) use ($post, $data) {
-            return 'updating' === $event->hook &&
-                $post->is($event->record) &&
-                $data === $event->resource->toArray();
-        });
-
-        Event::assertDispatched(ResourceEvent::class, function ($event) use ($post, $data) {
-            return 'saved' === $event->hook &&
-                $post->is($event->record) &&
-                $data === $event->resource->toArray();
-        });
-
-        Event::assertDispatched(ResourceEvent::class, function ($event) use ($post, $data) {
-            return 'updated' === $event->hook &&
-                $post->is($event->record) &&
-                $data === $event->resource->toArray();
-        });
+        $this->assertHooksInvoked('saving', 'updating', 'updated', 'saved');
     }
 
     public function testUnsuccessfulUpdate()
@@ -161,8 +152,7 @@ class ControllerHooksTest extends TestCase
         ];
 
         $this->doUpdate($data)->assertStatus(422);
-
-        Event::assertNotDispatched(ResourceEvent::class);
+        $this->assertNoHooksInvoked();
     }
 
     /**
@@ -174,23 +164,82 @@ class ControllerHooksTest extends TestCase
     public function testDelete()
     {
         $post = factory(Post::class)->create();
+
         $this->doDelete($post)->assertStatus(204);
-
-        Event::assertDispatched(ResourceEvent::class, function ($event) use ($post) {
-            return 'deleting' === $event->hook &&
-                $post->is($event->record);
-        });
-
-        Event::assertDispatched(ResourceEvent::class, function ($event) use ($post) {
-            return 'deleted' === $event->hook &&
-                $post->id == $event->record;
-        });
+        $this->assertHooksInvoked('deleting', 'deleted');
     }
 
     public function testUnsuccessfulDelete()
     {
         $this->doDelete('999')->assertStatus(404);
+        $this->assertNoHooksInvoked();
+    }
 
-        Event::assertNotDispatched(ResourceEvent::class);
+    public function testReadRelated()
+    {
+        $post = factory(Post::class)->create();
+
+        $this->doReadRelated($post, 'author')->assertStatus(200);
+        $this->assertHooksInvoked('reading-relationship', 'reading-author');
+    }
+
+    public function testReadRelationship()
+    {
+        $post = factory(Post::class)->create();
+
+        $this->doReadRelationship($post, 'author')->assertStatus(200);
+        $this->assertHooksInvoked('reading-relationship', 'reading-author');
+    }
+
+    public function testReplaceRelationship()
+    {
+        $post = factory(Post::class)->create();
+
+        $this->doReplaceRelationship($post, 'author', null)->assertStatus(204);
+        $this->assertHooksInvoked('replacing', 'replacing-author', 'replaced-author', 'replaced');
+    }
+
+    public function testAddToRelationship()
+    {
+        $post = factory(Post::class)->create();
+        $tag = ['type' => 'tags', 'id' => (string) factory(Tag::class)->create()->getKey()];
+
+        $this->doAddToRelationship($post, 'tags', [$tag])->assertStatus(204);
+        $this->assertHooksInvoked('adding', 'adding-tags', 'added-tags', 'added');
+    }
+
+    public function testRemoveFromRelationship()
+    {
+        $post = factory(Post::class)->create();
+        /** @var Tag $tag */
+        $tag = $post->tags()->create(['name' => 'news']);
+        $identifier = ['type' => 'tags', 'id' => (string) $tag->getKey()];
+
+        $this->doRemoveFromRelationship($post, 'tags', [$identifier])->assertStatus(204);
+        $this->assertHooksInvoked('removing', 'removing-tags', 'removed-tags', 'removed');
+    }
+
+    /**
+     * @param mixed ...$names
+     */
+    private function assertHooksInvoked(...$names)
+    {
+        $this->assertSame($this->events, $names);
+    }
+
+    /**
+     * @param $name
+     */
+    private function assertHookInvoked($name)
+    {
+        $this->assertSame($this->events, [$name]);
+    }
+
+    /**
+     * @return void
+     */
+    private function assertNoHooksInvoked()
+    {
+        $this->assertEmpty($this->events);
     }
 }

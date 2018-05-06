@@ -19,7 +19,7 @@
 namespace CloudCreativity\LaravelJsonApi\Console\Commands;
 
 /**
- * Class ValidatorsMakeCommand
+ * Class MakeValidators
  *
  * @package CloudCreativity\LaravelJsonApi
  */

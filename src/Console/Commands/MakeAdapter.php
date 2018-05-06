@@ -19,7 +19,7 @@
 namespace CloudCreativity\LaravelJsonApi\Console\Commands;
 
 /**
- * Class SearchMakeCommand
+ * Class MakeAdapter
  *
  * @package CloudCreativity\LaravelJsonApi
  */

@@ -168,6 +168,16 @@ class NamespaceResolver implements ResolverInterface
     }
 
     /**
+     * @inheritDoc
+     */
+    public function getAuthorizerByName($name)
+    {
+        $classified = Str::classify($name);
+
+        return $this->append("{$classified}Authorizer");
+    }
+
+    /**
      * @inheritdoc
      */
     public function getValidatorsByType($type)

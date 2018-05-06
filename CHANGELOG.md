@@ -2,6 +2,40 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## [1.0.0-alpha.2] - 2018-05-06
+
+### Added
+- New authorizer interface and an abstract class that better integrates with Laravel's authentication and
+authorization style. See the new [Security chapter](./docs/basics/security.md) for details.
+- Can now generate authorizers using the `make:json-api:authorizer` command, or the `--auth` flag when
+generating a resource with `make:json-api:resource`.
+- The JSON API controller now has the following additional hooks:
+  - `searching` for an *index* action.
+  - `reading` for a *read* action.
+- [#163](https://github.com/cloudcreativity/laravel-json-api/issues/163)
+Added relationship hooks to the JSON API controller.
+
+### Changed
+- Generating an Eloquent schema will now generate a class that extends `SchemaProvider`, i.e. the generic schema.
+- Existing JSON API controller hooks now receive the whole validated JSON API request rather than just the resource
+object submitted by the client.
+
+### Removed
+- The previous authorizer implementation has been removed in favour of the new one. The following were deleted:
+  - `Contract\Authorizer\AuthorizerInterface`
+  - `Authorizer\AbstractAuthorizer`
+  - `Authorizer\ReadOnlyAuthorizer`
+  - `Exceptions\AuthorizationException`
+
+### Deprecated
+- Eloquent schemas are now deprecated in favour of using generic schemas. This is because of the amount of
+processing involved without any benefit, as generic schemas are straight-forward to construct. The following
+classes/traits are deprecated:
+  - `Eloquent\AbstractSchema`
+  - `Eloquent\SerializesModels`
+  - `Schema\CreatesLinks`
+  - `Schema\EloquentSchema` (was deprecated in `1.0.0-alpha.1`).
+
 ## [1.0.0-alpha.1] - 2018-04-29
 
 As we are now only developing JSON API within Laravel applications, we have deprecated our framework agnostic 

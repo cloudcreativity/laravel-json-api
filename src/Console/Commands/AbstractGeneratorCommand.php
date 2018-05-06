@@ -143,9 +143,9 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
 
         $this->replaceNamespace($stub, $name)
             ->replaceClassName($stub, $name)
-            ->replaceResourceType($stub, $this->getResourceName())
+            ->replaceResourceType($stub)
             ->replaceApplicationNamespace($stub)
-            ->replaceRecord($stub, $this->getResourceName());
+            ->replaceRecord($stub);
 
         return $stub;
     }
@@ -203,9 +203,9 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
      *
      * @return string
      */
-    private function getResourceName()
+    protected function getResourceName()
     {
-        $name = ucwords($this->argument('resource'));
+        $name = ucwords($this->getResourceInput());
 
         if ($this->isByResource()) {
             return str_plural($name);
@@ -215,14 +215,22 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
     }
 
     /**
+     * @return string
+     */
+    protected function getResourceInput()
+    {
+        return $this->argument('resource');
+    }
+
+    /**
      * Replace the value of the resource type string.
      *
      * @param mixed $stub
-     * @param mixed $resource
      * @return $this
      */
-    private function replaceResourceType(&$stub, $resource)
+    protected function replaceResourceType(&$stub)
     {
+        $resource = $this->getResourceName();
         $stub = str_replace('dummyResourceType', Str::dasherize($resource), $stub);
 
         return $this;
@@ -232,11 +240,11 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
      * Replace the value of the model class name.
      *
      * @param $stub
-     * @param $resource
      * @return $this
      */
-    private function replaceRecord(&$stub, $resource)
+    protected function replaceRecord(&$stub)
     {
+        $resource = $this->getResourceName();
         $stub = str_replace('DummyRecord', Str::classify(str_singular($resource)), $stub);
 
         return $this;
@@ -248,7 +256,7 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
      * @param $stub
      * @return $this
      */
-    private function replaceApplicationNamespace(&$stub)
+    protected function replaceApplicationNamespace(&$stub)
     {
         $namespace = rtrim($this->laravel->getNamespace(), '\\');
         $stub = str_replace('DummyApplicationNamespace', $namespace, $stub);
@@ -262,7 +270,7 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
      * @param $stub
      * @return $this
      */
-    private function replaceClassName(&$stub, $name)
+    protected function replaceClassName(&$stub, $name)
     {
         $stub = $this->replaceClass($stub, $name);
 
@@ -275,7 +283,7 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
      * @param string $implementationType
      * @return string
      */
-    private function getStubFor($implementationType)
+    protected function getStubFor($implementationType)
     {
         return sprintf('%s/%s/%s.stub', $this->stubsDirectory, $implementationType, lcfirst($this->type));
     }
@@ -283,7 +291,7 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
     /**
      * @return bool
      */
-    private function isByResource()
+    protected function isByResource()
     {
         return $this->getApi()->isByResource();
     }
@@ -293,7 +301,7 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
      *
      * @return boolean
      */
-    private function isEloquent()
+    protected function isEloquent()
     {
         if ($this->isIndependent) {
             return false;
@@ -309,7 +317,7 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
     /**
      * @return Api
      */
-    private function getApi()
+    protected function getApi()
     {
         return $this->apiRepository->createApi($this->argument('api'));
     }

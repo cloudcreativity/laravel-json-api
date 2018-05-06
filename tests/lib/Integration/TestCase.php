@@ -22,6 +22,7 @@ use CloudCreativity\LaravelJsonApi\Facades\JsonApi;
 use CloudCreativity\LaravelJsonApi\ServiceProvider;
 use CloudCreativity\LaravelJsonApi\Testing\MakesJsonApiRequests;
 use DummyApp;
+use DummyApp\User;
 use DummyPackage;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Foundation\Application;
@@ -102,6 +103,17 @@ abstract class TestCase extends BaseTestCase
         ], function () {
             require __DIR__ . '/../../dummy/routes/json-api.php';
         });
+
+        return $this;
+    }
+
+    /**
+     * @param string ...$states
+     * @return $this
+     */
+    protected function actingAsUser(...$states)
+    {
+        $this->actingAs(factory(User::class)->states($states)->create(), 'api');
 
         return $this;
     }

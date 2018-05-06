@@ -57,6 +57,7 @@ class GeneratorsTest extends TestCase
         $directories = [
             "{$this->path}/app/JsonApi/Companies",
             "{$this->path}/app/JsonApi/Adapters",
+            "{$this->path}/app/JsonApi/Authorizers",
             "{$this->path}/app/JsonApi/Schemas",
             "{$this->path}/app/JsonApi/Validators",
         ];
@@ -67,9 +68,27 @@ class GeneratorsTest extends TestCase
             }
         }
 
-        if ($this->files->exists($file = "{$this->path}/config/json-api-v1.php")) {
-            $this->files->delete($file);
+        $files = [
+            "{$this->path}/config/json-api-v1.php",
+            "{$this->path}/app/JsonApi/VisitorAuthorizer.php",
+        ];
+
+        foreach ($files as $file) {
+            if ($this->files->exists($file)) {
+                $this->files->delete($file);
+            }
         }
+    }
+
+    /**
+     * @return array
+     */
+    public function byResourceProvider()
+    {
+        return [
+            'by-resource' => [true],
+            'not-by-resource' => [false],
+        ];
     }
 
     /**
@@ -185,6 +204,62 @@ class GeneratorsTest extends TestCase
     }
 
     /**
+     * Test generating a reusable authorizer.
+     *
+     * @param bool $byResource
+     * @dataProvider byResourceProvider
+     */
+    public function testReusableAuthorizer($byResource)
+    {
+        $this->byResource($byResource);
+
+        $result = $this->artisan('make:json-api:authorizer', [
+            'name' => 'visitor',
+        ]);
+
+        $this->assertSame(0, $result);
+        $this->assertReusableAuthorizer();
+    }
+
+    /**
+     * Test generating a resource-specific authorizer.
+     *
+     * @param $byResource
+     * @dataProvider byResourceProvider
+     */
+    public function testResourceAuthorizer($byResource)
+    {
+        $this->byResource($byResource);
+
+        $result = $this->artisan('make:json-api:authorizer', [
+            'name' => 'companies',
+            '--resource' => true,
+        ]);
+
+        $this->assertSame(0, $result);
+        $this->assertResourceAuthorizer();
+    }
+
+    /**
+     * Test generating a resource with an authorizer.
+     *
+     * @param $byResource
+     * @dataProvider byResourceProvider
+     */
+    public function testResourceWithAuthorizer($byResource)
+    {
+        $this->byResource($byResource);
+
+        $result = $this->artisan('make:json-api:resource', [
+            'resource' => 'companies',
+            '--auth' => true,
+        ]);
+
+        $this->assertSame(0, $result);
+        $this->assertResourceAuthorizer();
+    }
+
+    /**
      * @return $this
      */
     private function withEloquent()
@@ -200,6 +275,19 @@ class GeneratorsTest extends TestCase
     private function withoutEloquent()
     {
         config()->set('json-api-default.use-eloquent', false);
+
+        return $this;
+    }
+
+    /**
+     * @param $bool
+     * @return $this
+     */
+    private function byResource($bool)
+    {
+        if (!$bool) {
+            $this->notByResource();
+        }
 
         return $this;
     }
@@ -285,8 +373,7 @@ class GeneratorsTest extends TestCase
     private function assertEloquentSchema()
     {
         $content = $this->assertSchema();
-        $this->assertContains('Eloquent\AbstractSchema', $content);
-
+        $this->assertContains('return (string) $resource->getKey();', $content);
     }
 
     /**
@@ -295,9 +382,7 @@ class GeneratorsTest extends TestCase
     private function assertGenericSchema()
     {
         $content = $this->assertSchema();
-        $this->assertContains('Schema\SchemaProvider', $content);
-        $this->assertNotContains('use DummyApp\Company;', $content);
-        $this->assertContains('@param $resource', $content);
+        $this->assertNotContains('return (string) $resource->getKey();', $content);
     }
 
     /**
@@ -311,6 +396,8 @@ class GeneratorsTest extends TestCase
 
         $this->assertFileExists($file);
         $content = $this->files->get($file);
+
+        $this->assertContains('extends SchemaProvider', $content);
         $this->assertContains("protected \$resourceType = 'companies';", $content);
 
         if ($this->byResource) {
@@ -345,6 +432,48 @@ class GeneratorsTest extends TestCase
             $this->assertContains('class Validators extends', $content);
         } else {
             $this->assertContains('namespace DummyApp\JsonApi\Validators;', $content);
+            $this->assertContains('class Company extends', $content);
+        }
+    }
+
+    /**
+     * @return void
+     */
+    private function assertReusableAuthorizer()
+    {
+        $file = $this->byResource ?
+            "{$this->path}/app/JsonApi/VisitorAuthorizer.php" :
+            "{$this->path}/app/JsonApi/Authorizers/Visitor.php";
+
+        $this->assertFileExists($file);
+        $content = $this->files->get($file);
+
+        if ($this->byResource) {
+            $this->assertContains('namespace DummyApp\JsonApi;', $content);
+            $this->assertContains('class VisitorAuthorizer extends AbstractAuthorizer', $content);
+        } else {
+            $this->assertContains('namespace DummyApp\JsonApi\Authorizers;', $content);
+            $this->assertContains('class Visitor extends', $content);
+        }
+    }
+
+    /**
+     * @return void
+     */
+    private function assertResourceAuthorizer()
+    {
+        $file = $this->byResource ?
+            "{$this->path}/app/JsonApi/Companies/Authorizer.php" :
+            "{$this->path}/app/JsonApi/Authorizers/Company.php";
+
+        $this->assertFileExists($file);
+        $content = $this->files->get($file);
+
+        if ($this->byResource) {
+            $this->assertContains('namespace DummyApp\JsonApi\Companies;', $content);
+            $this->assertContains('class Authorizer extends AbstractAuthorizer', $content);
+        } else {
+            $this->assertContains('namespace DummyApp\JsonApi\Authorizers;', $content);
             $this->assertContains('class Company extends', $content);
         }
     }

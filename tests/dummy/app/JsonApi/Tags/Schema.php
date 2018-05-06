@@ -17,9 +17,10 @@
 
 namespace DummyApp\JsonApi\Tags;
 
-use CloudCreativity\LaravelJsonApi\Eloquent\AbstractSchema;
+use DummyApp\Tag;
+use Neomerx\JsonApi\Schema\SchemaProvider;
 
-class Schema extends AbstractSchema
+class Schema extends SchemaProvider
 {
 
     /**
@@ -28,8 +29,26 @@ class Schema extends AbstractSchema
     protected $resourceType = 'tags';
 
     /**
-     * @var array
+     * @param Tag $resource
+     *      the domain record being serialized.
+     * @return string
      */
-    protected $relationships = ['taggables'];
+    public function getId($resource)
+    {
+        return (string) $resource->getKey();
+    }
 
+    /**
+     * @param Tag $resource
+     *      the domain record being serialized.
+     * @return array
+     */
+    public function getAttributes($resource)
+    {
+        return [
+            'created-at' => $resource->created_at->toAtomString(),
+            'updated-at' => $resource->updated_at->toAtomString(),
+            'name' => $resource->name,
+        ];
+    }
 }

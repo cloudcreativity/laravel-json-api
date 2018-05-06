@@ -23,7 +23,7 @@ use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
 
 /**
- * Class MakeApiCommand
+ * Class MakeApi
  *
  * @package CloudCreativity\LaravelJsonApi
  */

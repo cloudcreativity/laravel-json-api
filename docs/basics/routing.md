@@ -26,21 +26,6 @@ you need to ensure that no prefix has already been applied.
 `routes/api.php` file, you will need to remove the prefix from the `mapApiRoutes()` method in your 
 `RouteServiceProvider`.
 
-## Controller
-
-By default no controller is required because this package contains a standard controller for processing JSON API
-requests. However it is possible to specify your own controller, using the `controller` option.
-
-For example, the following would use the `PostsController` in the `Api` namespace:
-
-```php
-JsonApi::register('default', ['namespace' => 'Api'], function ($api, $router) {
-    $api->resource('posts', ['controller' => 'PostsController']);
-});
-```
-
-For more information on controllers, see the [Controllers chapter](./controllers.md).
-
 ## Resource Routes
 
 The JSON API spec defines the routes for each resource type. Calling `$api->resource('posts')` will therefore
@@ -71,9 +56,9 @@ JsonApi::register('default', ['namespace' => 'Api'], function ($api, $router) {
 
 The JSON API spec also defines routes for relationships on a resource type. There are two types of relationships:
 
-- **Has One**: The relationship is to zero or one of a related resource. It is represented by a single resource
+- **To One**: The relationship is to zero or one of a related resource. It is represented by a single resource
 identifier or `null`.
-- **Has Many**: The relationships is to zero to many of a related resource. It always represented by an array of
+- **To Many**: The relationships is to zero to many of a related resource. It always represented by an array of
 resource identifiers (and the array may be empty).
 
 Relationship routes can be registered as follows:
@@ -93,9 +78,9 @@ JsonApi::register('default', ['namespace' => 'Api'], function ($api, $router) {
 
 > Note that you can use a string for a single relationship, or an array of string for multiple.
 
-### Has-One Routes
+### To-One Routes
 
-The following has-one routes are registered (using the `author` relationship on the `posts` resource as an example):
+The following to-one routes are registered (using the `author` relationship on the `posts` resource as an example):
 
 | URL | Route Name |
 | :-- | :-- |
@@ -116,9 +101,9 @@ JsonApi::register('default', ['namespace' => 'Api'], function ($api, $router) {
 });
 ```
 
-### Has-Many Routes
+### To-Many Routes
 
-The following has-one routes are registered (using the `comments` relationship on the `posts` resource as an example):
+The following to-many routes are registered (using the `comments` relationship on the `posts` resource as an example):
 
 | URL | Route Name |
 | :-- | :-- |
@@ -168,3 +153,65 @@ JsonApi::register('default', ['namespace' => 'Api', 'id' => '[\d]+'], function (
     $api->resource('tags', ['id' => null]); // has no constaint
 });
 ```
+
+## Middleware
+
+### API Middleware
+
+When you register a JSON API, two pieces of middleware are configured for the entire API:
+
+- `json-api`: This boots JSON API support for the inbound request, including running content negotiation to
+ensure that the request is a JSON API request and that the client will accept a JSON API response.
+- `json-api.bindings`: This replaces the `{record}` route parameter with the PHP object that it relates to,
+or sends a `404` response if the resource id is not recognised.
+
+If you need to run middleware *before* this JSON API middleware runs, wrap your JSON API registration in
+a group as follows:
+
+ ```php
+Route::group(['middleware' => 'my_middleware'], function () {
+  JsonApi::register('default', [], function ($api, $router) {
+     // ...
+  });
+
+  // other routes
+});
+ ```
+
+If you need to run middleware *after* this JSON API middleware, and across your entire API, you can do so using
+the options when registering the API. For example, if we wanted one throttle rate across the entire API:
+
+```php
+JsonApi::register('default', ['middleware' => 'throttle:60,1'], function ($api, $router) {
+   // ...
+});
+```
+
+### Resource Middleware
+
+If you need to register middleware that runs only for a specific resource type, use the `middleware` option
+when registering the resource. For example if we wanted different throttle rates per resource type:
+
+```php
+JsonApi::register('default', [], function ($api, $router) {
+    $api->resource('posts', ['middleware' => 'throttle:30,1']);
+    $api->resource('comments', ['middleware' => 'throttle:60,1']);
+});
+```
+
+> This middleware will run for every request for the resource type, including its relationships.
+
+## Controllers
+
+By default no controller is required because this package contains a standard controller for processing JSON API
+requests. However it is possible to specify your own controller, using the `controller` option.
+
+For example, the following would use the `PostsController` in the `Api` namespace:
+
+```php
+JsonApi::register('default', ['namespace' => 'Api'], function ($api, $router) {
+    $api->resource('posts', ['controller' => 'PostsController']);
+});
+```
+
+For more information on controllers, see the [Controllers chapter](./controllers.md).

@@ -91,19 +91,21 @@ class HasMany extends AbstractRelation implements HasManyAdapterInterface
      * @param Model $record
      * @param RelationshipInterface $relationship
      * @param EncodingParametersInterface $parameters
-     * @return void
+     * @return Model
      */
     public function replace($record, RelationshipInterface $relationship, EncodingParametersInterface $parameters)
     {
         $this->update($record, $relationship, $parameters);
         $record->refresh(); // in case the relationship has been cached.
+
+        return $record;
     }
 
     /**
      * @param Model $record
      * @param RelationshipInterface $relationship
      * @param EncodingParametersInterface $parameters
-     * @return void
+     * @return Model
      */
     public function add($record, RelationshipInterface $relationship, EncodingParametersInterface $parameters)
     {
@@ -111,13 +113,15 @@ class HasMany extends AbstractRelation implements HasManyAdapterInterface
 
         $this->getWritableRelation($record)->saveMany($related);
         $record->refresh(); // in case the relationship has been cached.
+
+        return $record;
     }
 
     /**
      * @param Model $record
      * @param RelationshipInterface $relationship
      * @param EncodingParametersInterface $parameters
-     * @return void
+     * @return Model
      */
     public function remove($record, RelationshipInterface $relationship, EncodingParametersInterface $parameters)
     {
@@ -131,6 +135,8 @@ class HasMany extends AbstractRelation implements HasManyAdapterInterface
         }
 
         $record->refresh(); // in case the relationship has been cached
+
+        return $record;
     }
 
     /**

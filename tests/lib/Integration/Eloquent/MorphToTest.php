@@ -39,6 +39,15 @@ class MorphToTest extends TestCase
      */
     protected $resourceType = 'comments';
 
+    /**
+     * @return void
+     */
+    public function setUp()
+    {
+        parent::setUp();
+        $this->actingAsUser();
+    }
+
     public function testCreateWithNull()
     {
         /** @var Comment $comment */
@@ -76,7 +85,7 @@ class MorphToTest extends TestCase
     public function testCreateWithRelated()
     {
         /** @var Comment $comment */
-        $comment = factory(Comment::class)->states('post')->make();
+        $comment = factory(Comment::class)->states('video')->make();
 
         $data = [
             'type' => 'comments',
@@ -84,15 +93,9 @@ class MorphToTest extends TestCase
                 'content' => $comment->content,
             ],
             'relationships' => [
-                'created-by' => [
-                    'data' => [
-                        'type' => 'users',
-                        'id' => (string) $comment->user_id,
-                    ],
-                ],
                 'commentable' => [
                     'data' => [
-                        'type' => 'posts',
+                        'type' => 'videos',
                         'id' => (string) $comment->commentable_id,
                     ],
                 ],
@@ -105,7 +108,7 @@ class MorphToTest extends TestCase
 
         $this->assertDatabaseHas('comments', [
             'id' => $id,
-            'commentable_type' => Post::class,
+            'commentable_type' => Video::class,
             'commentable_id' => $comment->commentable_id,
         ]);
     }
