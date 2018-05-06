@@ -259,16 +259,16 @@ authorization easy.
 ### `authenticate`
 
 This checks for an authenticated user. If there is no authenticated user, a `Illuminate\Auth\AuthenticationException`
-will be thrown, resulting in a `401` response. This will use the default guard to check for an authenticated user,
+will be thrown, resulting in a `401` response. This will use the `api` guard to check for an authenticated user,
 but you can configure the guards to check using the `$guards` property on your authorizer.
 
-For example, the following authorizer will check the `api` guard for an authenticated user:
+For example, the following authorizer will check the `api_v1` guard for an authenticated user:
 
 ```php
 class DefaultAuthorizer extends AbstractAuthorizer
 {
 
-    public $guards = ['api'];
+    public $guards = ['api_v1'];
 
     public function index($type, $request)
     {
@@ -276,6 +276,8 @@ class DefaultAuthorizer extends AbstractAuthorizer
     }
 }
 ```
+
+If you want to just check your application's default guard, set the `$guards` property to an empty array.
 
 ### `authorize`
 

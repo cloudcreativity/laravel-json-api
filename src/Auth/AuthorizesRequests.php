@@ -35,11 +35,12 @@ trait AuthorizesRequests
     /**
      * The guards to use to authenticate a user.
      *
-     * If the array is empty, the default guard will be used.
+     * By default we use the `api` guard. Change this to either different
+     * named guards, or an empty array to use the default guard.
      *
      * @var array
      */
-    protected $guards = [];
+    protected $guards = ['api'];
 
     /**
      * @param $ability

@@ -113,7 +113,7 @@ abstract class TestCase extends BaseTestCase
      */
     protected function actingAsUser(...$states)
     {
-        $this->actingAs(factory(User::class)->states($states)->create());
+        $this->actingAs(factory(User::class)->states($states)->create(), 'api');
 
         return $this;
     }

@@ -138,7 +138,7 @@ class AuthorizerTest extends TestCase
     {
         $post = factory(Post::class)->create();
 
-        $this->actingAs($post->author)
+        $this->actingAs($post->author, 'api')
             ->doRead($post)
             ->assertStatus(200);
     }
@@ -196,7 +196,7 @@ class AuthorizerTest extends TestCase
             ],
         ];
 
-        $this->actingAs($post->author)
+        $this->actingAs($post->author, 'api')
             ->doUpdate($data)
             ->assertStatus(200);
     }
@@ -238,7 +238,7 @@ class AuthorizerTest extends TestCase
     {
         $post = factory(Post::class)->create();
 
-        $this->actingAs($post->author)
+        $this->actingAs($post->author, 'api')
             ->doDelete($post)
             ->assertStatus(204);
 
