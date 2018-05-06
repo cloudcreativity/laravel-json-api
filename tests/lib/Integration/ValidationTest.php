@@ -37,7 +37,7 @@ class ValidationTest extends TestCase
     public function testRejectsUnrecognisedTypeInResourceRelationship()
     {
         $this->resourceType = 'comments';
-        $comment = factory(Comment::class)->make();
+        $comment = factory(Comment::class)->states('post')->make();
 
         $data = [
             'type' => 'comments',
@@ -45,18 +45,26 @@ class ValidationTest extends TestCase
                 'content' => $comment->content,
             ],
             'relationships' => [
-                'post' => [
+                'commentable' => [
                     'data' => [
                         'type' => 'post', // invalid type as expecting the plural,
-                        'id' => (string) $comment->post_id,
+                        'id' => (string) $comment->commentable_id,
                     ],
                 ],
             ],
         ];
 
-        $this->doCreate($data)
-            ->assertStatus(400)
-            ->assertErrors()
-            ->assertPointers('/data/relationships/post/data/type');
+        $this->actingAsUser()->doCreate($data)->assertStatus(400)->assertExactJson([
+            'errors' => [
+                [
+                    'title' => 'Invalid Relationship',
+                    'detail' => "Resource type 'post' is not recognised.",
+                    'status' => '400',
+                    'source' => [
+                        'pointer' => '/data/relationships/commentable/data/type',
+                    ],
+                ]
+            ],
+        ]);
     }
 }

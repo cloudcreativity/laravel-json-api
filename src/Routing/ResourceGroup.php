@@ -86,26 +86,7 @@ class ResourceGroup
      */
     protected function middleware()
     {
-        $middleware = (array) $this->options->get('middleware');
-        $authorizer = $this->authorizer();
-
-        return array_merge($middleware, array_filter([
-            $authorizer ? "json-api.authorize:$authorizer" : null,
-        ]));
-    }
-
-    /**
-     * @return string|null
-     */
-    protected function authorizer()
-    {
-        if ($authorizer = $this->options->get('authorizer')) {
-            return $authorizer;
-        }
-
-        $authorizer = $this->resolver->getAuthorizerByResourceType($this->resourceType);
-
-        return class_exists($authorizer) ? $authorizer : $this->options->get('default-authorizer');
+        return (array) $this->options->get('middleware');
     }
 
     /**

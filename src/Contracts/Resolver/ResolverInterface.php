@@ -116,6 +116,12 @@ interface ResolverInterface
     public function getAuthorizerByResourceType($resourceType);
 
     /**
+     * @param $name
+     * @return string
+     */
+    public function getAuthorizerByName($name);
+
+    /**
      * @param $type
      * @return string|null
      */

@@ -30,6 +30,13 @@ interface RequestInterface
 {
 
     /**
+     * Get the domain record type that is subject of the request.
+     *
+     * @return string
+     */
+    public function getType();
+
+    /**
      * What resource type does the request relate to?
      *
      * @return string|null
@@ -50,6 +57,13 @@ interface RequestInterface
      * @return ResourceIdentifierInterface|null
      */
     public function getResourceIdentifier();
+
+    /**
+     * Get the domain object that the request relates to.
+     *
+     * @return object|null
+     */
+    public function getResource();
 
     /**
      * What resource relationship does the request relate to?

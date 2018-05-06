@@ -21,6 +21,14 @@ class UnitNamespaceResolver extends NamespaceResolver
 {
 
     /**
+     * @inheritDoc
+     */
+    public function getAuthorizerByName($name)
+    {
+        return $this->resolve('Authorizer', $name);
+    }
+
+    /**
      * @param string $unit
      * @param string $resourceType
      * @return string

@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Copyright 2018 Cloud Creativity Limited
  *
@@ -16,30 +15,34 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\LaravelJsonApi\Tests\Unit\Exceptions;
+namespace CloudCreativity\LaravelJsonApi\Auth;
 
-use CloudCreativity\LaravelJsonApi\Document\Error;
-use CloudCreativity\LaravelJsonApi\Exceptions\AuthorizationException;
-use CloudCreativity\LaravelJsonApi\Tests\Unit\TestCase;
+use CloudCreativity\LaravelJsonApi\Contracts\Auth\AuthorizerInterface;
 
 /**
- * Class ErrorCollectionTest
+ * Class AbstractAuthorizer
  *
  * @package CloudCreativity\LaravelJsonApi
  */
-class AuthorizationExceptionTest extends TestCase
+abstract class AbstractAuthorizer implements AuthorizerInterface
 {
 
-    public function testDefaultStatus()
+    use AuthorizesRequests;
+
+    /**
+     * @inheritDoc
+     */
+    public function readRelationship($record, $field, $request)
     {
-        $ex = new AuthorizationException([]);
-        $this->assertSame(AuthorizationException::HTTP_CODE_FORBIDDEN, $ex->getHttpCode());
+        $this->read($record, $request);
     }
 
-    public function testErrorStatus()
+    /**
+     * @inheritDoc
+     */
+    public function modifyRelationship($record, $field, $request)
     {
-        $err = new Error(null, null, 401);
-        $ex = new AuthorizationException($err);
-        $this->assertEquals(401, $ex->getHttpCode());
+        $this->update($record, $request);
     }
+
 }

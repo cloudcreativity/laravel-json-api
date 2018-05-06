@@ -211,6 +211,14 @@ class AggregateResolver implements ResolverInterface, IteratorAggregate
     /**
      * @inheritDoc
      */
+    public function getAuthorizerByName($name)
+    {
+        return $this->getDefaultResolver()->getAuthorizerByName($name);
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function getValidatorsByType($type)
     {
         $resolver = $this->resolverByType($type);

@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file. This projec
 ## Unreleased
 
 ### Added
+- New authorizer interface and an abstract class that better integrates with Laravel's authentication and
+authorization style. See the new [Security chapter](./docs/basics/security.md) for details.
+- Can now generate authorizers using the `make:json-api:authorizer` command, or the `--auth` flag when
+generating a resource with `make:json-api:resource`.
 - The JSON API controller now has the following additional hooks:
   - `searching` for an *index* action.
   - `reading` for a *read* action.
@@ -15,6 +19,13 @@ Added relationship hooks to the JSON API controller.
 - Generating an Eloquent schema will now generate a class that extends `SchemaProvider`, i.e. the generic schema.
 - Existing Eloquent controller hooks now receive the whole validate JSON API request rather than just the resource
 object submitted by the client.
+
+### Removed
+- The previous authorizer implementation has been removed in favour of the new one. The following were deleted:
+  - `Contract\Authorizer\AuthorizerInterface`
+  - `Authorizer\AbstractAuthorizer`
+  - `Authorizer\ReadOnlyAuthorizer`
+  - `Exceptions\AuthorizationException`
 
 ### Deprecated
 - Eloquent schemas are now deprecated in favour of using generic schemas. This is because of the amount of

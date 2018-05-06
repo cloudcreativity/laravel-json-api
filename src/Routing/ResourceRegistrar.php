@@ -70,7 +70,7 @@ class ResourceRegistrar
         $url = $api->getUrl();
 
         $this->router->group([
-            'middleware' => 'json-api:' . $apiName,
+            'middleware' => ["json-api:{$apiName}", "json-api.bindings"],
             'as' => $url->getName(),
             'prefix' => $url->getNamespace(),
         ], function () use ($api, $options, $routes) {
