@@ -27,7 +27,7 @@ use Illuminate\Auth\AuthenticationException;
  *
  * @package CloudCreativity\LaravelJsonApi
  */
-trait UsesAuthorizers
+trait HandlesAuthorizers
 {
 
     /**

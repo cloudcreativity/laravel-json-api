@@ -19,7 +19,7 @@
 namespace CloudCreativity\LaravelJsonApi\Http\Middleware;
 
 use Closure;
-use CloudCreativity\LaravelJsonApi\Auth\UsesAuthorizers;
+use CloudCreativity\LaravelJsonApi\Auth\HandlesAuthorizers;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestInterface;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -34,7 +34,7 @@ use Illuminate\Http\Request;
 class Authorize
 {
 
-    use UsesAuthorizers;
+    use HandlesAuthorizers;
 
     /**
      * @var ContainerInterface

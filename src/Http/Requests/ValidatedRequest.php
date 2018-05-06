@@ -17,7 +17,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Http\Requests;
 
-use CloudCreativity\LaravelJsonApi\Auth\UsesAuthorizers;
+use CloudCreativity\LaravelJsonApi\Auth\HandlesAuthorizers;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Object\DocumentInterface;
@@ -37,7 +37,7 @@ use Neomerx\JsonApi\Exceptions\JsonApiException;
 class ValidatedRequest implements ValidatesWhenResolved
 {
 
-    use UsesAuthorizers;
+    use HandlesAuthorizers;
 
     /**
      * @var RequestInterface

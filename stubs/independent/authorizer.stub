@@ -2,7 +2,7 @@
 
 namespace DummyNamespace;
 
-use CloudCreativity\LaravelJsonApi\Auth\AbstractResourceAuthorizer;
+use CloudCreativity\LaravelJsonApi\Auth\AbstractAuthorizer;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Request;
@@ -29,13 +29,15 @@ class DummyClass extends AbstractAuthorizer
     /**
      * Authorize a resource create request.
      *
+     * @param string $type
+     *      the domain record type.
      * @param Request $request
      *      the inbound request.
      * @return void
      * @throws AuthenticationException|AuthorizationException
      *      if the request is not authorized.
      */
-    public function create($request)
+    public function create($type, $request)
     {
         // TODO: Implement create() method.
     }
