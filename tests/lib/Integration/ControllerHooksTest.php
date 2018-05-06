@@ -20,8 +20,6 @@ namespace CloudCreativity\LaravelJsonApi\Tests\Integration;
 use DummyApp\Events\ResourceEvent;
 use DummyApp\Post;
 use DummyApp\Tag;
-use Illuminate\Support\Facades\Event;
-use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 class ControllerHooksTest extends TestCase
 {

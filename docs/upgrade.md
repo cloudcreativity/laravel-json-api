@@ -17,6 +17,12 @@ this argument in any of the hooks, or overload any protected methods.
 
 Refer to the [updated Controllers chapter](./basics/controllers.md) for examples.
 
+### Authorizers
+
+The old authorizer implementation has been removed to replace it with a new Laravel-friendly implementation.
+This is fully documented in the [Security chapter](./basics/security.md) - so to upgrade we suggest you check
+out that documentation.
+
 ## Upgrading from 0.12 to 1.0.0-alpha.1
 
 The main new feature introduced in this release is proper handling of reading and modifying resource

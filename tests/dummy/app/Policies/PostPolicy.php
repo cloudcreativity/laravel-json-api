@@ -17,8 +17,8 @@
 
 namespace DummyApp\Policies;
 
-use DummyApp\User;
 use DummyApp\Post;
+use DummyApp\User;
 use Illuminate\Support\Facades\Gate;
 
 class PostPolicy
