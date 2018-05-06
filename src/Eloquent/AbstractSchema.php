@@ -25,10 +25,10 @@ use Illuminate\Database\Eloquent\Model;
 use Neomerx\JsonApi\Schema\SchemaProvider;
 
 /**
- * Class EloquentSchema
+ * Class AbstractSchema
  *
  * @package CloudCreativity\LaravelJsonApi
- * @deprecated extend SchemaProvider directly.
+ * @deprecated 2.0.0 Extend SchemaProvider directly.
  */
 abstract class AbstractSchema extends SchemaProvider
 {

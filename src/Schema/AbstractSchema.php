@@ -24,7 +24,7 @@ use Neomerx\JsonApi\Schema\SchemaProvider;
  * Class AbstractSchema
  *
  * @package CloudCreativity\LaravelJsonApi
- * @deprecated extend `SchemaProvider` directly and apply traits as needed.
+ * @deprecated 2.0.0 Extend `SchemaProvider` directly and apply traits as needed.
  */
 abstract class AbstractSchema extends SchemaProvider
 {

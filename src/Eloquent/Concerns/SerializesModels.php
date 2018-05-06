@@ -28,7 +28,7 @@ use Neomerx\JsonApi\Schema\SchemaProvider;
  * Trait SerializesModels
  *
  * @package CloudCreativity\LaravelJsonApi
- * @deprecated
+ * @deprecated 2.0.0
  */
 trait SerializesModels
 {

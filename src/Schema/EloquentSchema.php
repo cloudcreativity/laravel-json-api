@@ -24,7 +24,7 @@ use CloudCreativity\LaravelJsonApi\Eloquent\AbstractSchema as BaseSchema;
  * Class EloquentSchema
  *
  * @package CloudCreativity\LaravelJsonApi
- * @deprecated extend `Eloquent\AbstractSchema` directly.
+ * @deprecated 2.0.0 Extend SchemaProvider directly.
  */
 abstract class EloquentSchema extends BaseSchema
 {

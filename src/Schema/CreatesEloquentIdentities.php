@@ -26,7 +26,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * Trait CreatesEloquentIdentities
  *
  * @package CloudCreativity\LaravelJsonApi
- * @deprecated
+ * @deprecated 2.0.0
  */
 trait CreatesEloquentIdentities
 {
