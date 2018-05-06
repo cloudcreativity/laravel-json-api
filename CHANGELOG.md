@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
-## Unreleased
+## [1.0.0-alpha.2] - 2018-05-06
 
 ### Added
 - New authorizer interface and an abstract class that better integrates with Laravel's authentication and
@@ -17,7 +17,7 @@ Added relationship hooks to the JSON API controller.
 
 ### Changed
 - Generating an Eloquent schema will now generate a class that extends `SchemaProvider`, i.e. the generic schema.
-- Existing Eloquent controller hooks now receive the whole validate JSON API request rather than just the resource
+- Existing JSON API controller hooks now receive the whole validated JSON API request rather than just the resource
 object submitted by the client.
 
 ### Removed
