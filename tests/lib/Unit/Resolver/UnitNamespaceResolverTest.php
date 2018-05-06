@@ -18,8 +18,8 @@
 namespace CloudCreativity\LaravelJsonApi\Tests\Unit\Resolver;
 
 use CloudCreativity\LaravelJsonApi\Resolver\UnitNamespaceResolver;
-use CloudCreativity\LaravelJsonApi\Tests\Models\Comment;
-use CloudCreativity\LaravelJsonApi\Tests\Models\Post;
+use DummyApp\Comment;
+use DummyApp\Post;
 use PHPUnit\Framework\TestCase;
 
 class UnitNamespaceResolverTest extends TestCase

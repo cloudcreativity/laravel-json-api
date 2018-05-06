@@ -1,13 +1,13 @@
 <?php
 
-namespace DummyApp\JsonApi\Tags;
+namespace DummyNamespace;
 
 use CloudCreativity\LaravelJsonApi\Auth\AbstractResourceAuthorizer;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Request;
 
-class Authorizer extends AbstractAuthorizer
+class DummyClass extends AbstractAuthorizer
 {
 
     /**

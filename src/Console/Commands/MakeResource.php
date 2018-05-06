@@ -22,7 +22,7 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
 
 /**
- * Class ResourceMakeCommand
+ * Class MakeResource
  *
  * @package CloudCreativity\LaravelJsonApi
  */
@@ -37,6 +37,7 @@ class MakeResource extends Command
     protected $signature = "make:json-api:resource
         {resource : The resource to create files for.}
         {api=default : The API that the resource belongs to.}
+        {--a|auth : Generate a resource authorizer.}
         {--e|eloquent : Use Eloquent classes.}
         {--N|no-eloquent : Do not use Eloquent classes.}
         {--o|only= : Specify the classes to generate.}
@@ -98,6 +99,14 @@ class MakeResource extends Command
 
         if (!$this->runCommandsWithParameters($commands->only($notEloquent), $resourceParameter)) {
             return 1;
+        }
+
+        if ($this->option('auth')) {
+            $this->call('make:json-api:authorizer', [
+                'name' => $this->argument('resource'),
+                'api' => $this->argument('api'),
+                '--resource' => true,
+            ]);
         }
 
         // Run commands that can accept Eloquent parameters.

@@ -213,18 +213,7 @@ class AggregateResolver implements ResolverInterface, IteratorAggregate
      */
     public function getAuthorizerByName($name)
     {
-        /** @var ResolverInterface $resolver */
-        foreach ($this as $resolver) {
-            if (!$authorizer = $resolver->getAuthorizerByName($name)) {
-                continue;
-            }
-
-            if (class_exists($authorizer)) {
-                return $authorizer;
-            }
-        }
-
-        return null;
+        return $this->getDefaultResolver()->getAuthorizerByName($name);
     }
 
     /**

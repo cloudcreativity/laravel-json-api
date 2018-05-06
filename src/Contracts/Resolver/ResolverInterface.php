@@ -117,7 +117,7 @@ interface ResolverInterface
 
     /**
      * @param $name
-     * @return string|null
+     * @return string
      */
     public function getAuthorizerByName($name);
 

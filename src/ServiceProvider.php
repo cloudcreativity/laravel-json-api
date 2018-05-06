@@ -65,6 +65,7 @@ class ServiceProvider extends BaseServiceProvider
     protected $generatorCommands = [
         Commands\MakeAdapter::class,
         Commands\MakeApi::class,
+        Commands\MakeAuthorizer::class,
         Commands\MakeResource::class,
         Commands\MakeSchema::class,
         Commands\MakeValidators::class,

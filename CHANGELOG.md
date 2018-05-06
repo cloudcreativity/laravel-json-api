@@ -7,6 +7,8 @@ All notable changes to this project will be documented in this file. This projec
 ### Added
 - New authorizer interface and an abstract class that better integrates with Laravel's authentication and
 authorization style. See the new [Security chapter](./docs/basics/security.md) for details.
+- Can now generate authorizers using the `make:json-api:authorizer` command, or the `--auth` flag when
+generating a resource with `make:json-api:resource`.
 - The JSON API controller now has the following additional hooks:
   - `searching` for an *index* action.
   - `reading` for a *read* action.
