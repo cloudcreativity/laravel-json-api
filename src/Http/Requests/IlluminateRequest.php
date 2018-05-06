@@ -18,7 +18,9 @@
 namespace CloudCreativity\LaravelJsonApi\Http\Requests;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\InvalidJsonException;
+use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Object\ResourceIdentifier;
 use CloudCreativity\LaravelJsonApi\Routing\ResourceRegistrar;
 use Illuminate\Http\Request;
@@ -52,6 +54,11 @@ class IlluminateRequest implements RequestInterface
     private $factory;
 
     /**
+     * @var ResolverInterface
+     */
+    private $resolver;
+
+    /**
      * @var string|null
      */
     private $resourceId;
@@ -71,13 +78,37 @@ class IlluminateRequest implements RequestInterface
      *
      * @param Request $request
      * @param ServerRequestInterface $serverRequest
+     * @param ResolverInterface $resolver
      * @param HttpFactoryInterface $factory
      */
-    public function __construct(Request $request, ServerRequestInterface $serverRequest, HttpFactoryInterface $factory)
-    {
+    public function __construct(
+        Request $request,
+        ServerRequestInterface $serverRequest,
+        ResolverInterface $resolver,
+        HttpFactoryInterface $factory
+    ) {
         $this->request = $request;
         $this->serverRequest = $serverRequest;
+        $this->resolver = $resolver;
         $this->factory = $factory;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getType()
+    {
+        if ($resource = $this->getResource()) {
+            return get_class($resource);
+        }
+
+        $resourceType = $this->getResourceType();
+
+        if (!$type = $this->resolver->getType($resourceType)) {
+            throw new RuntimeException("JSON API resource type {$resourceType} is not registered.");
+        }
+
+        return $type;
     }
 
     /**

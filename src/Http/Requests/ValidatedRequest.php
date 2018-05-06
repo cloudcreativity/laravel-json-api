@@ -17,7 +17,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Http\Requests;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Auth\ResourceAuthorizerInterface;
+use CloudCreativity\LaravelJsonApi\Auth\UsesAuthorizers;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Object\DocumentInterface;
@@ -36,6 +36,8 @@ use Neomerx\JsonApi\Exceptions\JsonApiException;
 
 class ValidatedRequest implements ValidatesWhenResolved
 {
+
+    use UsesAuthorizers;
 
     /**
      * @var RequestInterface
@@ -64,6 +66,30 @@ class ValidatedRequest implements ValidatesWhenResolved
         $this->request = $request;
         $this->store = $store;
         $this->container = $container;
+    }
+
+    /**
+     * Get an item from the JSON API document using "dot" notation.
+     *
+     * @param string $key
+     * @param mixed $default
+     * @return mixed
+     */
+    public function get($key, $default = null)
+    {
+        return data_get($this->request->getDocument(), $key, $default);
+    }
+
+    /**
+     * Get the JSON API document as an array.
+     *
+     * @return array
+     */
+    public function all()
+    {
+        $document = $this->getDocument();
+
+        return $document ? $document->toArray() : [];
     }
 
     /**
@@ -157,7 +183,7 @@ class ValidatedRequest implements ValidatesWhenResolved
         );
 
         if ($resourceValidators) {
-            $this->doValidate(
+            $this->validateRequest(
                 $resourceValidators,
                 $inverse ? $this->container->getValidatorsByResourceType($inverse) : null
             );
@@ -167,59 +193,16 @@ class ValidatedRequest implements ValidatesWhenResolved
     /**
      * Authorize the request.
      *
+     * @return void
      * @throws AuthenticationException
      * @throws AuthorizationException
      */
-    public function authorize()
+    protected function authorize()
     {
-        $authorizer = $this->container->getAuthorizerByResourceType($this->request->getResourceType());
+        $authorizer = $this->container->getAuthorizerByResourceType($this->getResourceType());
 
         if ($authorizer) {
-            $this->doAuthorize($authorizer, request());
-        }
-    }
-
-    /**
-     * Authorize the request using a resource authorizer.
-     *
-     * @param ResourceAuthorizerInterface $authorizer
-     * @param $request
-     * @throws AuthorizationException
-     * @throws AuthenticationException
-     */
-    protected function doAuthorize(ResourceAuthorizerInterface $authorizer, $request)
-    {
-        /** Index */
-        if ($this->request->isIndex()) {
-            $authorizer->index($request);
-            return;
-        } /** Create Resource */
-        elseif ($this->request->isCreateResource()) {
-            $authorizer->create($request);
-            return;
-        }
-
-        /** Read Resource */
-        if ($this->request->isReadResource()) {
-            $authorizer->read($this->getRecord(), $request);
-            return;
-        } /** Update Resource */
-        elseif ($this->request->isUpdateResource()) {
-            $authorizer->update($this->getRecord(), $request);
-            return;
-        } /** Delete Resource */
-        elseif ($this->request->isDeleteResource()) {
-            $authorizer->delete($this->getRecord(), $request);
-            return;
-        }
-
-        $field = $this->request->getRelationshipName();
-
-        /** Relationships */
-        if ($this->request->isReadRelatedResource() || $this->request->isReadRelationship()) {
-            $authorizer->readRelationship($this->getRecord(), $field, $request);
-        } else {
-            $authorizer->modifyRelationship($this->getRecord(), $field, $request);
+            $this->authorizeRequest($authorizer, $this->request, request());
         }
     }
 
@@ -248,7 +231,7 @@ class ValidatedRequest implements ValidatesWhenResolved
      * @return void
      * @throws JsonApiException
      */
-    protected function doValidate(ValidatorProviderInterface $resource, ValidatorProviderInterface $related = null)
+    protected function validateRequest(ValidatorProviderInterface $resource, ValidatorProviderInterface $related = null)
     {
         /** Check the JSON API query parameters */
         if (!$this->request->getRelationshipName()) {

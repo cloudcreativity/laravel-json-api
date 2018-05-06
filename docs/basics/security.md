@@ -5,21 +5,24 @@
 This package provides the ability to [authenticate](https://laravel.com/docs/authentication) and 
 [authorize](https://laravel.com/docs/authorization) users to your JSON API in a number of ways:
 
-- Middleware: use Laravel's in-built `auth` middleware to authenticate users to your API.
-- Authorizers: classes that contain logic for authorizing and authenticating requests that can be re-used for
-multiple JSON API resource types.
-- Resource Authorizers: classes that contain logic for authorizing and authenticating requests for a specific
-JSON API resource type.
-- Controller Authorization: use [controller hooks](./controllers.md) to authorize requests after validation
-of a JSON API request.
+- Middleware: use Laravel's in-built `auth` middleware to authenticate users to your API, or any custom
+middleware you use for your application.
+- Authorizers: classes that contain logic for authorizing and authenticating JSON API requests. These
+can either be re-used across multiple resource types, or be implemented for a specific resource type.
+- Controller Authorization: use [controller hooks](./controllers.md) to authorize requests from within your
+resource's controller.
+
+It is important to note that middleware and authorizers will authorize the JSON API request *before* it
+has been validated. Controller authorization occurs *after* validation and should therefore be used if your
+authorization is reliant on any JSON API content or parameters within the request.
 
 ## Middleware Authentication
 
-Laravel applications come with the `auth` middleware. You can use this to authenticate users to your API.
-You can use middleware to protect either the whole API or specific resources.
+When registering JSON API routes, you can apply middleware that authorizes the inbound request.
 
-For example, if your API only returned resources for the authenticated user, you could protect the entire API
-using the `auth` middleware as follows:
+For example, Laravel applications come with the `auth` middleware. You can use this to authenticate users
+to your API and protect either the whole API or specific resources. If your API only returned resources for the
+authenticated user, you could protect the entire API using the `auth` middleware as follows:
 
 ```php
 JsonApi::register('default', ['middleware' => 'auth'], function ($api, $router) {
@@ -27,7 +30,7 @@ JsonApi::register('default', ['middleware' => 'auth'], function ($api, $router) 
 });
 ```
 
-This will apply the `auth` middleware to every single JSON API route within your API.
+This will apply the `auth` middleware to *every* JSON API route within your API.
 
 If certain resources within your API only ever related to the authenticated user, you can protect the specific
 resources as follows:
@@ -39,19 +42,22 @@ JsonApi::register('default', [], function ($api, $router) {
 });
 ```
 
-This will apply the `auth` middleware to every JSON API route for the `user-profiles` resource.
+This will apply the `auth` middleware to every `user-profiles` resource route.
 
 ## Authorizers
 
 If you need to run different authentication and authorization logic for the different JSON API resource actions,
-then you can define your logic in *authorizer* classes. Authorizers are re-usable across multiple different JSON
-API resources.
+then you can define your logic in *authorizer* classes. Authorizers can either be re-used across multiple
+resource types, or definied for a specific resource type.
+
+As well as defining your authorization logic in a single class, they also contain a number of helper methods
+to make authentication and authorization easy.
 
 ### Generating an Authorizer
 
 @todo
 
-### Authorizer Helpers
+### Available Helpers
 
 The authorizer class has a number of helper methods to make authentication and authorization easy.
 
@@ -60,6 +66,8 @@ The authorizer class has a number of helper methods to make authentication and a
 This checks for an authenticated user. If there is no authenticated user, a `Illuminate\Auth\AuthenticationException`
 will be thrown, resulting in a `401` response. This will use the default guard to check for an authenticated user,
 but you can configure the guards to check using the `$guards` property on your authorizer.
+
+For example, the following authorizer will check the `api` guard for an authenticated user:
 
 ```php
 class DefaultAuthorizer extends AbstractAuthorizer
@@ -172,7 +180,7 @@ class DefaultAuthorizer extends AbstractAuthorizer
      */
     public function delete($record, $request)
     {
-        $this->can('remove', $record);
+        $this->can('delete', $record);
     }
 }
 ```
@@ -200,18 +208,19 @@ class DefaultAuthorizer extends AbstractAuthorizer
 
 ### Using Authorizers
 
-To use an authorizer, you should use the `json-api.auth` middleware. Without any arguments, this will use the
-`DefaultAuthorizer`. Using it as `json-api.auth:visitor` would use the `VisitorAuthorizer`.
+Authorizers that are not for a specific resource type are implemented via middleware. To use an authorizer,
+you should use the `json-api.auth` middleware, providing the name of the authorizer as the first middleware
+argument.
 
-For example, if you wanted to use the default authorizer for your entire API:
+For example, if you wanted to use the `default` authorizer for your entire API:
 
 ```php
-JsonApi::register('default', ['middleware' => 'json-api.auth'], function ($api, $router) {
+JsonApi::register('default', ['middleware' => 'json-api.auth:default'], function ($api, $router) {
    // ...
 });
 ```
 
-Or to use the visitor authorizer on specific resources:
+Or to use the `visitor` authorizer on specific resources:
 
 ```php
 JsonApi::register('default', [], function ($api, $router) {
@@ -221,8 +230,65 @@ JsonApi::register('default', [], function ($api, $router) {
 });
 ```
 
-## Resource Authorizers
+Authorizers that are for a specific resource type are automatically detected and invoked, so you do not
+need to add them as middleware.
 
-@todo
+> Authorizers for specific resource types are applied when the `ValidatedRequest` class is resolved from the
+service container. This is equivalent to when the `authorize` method on Laravel's
+[form request validation](https://laravel.com/docs/validation#form-request-validation) is invoked.
 
 ## Controller Authorization
+
+If you need to authorize a request *after* the request has been validated, you can do this by using
+[controller hooks](./controllers.md). The JSON API controller provided by this package has exactly
+the same helper authorization helper methods described above: `authenticate`, `authorize` and `can`.
+
+For example, if we wanted to check that a user was authorized to comment on a post, we would need
+to know the related post when creating the comment. The request we are expecting from the client
+would be as follows:
+
+```http
+POST /api/posts HTTP/1.1
+Accept: application/vnd.api+json
+Content-Type: application/vnd.api+json
+
+{
+  "data": {
+    "type": "comments",
+    "attributes": {
+      "content": "..."
+    },
+    "relationships": {
+      "post": {
+        "data": {
+          "type": "posts",
+          "id": "1"
+        }
+      }
+    }
+  }
+}
+```
+
+As our authorization is reliant on being sent a valid `post` relationship, it would be preferable to
+run the authorization *after* the JSON API document has been validated, but before the comment is
+created. We would use the `creating` hook in our controller:
+
+```php
+use CloudCreativity\LaravelJsonApi\Http\Controllers\JsonApiController;
+use CloudCreativity\LaravelJsonApi\Http\Requests\ValidatedRequest;
+use App\Post;
+
+class CommentsController extends JsonApiController
+{
+
+    protected function creating(ValidatedRequest $request)
+    {
+        $post = Post::find($request->get("data.relationships.post.data.id"));
+
+        $this->authorize('comment', $post);
+    }
+}
+```
+
+Refer to the [Controllers chapter](./controllers.md) for a full list of the available hooks.

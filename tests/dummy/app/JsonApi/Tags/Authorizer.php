@@ -2,19 +2,16 @@
 
 namespace DummyApp\JsonApi\Tags;
 
-use CloudCreativity\LaravelJsonApi\Auth\AbstractResourceAuthorizer;
+use CloudCreativity\LaravelJsonApi\Auth\AbstractAuthorizer;
 use DummyApp\User;
-use Illuminate\Auth\Access\AuthorizationException;
-use Illuminate\Auth\AuthenticationException;
-use Illuminate\Http\Request;
 
-class Authorizer extends AbstractResourceAuthorizer
+class Authorizer extends AbstractAuthorizer
 {
 
     /**
      * @inheritdoc
      */
-    public function index($request)
+    public function index($type, $request)
     {
         $this->authenticate();
     }
@@ -22,7 +19,7 @@ class Authorizer extends AbstractResourceAuthorizer
     /**
      * @inheritdoc
      */
-    public function create($request)
+    public function create($type, $request)
     {
         $this->can('author', User::class);
     }

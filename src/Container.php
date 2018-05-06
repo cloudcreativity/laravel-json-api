@@ -19,7 +19,6 @@ namespace CloudCreativity\LaravelJsonApi;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\ResourceAdapterInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Auth\AuthorizerInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Auth\ResourceAuthorizerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorProviderInterface;
@@ -75,18 +74,6 @@ class Container implements ContainerInterface
     {
         $this->container = $container;
         $this->resolver = $resolver;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getType($resourceType)
-    {
-        if (!$type = $this->resolver->getType($resourceType)) {
-            throw new RuntimeException("JSON API resource type {$resourceType} is not registered.");
-        }
-
-        return $type;
     }
 
     /**
@@ -430,7 +417,7 @@ class Container implements ContainerInterface
      * @param AuthorizerInterface|null $authorizer
      * @return void
      */
-    protected function setCreatedAuthorizer($resourceType, ResourceAuthorizerInterface $authorizer = null)
+    protected function setCreatedAuthorizer($resourceType, AuthorizerInterface $authorizer = null)
     {
         $this->createdAuthorizers[$resourceType] = $authorizer;
     }
@@ -443,7 +430,7 @@ class Container implements ContainerInterface
     {
         $authorizer = $this->create($className);
 
-        if (!is_null($authorizer) && !$authorizer instanceof ResourceAuthorizerInterface) {
+        if (!is_null($authorizer) && !$authorizer instanceof AuthorizerInterface) {
             throw new RuntimeException("Class [$className] is not a resource authorizer.");
         }
 

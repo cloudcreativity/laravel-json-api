@@ -19,6 +19,7 @@ namespace DummyApp\Policies;
 
 use DummyApp\User;
 use DummyApp\Post;
+use Illuminate\Support\Facades\Gate;
 
 class PostPolicy
 {
@@ -83,5 +84,17 @@ class PostPolicy
     public function delete(User $user, Post $post)
     {
         return $this->update($user, $post);
+    }
+
+    /**
+     * Determine if the user can comment on the given post.
+     *
+     * @param User $user
+     * @param Post $post
+     * @return bool
+     */
+    public function comment(User $user, Post $post)
+    {
+        return Gate::denies('admin', $user);
     }
 }

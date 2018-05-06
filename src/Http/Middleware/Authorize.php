@@ -19,7 +19,7 @@
 namespace CloudCreativity\LaravelJsonApi\Http\Middleware;
 
 use Closure;
-use CloudCreativity\LaravelJsonApi\Contracts\Auth\AuthorizerInterface;
+use CloudCreativity\LaravelJsonApi\Auth\UsesAuthorizers;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestInterface;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -33,6 +33,8 @@ use Illuminate\Http\Request;
  */
 class Authorize
 {
+
+    use UsesAuthorizers;
 
     /**
      * @var ContainerInterface
@@ -66,59 +68,15 @@ class Authorize
      * @throws AuthorizationException
      * @throws AuthenticationException
      */
-    public function handle($request, Closure $next, $authorizer = 'default')
+    public function handle($request, Closure $next, $authorizer)
     {
-        $this->authorize($this->container->getAuthorizerByName($authorizer), $request);
+        $this->authorizeRequest(
+            $this->container->getAuthorizerByName($authorizer),
+            $this->jsonApiRequest,
+            $request
+        );
 
         return $next($request);
-    }
-
-    /**
-     * Authorize the request.
-     *
-     * @param AuthorizerInterface $authorizer
-     * @param Request $request
-     * @throws AuthorizationException
-     * @throws AuthenticationException
-     */
-    protected function authorize(AuthorizerInterface $authorizer, $request)
-    {
-        $type = $this->container->getType($this->jsonApiRequest->getResourceType());
-
-        /** Index */
-        if ($this->jsonApiRequest->isIndex()) {
-            $authorizer->index($type, $request);
-            return;
-        } /** Create Resource */
-        elseif ($this->jsonApiRequest->isCreateResource()) {
-            $authorizer->create($type, $request);
-            return;
-        }
-
-        $record = $this->jsonApiRequest->getResource();
-
-        /** Read Resource */
-        if ($this->jsonApiRequest->isReadResource()) {
-            $authorizer->read($record, $request);
-            return;
-        } /** Update Resource */
-        elseif ($this->jsonApiRequest->isUpdateResource()) {
-            $authorizer->update($record, $request);
-            return;
-        } /** Delete Resource */
-        elseif ($this->jsonApiRequest->isDeleteResource()) {
-            $authorizer->delete($record, $request);
-            return;
-        }
-
-        $field = $this->jsonApiRequest->getRelationshipName();
-
-        /** Relationships */
-        if ($this->jsonApiRequest->isReadRelatedResource() || $this->jsonApiRequest->isReadRelationship()) {
-            $authorizer->readRelationship($record, $field, $request);
-        } else {
-            $authorizer->modifyRelationship($record, $field, $request);
-        }
     }
 
 }

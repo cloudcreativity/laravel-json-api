@@ -25,6 +25,7 @@ use CloudCreativity\LaravelJsonApi\Contracts\Exceptions\ExceptionParserInterface
 use CloudCreativity\LaravelJsonApi\Contracts\Factories\FactoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Repositories\ErrorRepositoryInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\ExceptionParser;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
@@ -196,6 +197,10 @@ class ServiceProvider extends BaseServiceProvider
 
         $this->app->bind(StoreInterface::class, function () {
             return json_api()->getStore();
+        });
+
+        $this->app->bind(ResolverInterface::class, function () {
+            return json_api()->getResolver();
         });
 
         $this->app->bind(ErrorRepositoryInterface::class, function () {
