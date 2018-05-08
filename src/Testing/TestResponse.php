@@ -110,7 +110,7 @@ class TestResponse extends BaseTestResponse
         $content = (array) json_decode((string) $this->getContent(), true);
 
         if (isset($content[Keys::KEYWORD_ERRORS])) {
-            $message .= " with errors:\n" . json_encode($content, JSON_PRETTY_PRINT);
+            $message .= " with errors:\n" . json_encode($content, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
         }
 
         PHPUnit::assertSame($status, $actual, $message);
