@@ -18,50 +18,48 @@
 namespace CloudCreativity\LaravelJsonApi\Eloquent;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Object\RelationshipInterface;
-use Illuminate\Database\Eloquent\Model;
+use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use Illuminate\Database\Eloquent\Relations;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
-class HasOne extends BelongsTo
+/**
+ * Class HasManyThrough
+ *
+ * @package CloudCreativity\LaravelJsonApi
+ */
+class HasManyThrough extends AbstractManyRelation
 {
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function update($record, RelationshipInterface $relationship, EncodingParametersInterface $parameters)
     {
-        $relation = $this->getRelation($record);
-        $related = $this->related($relationship);
-        /** @var Model|null $current */
-        $current = $record->{$this->key};
-
-        /** If the relationship is not changing, we do not need to do anything. */
-        if ($current && $related && $current->is($related)) {
-            return;
-        }
-
-        /** If there is a current related model, we need to clear it. */
-        if ($current) {
-            $current->setAttribute($relation->getForeignKeyName(), null)->save();
-        }
-
-        /** If there is a related model, save it. */
-        if ($related) {
-            $relation->save($related);
-        }
-
-        // no need to refresh $record as the Eloquent adapter will do it.
+        throw new RuntimeException('Modifying a has-many-through Eloquent relation is not supported.');
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function replace($record, RelationshipInterface $relationship, EncodingParametersInterface $parameters)
     {
-        $this->update($record, $relationship, $parameters);
-        $record->refresh(); // in case the relationship has been cached.
+        throw new RuntimeException('Modifying a has-many-through Eloquent relation is not supported.');
+    }
 
-        return $record;
+    /**
+     * @inheritdoc
+     */
+    public function add($record, RelationshipInterface $relationship, EncodingParametersInterface $parameters)
+    {
+        throw new RuntimeException('Modifying a has-many-through Eloquent relation is not supported.');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function remove($record, RelationshipInterface $relationship, EncodingParametersInterface $parameters)
+    {
+        throw new RuntimeException('Modifying a has-many-through Eloquent relation is not supported.');
     }
 
     /**
@@ -69,6 +67,7 @@ class HasOne extends BelongsTo
      */
     protected function acceptRelation($relation)
     {
-        return $relation instanceof Relations\HasOne;
+        return $relation instanceof Relations\HasManyThrough;
     }
+
 }

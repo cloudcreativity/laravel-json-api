@@ -669,7 +669,16 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     }
 
     /**
-     * @param HasManyAdapterInterface[] ...$adapters
+     * @param string|null $modelKey
+     * @return HasManyThrough
+     */
+    protected function hasManyThrough($modelKey = null)
+    {
+        return new HasManyThrough($this->model, $modelKey ?: $this->guessRelation());
+    }
+
+    /**
+     * @param HasManyAdapterInterface ...$adapters
      * @return MorphHasMany
      */
     protected function morphMany(HasManyAdapterInterface ...$adapters)

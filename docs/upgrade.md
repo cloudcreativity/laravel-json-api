@@ -6,6 +6,33 @@ We are now on `1.0.0` alpha releases. We are planning incremental changes during
 will involve only small upgrades. We will do one final large upgrade when we switch from alpha to beta releases,
 and then we are planning on tagging `1.0.0` after a limited number of beta tags.
 
+## 1.0.0-alpha.2 to 1.0.0-alpha.3
+
+### Eloquent Adapters
+
+Eloquent `hasManyThrough` relations were previously defined on the Eloquent adapter using the `hasMany` method.
+You now need to use the `hasManyThrough` method instead. This change **only** affects Eloquent `hasManyThrough`
+relations, i.e. you *do not* need to make changes for Eloquent `hasMany`, `belongsToMany`, `morphMany` and
+`morphToMany` relations.
+
+Change this:
+
+```php
+protected function posts()
+{
+    return $this->hasMany();
+}
+```
+
+To this:
+
+```php
+protected function posts()
+{
+    return $this->hasManyThrough();
+}
+```
+
 ## 1.0.0-alpha.1 to 1.0.0-alpha.2
 
 ### Controllers
