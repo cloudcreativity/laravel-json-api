@@ -19,7 +19,6 @@ namespace DummyApp\JsonApi\Sites;
 
 use CloudCreativity\LaravelJsonApi\Adapter\AbstractResourceAdapter;
 use CloudCreativity\LaravelJsonApi\Adapter\HydratesAttributesTrait;
-use CloudCreativity\LaravelJsonApi\Contracts\Object\RelationshipsInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectInterface;
 use CloudCreativity\LaravelJsonApi\Utils\Str;
 use DummyApp\Entities\Site;
@@ -119,18 +118,6 @@ class Adapter extends AbstractResourceAdapter
         $method = 'set' . Str::classify($attrKey);
 
         call_user_func([$record, $method], $value);
-    }
-
-
-    /**
-     * @inheritDoc
-     */
-    protected function hydrateRelationships(
-        $record,
-        RelationshipsInterface $relationships,
-        EncodingParametersInterface $parameters
-    ) {
-        // no-op
     }
 
     /**

@@ -10,6 +10,8 @@ generic adapter.
 - Extracted the logic for an Eloquent `hasManyThrough` relation into its own relationship adapter (was
 previously in the `has-many` adapter).
 - Moved the `FindsManyResources` trait from the `Store` namespace to `Adapter\Concerns`.
+- The `hydrateRelationships` method on the `AbstractResourceAdapter` is no longer abstract as it now
+contains the implementation that was previously on the Eloquent adapter.
 
 ## [1.0.0-alpha.2] - 2018-05-06
 

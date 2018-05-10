@@ -33,6 +33,15 @@ protected function posts()
 }
 ```
 
+### Generic Adapters
+
+We have pulled some of the logic from our Eloquent adapter that was not actually specific to Eloquent out of
+that adapter and placed it in the `AbstractResourceAdapter`. This may affect your implementation if there
+is a collision with the methods or traits that we have added.
+
+One change is the `hydrateRelationships` method is no longer abstract. You can remove this method from your
+adapter if it had no code in it.
+
 ## 1.0.0-alpha.1 to 1.0.0-alpha.2
 
 ### Controllers

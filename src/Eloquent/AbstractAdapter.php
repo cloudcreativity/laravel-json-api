@@ -21,6 +21,7 @@ namespace CloudCreativity\LaravelJsonApi\Eloquent;
 use CloudCreativity\LaravelJsonApi\Adapter\AbstractResourceAdapter;
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\HasManyAdapterInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\RelationshipAdapterInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Object\RelationshipInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Object\RelationshipsInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PageInterface;
@@ -352,29 +353,18 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
-    protected function hydrateRelationships(
+    protected function fillRelationship(
         $record,
-        RelationshipsInterface $relationships,
+        $field,
+        RelationshipInterface $relationship,
         EncodingParametersInterface $parameters
     ) {
-        foreach ($relationships->getAll() as $field => $relationship) {
-            /** Skip any fields that are not fillable. */
-            if ($this->isNotFillable($field, $record)) {
-                continue;
-            }
+        $relation = $this->related($field);
 
-            /** Skip any fields that are not relations */
-            if (!$this->isRelation($field)) {
-                continue;
-            }
-
-            $relation = $this->related($field);
-
-            if (!$this->requiresPrimaryRecordPersistence($relation)) {
-                $relation->update($record, $relationships->getRelationship($field), $parameters);
-            }
+        if (!$this->requiresPrimaryRecordPersistence($relation)) {
+            $relation->update($record, $relationship, $parameters);
         }
     }
 
