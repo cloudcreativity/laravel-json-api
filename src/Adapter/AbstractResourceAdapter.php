@@ -38,7 +38,8 @@ abstract class AbstractResourceAdapter implements ResourceAdapterInterface, Stor
 {
 
     use StoreAwareTrait,
-        Concerns\GuardsFields;
+        Concerns\GuardsFields,
+        Concerns\FindsManyResources;
 
     /**
      * Create a new record.

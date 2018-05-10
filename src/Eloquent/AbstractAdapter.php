@@ -26,7 +26,6 @@ use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PageInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PagingStrategyInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
-use CloudCreativity\LaravelJsonApi\Store\FindsManyResources;
 use CloudCreativity\LaravelJsonApi\Utils\Str;
 use CloudCreativity\Utils\Object\StandardObjectInterface;
 use Illuminate\Database\Eloquent\Builder;
@@ -38,15 +37,14 @@ use Neomerx\JsonApi\Contracts\Encoder\Parameters\SortParameterInterface;
 use Neomerx\JsonApi\Encoder\Parameters\EncodingParameters;
 
 /**
- * Class EloquentAdapter
+ * Class AbstractAdapter
  *
  * @package CloudCreativity\LaravelJsonApi
  */
 abstract class AbstractAdapter extends AbstractResourceAdapter
 {
 
-    use FindsManyResources,
-        Concerns\DeserializesAttributes,
+    use Concerns\DeserializesAttributes,
         Concerns\IncludesModels;
 
     /**
