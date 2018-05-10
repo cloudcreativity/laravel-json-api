@@ -127,11 +127,14 @@ abstract class AbstractResourceAdapter implements ResourceAdapterInterface, Stor
      */
     public function related($field)
     {
-        $method = $this->methodForRelation($field);
-        $relation = $method ? $this->{$method}() : null;
+        if (!$method = $this->methodForRelation($field)) {
+            throw new RuntimeException("No relationship method implemented for field {$field}.");
+        }
+
+        $relation = $this->{$method}();
 
         if (!$relation instanceof RelationshipAdapterInterface) {
-            throw new RuntimeException("Unrecognised relationship name: $method");
+            throw new RuntimeException("Method {$method} did not return a relationship adapter.");
         }
 
         $relation->withFieldName($field);
