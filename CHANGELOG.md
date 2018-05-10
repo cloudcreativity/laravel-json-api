@@ -2,6 +2,14 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## Unreleased
+
+### Changed
+- Field guarding that was previously available on the Eloquent adapter is now also available on the
+generic adapter.
+- Extracted the logic for an Eloquent `hasManyThrough` relation into its own relationship adapter (was
+previously in the `has-many` adapter).
+
 ## [1.0.0-alpha.2] - 2018-05-06
 
 ### Added

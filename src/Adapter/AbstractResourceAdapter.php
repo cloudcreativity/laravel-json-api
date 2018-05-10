@@ -37,7 +37,8 @@ use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 abstract class AbstractResourceAdapter implements ResourceAdapterInterface, StoreAwareInterface
 {
 
-    use StoreAwareTrait;
+    use StoreAwareTrait,
+        Concerns\GuardsFields;
 
     /**
      * Create a new record.
