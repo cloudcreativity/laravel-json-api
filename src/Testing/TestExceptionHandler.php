@@ -15,16 +15,38 @@
  * limitations under the License.
  */
 
-namespace DummyApp\Exceptions;
+namespace CloudCreativity\LaravelJsonApi\Testing;
 
 use CloudCreativity\LaravelJsonApi\Exceptions\HandlesErrors;
 use Exception;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Neomerx\JsonApi\Exceptions\JsonApiException;
-use Orchestra\Testbench\Exceptions\Handler as BaseHandler;
+use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 
-class Handler extends BaseHandler
+/**
+ * Class TestExceptionHandler
+ *
+ * This exception handler is intended for testing JSON API packages
+ * using the `orchestra/testbench` package. It ensures that JSON
+ * API exceptions are rendered and if the handler receives any other
+ * exceptions, they are re-thrown so that they appear in PHP Unit.
+ *
+ * Usage in a testbench test case is as follows:
+ *
+ * ```php
+ * protected function resolveApplicationExceptionHandler($app)
+ * {
+ *   $app->singleton(
+ *      \Illuminate\Contracts\Debug\ExceptionHandler::class,
+ *      \CloudCreativity\LaravelJsonApi\Testing\TestExceptionHandler::class
+ *   );
+ * }
+ * ```
+ *
+ * @package CloudCreativity\LaravelJsonApi
+ */
+class TestExceptionHandler extends ExceptionHandler
 {
 
     use HandlesErrors;

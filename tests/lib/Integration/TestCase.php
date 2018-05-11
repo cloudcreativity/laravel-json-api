@@ -21,6 +21,7 @@ namespace CloudCreativity\LaravelJsonApi\Tests\Integration;
 use CloudCreativity\LaravelJsonApi\Facades\JsonApi;
 use CloudCreativity\LaravelJsonApi\ServiceProvider;
 use CloudCreativity\LaravelJsonApi\Testing\MakesJsonApiRequests;
+use CloudCreativity\LaravelJsonApi\Testing\TestExceptionHandler;
 use DummyApp;
 use DummyApp\User;
 use DummyPackage;
@@ -88,7 +89,7 @@ abstract class TestCase extends BaseTestCase
      */
     protected function resolveApplicationExceptionHandler($app)
     {
-        $app->singleton(ExceptionHandler::class, DummyApp\Exceptions\Handler::class);
+        $app->singleton(ExceptionHandler::class, TestExceptionHandler::class);
     }
 
     /**

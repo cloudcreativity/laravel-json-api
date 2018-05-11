@@ -12,6 +12,8 @@ previously in the `has-many` adapter).
 - Moved the `FindsManyResources` trait from the `Store` namespace to `Adapter\Concerns`.
 - The `hydrateRelationships` method on the `AbstractResourceAdapter` is no longer abstract as it now
 contains the implementation that was previously on the Eloquent adapter.
+- The test exception handler has been moved from the dummy app to the `Testing` namespace. This means it
+can now be used when testing JSON API packages.
 
 ## [1.0.0-alpha.2] - 2018-05-06
 
