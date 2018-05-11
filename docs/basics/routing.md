@@ -22,8 +22,7 @@ When registering a JSON API, we automatically read the URL prefix and route name
 config is **always** relative to the root URL on a host, i.e. from `/`. This means when registering your routes, 
 you need to ensure that no prefix has already been applied.
 
->  The default Laravel installation has an `api` prefix for API routes. If you are registering a JSON API in your
-`routes/api.php` file, you will need to remove the prefix from the `mapApiRoutes()` method in your 
+>  The default Laravel installation has an `api` prefix for API routes and uses the default `App\Http\Controllers` namespace. If you are registering a JSON API in your `routes/api.php` file, you will need to remove the prefix and the namespace from the `mapApiRoutes()` method in your 
 `RouteServiceProvider`.
 
 ## Resource Routes
