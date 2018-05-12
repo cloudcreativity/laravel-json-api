@@ -82,6 +82,55 @@ class NamespaceResolverTest extends TestCase
             [
                 'posts',
                 'App\Post',
+                'App\JsonApi\Schemas\PostSchema',
+                'App\JsonApi\Adapters\PostAdapter',
+                'App\JsonApi\Validators\PostValidator',
+                'App\JsonApi\Authorizers\PostAuthorizer',
+            ],
+            [
+                'comments',
+                'App\Comment',
+                'App\JsonApi\Schemas\CommentSchema',
+                'App\JsonApi\Adapters\CommentAdapter',
+                'App\JsonApi\Validators\CommentValidator',
+                'App\JsonApi\Authorizers\CommentAuthorizer',
+            ],
+            [
+                'tags',
+                null,
+                'App\JsonApi\Schemas\TagSchema',
+                'App\JsonApi\Adapters\TagAdapter',
+                'App\JsonApi\Validators\TagValidator',
+                'App\JsonApi\Authorizers\TagAuthorizer',
+            ],
+            [
+                'dance-events',
+                null,
+                'App\JsonApi\Schemas\DanceEventSchema',
+                'App\JsonApi\Adapters\DanceEventAdapter',
+                'App\JsonApi\Validators\DanceEventValidator',
+                'App\JsonApi\Authorizers\DanceEventAuthorizer',
+            ],
+            [
+                'dance_events',
+                null,
+                'App\JsonApi\Schemas\DanceEventSchema',
+                'App\JsonApi\Adapters\DanceEventAdapter',
+                'App\JsonApi\Validators\DanceEventValidator',
+                'App\JsonApi\Authorizers\DanceEventAuthorizer',
+            ],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function notByResourceWithoutTypeProvider()
+    {
+        return [
+            [
+                'posts',
+                'App\Post',
                 'App\JsonApi\Schemas\Post',
                 'App\JsonApi\Adapters\Post',
                 'App\JsonApi\Validators\Post',
@@ -128,12 +177,18 @@ class NamespaceResolverTest extends TestCase
     public function genericAuthorizerProvider()
     {
         return [
+            // By resource
             ['generic', 'App\JsonApi\GenericAuthorizer', true],
-            ['generic', 'App\JsonApi\Authorizers\Generic', false],
             ['foo-bar', 'App\JsonApi\FooBarAuthorizer', true],
             ['foo_bar', 'App\JsonApi\FooBarAuthorizer', true],
-            ['foo-bar', 'App\JsonApi\Authorizers\FooBar', false],
-            ['foo_bar', 'App\JsonApi\Authorizers\FooBar', false],
+            // Not by resource
+            ['generic', 'App\JsonApi\Authorizers\GenericAuthorizer', false],
+            ['foo-bar', 'App\JsonApi\Authorizers\FooBarAuthorizer', false],
+            ['foo_bar', 'App\JsonApi\Authorizers\FooBarAuthorizer', false],
+            // Not by resource without type appended:
+            ['generic', 'App\JsonApi\Authorizers\Generic', false, false],
+            ['foo-bar', 'App\JsonApi\Authorizers\FooBar', false, false],
+            ['foo_bar', 'App\JsonApi\Authorizers\FooBar', false, false],
         ];
     }
 
@@ -169,6 +224,22 @@ class NamespaceResolverTest extends TestCase
         $this->assertResolver($resolver, $resourceType, $type, $schema, $adapter, $validator, $auth);
     }
 
+    /**
+     * @param $resourceType
+     * @param $type
+     * @param $schema
+     * @param $adapter
+     * @param $validator
+     * @param $auth
+     * @dataProvider notByResourceWithoutTypeProvider
+     */
+    public function testNotByResourceWithoutType($resourceType, $type, $schema, $adapter, $validator, $auth)
+    {
+        $resolver = $this->createResolver(false, false);
+
+        $this->assertResolver($resolver, $resourceType, $type, $schema, $adapter, $validator, $auth);
+    }
+
     public function testAll()
     {
         $resolver = $this->createResolver();
@@ -188,24 +259,26 @@ class NamespaceResolverTest extends TestCase
      * @param $name
      * @param $expected
      * @param $byResource
+     * @param $withType
      * @dataProvider genericAuthorizerProvider
      */
-    public function testNamedAuthorizer($name, $expected, $byResource)
+    public function testNamedAuthorizer($name, $expected, $byResource, $withType = true)
     {
-        $resolver = $this->createResolver($byResource);
+        $resolver = $this->createResolver($byResource, $withType);
         $this->assertSame($expected, $resolver->getAuthorizerByName($name));
     }
 
     /**
      * @param bool $byResource
+     * @param bool $withType
      * @return NamespaceResolver
      */
-    private function createResolver($byResource = true)
+    private function createResolver($byResource = true, $withType = true)
     {
         return new NamespaceResolver('App\JsonApi', [
             'posts' => 'App\Post',
             'comments' => 'App\Comment',
-        ], $byResource);
+        ], $byResource, $withType);
     }
 
     /**

@@ -38,6 +38,11 @@ class GeneratorsTest extends TestCase
     private $byResource = true;
 
     /**
+     * @var bool
+     */
+    private $withoutType = false;
+
+    /**
      * @return void
      */
     protected function setUp()
@@ -88,6 +93,7 @@ class GeneratorsTest extends TestCase
         return [
             'by-resource' => [true],
             'not-by-resource' => [false],
+            'not-by-resource 0.x' => [false, true],
         ];
     }
 
@@ -207,11 +213,12 @@ class GeneratorsTest extends TestCase
      * Test generating a reusable authorizer.
      *
      * @param bool $byResource
+     * @param bool $withoutType
      * @dataProvider byResourceProvider
      */
-    public function testReusableAuthorizer($byResource)
+    public function testReusableAuthorizer($byResource, $withoutType = false)
     {
-        $this->byResource($byResource);
+        $this->byResource($byResource, $withoutType);
 
         $result = $this->artisan('make:json-api:authorizer', [
             'name' => 'visitor',
@@ -225,11 +232,12 @@ class GeneratorsTest extends TestCase
      * Test generating a resource-specific authorizer.
      *
      * @param $byResource
+     * @param $withoutType
      * @dataProvider byResourceProvider
      */
-    public function testResourceAuthorizer($byResource)
+    public function testResourceAuthorizer($byResource, $withoutType = false)
     {
-        $this->byResource($byResource);
+        $this->byResource($byResource, $withoutType);
 
         $result = $this->artisan('make:json-api:authorizer', [
             'name' => 'companies',
@@ -244,11 +252,12 @@ class GeneratorsTest extends TestCase
      * Test generating a resource with an authorizer.
      *
      * @param $byResource
+     * @param $withoutType
      * @dataProvider byResourceProvider
      */
-    public function testResourceWithAuthorizer($byResource)
+    public function testResourceWithAuthorizer($byResource, $withoutType = false)
     {
-        $this->byResource($byResource);
+        $this->byResource($byResource, $withoutType);
 
         $result = $this->artisan('make:json-api:resource', [
             'resource' => 'companies',
@@ -280,25 +289,28 @@ class GeneratorsTest extends TestCase
     }
 
     /**
-     * @param $bool
+     * @param bool $bool
+     * @param bool $withoutType
      * @return $this
      */
-    private function byResource($bool)
+    private function byResource($bool, $withoutType = false)
     {
         if (!$bool) {
-            $this->notByResource();
+            $this->notByResource($withoutType);
         }
 
         return $this;
     }
 
     /**
+     * @param bool $withoutType
      * @return $this
      */
-    private function notByResource()
+    private function notByResource($withoutType = false)
     {
         $this->byResource = false;
-        config()->set('json-api-default.by-resource', false);
+        $this->withoutType = $withoutType;
+        config()->set('json-api-default.by-resource', $withoutType ? 'false-0.x' : false);
 
         return $this;
     }
@@ -349,9 +361,13 @@ class GeneratorsTest extends TestCase
      */
     private function assertAdapter()
     {
-        $file = $this->byResource ?
-            "{$this->path}/app/JsonApi/Companies/Adapter.php" :
-            "{$this->path}/app/JsonApi/Adapters/Company.php";
+        if ($this->withoutType) {
+            $file = "{$this->path}/app/JsonApi/Adapters/Company.php";
+        } else {
+            $file = $this->byResource ?
+                "{$this->path}/app/JsonApi/Companies/Adapter.php" :
+                "{$this->path}/app/JsonApi/Adapters/CompanyAdapter.php";
+        }
 
         $this->assertFileExists($file);
         $content = $this->files->get($file);
@@ -360,8 +376,9 @@ class GeneratorsTest extends TestCase
             $this->assertContains('namespace DummyApp\JsonApi\Companies;', $content);
             $this->assertContains('class Adapter extends', $content);
         } else {
+            $class = $this->withoutType ? 'Company' : 'CompanyAdapter';
             $this->assertContains('namespace DummyApp\JsonApi\Adapters;', $content);
-            $this->assertContains('class Company extends', $content);
+            $this->assertContains("class {$class} extends", $content);
         }
 
         return $content;
@@ -390,9 +407,13 @@ class GeneratorsTest extends TestCase
      */
     private function assertSchema()
     {
-        $file = $this->byResource ?
-            "{$this->path}/app/JsonApi/Companies/Schema.php" :
-            "{$this->path}/app/JsonApi/Schemas/Company.php";
+        if ($this->withoutType) {
+            $file = "{$this->path}/app/JsonApi/Schemas/Company.php";
+        } else {
+            $file = $this->byResource ?
+                "{$this->path}/app/JsonApi/Companies/Schema.php" :
+                "{$this->path}/app/JsonApi/Schemas/CompanySchema.php";
+        }
 
         $this->assertFileExists($file);
         $content = $this->files->get($file);
@@ -404,8 +425,9 @@ class GeneratorsTest extends TestCase
             $this->assertContains('namespace DummyApp\JsonApi\Companies;', $content);
             $this->assertContains('class Schema extends', $content);
         } else {
+            $class = $this->withoutType ? 'Company' : 'CompanySchema';
             $this->assertContains('namespace DummyApp\JsonApi\Schemas;', $content);
-            $this->assertContains('class Company extends', $content);
+            $this->assertContains("class {$class} extends", $content);
         }
 
         return $content;
@@ -416,9 +438,13 @@ class GeneratorsTest extends TestCase
      */
     private function assertValidators()
     {
-        $file = $this->byResource ?
-            "{$this->path}/app/JsonApi/Companies/Validators.php" :
-            "{$this->path}/app/JsonApi/Validators/Company.php";
+        if ($this->withoutType) {
+            $file = "{$this->path}/app/JsonApi/Validators/Company.php";
+        } else {
+            $file = $this->byResource ?
+                "{$this->path}/app/JsonApi/Companies/Validators.php" :
+                "{$this->path}/app/JsonApi/Validators/CompanyValidator.php";
+        }
 
         $this->assertFileExists($file);
         $content = $this->files->get($file);
@@ -431,8 +457,9 @@ class GeneratorsTest extends TestCase
             $this->assertContains('namespace DummyApp\JsonApi\Companies;', $content);
             $this->assertContains('class Validators extends', $content);
         } else {
+            $class = $this->withoutType ? 'Company' : 'CompanyValidator';
             $this->assertContains('namespace DummyApp\JsonApi\Validators;', $content);
-            $this->assertContains('class Company extends', $content);
+            $this->assertContains("class {$class} extends", $content);
         }
     }
 
@@ -441,19 +468,26 @@ class GeneratorsTest extends TestCase
      */
     private function assertReusableAuthorizer()
     {
-        $file = $this->byResource ?
-            "{$this->path}/app/JsonApi/VisitorAuthorizer.php" :
-            "{$this->path}/app/JsonApi/Authorizers/Visitor.php";
+        if ($this->withoutType) {
+            $class = 'Visitor';
+            $file = "{$this->path}/app/JsonApi/Authorizers/Visitor.php";
+        } else {
+            $class = 'VisitorAuthorizer';
+            $file = $this->byResource ?
+                "{$this->path}/app/JsonApi/VisitorAuthorizer.php" :
+                "{$this->path}/app/JsonApi/Authorizers/VisitorAuthorizer.php";
+        }
+
 
         $this->assertFileExists($file);
         $content = $this->files->get($file);
 
+        $this->assertContains("class {$class} extends AbstractAuthorizer", $content);
+
         if ($this->byResource) {
             $this->assertContains('namespace DummyApp\JsonApi;', $content);
-            $this->assertContains('class VisitorAuthorizer extends AbstractAuthorizer', $content);
         } else {
             $this->assertContains('namespace DummyApp\JsonApi\Authorizers;', $content);
-            $this->assertContains('class Visitor extends', $content);
         }
     }
 
@@ -462,9 +496,14 @@ class GeneratorsTest extends TestCase
      */
     private function assertResourceAuthorizer()
     {
-        $file = $this->byResource ?
-            "{$this->path}/app/JsonApi/Companies/Authorizer.php" :
-            "{$this->path}/app/JsonApi/Authorizers/Company.php";
+        if ($this->withoutType) {
+            $file = "{$this->path}/app/JsonApi/Authorizers/Company.php";
+        } else {
+            $file = $this->byResource ?
+                "{$this->path}/app/JsonApi/Companies/Authorizer.php" :
+                "{$this->path}/app/JsonApi/Authorizers/CompanyAuthorizer.php";
+        }
+
 
         $this->assertFileExists($file);
         $content = $this->files->get($file);
@@ -473,8 +512,9 @@ class GeneratorsTest extends TestCase
             $this->assertContains('namespace DummyApp\JsonApi\Companies;', $content);
             $this->assertContains('class Authorizer extends AbstractAuthorizer', $content);
         } else {
+            $class = $this->withoutType ? 'Company' : 'CompanyAuthorizer';
             $this->assertContains('namespace DummyApp\JsonApi\Authorizers;', $content);
-            $this->assertContains('class Company extends', $content);
+            $this->assertContains("class {$class} extends", $content);
         }
     }
 }

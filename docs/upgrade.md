@@ -8,6 +8,25 @@ and then we are planning on tagging `1.0.0` after a limited number of beta tags.
 
 ## 1.0.0-alpha.2 to 1.0.0-alpha.3
 
+### Not By Resource Resolution
+
+When using *not-by-resource* resolution, the type of the class is now appended to the class name. E.g. 
+`App\JsonApi\Adapters\PostAdapter` is now expected instead of `App\JsonApi\Adapters\Post`. The previous
+behaviour can be maintained by setting the `by-resource` config option to the string `false-0.x`, i.e.
+
+```php
+return [
+    'by-resource' => 'false-0.x',
+    
+    // ...
+];
+```
+
+We will support this legacy behaviour throughout  `1.0` releases and it will be removed in `2.0`, giving
+you plenty of time to rename your classes. See 
+[this issue](https://github.com/cloudcreativity/laravel-json-api/issues/176)
+for why we made this change.
+
 ### Eloquent Adapters
 
 Eloquent `hasManyThrough` relations were previously defined on the Eloquent adapter using the `hasMany` method.

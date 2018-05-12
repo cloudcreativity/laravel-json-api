@@ -15,6 +15,10 @@ contains the implementation that was previously on the Eloquent adapter.
 - The test exception handler has been moved from the dummy app to the `Testing` namespace. This means it
 can now be used when testing JSON API packages.
 - Merged the two resolvers provided by this package into a single class.
+- [#176](https://github.com/cloudcreativity/laravel-json-api/issues/176)
+When using *not-by-resource* resolution, the type of the class is now appended to the class name. E.g. 
+`App\JsonApi\Adapters\PostAdapter` is now expected instead of `App\JsonApi\Adapters\Post`. The previous
+behaviour can be maintained by setting the `by-resource` config option to the string `false-0.x`.
 
 ### Fixed
 - Resolver was not correctly classifying the resource type when resolution was not by resource.

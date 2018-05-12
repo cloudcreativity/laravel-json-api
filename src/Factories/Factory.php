@@ -89,9 +89,9 @@ class Factory extends BaseFactory implements FactoryInterface
     /**
      * @inheritdoc
      */
-    public function createResolver($rootNamespace, array $resources, $byResource)
+    public function createResolver($rootNamespace, array $resources, $byResource, $withType = true)
     {
-        return new NamespaceResolver($rootNamespace, $resources, $byResource);
+        return new NamespaceResolver($rootNamespace, $resources, $byResource, $withType);
     }
 
     /**

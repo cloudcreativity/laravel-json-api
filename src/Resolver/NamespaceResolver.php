@@ -49,18 +49,33 @@ class NamespaceResolver implements ResolverInterface
     private $byResource;
 
     /**
+     * If not by resource, whether the type is included in the class name.
+     *
+     * From 2.0.0, the type will always be appended to the class name when resolution
+     * is not by resource. This option is provided for backwards compatibility with the
+     * 0.x and pre-1.0.0-alpha.3 versions.
+     *
+     * @var bool
+     * @deprecated 2.0.0 Will always append the type to the class name.
+     * @since 1.0.0-alpha.3
+     */
+    private $withType;
+
+    /**
      * NamespaceResolver constructor.
      *
      * @param string $rootNamespace
      * @param array $resources
      * @param bool $byResource
+     * @param bool $withType
      */
-    public function __construct($rootNamespace, array $resources, $byResource = true)
+    public function __construct($rootNamespace, array $resources, $byResource = true, $withType = true)
     {
         $this->rootNamespace = $rootNamespace;
         $this->resources = $resources;
         $this->types = $this->flip($resources);
         $this->byResource = $byResource;
+        $this->withType = $withType;
     }
 
     /**
@@ -221,7 +236,10 @@ class NamespaceResolver implements ResolverInterface
             return $this->append($classified . '\\' . $unit);
         }
 
-        return $this->append(sprintf('%s\%s', str_plural($unit), str_singular($classified)));
+        $classified = str_singular($classified);
+        $class = $this->withType ? $classified . str_singular($unit) : $classified;
+
+        return $this->append(sprintf('%s\%s', str_plural($unit), $class));
     }
 
     /**
