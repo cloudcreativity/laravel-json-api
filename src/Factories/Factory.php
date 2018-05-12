@@ -42,6 +42,7 @@ use CloudCreativity\LaravelJsonApi\Object\Document;
 use CloudCreativity\LaravelJsonApi\Pagination\Page;
 use CloudCreativity\LaravelJsonApi\Repositories\CodecMatcherRepository;
 use CloudCreativity\LaravelJsonApi\Repositories\ErrorRepository;
+use CloudCreativity\LaravelJsonApi\Resolver\NamespaceResolver;
 use CloudCreativity\LaravelJsonApi\Store\Store;
 use CloudCreativity\LaravelJsonApi\Utils\Replacer;
 use CloudCreativity\LaravelJsonApi\Validators\ValidatorErrorFactory;
@@ -83,6 +84,14 @@ class Factory extends BaseFactory implements FactoryInterface
     {
         parent::__construct();
         $this->container = $container;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function createResolver($rootNamespace, array $resources, $byResource)
+    {
+        return new NamespaceResolver($rootNamespace, $resources, $byResource);
     }
 
     /**

@@ -17,6 +17,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Unit\Unit\Resolver;
 
+use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
 use CloudCreativity\LaravelJsonApi\Resolver\NamespaceResolver;
 use PHPUnit\Framework\TestCase;
 
@@ -24,26 +25,9 @@ class NamespaceResolverTest extends TestCase
 {
 
     /**
-     * @var NamespaceResolver
-     */
-    private $resolver;
-
-    /**
-     * @return void
-     */
-    protected function setUp()
-    {
-        parent::setUp();
-        $this->resolver = new NamespaceResolver('App\JsonApi', [
-            'posts' => 'App\Post',
-            'comments' => 'App\Comment',
-        ]);
-    }
-
-    /**
      * @return array
      */
-    public function resourcesProvider()
+    public function byResourceProvider()
     {
         return [
             [
@@ -90,52 +74,132 @@ class NamespaceResolverTest extends TestCase
     }
 
     /**
+     * @return array
+     */
+    public function notByResourceProvider()
+    {
+        return [
+            [
+                'posts',
+                'App\Post',
+                'App\JsonApi\Schemas\Post',
+                'App\JsonApi\Adapters\Post',
+                'App\JsonApi\Validators\Post',
+                'App\JsonApi\Authorizers\Post',
+            ]
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function genericAuthorizerProvider()
+    {
+        return [
+            ['App\JsonApi\GenericAuthorizer', true],
+            ['App\JsonApi\Authorizers\Generic', false],
+        ];
+    }
+
+    /**
      * @param $resourceType
      * @param $type
      * @param $schema
      * @param $adapter
      * @param $validator
      * @param $auth
-     * @dataProvider resourcesProvider
+     * @dataProvider byResourceProvider
      */
-    public function testResource($resourceType, $type, $schema, $adapter, $validator, $auth)
+    public function testByResource($resourceType, $type, $schema, $adapter, $validator, $auth)
     {
-        $exists = !is_null($type);
+        $resolver = $this->createResolver(true);
 
-        $this->assertSame($exists, $this->resolver->isType($type));
-        $this->assertSame($exists, $this->resolver->isResourceType($resourceType));
+        $this->assertResolver($resolver, $resourceType, $type, $schema, $adapter, $validator, $auth);
+    }
 
-        $this->assertSame($exists ? $type : null, $this->resolver->getType($resourceType));
-        $this->assertSame($exists ? $resourceType : null, $this->resolver->getResourceType($type));
+    /**
+     * @param $resourceType
+     * @param $type
+     * @param $schema
+     * @param $adapter
+     * @param $validator
+     * @param $auth
+     * @dataProvider notByResourceProvider
+     */
+    public function testNotByResource($resourceType, $type, $schema, $adapter, $validator, $auth)
+    {
+        $resolver = $this->createResolver(false);
 
-        $this->assertSame($exists ? $schema : null, $this->resolver->getSchemaByType($type));
-        $this->assertSame($schema, $this->resolver->getSchemaByResourceType($resourceType));
-
-        $this->assertSame($exists ? $adapter : null, $this->resolver->getAdapterByType($type));
-        $this->assertSame($adapter, $this->resolver->getAdapterByResourceType($resourceType));
-
-        $this->assertSame($exists ? $validator : null, $this->resolver->getValidatorsByType($type));
-        $this->assertSame($validator, $this->resolver->getValidatorsByResourceType($resourceType));
-
-        $this->assertSame($exists ? $auth : null, $this->resolver->getAuthorizerByType($type));
-        $this->assertSame($auth, $this->resolver->getAuthorizerByResourceType($resourceType));
+        $this->assertResolver($resolver, $resourceType, $type, $schema, $adapter, $validator, $auth);
     }
 
     public function testAll()
     {
+        $resolver = $this->createResolver();
+
         $this->assertEquals([
             'App\Post',
             'App\Comment',
-        ], $this->resolver->getAllTypes());
+        ], $resolver->getAllTypes());
 
         $this->assertEquals([
             'posts',
             'comments',
-        ], $this->resolver->getAllResourceTypes());
+        ], $resolver->getAllResourceTypes());
     }
 
-    public function testNamedAuthorizer()
+    /**
+     * @param $expected
+     * @param $byResource
+     * @dataProvider genericAuthorizerProvider
+     */
+    public function testNamedAuthorizer($expected, $byResource)
     {
-        $this->assertSame('App\JsonApi\GenericAuthorizer', $this->resolver->getAuthorizerByName('generic'));
+        $resolver = $this->createResolver($byResource);
+        $this->assertSame($expected, $resolver->getAuthorizerByName('generic'));
+    }
+
+    /**
+     * @param bool $byResource
+     * @return NamespaceResolver
+     */
+    private function createResolver($byResource = true)
+    {
+        return new NamespaceResolver('App\JsonApi', [
+            'posts' => 'App\Post',
+            'comments' => 'App\Comment',
+        ], $byResource);
+    }
+
+    /**
+     * @param ResolverInterface $resolver
+     * @param $resourceType
+     * @param $type
+     * @param $schema
+     * @param $adapter
+     * @param $validator
+     * @param $auth
+     */
+    private function assertResolver($resolver, $resourceType, $type, $schema, $adapter, $validator, $auth)
+    {
+        $exists = !is_null($type);
+
+        $this->assertSame($exists, $resolver->isType($type));
+        $this->assertSame($exists, $resolver->isResourceType($resourceType));
+
+        $this->assertSame($exists ? $type : null, $resolver->getType($resourceType));
+        $this->assertSame($exists ? $resourceType : null, $resolver->getResourceType($type));
+
+        $this->assertSame($exists ? $schema : null, $resolver->getSchemaByType($type));
+        $this->assertSame($schema, $resolver->getSchemaByResourceType($resourceType));
+
+        $this->assertSame($exists ? $adapter : null, $resolver->getAdapterByType($type));
+        $this->assertSame($adapter, $resolver->getAdapterByResourceType($resourceType));
+
+        $this->assertSame($exists ? $validator : null, $resolver->getValidatorsByType($type));
+        $this->assertSame($validator, $resolver->getValidatorsByResourceType($resourceType));
+
+        $this->assertSame($exists ? $auth : null, $resolver->getAuthorizerByType($type));
+        $this->assertSame($auth, $resolver->getAuthorizerByResourceType($resourceType));
     }
 }

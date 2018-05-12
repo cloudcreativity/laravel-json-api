@@ -14,6 +14,7 @@ previously in the `has-many` adapter).
 contains the implementation that was previously on the Eloquent adapter.
 - The test exception handler has been moved from the dummy app to the `Testing` namespace. This means it
 can now be used when testing JSON API packages.
+- Merged the two resolvers provided by this package into a single class.
 
 ## [1.0.0-alpha.2] - 2018-05-06
 

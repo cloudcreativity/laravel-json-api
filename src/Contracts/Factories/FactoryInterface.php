@@ -50,6 +50,14 @@ interface FactoryInterface extends BaseFactoryInterface
 {
 
     /**
+     * @param $rootNamespace
+     * @param array $resources
+     * @param $byResource
+     * @return ResolverInterface
+     */
+    public function createResolver($rootNamespace, array $resources, $byResource);
+
+    /**
      * @param ResolverInterface $resolver
      * @return mixed
      */

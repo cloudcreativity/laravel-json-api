@@ -44,16 +44,23 @@ class NamespaceResolver implements ResolverInterface
     private $types;
 
     /**
+     * @var bool
+     */
+    private $byResource;
+
+    /**
      * NamespaceResolver constructor.
      *
      * @param string $rootNamespace
      * @param array $resources
+     * @param bool $byResource
      */
-    public function __construct($rootNamespace, array $resources)
+    public function __construct($rootNamespace, array $resources, $byResource = true)
     {
         $this->rootNamespace = $rootNamespace;
         $this->resources = $resources;
         $this->types = $this->flip($resources);
+        $this->byResource = $byResource;
     }
 
     /**
@@ -172,6 +179,10 @@ class NamespaceResolver implements ResolverInterface
      */
     public function getAuthorizerByName($name)
     {
+        if (!$this->byResource) {
+            return $this->resolve('Authorizer', $name);
+        }
+
         $classified = Str::classify($name);
 
         return $this->append("{$classified}Authorizer");
@@ -204,9 +215,14 @@ class NamespaceResolver implements ResolverInterface
      */
     protected function resolve($unit, $resourceType)
     {
-        $resourceType = Str::classify($resourceType);
+        if ($this->byResource) {
+            return $this->append(Str::classify($resourceType) . '\\' . $unit);
+        }
 
-        return $this->append($resourceType . '\\' . $unit);
+        $unit = str_plural($unit);
+        $type = ucfirst(str_singular($resourceType));
+
+        return $this->append(sprintf('%s\%s', $unit, $type));
     }
 
     /**

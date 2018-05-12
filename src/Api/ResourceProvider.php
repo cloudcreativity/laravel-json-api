@@ -20,7 +20,6 @@ namespace CloudCreativity\LaravelJsonApi\Api;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
 use CloudCreativity\LaravelJsonApi\Resolver\NamespaceResolver;
-use CloudCreativity\LaravelJsonApi\Resolver\UnitNamespaceResolver;
 use CloudCreativity\LaravelJsonApi\Routing\ApiGroup;
 use Illuminate\Contracts\Routing\Registrar;
 
@@ -66,9 +65,7 @@ abstract class ResourceProvider
      */
     public function getResolver()
     {
-        return $this->byResource ?
-            new NamespaceResolver($this->getRootNamespace(), $this->resources) :
-            new UnitNamespaceResolver($this->getRootNamespace(), $this->resources);
+        return new NamespaceResolver($this->getRootNamespace(), $this->resources, $this->byResource);
     }
 
     /**
