@@ -215,14 +215,13 @@ class NamespaceResolver implements ResolverInterface
      */
     protected function resolve($unit, $resourceType)
     {
+        $classified = Str::classify($resourceType);
+
         if ($this->byResource) {
-            return $this->append(Str::classify($resourceType) . '\\' . $unit);
+            return $this->append($classified . '\\' . $unit);
         }
 
-        $unit = str_plural($unit);
-        $type = ucfirst(str_singular($resourceType));
-
-        return $this->append(sprintf('%s\%s', $unit, $type));
+        return $this->append(sprintf('%s\%s', str_plural($unit), str_singular($classified)));
     }
 
     /**

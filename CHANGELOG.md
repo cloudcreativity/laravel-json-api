@@ -16,6 +16,9 @@ contains the implementation that was previously on the Eloquent adapter.
 can now be used when testing JSON API packages.
 - Merged the two resolvers provided by this package into a single class.
 
+### Fixed
+- Resolver was not correctly classifying the resource type when resolution was not by resource.
+
 ## [1.0.0-alpha.2] - 2018-05-06
 
 ### Added

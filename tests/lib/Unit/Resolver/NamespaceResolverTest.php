@@ -86,7 +86,39 @@ class NamespaceResolverTest extends TestCase
                 'App\JsonApi\Adapters\Post',
                 'App\JsonApi\Validators\Post',
                 'App\JsonApi\Authorizers\Post',
-            ]
+            ],
+            [
+                'comments',
+                'App\Comment',
+                'App\JsonApi\Schemas\Comment',
+                'App\JsonApi\Adapters\Comment',
+                'App\JsonApi\Validators\Comment',
+                'App\JsonApi\Authorizers\Comment',
+            ],
+            [
+                'tags',
+                null,
+                'App\JsonApi\Schemas\Tag',
+                'App\JsonApi\Adapters\Tag',
+                'App\JsonApi\Validators\Tag',
+                'App\JsonApi\Authorizers\Tag',
+            ],
+            [
+                'dance-events',
+                null,
+                'App\JsonApi\Schemas\DanceEvent',
+                'App\JsonApi\Adapters\DanceEvent',
+                'App\JsonApi\Validators\DanceEvent',
+                'App\JsonApi\Authorizers\DanceEvent',
+            ],
+            [
+                'dance_events',
+                null,
+                'App\JsonApi\Schemas\DanceEvent',
+                'App\JsonApi\Adapters\DanceEvent',
+                'App\JsonApi\Validators\DanceEvent',
+                'App\JsonApi\Authorizers\DanceEvent',
+            ],
         ];
     }
 
@@ -96,8 +128,12 @@ class NamespaceResolverTest extends TestCase
     public function genericAuthorizerProvider()
     {
         return [
-            ['App\JsonApi\GenericAuthorizer', true],
-            ['App\JsonApi\Authorizers\Generic', false],
+            ['generic', 'App\JsonApi\GenericAuthorizer', true],
+            ['generic', 'App\JsonApi\Authorizers\Generic', false],
+            ['foo-bar', 'App\JsonApi\FooBarAuthorizer', true],
+            ['foo_bar', 'App\JsonApi\FooBarAuthorizer', true],
+            ['foo-bar', 'App\JsonApi\Authorizers\FooBar', false],
+            ['foo_bar', 'App\JsonApi\Authorizers\FooBar', false],
         ];
     }
 
@@ -149,14 +185,15 @@ class NamespaceResolverTest extends TestCase
     }
 
     /**
+     * @param $name
      * @param $expected
      * @param $byResource
      * @dataProvider genericAuthorizerProvider
      */
-    public function testNamedAuthorizer($expected, $byResource)
+    public function testNamedAuthorizer($name, $expected, $byResource)
     {
         $resolver = $this->createResolver($byResource);
-        $this->assertSame($expected, $resolver->getAuthorizerByName('generic'));
+        $this->assertSame($expected, $resolver->getAuthorizerByName($name));
     }
 
     /**
