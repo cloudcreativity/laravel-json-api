@@ -22,6 +22,9 @@ behaviour can be maintained by setting the `by-resource` config option to the st
 
 ### Fixed
 - Resolver was not correctly classifying the resource type when resolution was not by resource.
+- [#176](https://github.com/cloudcreativity/laravel-json-api/issues/176)
+Do not import model class in Eloquent adapter stub to avoid collisions with class name when using the legacy
+*not-by-resource* behaviour.
 
 ## [1.0.0-alpha.2] - 2018-05-06
 

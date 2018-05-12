@@ -343,8 +343,8 @@ class GeneratorsTest extends TestCase
         $content = $this->assertAdapter();
 
         $this->assertContains('Eloquent\AbstractAdapter', $content);
-        $this->assertContains('use DummyApp\Company;', $content);
-        $this->assertContains('parent::__construct(new Company(), $paging);', $content);
+        $this->assertNotContains('use DummyApp\Company;', $content);
+        $this->assertContains('parent::__construct(new \DummyApp\Company(), $paging);', $content);
     }
 
     /**
