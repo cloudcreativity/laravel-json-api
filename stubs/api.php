@@ -15,10 +15,13 @@ return [
     | The `by-resource` setting determines how your units are organised within
     | your root namespace.
     |
-    | - true: e.g. App\JsonApi\Posts\{Adapter, Schema}
+    | - true:
+    |   - e.g. App\JsonApi\Posts\{Adapter, Schema, Validators}
+    |   - e.g. App\JsonApi\Comments\{Adapter, Schema, Validators}
     | - false:
-    |   - e.g. App\JsonApi\Adapters\{User, Post, Comment}
-    |   - e.g. App\JsonApi\Schemas\{User, Post, Comment}
+    |   - e.g. App\JsonApi\Adapters\PostAdapter, CommentAdapter}
+    |   - e.g. App\JsonApi\Schemas\{PostSchema, CommentSchema}
+    |   - e.g. App\JsonApi\Validators\{PostValidator, CommentValidator}
     |
     */
     'namespace' => null,

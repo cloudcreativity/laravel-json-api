@@ -44,9 +44,11 @@ App\JsonApi
   - Posts
     - Adapter
     - Schema
+    - Validators
   - Comments
     - Adapter
     - Schema
+    - Validators
 ```
 
 If `by-resource` is `false`, the sub-namespace will be the class type (e.g. `Adapters`). For example:
@@ -54,11 +56,14 @@ If `by-resource` is `false`, the sub-namespace will be the class type (e.g. `Ada
 ```text
 App\JsonApi
   - Adapters
-    - Post
-    - Comment
+    - PostAdapter
+    - CommentAdapter
   - Schemas
-    - Post
-    - Comment
+    - PostSchema
+    - CommentSchema
+  - Validators
+    - PostValidator
+    - CommentValidator
 ```
 
 You must stick to whatever pattern you choose to use. This is because we use the structure to automatically detect

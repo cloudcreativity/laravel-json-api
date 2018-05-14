@@ -83,8 +83,8 @@ will be placed in the resource's namespace, e.g. `App\JsonApi\Posts\Authorizer`.
 best to give your re-usable authorizers names that do not clash with your resource types.
 
 If your `by-resource` option is set to `false`, re-usable and resource specific authorizers will always be
-placed in the `Authorizers` namespace, e.g. `App\JsonApi\Authorizers\Default`. This means you **must not**
-use names for re-usable authorizers that clash with your resource types.
+placed in the `Authorizers` namespace, e.g. `App\JsonApi\Authorizers\DefaultAuthorizer`. This means you
+**must not** use names for re-usable authorizers that clash with your resource types.
 
 ### Using Authorizers
 
