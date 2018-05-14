@@ -18,8 +18,10 @@
 namespace CloudCreativity\LaravelJsonApi\Tests\Unit;
 
 use CloudCreativity\LaravelJsonApi\Exceptions\InvalidJsonException;
+use CloudCreativity\LaravelJsonApi\Utils\Helpers;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
+use Illuminate\Http\Request as IlluminateRequest;
 use function CloudCreativity\LaravelJsonApi\http_contains_body;
 use function CloudCreativity\LaravelJsonApi\json_decode;
 
@@ -117,6 +119,33 @@ class HelpersTest extends TestCase
         $response = new Response($status, $headers, $body);
 
         $this->assertSame($expected, http_contains_body($request, $response));
+    }
+
+    /**
+     * @return array
+     */
+    public function wantsJsonApiProvider()
+    {
+        return [
+            ['application/vnd.api+json', true],
+            ['application/json', false],
+            ['text/html', false],
+        ];
+    }
+
+    /**
+     * @param $accept
+     * @param $expected
+     * @dataProvider wantsJsonApiProvider
+     */
+    public function testWantsJsonApi($accept, $expected)
+    {
+        $request = new IlluminateRequest();
+        $request->headers->set('Accept', $accept);
+
+        $request->wantsJson();
+
+        $this->assertSame($expected, Helpers::wantsJsonApi($request));
     }
 
     /**

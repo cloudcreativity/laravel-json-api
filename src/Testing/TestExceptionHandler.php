@@ -19,10 +19,8 @@ namespace CloudCreativity\LaravelJsonApi\Testing;
 
 use CloudCreativity\LaravelJsonApi\Exceptions\HandlesErrors;
 use Exception;
-use Illuminate\Auth\Access\AuthorizationException;
-use Illuminate\Auth\AuthenticationException;
-use Neomerx\JsonApi\Exceptions\JsonApiException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Neomerx\JsonApi\Exceptions\JsonApiException;
 
 /**
  * Class TestExceptionHandler
@@ -53,11 +51,16 @@ class TestExceptionHandler extends ExceptionHandler
 
     /**
      * @var array
+     * @todo when dropping support for Laravel 5.4, will no longer need to list these framework classes.
      */
     protected $dontReport = [
+        \Illuminate\Auth\AuthenticationException::class,
+        \Illuminate\Auth\Access\AuthorizationException::class,
+        \Symfony\Component\HttpKernel\Exception\HttpException::class,
+        \Illuminate\Database\Eloquent\ModelNotFoundException::class,
+        \Illuminate\Session\TokenMismatchException::class,
+        \Illuminate\Validation\ValidationException::class,
         JsonApiException::class,
-        AuthenticationException::class,
-        AuthorizationException::class,
     ];
 
     /**
@@ -78,7 +81,7 @@ class TestExceptionHandler extends ExceptionHandler
      */
     public function render($request, \Exception $e)
     {
-        if ($this->isJsonApi()) {
+        if ($this->isJsonApi($request, $e)) {
             return $this->renderJsonApi($request, $e);
         }
 

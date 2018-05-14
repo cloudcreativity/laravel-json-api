@@ -8,6 +8,40 @@ and then we are planning on tagging `1.0.0` after a limited number of beta tags.
 
 ## 1.0.0-alpha.2 to 1.0.0-alpha.3
 
+### Exception Handler
+
+The `isJsonApi()` method on the `HandlesError` trait now requires the request and exception as arguments.
+This is so that a JSON API error response can be rendered if a client has requested JSON API via the request
+`Accept` header, but the request is not being processed by one of the configured APIs. This enables exceptions
+that are thrown *prior* to routing to be rendered as JSON API - for example, when the application is in
+maintenance mode.
+
+You need to change this:
+
+```php
+public function render($request, Exception $e)
+{
+  if ($this->isJsonApi()) {
+    return $this->renderJsonApi($request, $e);
+  }
+
+  // ...
+}
+```
+
+To this:
+
+```php
+public function render($request, Exception $e)
+{
+  if ($this->isJsonApi($request, $e)) {
+    return $this->renderJsonApi($request, $e);
+  }
+
+  // ...
+}
+```
+
 ### Not By Resource Resolution
 
 When using *not-by-resource* resolution, the type of the class is now appended to the class name. E.g. 

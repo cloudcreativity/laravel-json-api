@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file. This projec
 
 ## Unreleased
 
+### Added
+- Errors that occur *before* a route is processed by a JSON API are now sent to the client as JSON API
+error responses if the client wants a JSON API response. This is determined using the `Accept` header
+and means that exceptions such as the maintenance mode exception are correctly returned as JSON API errors
+if that is what the client wants.
+
 ### Changed
 - Field guarding that was previously available on the Eloquent adapter is now also available on the
 generic adapter.

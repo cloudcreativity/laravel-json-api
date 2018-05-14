@@ -18,11 +18,15 @@
 
 namespace CloudCreativity\LaravelJsonApi\Exceptions;
 
+use CloudCreativity\LaravelJsonApi\Contracts\Encoder\SerializerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Exceptions\ExceptionParserInterface;
+use CloudCreativity\LaravelJsonApi\Encoder\Encoder;
 use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
+use CloudCreativity\LaravelJsonApi\Utils\Helpers;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Neomerx\JsonApi\Http\Headers\MediaType;
 
 /**
  * Class HandlerTrait
@@ -33,10 +37,24 @@ trait HandlesErrors
 {
 
     /**
+     * Does the HTTP request require a JSON API error response?
+     *
+     * This method determines if we need to render a JSON API error response
+     * for the provided exception. We need to do this if:
+     *
+     * - The client has requested JSON API via its Accept header; or
+     * - The application is handling a request to a JSON API endpoint.
+     *
+     * @param Request $request
+     * @param Exception $e
      * @return bool
      */
-    public function isJsonApi()
+    public function isJsonApi($request, Exception $e)
     {
+        if (Helpers::wantsJsonApi($request)) {
+            return true;
+        }
+
         /** @var JsonApiService $service */
         $service = app(JsonApiService::class);
 
@@ -48,7 +66,7 @@ trait HandlesErrors
      * @param Exception $e
      * @return Response
      */
-    public function renderJsonApi(Request $request, Exception $e)
+    public function renderJsonApi($request, Exception $e)
     {
         /** @var JsonApiService $service */
         $service = app(JsonApiService::class);
@@ -63,10 +81,19 @@ trait HandlesErrors
             return response('', Response::HTTP_NOT_ACCEPTABLE);
         }
 
-        return $service
-            ->requestApi()
-            ->response()
-            ->errors($response);
+        /** If there is an active API, use that to send the response. */
+        if ($api = $service->requestApi()) {
+            return $api->response()->errors($response);
+        }
+
+        /** @var SerializerInterface $serializer */
+        $serializer = Encoder::instance();
+
+        return response()->json(
+            $serializer->serializeErrors($response->getErrors()),
+            $response->getHttpCode(),
+            ['Content-Type' => MediaType::JSON_API_MEDIA_TYPE]
+        );
     }
 
 }

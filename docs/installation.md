@@ -70,7 +70,7 @@ class Handler extends ExceptionHandler
 
     public function render($request, Exception $e)
     {
-      if ($this->isJsonApi()) {
+      if ($this->isJsonApi($request, $e)) {
         return $this->renderJsonApi($request, $e);
       }
 

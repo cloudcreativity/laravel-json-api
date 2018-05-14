@@ -18,6 +18,8 @@
 namespace CloudCreativity\LaravelJsonApi\Utils;
 
 use CloudCreativity\LaravelJsonApi\Exceptions\InvalidJsonException;
+use Illuminate\Http\Request;
+use Illuminate\Support\Str as IlluminateStr;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
@@ -116,6 +118,17 @@ class Helpers
         }
 
         return 0 < $contentLength[0];
+    }
+
+    /**
+     * @param Request $request
+     * @return bool
+     */
+    public static function wantsJsonApi($request)
+    {
+        $acceptable = $request->getAcceptableContentTypes();
+
+        return isset($acceptable[0]) && IlluminateStr::contains($acceptable[0], 'vnd.api+json');
     }
 
 }
