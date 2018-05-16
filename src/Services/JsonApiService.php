@@ -69,13 +69,13 @@ class JsonApiService implements ErrorReporterInterface
     }
 
     /**
-     * Get the JSON API request, if there is one.
+     * Get the JSON API request, if there is an inbound API handling the request.
      *
      * @return RequestInterface|null
      */
     public function request()
     {
-        if (!$this->container->bound('json-api.request')) {
+        if (!$this->container->bound(Api::class)) {
             return null;
         }
 
@@ -83,6 +83,8 @@ class JsonApiService implements ErrorReporterInterface
     }
 
     /**
+     * Get the inbound JSON API request.
+     *
      * @return RequestInterface
      */
     public function requestOrFail()

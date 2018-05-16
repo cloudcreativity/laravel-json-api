@@ -31,6 +31,8 @@ behaviour can be maintained by setting the `by-resource` config option to the st
 - [#176](https://github.com/cloudcreativity/laravel-json-api/issues/176)
 Do not import model class in Eloquent adapter stub to avoid collisions with class name when using the legacy
 *not-by-resource* behaviour.
+- An exception is no longer triggered when create JSON API responses when there is no booted JSON API handling
+the request.
 
 ## [1.0.0-alpha.2] - 2018-05-06
 
