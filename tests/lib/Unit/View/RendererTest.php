@@ -91,7 +91,7 @@ class RendererTest extends TestCase
 
     public function testEncodeWithDefaultApi()
     {
-        $post = $this->withEncoder('default');
+        $post = $this->withEncoder();
         $this->renderer->encode($post);
     }
 
@@ -112,7 +112,7 @@ class RendererTest extends TestCase
     public function testEncodeWithParameters()
     {
         $params = new EncodingParameters(['comments'], ['author' => ['name']]);
-        $post = $this->withEncoder('default', 0, 512, $params);
+        $post = $this->withEncoder(null, 0, 512, $params);
         $this->renderer->encode($post, 'comments', ['author' => ['name']]);
     }
 
@@ -123,7 +123,7 @@ class RendererTest extends TestCase
      * @param $parameters
      * @return object
      */
-    private function withEncoder($name, $options = 0, $depth = 512, $parameters = null)
+    private function withEncoder($name = null, $options = 0, $depth = 512, $parameters = null)
     {
         $post = (object) ['type' => 'posts', 'id' => '1'];
 
