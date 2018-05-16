@@ -164,7 +164,7 @@ class ErrorsTest extends TestCase
      */
     private function withCustomError($key)
     {
-        config()->set("json-api-default.errors.{$key}", $expected = [
+        config()->set("json-api-v1.errors.{$key}", $expected = [
             'title' => 'Foo',
             'detail' => 'Bar',
         ]);

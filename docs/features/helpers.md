@@ -12,17 +12,16 @@ Helpers are either *global* (like Laravel's helpers) or scoped to a specific API
 
 ### `json_api()`
 
-Called without any arguments, this return the JSON API instance that is handling the inbound HTTP request. An API 
-is registered as handling an inbound request within any JSON API registered route.
+Called without any arguments, this returns the JSON API instance that is handling the inbound HTTP request.
+An API is registered as handling an inbound request within any JSON API registered route.
 
-If there is no API handling the inbound request, then an exception will be thrown if this helper is called
-without any arguments. If you are using this helper outside of a JSON API route, you will need to provide the
-name of the API to use. Generally you will need to do this if using the helper within any queued jobs.
+If there is no API handling the inbound request, then your default API will be returned. If you need a
+different API, call the helper with the name of the API you need.
 
 For example:
 
 ```php
-// the API handling the inbound HTTP request...
+// the API handling the inbound HTTP request or the default API...
 $api = json_api();
 // the API named 'v1'
 $api = json_api('v1');

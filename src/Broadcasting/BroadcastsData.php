@@ -34,7 +34,7 @@ trait BroadcastsData
      */
     protected function broadcastApi()
     {
-        return property_exists($this, 'broadcastApi') ? $this->broadcastApi : 'default';
+        return property_exists($this, 'broadcastApi') ? $this->broadcastApi : null;
     }
 
     /**

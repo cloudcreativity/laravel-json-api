@@ -111,7 +111,7 @@ class AuthTest extends TestCase
         Route::group([
             'namespace' => 'DummyApp\\Http\\Controllers',
         ], function () {
-            JsonApi::register('default', [
+            JsonApi::register('v1', [
                 'middleware' => 'auth',
             ], function (ApiGroup $api) {
                 $api->resource('posts');
@@ -131,7 +131,7 @@ class AuthTest extends TestCase
         Route::group([
             'namespace' => 'DummyApp\\Http\\Controllers',
         ], function () {
-            JsonApi::register('default', [], function (ApiGroup $api) {
+            JsonApi::register('v1', [], function (ApiGroup $api) {
                 $api->resource('posts');
                 $api->resource('comments', [
                     'middleware' => 'auth',

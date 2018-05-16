@@ -1,5 +1,20 @@
 # APIs
 
+## Introduction
+
+This package allows your application to have one (or many) APIs that conform to the JSON API spec. Each API is
+given a name, and configuration is held on a per-API basis.
+
+The default API name is `default`. You can change the default name via the JSON API facade by adding
+the following to the `boot()` method of your `AppServiceProvider`:
+
+```php
+public function boot()
+{
+    JsonApi::defaultApi('v1');
+}
+```
+
 ## Generating an API
 
 To generate your first API in your application:
@@ -8,7 +23,7 @@ To generate your first API in your application:
 $ php artisan make:json-api
 ```
 
-This uses the name `default` for your API and generates a config file called `json-api-default.php`.
+This uses the default API name and generates a config file called `json-api-{name}.php`.
 
 ### Multiple APIs
 

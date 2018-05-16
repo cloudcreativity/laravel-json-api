@@ -605,7 +605,7 @@ trait MakesJsonApiRequests
      */
     protected function api()
     {
-        $api = property_exists($this, 'api') ? $this->api : 'default';
+        $api = property_exists($this, 'api') ? $this->api : null;
 
         return json_api($api);
     }

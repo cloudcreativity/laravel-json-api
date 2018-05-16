@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file. This projec
 error responses if the client wants a JSON API response. This is determined using the `Accept` header
 and means that exceptions such as the maintenance mode exception are correctly returned as JSON API errors
 if that is what the client wants.
+- Can now override the default API name via the JSON API facade.
 
 ### Changed
 - Field guarding that was previously available on the Eloquent adapter is now also available on the

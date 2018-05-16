@@ -92,7 +92,7 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
      */
     public function handle()
     {
-        if (!$this->apiRepository->exists($api = $this->argument('api'))) {
+        if (!$this->apiRepository->exists($api = $this->getApiName())) {
             $this->error("JSON API '$api' does not exist.");
             return 1;
         }
@@ -159,7 +159,7 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
     {
         return [
             ['resource', InputArgument::REQUIRED, "The resource for which a {$this->type} class will be generated."],
-            ['api', InputArgument::OPTIONAL, "The API that the resource belongs to.", 'default'],
+            ['api', InputArgument::OPTIONAL, "The API that the resource belongs to."],
         ];
     }
 
@@ -319,6 +319,14 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
      */
     protected function getApi()
     {
-        return $this->apiRepository->createApi($this->argument('api'));
+        return $this->apiRepository->createApi($this->getApiName());
+    }
+
+    /**
+     * @return string
+     */
+    protected function getApiName()
+    {
+        return $this->argument('api') ?: $this->laravel->make('json-api')->defaultApi();
     }
 }

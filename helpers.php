@@ -71,10 +71,10 @@ namespace {
 
     if (!function_exists('json_api')) {
         /**
-         * Get the API handling the inbound request, or a named API.
+         * Get a named API, the API handling the inbound request or the default API.
          *
          * @param string|null $apiName
-         *      the API name, or null to get the API handling the inbound request.
+         *      the API name, or null to get either the API handling the inbound request or the default.
          * @return Api
          * @throws RuntimeException
          */
@@ -82,7 +82,11 @@ namespace {
             /** @var JsonApiService $service */
             $service = app('json-api');
 
-            return $apiName ? $service->api($apiName) : $service->requestApiOrFail();
+            if ($apiName) {
+                return $service->api($apiName);
+            }
+
+            return $service->requestApi() ?: $service->api();
         }
 
         /**

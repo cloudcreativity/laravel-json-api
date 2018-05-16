@@ -46,7 +46,7 @@ class AuthorizerTest extends TestCase
         Route::group([
             'namespace' => 'DummyApp\\Http\\Controllers',
         ], function () {
-            JsonApi::register('default', ['middleware' => "json-api.auth:generic"], function (ApiGroup $api) {
+            JsonApi::register('v1', ['middleware' => "json-api.auth:generic"], function (ApiGroup $api) {
                 $api->resource('posts');
             });
         });

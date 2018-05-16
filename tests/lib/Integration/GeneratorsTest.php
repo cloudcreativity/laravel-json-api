@@ -17,6 +17,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration;
 
+use CloudCreativity\LaravelJsonApi\Facades\JsonApi;
 use Illuminate\Filesystem\Filesystem;
 
 class GeneratorsTest extends TestCase
@@ -74,7 +75,8 @@ class GeneratorsTest extends TestCase
         }
 
         $files = [
-            "{$this->path}/config/json-api-v1.php",
+            "{$this->path}/config/json-api-default.php",
+            "{$this->path}/config/json-api-foo.php",
             "{$this->path}/app/JsonApi/VisitorAuthorizer.php",
         ];
 
@@ -100,16 +102,30 @@ class GeneratorsTest extends TestCase
     /**
      * We can generate a new API configuration file in our application.
      */
-    public function testGeneratesApi()
+    public function testGeneratesDefaultApi()
     {
-        $result = $this->artisan('make:json-api', [
-            'name' => 'v1'
-        ]);
+        JsonApi::defaultApi('default');
+
+        $result = $this->artisan('make:json-api');
 
         $this->assertSame(0, $result);
         $this->assertFileEquals(
             __DIR__ . '/../../../stubs/api.php',
-            "{$this->path}/config/json-api-v1.php"
+            "{$this->path}/config/json-api-default.php"
+        );
+    }
+
+    /**
+     * We can generate a new API configuration file in our application.
+     */
+    public function testGeneratesNamedApi()
+    {
+        $result = $this->artisan('make:json-api', ['name' => 'foo']);
+
+        $this->assertSame(0, $result);
+        $this->assertFileEquals(
+            __DIR__ . '/../../../stubs/api.php',
+            "{$this->path}/config/json-api-foo.php"
         );
     }
 
@@ -273,7 +289,7 @@ class GeneratorsTest extends TestCase
      */
     private function withEloquent()
     {
-        config()->set('json-api-default.use-eloquent', true);
+        config()->set('json-api-v1.use-eloquent', true);
 
         return $this;
     }
@@ -283,7 +299,7 @@ class GeneratorsTest extends TestCase
      */
     private function withoutEloquent()
     {
-        config()->set('json-api-default.use-eloquent', false);
+        config()->set('json-api-v1.use-eloquent', false);
 
         return $this;
     }
@@ -310,7 +326,7 @@ class GeneratorsTest extends TestCase
     {
         $this->byResource = false;
         $this->withoutType = $withoutType;
-        config()->set('json-api-default.by-resource', $withoutType ? 'false-0.x' : false);
+        config()->set('json-api-v1.by-resource', $withoutType ? 'false-0.x' : false);
 
         return $this;
     }

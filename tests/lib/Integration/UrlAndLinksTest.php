@@ -56,7 +56,7 @@ class UrlAndLinksTest extends TestCase
      */
     public function testUrl($expected, $method, $resourceId = null, $relationship = null)
     {
-        $url = json_api('default')->url();
+        $url = json_api()->url();
         $args = $this->normalizeArgs($resourceId, $relationship);
 
         $this->assertSame("http://localhost$expected", call_user_func_array([$url, $method], $args));
@@ -71,7 +71,7 @@ class UrlAndLinksTest extends TestCase
      */
     public function testLink($expected, $method, $resourceId = null, $relationship = null)
     {
-        $links = json_api('default')->links();
+        $links = json_api()->links();
         $expected = new Link("http://localhost$expected", null, true);
         $args = $this->normalizeArgs($resourceId, $relationship);
 
@@ -88,7 +88,7 @@ class UrlAndLinksTest extends TestCase
     public function testLinkWithMeta($expected, $method, $resourceId = null, $relationship = null)
     {
         $meta = (object) ['foo' => 'bar'];
-        $links = json_api('default')->links();
+        $links = json_api()->links();
         $expected = new Link("http://localhost$expected", $meta, true);
         $args = $this->normalizeArgs($resourceId, $relationship);
         $args[] = $meta;

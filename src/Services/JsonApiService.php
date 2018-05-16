@@ -43,6 +43,11 @@ class JsonApiService implements ErrorReporterInterface
     private $container;
 
     /**
+     * @var string
+     */
+    private $default;
+
+    /**
      * JsonApiService constructor.
      *
      * @param Container $container
@@ -50,22 +55,42 @@ class JsonApiService implements ErrorReporterInterface
     public function __construct(Container $container)
     {
         $this->container = $container;
+        $this->default = 'default';
+    }
+
+    /**
+     * Set or get the default API name.
+     *
+     * @param string|null $apiName
+     * @return string
+     */
+    public function defaultApi($apiName = null)
+    {
+        if (is_null($apiName)) {
+            return $this->default;
+        }
+
+        if (!is_string($apiName) || empty($apiName)) {
+            throw new \InvalidArgumentException('Expecting a non-empty string API name.');
+        }
+
+        return $this->default = $apiName;
     }
 
     /**
      * Get an API by name.
      *
-     * @param string $apiName
+     * @param string|null $apiName
      * @return Api
      * @throws RuntimeException
      *      if the API name is invalid.
      */
-    public function api($apiName = 'default')
+    public function api($apiName = null)
     {
         /** @var Repository $repo */
         $repo = $this->container->make(Repository::class);
 
-        return $repo->createApi($apiName ?: 'default');
+        return $repo->createApi($apiName ?: $this->default);
     }
 
     /**

@@ -24,7 +24,7 @@ Route::group(['middleware' => 'web'], function () {
     Auth::routes();
 });
 
-JsonApi::register('default', [], function (ApiGroup $api) {
+JsonApi::register('v1', [], function (ApiGroup $api) {
     $api->resource('comments', [
         'controller' => true,
         'middleware' => 'auth',

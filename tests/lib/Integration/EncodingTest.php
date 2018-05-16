@@ -43,7 +43,7 @@ class EncodingTest extends TestCase
     public function testRequestedResourceHasRequestHost()
     {
         $id = factory(Post::class)->create()->getKey();
-        config()->set('json-api-default.url.host', null);
+        config()->set('json-api-v1.url.host', null);
 
         $json = $this
             ->withAppRoutes()
@@ -60,7 +60,7 @@ class EncodingTest extends TestCase
     public function testRequestedResourceDoesNotHaveHost()
     {
         $id = factory(Post::class)->create()->getKey();
-        config()->set('json-api-default.url.host', false);
+        config()->set('json-api-v1.url.host', false);
 
         $json = $this
             ->withAppRoutes()
@@ -77,7 +77,7 @@ class EncodingTest extends TestCase
     public function testRequestResourceDoesNotHaveUrlNamespace()
     {
         $id = factory(Post::class)->create()->getKey();
-        config()->set('json-api-default.url.namespace', null);
+        config()->set('json-api-v1.url.namespace', null);
 
         $json = $this
             ->withAppRoutes()
@@ -94,7 +94,7 @@ class EncodingTest extends TestCase
     public function testRequestResourceHasEmptyUrlNamespace()
     {
         $id = factory(Post::class)->create()->getKey();
-        config()->set('json-api-default.url.namespace', '');
+        config()->set('json-api-v1.url.namespace', '');
 
         $json = $this
             ->withAppRoutes()
@@ -111,8 +111,8 @@ class EncodingTest extends TestCase
     public function testRequestResourceDoesNotHaveHostAndUrlNamespace()
     {
         $id = factory(Post::class)->create()->getKey();
-        config()->set('json-api-default.url.host', false);
-        config()->set('json-api-default.url.namespace', null);
+        config()->set('json-api-v1.url.host', false);
+        config()->set('json-api-v1.url.namespace', null);
 
         $json = $this
             ->withAppRoutes()
@@ -132,9 +132,9 @@ class EncodingTest extends TestCase
         $post = factory(Post::class)->create();
 
         config()->set('app.url', $host = 'http://www.example.com');
-        config()->set('json-api-default.url.host', null);
+        config()->set('json-api-v1.url.host', null);
 
-        $json = json_api('default')->encoder()->serializeData($post);
+        $json = json_api()->encoder()->serializeData($post);
         $this->assertSelfLink("http://www.example.com/api/v1/posts/{$post->getKey()}", $json);
     }
 
@@ -147,9 +147,9 @@ class EncodingTest extends TestCase
         $post = factory(Post::class)->create();
 
         config()->set('app.url', 'http://localhost');
-        config()->set('json-api-default.url.host', $host = 'http://www.example.com');
+        config()->set('json-api-v1.url.host', $host = 'http://www.example.com');
 
-        $json = json_api('default')->encoder()->serializeData($post);
+        $json = json_api()->encoder()->serializeData($post);
         $this->assertSelfLink("http://www.example.com/api/v1/posts/{$post->getKey()}", $json);
     }
 
@@ -162,9 +162,9 @@ class EncodingTest extends TestCase
         $post = factory(Post::class)->create();
 
         config()->set('app.url', 'http://www.example.com');
-        config()->set('json-api-default.url.host', false);
+        config()->set('json-api-v1.url.host', false);
 
-        $json = json_api('default')->encoder()->serializeData($post);
+        $json = json_api()->encoder()->serializeData($post);
         $this->assertSelfLink("/api/v1/posts/{$post->getKey()}", $json);
     }
 

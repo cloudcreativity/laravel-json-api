@@ -48,11 +48,6 @@ class LoginController extends Controller
     protected $redirectTo = '/home';
 
     /**
-     * @var string
-     */
-    protected $api = 'default';
-
-    /**
      * Create a new controller instance.
      *
      * @return void

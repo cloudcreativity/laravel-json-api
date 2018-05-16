@@ -87,14 +87,6 @@ abstract class TestCase extends BaseTestCase
     /**
      * @param Application $app
      */
-    protected function getEnvironmentSetUp($app)
-    {
-        $app['config']->set('auth.providers.users.model', DummyApp\User::class);
-    }
-
-    /**
-     * @param Application $app
-     */
     protected function resolveApplicationExceptionHandler($app)
     {
         $app->singleton(ExceptionHandler::class, TestExceptionHandler::class);

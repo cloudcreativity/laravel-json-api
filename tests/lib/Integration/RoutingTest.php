@@ -82,7 +82,7 @@ class RoutingTest extends TestCase
     public function testDefaults($method, $url, $action)
     {
         $this->withRoutes(function () {
-            JsonApi::register('default', [], function (ApiGroup $api) {
+            JsonApi::register('v1', [], function (ApiGroup $api) {
                 $api->resource('posts', [
                     'has-one' => ['author'],
                     'has-many' => ['tags', 'comments'],
@@ -102,7 +102,7 @@ class RoutingTest extends TestCase
     public function testControllerIsTrue($method, $url, $action)
     {
         $this->withRoutes(function () {
-            JsonApi::register('default', [], function (ApiGroup $api) {
+            JsonApi::register('v1', [], function (ApiGroup $api) {
                 $api->resource('posts', [
                     'controller' => true,
                     'has-one' => 'author',
@@ -127,7 +127,7 @@ class RoutingTest extends TestCase
         $expected = '\Foo\Bar';
 
         $this->withRoutes(function () use ($expected) {
-            JsonApi::register('default', [], function (ApiGroup $api) use ($expected) {
+            JsonApi::register('v1', [], function (ApiGroup $api) use ($expected) {
                 $api->resource('posts', [
                     'controller' => $expected,
                     'has-one' => 'author',
@@ -177,7 +177,7 @@ class RoutingTest extends TestCase
     public function testOnly($only, array $matches)
     {
         $this->withRoutes(function () use ($only) {
-            JsonApi::register('default', [], function (ApiGroup $api) use ($only) {
+            JsonApi::register('v1', [], function (ApiGroup $api) use ($only) {
                 $api->resource('posts', ['only' => $only]);
             });
         });
@@ -223,7 +223,7 @@ class RoutingTest extends TestCase
     public function testExcept($except, array $matches)
     {
         $this->withRoutes(function () use ($except) {
-            JsonApi::register('default', [], function (ApiGroup $api) use ($except) {
+            JsonApi::register('v1', [], function (ApiGroup $api) use ($except) {
                 $api->resource('posts', ['except' => $except]);
             });
         });
@@ -263,7 +263,7 @@ class RoutingTest extends TestCase
     public function testHasOneOnly($only, array $matches)
     {
         $this->withRoutes(function () use ($only) {
-            JsonApi::register('default', [], function (ApiGroup $api) use ($only) {
+            JsonApi::register('v1', [], function (ApiGroup $api) use ($only) {
                 $api->resource('posts', [
                     'has-one' => [
                         'author' => [
@@ -309,7 +309,7 @@ class RoutingTest extends TestCase
     public function testHasOneExcept($except, array $matches)
     {
         $this->withRoutes(function () use ($except) {
-            JsonApi::register('default', [], function (ApiGroup $api) use ($except) {
+            JsonApi::register('v1', [], function (ApiGroup $api) use ($except) {
                 $api->resource('posts', [
                     'has-one' => [
                         'author' => [
@@ -368,7 +368,7 @@ class RoutingTest extends TestCase
     public function testHasManyOnly($only, array $matches)
     {
         $this->withRoutes(function () use ($only) {
-            JsonApi::register('default', [], function (ApiGroup $api) use ($only) {
+            JsonApi::register('v1', [], function (ApiGroup $api) use ($only) {
                 $api->resource('posts', [
                     'has-many' => [
                         'tags' => [
@@ -428,7 +428,7 @@ class RoutingTest extends TestCase
     public function testHasManyExcept($except, array $matches)
     {
         $this->withRoutes(function () use ($except) {
-            JsonApi::register('default', [], function (ApiGroup $api) use ($except) {
+            JsonApi::register('v1', [], function (ApiGroup $api) use ($except) {
                 $api->resource('posts', [
                     'has-many' => [
                         'tags' => [
@@ -450,7 +450,7 @@ class RoutingTest extends TestCase
     public function testResourceIdConstraint($method, $url)
     {
         $this->withRoutes(function () {
-            JsonApi::register('default', [], function (ApiGroup $api) {
+            JsonApi::register('v1', [], function (ApiGroup $api) {
                 $api->resource('posts', [
                     'has-one' => ['author'],
                     'has-many' => ['tags', 'comments'],
@@ -470,7 +470,7 @@ class RoutingTest extends TestCase
     public function testDefaultIdConstraint($method, $url)
     {
         $this->withRoutes(function () {
-            JsonApi::register('default', ['id' => '[A-Z]+'], function (ApiGroup $api) {
+            JsonApi::register('v1', ['id' => '[A-Z]+'], function (ApiGroup $api) {
                 $api->resource('posts', [
                     'has-one' => ['author'],
                     'has-many' => ['tags', 'comments'],
@@ -491,7 +491,7 @@ class RoutingTest extends TestCase
     public function testDefaultIdConstraintCanBeIgnoredByResource($method, $url)
     {
         $this->withRoutes(function () {
-            JsonApi::register('default', ['id' => '[A-Z]+'], function (ApiGroup $api) {
+            JsonApi::register('v1', ['id' => '[A-Z]+'], function (ApiGroup $api) {
                 $api->resource('posts', [
                     'has-one' => ['author'],
                     'has-many' => ['tags', 'comments'],
@@ -513,7 +513,7 @@ class RoutingTest extends TestCase
     public function testResourceIdConstraintOverridesDefaultIdConstraint($method, $url)
     {
         $this->withRoutes(function () {
-            JsonApi::register('default', ['id' => '[0-9]+'], function (ApiGroup $api) {
+            JsonApi::register('v1', ['id' => '[0-9]+'], function (ApiGroup $api) {
                 $api->resource('posts', [
                     'has-one' => ['author'],
                     'has-many' => ['tags', 'comments'],

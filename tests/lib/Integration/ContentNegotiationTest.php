@@ -126,7 +126,7 @@ class ContentNegotiationTest extends TestCase
      */
     public function testCanChangeMediaType1()
     {
-        app('config')->set('json-api-default.codecs', [
+        app('config')->set('json-api-v1.codecs', [
             'encoders' => ['application/json'],
             'decoders' => ['application/json'],
         ]);
@@ -141,7 +141,7 @@ class ContentNegotiationTest extends TestCase
      */
     public function testCanChangeMediaType2()
     {
-        app('config')->set('json-api-default.codecs', [
+        app('config')->set('json-api-v1.codecs', [
             'encoders' => ['application/json'],
             'decoders' => ['application/json'],
         ]);
