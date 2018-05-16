@@ -124,7 +124,7 @@ class HelpersTest extends TestCase
     /**
      * @return array
      */
-    public function wantsJsonApiProvider()
+    public function mediaTypesProvider()
     {
         return [
             ['application/vnd.api+json', true],
@@ -136,16 +136,27 @@ class HelpersTest extends TestCase
     /**
      * @param $accept
      * @param $expected
-     * @dataProvider wantsJsonApiProvider
+     * @dataProvider mediaTypesProvider
      */
     public function testWantsJsonApi($accept, $expected)
     {
         $request = new IlluminateRequest();
         $request->headers->set('Accept', $accept);
 
-        $request->wantsJson();
-
         $this->assertSame($expected, Helpers::wantsJsonApi($request));
+    }
+
+    /**
+     * @param $contentType
+     * @param $expected
+     * @dataProvider mediaTypesProvider
+     */
+    public function testIsJsonApi($contentType, $expected)
+    {
+        $request = new IlluminateRequest();
+        $request->headers->set('Content-Type', $contentType);
+
+        $this->assertSame($expected, Helpers::isJsonApi($request));
     }
 
     /**

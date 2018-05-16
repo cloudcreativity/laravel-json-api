@@ -19,11 +19,10 @@ namespace DummyApp\Http\Controllers\Auth;
 
 use CloudCreativity\LaravelJsonApi\Http\Controllers\CreatesResponses;
 use CloudCreativity\LaravelJsonApi\Utils\Helpers;
-use Illuminate\Foundation\Validation\ValidatesRequests;
+use DummyApp\Http\Controllers\Controller;
+use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Routing\Controller;
-use Illuminate\Foundation\Auth\AuthenticatesUsers;
 
 class LoginController extends Controller
 {
@@ -38,7 +37,7 @@ class LoginController extends Controller
     |
     */
 
-    use AuthenticatesUsers, CreatesResponses, ValidatesRequests;
+    use AuthenticatesUsers, CreatesResponses;
 
     /**
      * Where to redirect users after login.
