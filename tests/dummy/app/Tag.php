@@ -62,6 +62,14 @@ class Tag extends Model
     }
 
     /**
+     * @return string
+     */
+    public function getRouteKeyName()
+    {
+        return 'uuid';
+    }
+
+    /**
      * @return MorphToMany
      */
     public function posts()
