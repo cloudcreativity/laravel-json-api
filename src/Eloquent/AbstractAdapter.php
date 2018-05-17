@@ -22,7 +22,6 @@ use CloudCreativity\LaravelJsonApi\Adapter\AbstractResourceAdapter;
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\HasManyAdapterInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\RelationshipAdapterInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Object\RelationshipInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Object\RelationshipsInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PageInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PagingStrategyInterface;
