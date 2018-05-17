@@ -15,6 +15,10 @@ public function boot()
 }
 ```
 
+> You must set the default API if you are not using `default` as the name. It is used to render error responses
+when clients have sent an `Accept` header with the JSON API media type if the exception occurs before the
+`json-api` middleware runs.
+
 ## Generating an API
 
 To generate your first API in your application:

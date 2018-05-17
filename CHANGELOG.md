@@ -38,6 +38,9 @@ the request.
 - [#181](https://github.com/cloudcreativity/laravel-json-api/issues/181) Send a `419` error response with an
 error object for a `TokenMismatchException`.
 
+### Deprecated
+- The `report` method on the JSON API service/facade will be removed by `1.0.0`.
+
 ## [1.0.0-alpha.2] - 2018-05-06
 
 ### Added

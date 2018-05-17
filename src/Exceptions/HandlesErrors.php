@@ -18,15 +18,12 @@
 
 namespace CloudCreativity\LaravelJsonApi\Exceptions;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Encoder\SerializerInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Exceptions\ExceptionParserInterface;
-use CloudCreativity\LaravelJsonApi\Encoder\Encoder;
+use CloudCreativity\LaravelJsonApi\Http\Responses\ErrorResponse;
 use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
 use CloudCreativity\LaravelJsonApi\Utils\Helpers;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Neomerx\JsonApi\Http\Headers\MediaType;
 
 /**
  * Class HandlerTrait
@@ -68,32 +65,15 @@ trait HandlesErrors
      */
     public function renderJsonApi($request, Exception $e)
     {
-        /** @var JsonApiService $service */
-        $service = app(JsonApiService::class);
-        /** @var ExceptionParserInterface $handler */
-        $handler = app(ExceptionParserInterface::class);
-
-        $response = $handler->parse($e);
-        $service->report($response, $e);
+        /** @var ErrorResponse $response */
+        $response = app('json-api.exceptions')->parse($e);
 
         /** Client does not accept a JSON API response. */
         if (Response::HTTP_NOT_ACCEPTABLE === $response->getHttpCode()) {
             return response('', Response::HTTP_NOT_ACCEPTABLE);
         }
 
-        /** If there is an active API, use that to send the response, or the default API. */
-        if ($api = $service->requestApiOrDefault()) {
-            return $api->response()->errors($response);
-        }
-
-        /** @var SerializerInterface $serializer */
-        $serializer = Encoder::instance();
-
-        return response()->json(
-            $serializer->serializeErrors($response->getErrors()),
-            $response->getHttpCode(),
-            ['Content-Type' => MediaType::JSON_API_MEDIA_TYPE]
-        );
+        return json_api()->response()->errors($response);
     }
 
 }

@@ -22,6 +22,7 @@ use CloudCreativity\LaravelJsonApi\Contracts\Document\MutableErrorInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Exceptions\ErrorIdAllocatorInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Exceptions\ExceptionParserInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Repositories\ErrorRepositoryInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Utils\ErrorReporterInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\MutableErrorCollection as Errors;
 use CloudCreativity\LaravelJsonApi\Http\Responses\ErrorResponse;
 use Exception;
@@ -52,15 +53,25 @@ class ExceptionParser implements ExceptionParserInterface
     private $idAllocator;
 
     /**
+     * @var ErrorReporterInterface|null
+     */
+    private $reporter;
+
+    /**
      * ExceptionParser constructor.
      *
      * @param ErrorRepositoryInterface $errors
      * @param ErrorIdAllocatorInterface|null $idAllocator
+     * @param ErrorReporterInterface|null $reporter
      */
-    public function __construct(ErrorRepositoryInterface $errors, ErrorIdAllocatorInterface $idAllocator = null)
-    {
+    public function __construct(
+        ErrorRepositoryInterface $errors,
+        ErrorIdAllocatorInterface $idAllocator = null,
+        ErrorReporterInterface $reporter = null
+    ) {
         $this->errors = $errors;
         $this->idAllocator = $idAllocator;
+        $this->reporter = $reporter;
     }
 
     /**
@@ -83,7 +94,13 @@ class ExceptionParser implements ExceptionParserInterface
             $this->assignId($error, $e);
         }
 
-        return new ErrorResponse($errors, $httpCode, $this->getHeaders($e));
+        $response = new ErrorResponse($errors, $httpCode, $this->getHeaders($e));
+
+        if ($this->reporter) {
+            $this->reporter->report($response);
+        }
+
+        return $response;
     }
 
     /**

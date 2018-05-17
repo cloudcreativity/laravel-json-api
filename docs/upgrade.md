@@ -42,6 +42,11 @@ public function render($request, Exception $e)
 }
 ```
 
+### Default API
+
+You can now [set the default API name used by this package.](./basics/api.md) If your default API is not 
+called `default`, you must set this to whatever your default API is called.
+
 ### Not By Resource Resolution
 
 When using *not-by-resource* resolution, the type of the class is now appended to the class name. E.g. 

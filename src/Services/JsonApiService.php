@@ -34,7 +34,7 @@ use Illuminate\Contracts\Container\Container;
  *
  * @package CloudCreativity\LaravelJsonApi
  */
-class JsonApiService implements ErrorReporterInterface
+class JsonApiService
 {
 
     /**
@@ -176,8 +176,10 @@ class JsonApiService implements ErrorReporterInterface
     }
 
     /**
-     * @inheritdoc
-     * @todo provide an error reporter on a per-API basis and remove this from the service
+     * @param ErrorResponseInterface $response
+     * @param Exception|null $e
+     * @return void
+     * @deprecated 1.0.0
      */
     public function report(ErrorResponseInterface $response, Exception $e = null)
     {
@@ -194,7 +196,7 @@ class JsonApiService implements ErrorReporterInterface
      * Get the current API, if one has been bound into the container.
      *
      * @return Api
-     * @deprecated use `requestApi`
+     * @deprecated 1.0.0 use `requestApi`
      */
     public function getApi()
     {
@@ -207,7 +209,7 @@ class JsonApiService implements ErrorReporterInterface
 
     /**
      * @return bool
-     * @deprecated use `requestApi()`
+     * @deprecated 1.0.0 use `requestApi()`
      */
     public function hasApi()
     {
@@ -218,7 +220,7 @@ class JsonApiService implements ErrorReporterInterface
      * Get the current JSON API request, if one has been bound into the container.
      *
      * @return RequestInterface
-     * @deprecated use `request()`
+     * @deprecated 1.0.0 use `request()`
      */
     public function getRequest()
     {
@@ -233,7 +235,7 @@ class JsonApiService implements ErrorReporterInterface
      * Has a JSON API request been bound into the container?
      *
      * @return bool
-     * @deprecated use `request()`
+     * @deprecated 1.0.0 use `request()`
      */
     public function hasRequest()
     {
