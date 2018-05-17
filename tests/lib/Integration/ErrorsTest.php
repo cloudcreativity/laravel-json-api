@@ -128,6 +128,7 @@ class ErrorsTest extends TestCase
         $expected = [
             'errors' => [
                 [
+                    'title' => 'Not Found',
                     'status' => '404',
                 ],
             ],
@@ -141,21 +142,33 @@ class ErrorsTest extends TestCase
 
     public function testMaintenanceMode()
     {
-        Route::get('/test', function () {
-            throw new MaintenanceModeException(Carbon::now()->getTimestamp(), 60, "We'll be back soon.");
-        });
+        $ex = new MaintenanceModeException(Carbon::now()->getTimestamp(), 60, "We'll be back soon.");
 
-        $this->getJsonApi('/test')
+        $this->request($ex)
             ->assertStatus(503)
             ->assertHeader('Content-Type', 'application/vnd.api+json')
             ->assertExactJson([
                 'errors' => [
                     [
+                        'title' => 'Service Unavailable',
                         'detail' => "We'll be back soon.",
                         'status' => '503',
                     ],
                 ],
             ]);
+    }
+
+    /**
+     * @param \Exception $ex
+     * @return \CloudCreativity\LaravelJsonApi\Testing\TestResponse
+     */
+    private function request(\Exception $ex)
+    {
+        Route::get('/test', function () use ($ex) {
+            throw $ex;
+        });
+
+        return $this->getJsonApi('/test');
     }
 
     /**

@@ -135,7 +135,10 @@ class ExceptionParser implements ExceptionParserInterface
      */
     protected function getHttpError(HttpException $e)
     {
-        return new Error(null, null, $e->getStatusCode(), null, null, $e->getMessage() ?: null);
+        $status = $e->getStatusCode();
+        $title = $this->getDefaultTitle($status);
+
+        return new Error(null, null, $status, null, $title, $e->getMessage() ?: null);
     }
 
     /**
@@ -159,6 +162,19 @@ class ExceptionParser implements ExceptionParserInterface
         return ($e instanceof HttpExceptionInterface) ?
             $e->getStatusCode() :
             Response::HTTP_INTERNAL_SERVER_ERROR;
+    }
+
+    /**
+     * @param $status
+     * @return string|null
+     */
+    protected function getDefaultTitle($status)
+    {
+        if (isset(Response::$statusTexts[$status])) {
+            return Response::$statusTexts[$status];
+        }
+
+        return null;
     }
 
     /**
