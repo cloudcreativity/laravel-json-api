@@ -134,7 +134,7 @@ The above schema would result in the following resource object:
 
 A resource object may have a `relationships` key that holds a relationships object. This object describes linkages
 to other resource objects. Relationships can either be to-one or to-many. The JSON API spec allows these linkages 
-to be described in resource relationships in multiple ways - either through a `data`, `links` or `meta` value, 
+to be described in resource relationships in multiple ways - either through a `links`, `data` or `meta` value, 
 or a combination of all three.
 
 > It's worth mentioning again that every PHP class that could be returned as a related object must have a schema

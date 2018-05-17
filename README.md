@@ -27,9 +27,9 @@ A demo application is available at [here](https://github.com/cloudcreativity/dem
 
 | Laravel | This Package |
 | --- | --- |
-| 5.4.* | ^0.12 |
-| 5.5.* | ^0.12 |
-| 5.6.* | ^0.12 |
+| 5.4.* | `1.0.0-alpha.3` |
+| 5.5.* | `1.0.0-alpha.3` |
+| 5.6.* | `1.0.0-alpha.3` |
 
 Make sure you consult the [Upgrade Guide](http://laravel-json-api.readthedocs.io/en/latest/upgrade/) when upgrading.
 
@@ -47,8 +47,8 @@ Documentation is available on [Read the Docs](http://laravel-json-api.readthedoc
 This repository is under development. We have production applications that are using the package and extensive test
 coverage of these applications.
 
-> We are aiming for v1.0 as soon as possible. See 
-[this issue](https://github.com/cloudcreativity/laravel-json-api/issues/60) for progress.
+We are aiming for v1.0 as soon as possible.
+[Check the progress here.](https://github.com/cloudcreativity/laravel-json-api/milestone/2)
 
 ## License
 
