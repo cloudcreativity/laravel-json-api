@@ -68,6 +68,7 @@ class CreateTables extends Migration
 
         Schema::create('tags', function (Blueprint $table) {
             $table->increments('id');
+            $table->uuid('uuid');
             $table->timestamps();
             $table->string('name');
         });

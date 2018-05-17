@@ -19,6 +19,7 @@ namespace DummyApp;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
+use Ramsey\Uuid\Uuid;
 
 class Tag extends Model
 {
@@ -36,6 +37,29 @@ class Tag extends Model
     protected $visible = [
         'name',
     ];
+
+    /**
+     * @inheritdoc
+     */
+    public static function boot()
+    {
+        parent::boot();
+
+        self::creating(function (Tag $tag) {
+            if (!$tag->uuid) {
+                $tag->uuid = Uuid::uuid4()->toString();
+            }
+        });
+    }
+
+    /**
+     * @param $uuid
+     * @return Tag|null
+     */
+    public static function findUuid($uuid)
+    {
+        return self::query()->where('uuid', $uuid)->first();
+    }
 
     /**
      * @return MorphToMany

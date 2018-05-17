@@ -23,6 +23,7 @@ use DummyApp\Events\ResourceEvent;
 use DummyApp\Http\Controllers\PostsController;
 use DummyApp\Post;
 use DummyApp\Tag;
+use Ramsey\Uuid\Uuid;
 
 class ResourceTest extends TestCase
 {
@@ -190,7 +191,7 @@ class ResourceTest extends TestCase
         ];
 
         $expected['relationships']['tags']['data'] = [
-            ['type' => 'tags', 'id' => (string) $tag->getKey()],
+            ['type' => 'tags', 'id' => $tag->uuid],
         ];
 
         $expected['relationships']['comments']['data'] = [];
@@ -199,7 +200,7 @@ class ResourceTest extends TestCase
 
         $response->assertDocument()->assertIncluded()->assertContainsOnly([
             'users' => [$model->author_id],
-            'tags' => [$tag->getKey()],
+            'tags' => [$tag->uuid],
         ]);
     }
 
@@ -275,7 +276,7 @@ class ResourceTest extends TestCase
             'relationships' => [
                 'tags' => [
                     'data' => [
-                        ['type' => 'tags', 'id' => (string) $tag->getKey()],
+                        ['type' => 'tags', 'id' => $tag->uuid],
                     ],
                 ],
             ],

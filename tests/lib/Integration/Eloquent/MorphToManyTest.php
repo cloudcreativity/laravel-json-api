@@ -85,7 +85,7 @@ class MorphToManyTest extends TestCase
                     'data' => [
                         [
                             'type' => 'tags',
-                            'id' => (string) $tag->getKey(),
+                            'id' => $tag->uuid,
                         ],
                     ],
                 ],
@@ -117,11 +117,11 @@ class MorphToManyTest extends TestCase
                     'data' => [
                         [
                             'type' => 'tags',
-                            'id' => (string) $tags->first()->getKey(),
+                            'id' => $tags->first()->uuid,
                         ],
                         [
                             'type' => 'tags',
-                            'id' => (string) $tags->last()->getKey(),
+                            'id' => $tags->last()->uuid,
                         ],
                     ],
                 ],
@@ -178,7 +178,7 @@ class MorphToManyTest extends TestCase
                     'data' => [
                         [
                             'type' => 'tags',
-                            'id' => (string) $tag->getKey(),
+                            'id' => $tag->uuid,
                         ],
                     ],
                 ],
@@ -210,11 +210,11 @@ class MorphToManyTest extends TestCase
                     'data' => [
                         [
                             'type' => 'tags',
-                            'id' => (string) $tags->first()->getKey(),
+                            'id' => $tags->first()->uuid,
                         ],
                         [
                             'type' => 'tags',
-                            'id' => (string) $tags->last()->getKey(),
+                            'id' => $tags->last()->uuid,
                         ],
                     ],
                 ],
@@ -231,10 +231,14 @@ class MorphToManyTest extends TestCase
         $post = factory(Post::class)->create();
         $tags = factory(Tag::class, 2)->create();
 
+        $expected = $tags->map(function (Tag $tag) {
+            return $tag->uuid;
+        });
+
         $post->tags()->sync($tags);
 
         $this->doReadRelated($post, 'tags')
-            ->assertReadHasMany('tags', $tags);
+            ->assertReadHasMany('tags', $expected);
     }
 
     public function testReadRelatedEmpty()
@@ -252,8 +256,12 @@ class MorphToManyTest extends TestCase
         $tags = factory(Tag::class, 2)->create();
         $post->tags()->sync($tags);
 
+        $expected = $tags->map(function (Tag $tag) {
+            return $tag->uuid;
+        });
+
         $this->doReadRelationship($post, 'tags')
-            ->assertReadHasManyIdentifiers('tags', $tags);
+            ->assertReadHasManyIdentifiers('tags', $expected);
     }
 
     public function testReadEmptyRelationship()
@@ -270,7 +278,7 @@ class MorphToManyTest extends TestCase
         $tags = factory(Tag::class, 2)->create();
 
         $data = $tags->map(function (Tag $tag) {
-            return ['type' => 'tags', 'id' => (string) $tag->getKey()];
+            return ['type' => 'tags', 'id' => $tag->uuid];
         })->all();
 
         $this->doReplaceRelationship($post, 'tags', $data)
@@ -299,7 +307,7 @@ class MorphToManyTest extends TestCase
         $tags = factory(Tag::class, 3)->create();
 
         $data = $tags->map(function (Tag $tag) {
-            return ['type' => 'tags', 'id' => (string) $tag->getKey()];
+            return ['type' => 'tags', 'id' => $tag->uuid];
         })->all();
 
         $this->doReplaceRelationship($post, 'tags', $data)
@@ -316,7 +324,7 @@ class MorphToManyTest extends TestCase
 
         $add = factory(Tag::class, 2)->create();
         $data = $add->map(function (Tag $tag) {
-            return ['type' => 'tags', 'id' => (string) $tag->getKey()];
+            return ['type' => 'tags', 'id' => $tag->uuid];
         })->all();
 
         $this->doAddToRelationship($post, 'tags', $data)
@@ -332,7 +340,7 @@ class MorphToManyTest extends TestCase
         $post->tags()->sync($tags);
 
         $data = $tags->take(2)->map(function (Tag $tag) {
-            return ['type' => 'tags', 'id' => (string) $tag->getKey()];
+            return ['type' => 'tags', 'id' => $tag->uuid];
         })->all();
 
         $this->doRemoveFromRelationship($post, 'tags', $data)

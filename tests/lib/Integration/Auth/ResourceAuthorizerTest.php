@@ -99,7 +99,7 @@ class ResourceAuthorizerTest extends TestCase
     {
         $tag = factory(Tag::class)->create();
 
-        $this->doRead($tag)->assertStatus(401)->assertJson([
+        $this->doRead($tag->uuid)->assertStatus(401)->assertJson([
             'errors' => [
                 [
                     'title' => 'Unauthenticated',
@@ -113,9 +113,23 @@ class ResourceAuthorizerTest extends TestCase
     {
         $tag = factory(Tag::class)->create();
 
+        $expected = [
+            'type' => 'tags',
+            'id' => $tag->uuid,
+            'attributes' => [
+                'created-at' => $tag->created_at->toAtomString(),
+                'updated-at' => $tag->updated_at->toAtomString(),
+                'name' => $tag->name,
+            ],
+            'links' => [
+                'self' => "http://localhost/api/v1/tags/{$tag->uuid}",
+            ],
+        ];
+
         $this->actingAsUser('admin')
-            ->doRead($tag)
-            ->assertStatus(200);
+            ->doRead($tag->uuid)
+            ->assertStatus(200)
+            ->assertExactJson(['data' => $expected]);
     }
 
     public function testUpdateUnauthenticated()
@@ -123,7 +137,7 @@ class ResourceAuthorizerTest extends TestCase
         $tag = factory(Tag::class)->create();
         $data = [
             'type' => 'tags',
-            'id' => (string) $tag->getKey(),
+            'id' => $tag->uuid,
             'attributes' => [
                 'name' => 'News',
             ],
@@ -144,7 +158,7 @@ class ResourceAuthorizerTest extends TestCase
         $tag = factory(Tag::class)->create();
         $data = [
             'type' => 'tags',
-            'id' => (string) $tag->getKey(),
+            'id' => $tag->uuid,
             'attributes' => [
                 'name' => 'News',
             ],
@@ -165,7 +179,7 @@ class ResourceAuthorizerTest extends TestCase
         $tag = factory(Tag::class)->create();
         $data = [
             'type' => 'tags',
-            'id' => (string) $tag->getKey(),
+            'id' => $tag->uuid,
             'attributes' => [
                 'name' => 'News',
             ],
@@ -181,7 +195,7 @@ class ResourceAuthorizerTest extends TestCase
     {
         $tag = factory(Tag::class)->create();
 
-        $this->doDelete($tag)->assertStatus(401)->assertJson([
+        $this->doDelete($tag->uuid)->assertStatus(401)->assertJson([
             'errors' => [
                 [
                     'title' => 'Unauthenticated',
@@ -197,7 +211,7 @@ class ResourceAuthorizerTest extends TestCase
     {
         $tag = factory(Tag::class)->create();
 
-        $this->actingAsUser()->doDelete($tag)->assertStatus(403)->assertJson([
+        $this->actingAsUser()->doDelete($tag->uuid)->assertStatus(403)->assertJson([
             'errors' => [
                 [
                     'title' => 'Unauthorized',
@@ -214,7 +228,7 @@ class ResourceAuthorizerTest extends TestCase
         $tag = factory(Tag::class)->create();
 
         $this->actingAsUser('admin')
-            ->doDelete($tag)
+            ->doDelete($tag->uuid)
             ->assertStatus(204);
 
         $this->assertDatabaseMissing('tags', ['id' => $tag->getKey()]);

@@ -202,7 +202,7 @@ class ControllerHooksTest extends TestCase
     public function testAddToRelationship()
     {
         $post = factory(Post::class)->create();
-        $tag = ['type' => 'tags', 'id' => (string) factory(Tag::class)->create()->getKey()];
+        $tag = ['type' => 'tags', 'id' => (string) factory(Tag::class)->create()->uuid];
 
         $this->doAddToRelationship($post, 'tags', [$tag])->assertStatus(204);
         $this->assertHooksInvoked('adding', 'adding-tags', 'added-tags', 'added');
@@ -213,7 +213,7 @@ class ControllerHooksTest extends TestCase
         $post = factory(Post::class)->create();
         /** @var Tag $tag */
         $tag = $post->tags()->create(['name' => 'news']);
-        $identifier = ['type' => 'tags', 'id' => (string) $tag->getKey()];
+        $identifier = ['type' => 'tags', 'id' => $tag->uuid];
 
         $this->doRemoveFromRelationship($post, 'tags', [$identifier])->assertStatus(204);
         $this->assertHooksInvoked('removing', 'removing-tags', 'removed-tags', 'removed');

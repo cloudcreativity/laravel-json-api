@@ -92,6 +92,7 @@ $factory->state(DummyApp\Post::class, 'published', function (Faker $faker) {
 /** Tag */
 $factory->define(DummyApp\Tag::class, function (Faker $faker) {
     return [
+        'uuid' => $faker->uuid,
         'name' => $faker->country,
     ];
 });
