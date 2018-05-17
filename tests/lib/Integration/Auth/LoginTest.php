@@ -19,6 +19,7 @@ namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Auth;
 
 use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
 use DummyApp\User;
+use Illuminate\Support\Facades\Auth;
 
 class LoginTest extends TestCase
 {
@@ -44,5 +45,28 @@ class LoginTest extends TestCase
         $this->postJson('/login', $credentials, ['Accept' => 'application/vnd.api+json'])
             ->assertSuccessful()
             ->assertJson($expected);
+
+        $this->assertEquals($user->getKey(), Auth::id());
+    }
+
+    public function testLoginInvalid()
+    {
+        $user = factory(User::class)->create([
+            'password' => bcrypt('secret'),
+        ]);
+
+        $credentials = ['email' => $user->email, 'password' => 'foo'];
+
+        $this->postJson('/login', $credentials, ['Accept' => 'application/vnd.api+json'])
+            ->assertStatus(422)
+            ->assertJson([
+                'errors' => [
+                    [
+                        'title' => 'Unprocessable Entity',
+                        'status' => '422',
+                        'meta' => ['key' => 'email'],
+                    ],
+                ],
+            ]);
     }
 }

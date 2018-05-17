@@ -37,6 +37,8 @@ Do not import model class in Eloquent adapter stub to avoid collisions with clas
 the request.
 - [#181](https://github.com/cloudcreativity/laravel-json-api/issues/181) Send a `419` error response with an
 error object for a `TokenMismatchException`.
+- [#182](https://github.com/cloudcreativity/laravel-json-api/issues/182) Send a `422` error response with
+JSON API error objects when a `ValidationException` is thrown outside of JSON API validation.
 
 ### Deprecated
 - The `report` method on the JSON API service/facade will be removed by `1.0.0`.

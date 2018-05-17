@@ -22,6 +22,7 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Response;
 use Illuminate\Session\TokenMismatchException;
+use Illuminate\Validation\ValidationException;
 
 return [
 
@@ -238,6 +239,13 @@ return [
     TokenMismatchException::class => [
         Error::TITLE => 'Invalid Token',
         Error::STATUS => '419',
+    ],
+
+    /**
+     * Error used when converting a Laravel validation exception outside of JSON API validation.
+     */
+    ValidationException::class => [
+        Error::STATUS => '422',
     ],
 
     /**

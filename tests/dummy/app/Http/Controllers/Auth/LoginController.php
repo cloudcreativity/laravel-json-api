@@ -17,6 +17,8 @@
 
 namespace DummyApp\Http\Controllers\Auth;
 
+use CloudCreativity\LaravelJsonApi\Document\Error;
+use CloudCreativity\LaravelJsonApi\Exceptions\ValidationException;
 use CloudCreativity\LaravelJsonApi\Http\Controllers\CreatesResponses;
 use CloudCreativity\LaravelJsonApi\Utils\Helpers;
 use DummyApp\Http\Controllers\Controller;
@@ -37,7 +39,8 @@ class LoginController extends Controller
     |
     */
 
-    use AuthenticatesUsers, CreatesResponses;
+    use AuthenticatesUsers { sendFailedLoginResponse as protected originalSendFailedLoginResponse; }
+    use CreatesResponses;
 
     /**
      * Where to redirect users after login.
@@ -68,5 +71,28 @@ class LoginController extends Controller
         }
 
         return null;
+    }
+
+    /**
+     * Send a failed login response.
+     *
+     * The following is required to support Laravel 5.4 and 5.5.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     * @todo remove when dropping support for Laravel 5.4 and 5.5
+     */
+    protected function sendFailedLoginResponse(Request $request)
+    {
+        if (Helpers::wantsJsonApi($request)) {
+            throw new ValidationException(Error::create([
+                'title' => 'Unprocessable Entity',
+                'status' => '422',
+                'detail' => trans('auth.failed'),
+                'meta' => ['key' => 'email'],
+            ]));
+        }
+
+        return $this->originalSendFailedLoginResponse($request);
     }
 }

@@ -21,9 +21,12 @@ use Carbon\Carbon;
 use CloudCreativity\LaravelJsonApi\Exceptions\DocumentRequiredException;
 use CloudCreativity\LaravelJsonApi\Exceptions\InvalidJsonException;
 use CloudCreativity\LaravelJsonApi\Exceptions\NotFoundException;
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\Exceptions\MaintenanceModeException;
 use Illuminate\Session\TokenMismatchException;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\MessageBag;
+use Illuminate\Validation\ValidationException;
 
 class ErrorsTest extends TestCase
 {
@@ -177,6 +180,38 @@ class ErrorsTest extends TestCase
                         'title' => 'Invalid Token',
                         'detail' => 'The token is not valid.',
                         'status' => '419',
+                    ],
+                ],
+            ]);
+    }
+
+    /**
+     * If we get a Laravel validation exception we need to convert this to
+     * JSON API errors.
+     *
+     * @see https://github.com/cloudcreativity/laravel-json-api/issues/182
+     */
+    public function testValidationException()
+    {
+        $messages = new MessageBag([
+            'email' => $detail = 'These credentials do not match our records.',
+        ]);
+
+        $validator = $this->createMock(Validator::class);
+        $validator->method('getMessageBag')->willReturn($messages);
+
+        $ex = new ValidationException($validator);
+
+        $this->request($ex)
+            ->assertStatus(422)
+            ->assertHeader('Content-Type', 'application/vnd.api+json')
+            ->assertExactJson([
+                'errors' => [
+                    [
+                        'title' => 'Unprocessable Entity',
+                        'status' => '422',
+                        'detail' => $detail,
+                        'meta' => ['key' => 'email'],
                     ],
                 ],
             ]);

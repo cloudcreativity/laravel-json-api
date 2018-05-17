@@ -27,6 +27,7 @@ use CloudCreativity\LaravelJsonApi\Exceptions\MutableErrorCollection as Errors;
 use CloudCreativity\LaravelJsonApi\Http\Responses\ErrorResponse;
 use Exception;
 use Illuminate\Http\Response;
+use Illuminate\Validation\ValidationException as IlluminateValidationException;
 use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
 use Neomerx\JsonApi\Document\Error;
 use Neomerx\JsonApi\Exceptions\ErrorCollection;
@@ -109,6 +110,10 @@ class ExceptionParser implements ExceptionParserInterface
      */
     protected function getErrors(Exception $e)
     {
+        if ($e instanceof IlluminateValidationException) {
+            return $this->getValidationError($e);
+        }
+
         if ($error = $this->getError($e)) {
             return $error;
         }
@@ -155,6 +160,25 @@ class ExceptionParser implements ExceptionParserInterface
     }
 
     /**
+     * @param IlluminateValidationException $e
+     * @return MutableErrorInterface[]
+     */
+    protected function getValidationError(IlluminateValidationException $e)
+    {
+        $errors = [];
+        $prototype = $this->getError($e) ?: $this->getDefaultError();
+
+        foreach ($e->validator->getMessageBag()->toArray() as $key => $messages) {
+            foreach ($messages as $message) {
+                $error = clone $prototype;
+                $errors[] = $error->setDetail($message)->setMeta(compact('key'));
+            }
+        }
+
+        return $errors;
+    }
+
+    /**
      * @param HttpException $e
      * @return ErrorInterface
      */
@@ -167,7 +191,7 @@ class ExceptionParser implements ExceptionParserInterface
     }
 
     /**
-     * @return ErrorInterface
+     * @return MutableErrorInterface
      */
     protected function getDefaultError()
     {
