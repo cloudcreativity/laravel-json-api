@@ -81,8 +81,8 @@ trait HandlesErrors
             return response('', Response::HTTP_NOT_ACCEPTABLE);
         }
 
-        /** If there is an active API, use that to send the response. */
-        if ($api = $service->requestApi()) {
+        /** If there is an active API, use that to send the response, or the default API. */
+        if ($api = $service->requestApiOrDefault()) {
             return $api->response()->errors($response);
         }
 

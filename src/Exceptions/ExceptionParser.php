@@ -21,11 +21,9 @@ namespace CloudCreativity\LaravelJsonApi\Exceptions;
 use CloudCreativity\LaravelJsonApi\Contracts\Document\MutableErrorInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Exceptions\ErrorIdAllocatorInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Exceptions\ExceptionParserInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Factories\FactoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Repositories\ErrorRepositoryInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\MutableErrorCollection as Errors;
 use CloudCreativity\LaravelJsonApi\Http\Responses\ErrorResponse;
-use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
 use Exception;
 use Illuminate\Http\Response;
 use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
@@ -44,14 +42,9 @@ class ExceptionParser implements ExceptionParserInterface
 {
 
     /**
-     * @var JsonApiService
+     * @var ErrorRepositoryInterface
      */
-    private $service;
-
-    /**
-     * @var FactoryInterface
-     */
-    private $factory;
+    private $errors;
 
     /**
      * @var ErrorIdAllocatorInterface|null
@@ -61,17 +54,12 @@ class ExceptionParser implements ExceptionParserInterface
     /**
      * ExceptionParser constructor.
      *
-     * @param JsonApiService $service
-     * @param FactoryInterface $factory
+     * @param ErrorRepositoryInterface $errors
      * @param ErrorIdAllocatorInterface|null $idAllocator
      */
-    public function __construct(
-        JsonApiService $service,
-        FactoryInterface $factory,
-        ErrorIdAllocatorInterface $idAllocator = null
-    ) {
-        $this->service = $service;
-        $this->factory = $factory;
+    public function __construct(ErrorRepositoryInterface $errors, ErrorIdAllocatorInterface $idAllocator = null)
+    {
+        $this->errors = $errors;
         $this->idAllocator = $idAllocator;
     }
 
@@ -80,9 +68,7 @@ class ExceptionParser implements ExceptionParserInterface
      */
     public function parse(Exception $e)
     {
-        $repository = $this->getErrorRepository();
-
-        if ($e instanceof JsonApiException && !$repository->exists($this->getErrorKey($e))) {
+        if ($e instanceof JsonApiException && !$this->errors->exists($this->getErrorKey($e))) {
             $errors = $e->getErrors();
             $httpCode = $e->getHttpCode();
         } else {
@@ -106,14 +92,11 @@ class ExceptionParser implements ExceptionParserInterface
      */
     protected function getErrors(Exception $e)
     {
-        $key = $this->getErrorKey($e);
-        $repository = $this->getErrorRepository();
+        if ($error = $this->getError($e)) {
+            return $error;
+        }
 
-        /** If there is an error in the error repository, we'll use that. */
-        if ($repository->exists($key)) {
-            return $repository->error($key);
-        } /** Otherwise if it is a HTTP exception we can create an error for the client */
-        elseif ($e instanceof HttpException) {
+        if ($e instanceof HttpException) {
             return $this->getHttpError($e);
         }
 
@@ -127,6 +110,31 @@ class ExceptionParser implements ExceptionParserInterface
     protected function getErrorKey(Exception $e)
     {
         return get_class($e);
+    }
+
+    /**
+     * @param Exception $e
+     * @return MutableErrorInterface|null
+     */
+    protected function getError(Exception $e)
+    {
+        $key = $this->getErrorKey($e);
+
+        if (!$this->errors->exists($key)) {
+            return null;
+        }
+
+        $error = $this->errors->error($key);
+
+        if (!$error->getTitle()) {
+            $error->setTitle($this->getDefaultTitle($error->getStatus()));
+        }
+
+        if (!$error->getDetail()) {
+            $error->setDetail($e->getMessage());
+        }
+
+        return $error;
     }
 
     /**
@@ -146,7 +154,7 @@ class ExceptionParser implements ExceptionParserInterface
      */
     protected function getDefaultError()
     {
-        return $this->getErrorRepository()->error(Exception::class);
+        return $this->errors->error(Exception::class);
     }
 
     /**
@@ -165,12 +173,12 @@ class ExceptionParser implements ExceptionParserInterface
     }
 
     /**
-     * @param $status
+     * @param string|null $status
      * @return string|null
      */
     protected function getDefaultTitle($status)
     {
-        if (isset(Response::$statusTexts[$status])) {
+        if ($status && isset(Response::$statusTexts[$status])) {
             return Response::$statusTexts[$status];
         }
 
@@ -199,18 +207,6 @@ class ExceptionParser implements ExceptionParserInterface
         if (!$error->hasId() && $this->idAllocator) {
             $this->idAllocator->assignId($error);
         }
-    }
-
-    /**
-     * @return ErrorRepositoryInterface
-     */
-    protected function getErrorRepository()
-    {
-        if ($this->service->hasApi()) {
-            return $this->service->getApi()->getErrors();
-        }
-
-        return $this->factory->createErrorRepository([]);
     }
 
 }

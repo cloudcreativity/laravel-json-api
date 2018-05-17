@@ -86,7 +86,7 @@ namespace {
                 return $service->api($apiName);
             }
 
-            return $service->requestApi() ?: $service->api();
+            return $service->requestApiOrDefault();
         }
 
         /**

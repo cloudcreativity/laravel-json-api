@@ -137,6 +137,16 @@ class JsonApiService implements ErrorReporterInterface
     }
 
     /**
+     * Get either the request API or the default API.
+     *
+     * @return Api
+     */
+    public function requestApiOrDefault()
+    {
+        return $this->requestApi() ?: $this->api();
+    }
+
+    /**
      * @return Api
      * @throws RuntimeException
      *      if there is no JSON API handling the inbound request.

@@ -54,7 +54,7 @@ class AuthorizerTest extends TestCase
 
     public function testIndexUnauthenticated()
     {
-        $this->doSearch()->assertStatus(401)->assertExactJson([
+        $this->doSearch()->assertStatus(401)->assertJson([
             'errors' => [
                 [
                     'title' => 'Unauthenticated',
@@ -82,7 +82,7 @@ class AuthorizerTest extends TestCase
             ],
         ];
 
-        $this->doCreate($data)->assertStatus(401)->assertExactJson([
+        $this->doCreate($data)->assertStatus(401)->assertJson([
             'errors' => [
                 [
                     'title' => 'Unauthenticated',
@@ -100,7 +100,7 @@ class AuthorizerTest extends TestCase
      */
     public function testCreateUnauthorized(array $data)
     {
-        $this->actingAsUser()->doCreate($data)->assertStatus(403)->assertExactJson([
+        $this->actingAsUser()->doCreate($data)->assertStatus(403)->assertJson([
             'errors' => [
                 [
                     'title' => 'Unauthorized',
@@ -125,7 +125,7 @@ class AuthorizerTest extends TestCase
     {
         $post = factory(Post::class)->states('published')->create();
 
-        $this->doRead($post)->assertStatus(401)->assertExactJson([
+        $this->doRead($post)->assertStatus(401)->assertJson([
             'errors' => [
                 [
                     'title' => 'Unauthenticated',
@@ -139,7 +139,7 @@ class AuthorizerTest extends TestCase
     {
         $post = factory(Post::class)->create();
 
-        $this->actingAsUser()->doRead($post)->assertStatus(403)->assertExactJson([
+        $this->actingAsUser()->doRead($post)->assertStatus(403)->assertJson([
             'errors' => [
                 [
                     'title' => 'Unauthorized',
@@ -169,7 +169,7 @@ class AuthorizerTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data)->assertStatus(401)->assertExactJson([
+        $this->doUpdate($data)->assertStatus(401)->assertJson([
             'errors' => [
                 [
                     'title' => 'Unauthenticated',
@@ -190,7 +190,7 @@ class AuthorizerTest extends TestCase
             ],
         ];
 
-        $this->actingAsUser()->doUpdate($data)->assertStatus(403)->assertExactJson([
+        $this->actingAsUser()->doUpdate($data)->assertStatus(403)->assertJson([
             'errors' => [
                 [
                     'title' => 'Unauthorized',
@@ -221,7 +221,7 @@ class AuthorizerTest extends TestCase
     {
         $post = factory(Post::class)->states('published')->create();
 
-        $this->doDelete($post)->assertStatus(401)->assertExactJson([
+        $this->doDelete($post)->assertStatus(401)->assertJson([
             'errors' => [
                 [
                     'title' => 'Unauthenticated',
@@ -237,7 +237,7 @@ class AuthorizerTest extends TestCase
     {
         $post = factory(Post::class)->create();
 
-        $this->actingAsUser()->doDelete($post)->assertStatus(403)->assertExactJson([
+        $this->actingAsUser()->doDelete($post)->assertStatus(403)->assertJson([
             'errors' => [
                 [
                     'title' => 'Unauthorized',

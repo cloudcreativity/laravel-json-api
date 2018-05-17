@@ -40,7 +40,7 @@ class AuthTest extends TestCase
      */
     public function testApiAuthDisallowed()
     {
-        $this->withApiMiddleware()->doSearch()->assertStatus(401)->assertExactJson([
+        $this->withApiMiddleware()->doSearch()->assertStatus(401)->assertJson([
             'errors' => [
                 [
                     'title' => 'Unauthenticated',
@@ -90,7 +90,7 @@ class AuthTest extends TestCase
         $response = $this->withResourceMiddleware()->doSearch()->assertStatus($expected);
 
         if (200 !== $expected) {
-            $response->assertExactJson([
+            $response->assertJson([
                 'errors' => [
                     [
                         'title' => 'Unauthenticated',

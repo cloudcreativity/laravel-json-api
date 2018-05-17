@@ -22,6 +22,7 @@ use CloudCreativity\LaravelJsonApi\Exceptions\DocumentRequiredException;
 use CloudCreativity\LaravelJsonApi\Exceptions\InvalidJsonException;
 use CloudCreativity\LaravelJsonApi\Exceptions\NotFoundException;
 use Illuminate\Foundation\Http\Exceptions\MaintenanceModeException;
+use Illuminate\Session\TokenMismatchException;
 use Illuminate\Support\Facades\Route;
 
 class ErrorsTest extends TestCase
@@ -153,6 +154,29 @@ class ErrorsTest extends TestCase
                         'title' => 'Service Unavailable',
                         'detail' => "We'll be back soon.",
                         'status' => '503',
+                    ],
+                ],
+            ]);
+    }
+
+    /**
+     * By default Laravel sends a 419 response for a TokenMismatchException.
+     *
+     * @see https://github.com/cloudcreativity/laravel-json-api/issues/181
+     */
+    public function testTokenMismatch()
+    {
+        $ex = new TokenMismatchException("The token is not valid.");
+
+        $this->request($ex)
+            ->assertStatus(419)
+            ->assertHeader('Content-Type', 'application/vnd.api+json')
+            ->assertExactJson([
+                'errors' => [
+                    [
+                        'title' => 'Invalid Token',
+                        'detail' => 'The token is not valid.',
+                        'status' => '419',
                     ],
                 ],
             ]);

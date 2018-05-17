@@ -26,6 +26,7 @@ can now be used when testing JSON API packages.
 When using *not-by-resource* resolution, the type of the class is now appended to the class name. E.g. 
 `App\JsonApi\Adapters\PostAdapter` is now expected instead of `App\JsonApi\Adapters\Post`. The previous
 behaviour can be maintained by setting the `by-resource` config option to the string `false-0.x`.
+- The constructor dependencies for the `Repositories\ErrorRepository` have been simplified.
 
 ### Fixed
 - Resolver was not correctly classifying the resource type when resolution was not by resource.
@@ -34,6 +35,8 @@ Do not import model class in Eloquent adapter stub to avoid collisions with clas
 *not-by-resource* behaviour.
 - An exception is no longer triggered when create JSON API responses when there is no booted JSON API handling
 the request.
+- [#181](https://github.com/cloudcreativity/laravel-json-api/issues/181) Send a `419` error response with an
+error object for a `TokenMismatchException`.
 
 ## [1.0.0-alpha.2] - 2018-05-06
 
