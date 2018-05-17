@@ -30,7 +30,7 @@ class ResourceAuthorizerTest extends TestCase
 
     public function testIndexUnauthenticated()
     {
-        $this->doSearch()->assertStatus(401)->assertExactJson([
+        $this->doSearch()->assertStatus(401)->assertJson([
             'errors' => [
                 [
                     'title' => 'Unauthenticated',
@@ -56,7 +56,7 @@ class ResourceAuthorizerTest extends TestCase
             ],
         ];
 
-        $this->doCreate($data)->assertStatus(401)->assertExactJson([
+        $this->doCreate($data)->assertStatus(401)->assertJson([
             'errors' => [
                 [
                     'title' => 'Unauthenticated',
@@ -74,7 +74,7 @@ class ResourceAuthorizerTest extends TestCase
      */
     public function testCreateUnauthorized(array $data)
     {
-        $this->actingAsUser()->doCreate($data)->assertStatus(403)->assertExactJson([
+        $this->actingAsUser()->doCreate($data)->assertStatus(403)->assertJson([
             'errors' => [
                 [
                     'title' => 'Unauthorized',
@@ -99,7 +99,7 @@ class ResourceAuthorizerTest extends TestCase
     {
         $tag = factory(Tag::class)->create();
 
-        $this->doRead($tag)->assertStatus(401)->assertExactJson([
+        $this->doRead($tag)->assertStatus(401)->assertJson([
             'errors' => [
                 [
                     'title' => 'Unauthenticated',
@@ -129,7 +129,7 @@ class ResourceAuthorizerTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data)->assertStatus(401)->assertExactJson([
+        $this->doUpdate($data)->assertStatus(401)->assertJson([
             'errors' => [
                 [
                     'title' => 'Unauthenticated',
@@ -150,7 +150,7 @@ class ResourceAuthorizerTest extends TestCase
             ],
         ];
 
-        $this->actingAsUser()->doUpdate($data)->assertStatus(403)->assertExactJson([
+        $this->actingAsUser()->doUpdate($data)->assertStatus(403)->assertJson([
             'errors' => [
                 [
                     'title' => 'Unauthorized',
@@ -181,7 +181,7 @@ class ResourceAuthorizerTest extends TestCase
     {
         $tag = factory(Tag::class)->create();
 
-        $this->doDelete($tag)->assertStatus(401)->assertExactJson([
+        $this->doDelete($tag)->assertStatus(401)->assertJson([
             'errors' => [
                 [
                     'title' => 'Unauthenticated',
@@ -197,7 +197,7 @@ class ResourceAuthorizerTest extends TestCase
     {
         $tag = factory(Tag::class)->create();
 
-        $this->actingAsUser()->doDelete($tag)->assertStatus(403)->assertExactJson([
+        $this->actingAsUser()->doDelete($tag)->assertStatus(403)->assertJson([
             'errors' => [
                 [
                     'title' => 'Unauthorized',

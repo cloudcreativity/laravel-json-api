@@ -42,7 +42,7 @@ class AggregateResolver implements ResolverInterface, IteratorAggregate
      * AggregateResolver constructor.
      *
      * @param ResolverInterface $api
-     * @param ResolverInterface[] ...$packages
+     * @param ResolverInterface ...$packages
      */
     public function __construct(ResolverInterface $api, ResolverInterface ...$packages)
     {

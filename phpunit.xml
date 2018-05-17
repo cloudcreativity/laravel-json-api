@@ -26,4 +26,7 @@
             <directory suffix=".php">src/</directory>
         </whitelist>
     </filter>
+    <php>
+        <env name="APP_KEY" value="base64:BMfTqJC1cFk6A/jTPsjQgC+cROx7TDaEeGIAat6CuqY="/>
+    </php>
 </phpunit>

@@ -36,7 +36,7 @@ class MakeResource extends Command
      */
     protected $signature = "make:json-api:resource
         {resource : The resource to create files for.}
-        {api=default : The API that the resource belongs to.}
+        {api? : The API that the resource belongs to.}
         {--a|auth : Generate a resource authorizer.}
         {--e|eloquent : Use Eloquent classes.}
         {--N|no-eloquent : Do not use Eloquent classes.}

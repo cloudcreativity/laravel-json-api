@@ -19,8 +19,10 @@ namespace CloudCreativity\LaravelJsonApi\Eloquent;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\RelationshipAdapterInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreAwareInterface;
+use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Store\StoreAwareTrait;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Relation;
 
 /**
  * Class AbstractRelation
@@ -50,6 +52,14 @@ abstract class AbstractRelation implements RelationshipAdapterInterface, StoreAw
     protected $field;
 
     /**
+     * Is the supplied Eloquent relation acceptable for this JSON API relation?
+     *
+     * @param Relation $relation
+     * @return bool
+     */
+    abstract protected function acceptRelation($relation);
+
+    /**
      * AbstractRelation constructor.
      *
      * @param Model $model
@@ -69,6 +79,27 @@ abstract class AbstractRelation implements RelationshipAdapterInterface, StoreAw
         $this->field = $name;
 
         return $this;
+    }
+
+    /**
+     * Get the relation from the model.
+     *
+     * @param Model $record
+     * @return Relation
+     */
+    protected function getRelation($record)
+    {
+        $relation = $record->{$this->key}();
+
+        if (!$this->acceptRelation($relation)) {
+            throw new RuntimeException(sprintf(
+                'JSON API relation %s cannot be used for an Eloquent %s relation.',
+                class_basename($this),
+                class_basename($relation)
+            ));
+        }
+
+        return $relation;
     }
 
 }

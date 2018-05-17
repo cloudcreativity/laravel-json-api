@@ -34,7 +34,7 @@ class MakeApi extends Command
      * @var string
      */
     protected $signature = "make:json-api
-        {name=default : the unique API name}
+        {name? : the unique API name}
     ";
 
     /**
@@ -48,7 +48,9 @@ class MakeApi extends Command
      */
     public function handle(Filesystem $files)
     {
-        if (!$name = $this->argument('name')) {
+        $name = $this->argument('name') ?: $this->laravel->make('json-api')->defaultApi();
+
+        if (!$name) {
             $this->error('Invalid JSON API name.');
             return 1;
         }

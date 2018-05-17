@@ -20,6 +20,7 @@ namespace CloudCreativity\LaravelJsonApi\Adapter;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\RelationshipAdapterInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\ResourceAdapterInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Object\RelationshipInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Object\RelationshipsInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreAwareInterface;
@@ -37,7 +38,9 @@ use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 abstract class AbstractResourceAdapter implements ResourceAdapterInterface, StoreAwareInterface
 {
 
-    use StoreAwareTrait;
+    use StoreAwareTrait,
+        Concerns\GuardsFields,
+        Concerns\FindsManyResources;
 
     /**
      * Create a new record.
@@ -59,19 +62,6 @@ abstract class AbstractResourceAdapter implements ResourceAdapterInterface, Stor
      * @todo rename this `fillAttributes` to use more Laravel terminology.
      */
     abstract protected function hydrateAttributes($record, StandardObjectInterface $attributes);
-
-    /**
-     * @param $record
-     * @param RelationshipsInterface $relationships
-     * @param EncodingParametersInterface $parameters
-     * @return void
-     * @todo rename this `fillRelationships` to use more Laravel terminology.
-     */
-    abstract protected function hydrateRelationships(
-        $record,
-        RelationshipsInterface $relationships,
-        EncodingParametersInterface $parameters
-    );
 
     /**
      * Persist changes to the record.
@@ -127,11 +117,14 @@ abstract class AbstractResourceAdapter implements ResourceAdapterInterface, Stor
      */
     public function related($field)
     {
-        $method = $this->methodForRelation($field);
-        $relation = $method ? $this->{$method}() : null;
+        if (!$method = $this->methodForRelation($field)) {
+            throw new RuntimeException("No relationship method implemented for field {$field}.");
+        }
+
+        $relation = $this->{$method}();
 
         if (!$relation instanceof RelationshipAdapterInterface) {
-            throw new RuntimeException("Unrecognised relationship name: $method");
+            throw new RuntimeException("Method {$method} did not return a relationship adapter.");
         }
 
         $relation->withFieldName($field);
@@ -161,6 +154,73 @@ abstract class AbstractResourceAdapter implements ResourceAdapterInterface, Stor
         $method = Str::camelize($field);
 
         return method_exists($this, $method) ? $method : null;
+    }
+
+    /**
+     * @param $record
+     * @param RelationshipsInterface $relationships
+     * @param EncodingParametersInterface $parameters
+     * @return void
+     * @deprecated 2.0.0 use `fillRelationships` directly.
+     */
+    protected function hydrateRelationships(
+        $record,
+        RelationshipsInterface $relationships,
+        EncodingParametersInterface $parameters
+    ) {
+        $this->fillRelationships($record, $relationships, $parameters);
+    }
+
+    /**
+     * Fill relationships from a resource object.
+     *
+     * @param $record
+     * @param RelationshipsInterface $relationships
+     * @param EncodingParametersInterface $parameters
+     * @return void
+     */
+    protected function fillRelationships(
+        $record,
+        RelationshipsInterface $relationships,
+        EncodingParametersInterface $parameters
+    ) {
+        foreach ($relationships->getAll() as $field => $relationship) {
+            /** Skip any fields that are not fillable. */
+            if ($this->isNotFillable($field, $record)) {
+                continue;
+            }
+
+            /** Skip any fields that are not relations */
+            if (!$this->isRelation($field)) {
+                continue;
+            }
+
+            $this->fillRelationship(
+                $record,
+                $field,
+                $relationships->getRelationship($field),
+                $parameters
+            );
+        }
+    }
+
+    /**
+     * Fill a relationship from a resource object.
+     *
+     * @param $record
+     * @param $field
+     * @param RelationshipInterface $relationship
+     * @param EncodingParametersInterface $parameters
+     */
+    protected function fillRelationship(
+        $record,
+        $field,
+        RelationshipInterface $relationship,
+        EncodingParametersInterface $parameters
+    ) {
+        $relation = $this->related($field);
+
+        $relation->update($record, $relationship, $parameters);
     }
 
 }

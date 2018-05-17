@@ -18,8 +18,10 @@
 namespace CloudCreativity\LaravelJsonApi\Tests\Unit;
 
 use CloudCreativity\LaravelJsonApi\Exceptions\InvalidJsonException;
+use CloudCreativity\LaravelJsonApi\Utils\Helpers;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
+use Illuminate\Http\Request as IlluminateRequest;
 use function CloudCreativity\LaravelJsonApi\http_contains_body;
 use function CloudCreativity\LaravelJsonApi\json_decode;
 
@@ -117,6 +119,44 @@ class HelpersTest extends TestCase
         $response = new Response($status, $headers, $body);
 
         $this->assertSame($expected, http_contains_body($request, $response));
+    }
+
+    /**
+     * @return array
+     */
+    public function mediaTypesProvider()
+    {
+        return [
+            ['application/vnd.api+json', true],
+            ['application/json', false],
+            ['text/html', false],
+        ];
+    }
+
+    /**
+     * @param $accept
+     * @param $expected
+     * @dataProvider mediaTypesProvider
+     */
+    public function testWantsJsonApi($accept, $expected)
+    {
+        $request = new IlluminateRequest();
+        $request->headers->set('Accept', $accept);
+
+        $this->assertSame($expected, Helpers::wantsJsonApi($request));
+    }
+
+    /**
+     * @param $contentType
+     * @param $expected
+     * @dataProvider mediaTypesProvider
+     */
+    public function testIsJsonApi($contentType, $expected)
+    {
+        $request = new IlluminateRequest();
+        $request->headers->set('Content-Type', $contentType);
+
+        $this->assertSame($expected, Helpers::isJsonApi($request));
     }
 
     /**

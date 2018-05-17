@@ -19,6 +19,7 @@ namespace DummyApp\JsonApi\Countries;
 
 use CloudCreativity\LaravelJsonApi\Eloquent\AbstractAdapter;
 use CloudCreativity\LaravelJsonApi\Eloquent\HasMany;
+use CloudCreativity\LaravelJsonApi\Eloquent\HasManyThrough;
 use DummyApp\Country;
 use Illuminate\Support\Collection;
 
@@ -50,11 +51,11 @@ class Adapter extends AbstractAdapter
     }
 
     /**
-     * @return HasMany
+     * @return HasManyThrough
      */
     public function posts()
     {
-        return $this->hasMany();
+        return $this->hasManyThrough();
     }
 
 }

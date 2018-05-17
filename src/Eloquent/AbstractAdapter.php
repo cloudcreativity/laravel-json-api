@@ -21,12 +21,11 @@ namespace CloudCreativity\LaravelJsonApi\Eloquent;
 use CloudCreativity\LaravelJsonApi\Adapter\AbstractResourceAdapter;
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\HasManyAdapterInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\RelationshipAdapterInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Object\RelationshipsInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Object\RelationshipInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PageInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PagingStrategyInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
-use CloudCreativity\LaravelJsonApi\Store\FindsManyResources;
 use CloudCreativity\LaravelJsonApi\Utils\Str;
 use CloudCreativity\Utils\Object\StandardObjectInterface;
 use Illuminate\Database\Eloquent\Builder;
@@ -38,15 +37,14 @@ use Neomerx\JsonApi\Contracts\Encoder\Parameters\SortParameterInterface;
 use Neomerx\JsonApi\Encoder\Parameters\EncodingParameters;
 
 /**
- * Class EloquentAdapter
+ * Class AbstractAdapter
  *
  * @package CloudCreativity\LaravelJsonApi
  */
 abstract class AbstractAdapter extends AbstractResourceAdapter
 {
 
-    use FindsManyResources,
-        Concerns\DeserializesAttributes,
+    use Concerns\DeserializesAttributes,
         Concerns\IncludesModels;
 
     /**
@@ -354,29 +352,18 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
-    protected function hydrateRelationships(
+    protected function fillRelationship(
         $record,
-        RelationshipsInterface $relationships,
+        $field,
+        RelationshipInterface $relationship,
         EncodingParametersInterface $parameters
     ) {
-        foreach ($relationships->getAll() as $field => $relationship) {
-            /** Skip any fields that are not fillable. */
-            if ($this->isNotFillable($field, $record)) {
-                continue;
-            }
+        $relation = $this->related($field);
 
-            /** Skip any fields that are not relations */
-            if (!$this->isRelation($field)) {
-                continue;
-            }
-
-            $relation = $this->related($field);
-
-            if (!$this->requiresPrimaryRecordPersistence($relation)) {
-                $relation->update($record, $relationships->getRelationship($field), $parameters);
-            }
+        if (!$this->requiresPrimaryRecordPersistence($relation)) {
+            $relation->update($record, $relationship, $parameters);
         }
     }
 
@@ -669,7 +656,16 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     }
 
     /**
-     * @param HasManyAdapterInterface[] ...$adapters
+     * @param string|null $modelKey
+     * @return HasManyThrough
+     */
+    protected function hasManyThrough($modelKey = null)
+    {
+        return new HasManyThrough($this->model, $modelKey ?: $this->guessRelation());
+    }
+
+    /**
+     * @param HasManyAdapterInterface ...$adapters
      * @return MorphHasMany
      */
     protected function morphMany(HasManyAdapterInterface ...$adapters)

@@ -60,7 +60,7 @@ class ControllerAuthorizationTest extends TestCase
 
     public function testCreateUnauthenticated()
     {
-        $this->doCreate($this->data)->assertStatus(401)->assertExactJson([
+        $this->doCreate($this->data)->assertStatus(401)->assertJson([
             'errors' => [
                 [
                     'title' => 'Unauthenticated',
@@ -72,7 +72,7 @@ class ControllerAuthorizationTest extends TestCase
 
     public function testCreateUnauthorized()
     {
-        $this->actingAsUser('admin')->doCreate($this->data)->assertStatus(403)->assertExactJson([
+        $this->actingAsUser('admin')->doCreate($this->data)->assertStatus(403)->assertJson([
             'errors' => [
                 [
                     'title' => 'Unauthorized',

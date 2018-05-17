@@ -116,7 +116,7 @@ class MakeAuthorizer extends AbstractGeneratorCommand
     {
         return [
             ['name', InputArgument::REQUIRED, "The authorizer name or resource type."],
-            ['api', InputArgument::OPTIONAL, "The API that the resource belongs to.", 'default'],
+            ['api', InputArgument::OPTIONAL, "The API that the resource belongs to."],
         ];
     }
 

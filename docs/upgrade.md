@@ -6,6 +6,100 @@ We are now on `1.0.0` alpha releases. We are planning incremental changes during
 will involve only small upgrades. We will do one final large upgrade when we switch from alpha to beta releases,
 and then we are planning on tagging `1.0.0` after a limited number of beta tags.
 
+## 1.0.0-alpha.2 to 1.0.0-alpha.3
+
+### Exception Handler
+
+The `isJsonApi()` method on the `HandlesError` trait now requires the request and exception as arguments.
+This is so that a JSON API error response can be rendered if a client has requested JSON API via the request
+`Accept` header, but the request is not being processed by one of the configured APIs. This enables exceptions
+that are thrown *prior* to routing to be rendered as JSON API - for example, when the application is in
+maintenance mode.
+
+You need to change this:
+
+```php
+public function render($request, Exception $e)
+{
+  if ($this->isJsonApi()) {
+    return $this->renderJsonApi($request, $e);
+  }
+
+  // ...
+}
+```
+
+To this:
+
+```php
+public function render($request, Exception $e)
+{
+  if ($this->isJsonApi($request, $e)) {
+    return $this->renderJsonApi($request, $e);
+  }
+
+  // ...
+}
+```
+
+### Default API
+
+You can now [set the default API name used by this package.](./basics/api.md) If your default API is not 
+called `default`, you must set this to whatever your default API is called.
+
+### Not By Resource Resolution
+
+When using *not-by-resource* resolution, the type of the class is now appended to the class name. E.g. 
+`App\JsonApi\Adapters\PostAdapter` is now expected instead of `App\JsonApi\Adapters\Post`. The previous
+behaviour can be maintained by setting the `by-resource` config option to the string `false-0.x`, i.e.
+
+```php
+return [
+    'by-resource' => 'false-0.x',
+    
+    // ...
+];
+```
+
+We will support this legacy behaviour throughout  `1.0` releases and it will be removed in `2.0`, giving
+you plenty of time to rename your classes. See 
+[this issue](https://github.com/cloudcreativity/laravel-json-api/issues/176)
+for why we made this change.
+
+### Eloquent Adapters
+
+Eloquent `hasManyThrough` relations were previously defined on the Eloquent adapter using the `hasMany` method.
+You now need to use the `hasManyThrough` method instead. This change **only** affects Eloquent `hasManyThrough`
+relations, i.e. you *do not* need to make changes for Eloquent `hasMany`, `belongsToMany`, `morphMany` and
+`morphToMany` relations.
+
+Change this:
+
+```php
+protected function posts()
+{
+    return $this->hasMany();
+}
+```
+
+To this:
+
+```php
+protected function posts()
+{
+    return $this->hasManyThrough();
+}
+```
+
+### Generic Adapters
+
+We have pulled some of the logic from our Eloquent adapter that was not actually specific to Eloquent out of
+that adapter and placed it in the `AbstractResourceAdapter`. This may affect your implementation if there
+is a collision with the methods or traits that we have added.
+
+One change is the `hydrateRelationships` method is no longer abstract. You can remove this method from your
+adapter if it had no code in it.
+
 ## 1.0.0-alpha.1 to 1.0.0-alpha.2
 
 ### Controllers

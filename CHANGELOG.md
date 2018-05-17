@@ -2,6 +2,47 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## [1.0.0-alpha.3] - 2018-05-17
+
+### Added
+- Errors that occur *before* a route is processed by a JSON API are now sent to the client as JSON API
+error responses if the client wants a JSON API response. This is determined using the `Accept` header
+and means that exceptions such as the maintenance mode exception are correctly returned as JSON API errors
+if that is what the client wants.
+- Can now override the default API name via the JSON API facade.
+
+### Changed
+- Field guarding that was previously available on the Eloquent adapter is now also available on the
+generic adapter.
+- Extracted the logic for an Eloquent `hasManyThrough` relation into its own relationship adapter (was
+previously in the `has-many` adapter).
+- Moved the `FindsManyResources` trait from the `Store` namespace to `Adapter\Concerns`.
+- The `hydrateRelationships` method on the `AbstractResourceAdapter` is no longer abstract as it now
+contains the implementation that was previously on the Eloquent adapter.
+- The test exception handler has been moved from the dummy app to the `Testing` namespace. This means it
+can now be used when testing JSON API packages.
+- Merged the two resolvers provided by this package into a single class.
+- [#176](https://github.com/cloudcreativity/laravel-json-api/issues/176)
+When using *not-by-resource* resolution, the type of the class is now appended to the class name. E.g. 
+`App\JsonApi\Adapters\PostAdapter` is now expected instead of `App\JsonApi\Adapters\Post`. The previous
+behaviour can be maintained by setting the `by-resource` config option to the string `false-0.x`.
+- The constructor dependencies for the `Repositories\ErrorRepository` have been simplified.
+
+### Fixed
+- Resolver was not correctly classifying the resource type when resolution was not by resource.
+- [#176](https://github.com/cloudcreativity/laravel-json-api/issues/176)
+Do not import model class in Eloquent adapter stub to avoid collisions with class name when using the legacy
+*not-by-resource* behaviour.
+- An exception is no longer triggered when create JSON API responses when there is no booted JSON API handling
+the request.
+- [#181](https://github.com/cloudcreativity/laravel-json-api/issues/181) Send a `419` error response with an
+error object for a `TokenMismatchException`.
+- [#182](https://github.com/cloudcreativity/laravel-json-api/issues/182) Send a `422` error response with
+JSON API error objects when a `ValidationException` is thrown outside of JSON API validation.
+
+### Deprecated
+- The `report` method on the JSON API service/facade will be removed by `1.0.0`.
+
 ## [1.0.0-alpha.2] - 2018-05-06
 
 ### Added

@@ -15,30 +15,15 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\LaravelJsonApi\Resolver;
+namespace DummyApp\Http\Controllers;
 
-class UnitNamespaceResolver extends NamespaceResolver
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Foundation\Bus\DispatchesJobs;
+use Illuminate\Foundation\Validation\ValidatesRequests;
+use Illuminate\Routing\Controller as BaseController;
+
+class Controller extends BaseController
 {
 
-    /**
-     * @inheritDoc
-     */
-    public function getAuthorizerByName($name)
-    {
-        return $this->resolve('Authorizer', $name);
-    }
-
-    /**
-     * @param string $unit
-     * @param string $resourceType
-     * @return string
-     */
-    protected function resolve($unit, $resourceType)
-    {
-        $unit = str_plural($unit);
-        $type = ucfirst(str_singular($resourceType));
-
-        return $this->append(sprintf('%s\%s', $unit, $type));
-    }
-
+    use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
 }

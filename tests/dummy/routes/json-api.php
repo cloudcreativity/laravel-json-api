@@ -17,8 +17,14 @@
 
 use CloudCreativity\LaravelJsonApi\Facades\JsonApi;
 use CloudCreativity\LaravelJsonApi\Routing\ApiGroup;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
 
-JsonApi::register('default', [], function (ApiGroup $api) {
+Route::group(['middleware' => 'web'], function () {
+    Auth::routes();
+});
+
+JsonApi::register('v1', [], function (ApiGroup $api) {
     $api->resource('comments', [
         'controller' => true,
         'middleware' => 'auth',

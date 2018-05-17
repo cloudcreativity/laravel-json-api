@@ -21,13 +21,13 @@ namespace CloudCreativity\LaravelJsonApi\Exceptions;
 use CloudCreativity\LaravelJsonApi\Contracts\Document\MutableErrorInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Exceptions\ErrorIdAllocatorInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Exceptions\ExceptionParserInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Factories\FactoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Repositories\ErrorRepositoryInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Utils\ErrorReporterInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\MutableErrorCollection as Errors;
 use CloudCreativity\LaravelJsonApi\Http\Responses\ErrorResponse;
-use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
 use Exception;
 use Illuminate\Http\Response;
+use Illuminate\Validation\ValidationException as IlluminateValidationException;
 use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
 use Neomerx\JsonApi\Document\Error;
 use Neomerx\JsonApi\Exceptions\ErrorCollection;
@@ -44,14 +44,9 @@ class ExceptionParser implements ExceptionParserInterface
 {
 
     /**
-     * @var JsonApiService
+     * @var ErrorRepositoryInterface
      */
-    private $service;
-
-    /**
-     * @var FactoryInterface
-     */
-    private $factory;
+    private $errors;
 
     /**
      * @var ErrorIdAllocatorInterface|null
@@ -59,20 +54,25 @@ class ExceptionParser implements ExceptionParserInterface
     private $idAllocator;
 
     /**
+     * @var ErrorReporterInterface|null
+     */
+    private $reporter;
+
+    /**
      * ExceptionParser constructor.
      *
-     * @param JsonApiService $service
-     * @param FactoryInterface $factory
+     * @param ErrorRepositoryInterface $errors
      * @param ErrorIdAllocatorInterface|null $idAllocator
+     * @param ErrorReporterInterface|null $reporter
      */
     public function __construct(
-        JsonApiService $service,
-        FactoryInterface $factory,
-        ErrorIdAllocatorInterface $idAllocator = null
+        ErrorRepositoryInterface $errors,
+        ErrorIdAllocatorInterface $idAllocator = null,
+        ErrorReporterInterface $reporter = null
     ) {
-        $this->service = $service;
-        $this->factory = $factory;
+        $this->errors = $errors;
         $this->idAllocator = $idAllocator;
+        $this->reporter = $reporter;
     }
 
     /**
@@ -80,9 +80,7 @@ class ExceptionParser implements ExceptionParserInterface
      */
     public function parse(Exception $e)
     {
-        $repository = $this->getErrorRepository();
-
-        if ($e instanceof JsonApiException && !$repository->exists($this->getErrorKey($e))) {
+        if ($e instanceof JsonApiException && !$this->errors->exists($this->getErrorKey($e))) {
             $errors = $e->getErrors();
             $httpCode = $e->getHttpCode();
         } else {
@@ -97,7 +95,13 @@ class ExceptionParser implements ExceptionParserInterface
             $this->assignId($error, $e);
         }
 
-        return new ErrorResponse($errors, $httpCode, $this->getHeaders($e));
+        $response = new ErrorResponse($errors, $httpCode, $this->getHeaders($e));
+
+        if ($this->reporter) {
+            $this->reporter->report($response);
+        }
+
+        return $response;
     }
 
     /**
@@ -106,14 +110,15 @@ class ExceptionParser implements ExceptionParserInterface
      */
     protected function getErrors(Exception $e)
     {
-        $key = $this->getErrorKey($e);
-        $repository = $this->getErrorRepository();
+        if ($e instanceof IlluminateValidationException) {
+            return $this->getValidationError($e);
+        }
 
-        /** If there is an error in the error repository, we'll use that. */
-        if ($repository->exists($key)) {
-            return $repository->error($key);
-        } /** Otherwise if it is a HTTP exception we can create an error for the client */
-        elseif ($e instanceof HttpException) {
+        if ($error = $this->getError($e)) {
+            return $error;
+        }
+
+        if ($e instanceof HttpException) {
             return $this->getHttpError($e);
         }
 
@@ -130,20 +135,67 @@ class ExceptionParser implements ExceptionParserInterface
     }
 
     /**
+     * @param Exception $e
+     * @return MutableErrorInterface|null
+     */
+    protected function getError(Exception $e)
+    {
+        $key = $this->getErrorKey($e);
+
+        if (!$this->errors->exists($key)) {
+            return null;
+        }
+
+        $error = $this->errors->error($key);
+
+        if (!$error->getTitle()) {
+            $error->setTitle($this->getDefaultTitle($error->getStatus()));
+        }
+
+        if (!$error->getDetail()) {
+            $error->setDetail($e->getMessage());
+        }
+
+        return $error;
+    }
+
+    /**
+     * @param IlluminateValidationException $e
+     * @return MutableErrorInterface[]
+     */
+    protected function getValidationError(IlluminateValidationException $e)
+    {
+        $errors = [];
+        $prototype = $this->getError($e) ?: $this->getDefaultError();
+
+        foreach ($e->validator->getMessageBag()->toArray() as $key => $messages) {
+            foreach ($messages as $message) {
+                $error = clone $prototype;
+                $errors[] = $error->setDetail($message)->setMeta(compact('key'));
+            }
+        }
+
+        return $errors;
+    }
+
+    /**
      * @param HttpException $e
      * @return ErrorInterface
      */
     protected function getHttpError(HttpException $e)
     {
-        return new Error(null, null, $e->getStatusCode(), null, null, $e->getMessage() ?: null);
+        $status = $e->getStatusCode();
+        $title = $this->getDefaultTitle($status);
+
+        return new Error(null, null, $status, null, $title, $e->getMessage() ?: null);
     }
 
     /**
-     * @return ErrorInterface
+     * @return MutableErrorInterface
      */
     protected function getDefaultError()
     {
-        return $this->getErrorRepository()->error(Exception::class);
+        return $this->errors->error(Exception::class);
     }
 
     /**
@@ -159,6 +211,19 @@ class ExceptionParser implements ExceptionParserInterface
         return ($e instanceof HttpExceptionInterface) ?
             $e->getStatusCode() :
             Response::HTTP_INTERNAL_SERVER_ERROR;
+    }
+
+    /**
+     * @param string|null $status
+     * @return string|null
+     */
+    protected function getDefaultTitle($status)
+    {
+        if ($status && isset(Response::$statusTexts[$status])) {
+            return Response::$statusTexts[$status];
+        }
+
+        return null;
     }
 
     /**
@@ -183,18 +248,6 @@ class ExceptionParser implements ExceptionParserInterface
         if (!$error->hasId() && $this->idAllocator) {
             $this->idAllocator->assignId($error);
         }
-    }
-
-    /**
-     * @return ErrorRepositoryInterface
-     */
-    protected function getErrorRepository()
-    {
-        if ($this->service->hasApi()) {
-            return $this->service->getApi()->getErrors();
-        }
-
-        return $this->factory->createErrorRepository([]);
     }
 
 }

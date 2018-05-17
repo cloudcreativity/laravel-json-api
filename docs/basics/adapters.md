@@ -215,8 +215,8 @@ class Adapter extends AbstractAdapter
 ### Relationships
 
 The Eloquent adapter provides a syntax for defining JSON API resource relationships that is similar to that used
-for Eloquent models. The relationship types available are `belongsTo`, `hasOne`, `hasMany` and `morphMany`.
-These map to Eloquent relations as follow:
+for Eloquent models. The relationship types available are `belongsTo`, `hasOne`, `hasMany`, `hasManyThrough` and
+`morphMany`. These map to Eloquent relations as follow:
 
 | Eloquent | JSON API |
 | :-- | :-- |
@@ -224,7 +224,7 @@ These map to Eloquent relations as follow:
 | `belongsTo` | `belongsTo` |
 | `hasMany` | `hasMany` |
 | `belongsToMany` | `hasMany` |
-| `hasManyThrough` | `hasMany` |
+| `hasManyThrough` | `hasManyThrough` |
 | `morphTo` | `belongsTo` |
 | `morphMany` | `hasMany` |
 | `morphToMany` | `hasMany` |
@@ -303,8 +303,8 @@ class Adapter extends AbstractAdapter
 
 #### Has-Many
 
-The JSON API `hasMany` relation can be used for an Eloquent `hasMany`, `belongsToMany`, `hasManyThrough`,
-`morphMany` and `morphToMany` relation. For example, if our `posts` resource has a `tags` relationship:
+The JSON API `hasMany` relation can be used for an Eloquent `hasMany`, `belongsToMany`, `morphMany` and
+`morphToMany` relation. For example, if our `posts` resource has a `tags` relationship:
 
 ```php
 class Adapter extends AbstractAdapter
@@ -329,6 +329,43 @@ class Adapter extends AbstractAdapter
     protected function tags()
     {
         return $this->hasMany('categories');
+    }
+}
+```
+
+#### Has-Many-Through
+
+The JSON API `hasMany` relation can be used for an Eloquent `hasManyThrough` relation. The important thing to note
+about this relationship is it is **read-only**. This is because the relationship can be modified in your API by
+modifying the intermediary model. For example, a `countries` resource might have many `posts` resources through an
+intermediate `users` resource. The relationship is effectively modified by creating and deleting posts and/or a user
+changing which country they are associated to.
+
+Define a has-many-through relationship on an adapter as follows:
+
+```php
+class Adapter extends AbstractAdapter
+{
+    // ...
+
+    protected function posts()
+    {
+        return $this->hasManyThrough();
+    }
+}
+```
+
+This will assume that the Eloquent relation on the country model is also called `posts`. If this is not the case,
+pass the Eloquent relation name as the first function argument:
+
+```php
+class Adapter extends AbstractAdapter
+{
+    // ...
+
+    protected function posts()
+    {
+        return $this->hasManyThrough('publishedPosts');
     }
 }
 ```
@@ -409,17 +446,6 @@ class Adapter extends AbstractResourceAdapter
     protected function hydrateAttributes($record, StandardObjectInterface $attributes)
     {
         // TODO: Implement hydrateAttributes() method.
-    }
-
-    /**
-     * @inheritDoc
-     */
-    protected function hydrateRelationships(
-        $record,
-        RelationshipsInterface $relationships,
-        EncodingParametersInterface $parameters
-    ) {
-        // TODO: Implement hydrateRelationships() method.
     }
 
     /**

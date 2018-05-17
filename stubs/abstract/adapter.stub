@@ -30,17 +30,6 @@ class DummyClass extends AbstractResourceAdapter
     /**
      * @inheritDoc
      */
-    protected function hydrateRelationships(
-        $record,
-        RelationshipsInterface $relationships,
-        EncodingParametersInterface $parameters
-    ) {
-        // TODO: Implement hydrateRelationships() method.
-    }
-
-    /**
-     * @inheritDoc
-     */
     protected function persist($record)
     {
         // TODO: Implement persist() method.

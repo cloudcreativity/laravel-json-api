@@ -73,7 +73,7 @@ class Renderer
      * @param int $options
      * @param int $depth
      */
-    public function with($apiName, $options = 0, $depth = 512)
+    public function with($apiName = null, $options = 0, $depth = 512)
     {
         $this->encoder = $this->service->api($apiName)->encoder($options, $depth);
     }
@@ -87,7 +87,7 @@ class Renderer
     public function encode($data, $includePaths = null, $fieldSets = null)
     {
         if (!$this->encoder) {
-            $this->with('default');
+            $this->with();
         }
 
         $params = null;

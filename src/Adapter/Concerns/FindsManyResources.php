@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Copyright 2018 Cloud Creativity Limited
  *
@@ -16,7 +15,7 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\LaravelJsonApi\Store;
+namespace CloudCreativity\LaravelJsonApi\Adapter\Concerns;
 
 use Illuminate\Support\Collection;
 use Neomerx\JsonApi\Contracts\Document\DocumentInterface;

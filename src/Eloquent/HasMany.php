@@ -17,9 +17,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Eloquent;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Adapter\HasManyAdapterInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Object\RelationshipInterface;
-use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations;
@@ -29,42 +27,9 @@ use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
  * Class HasMany
  *
  * @package CloudCreativity\LaravelJsonApi
- * @todo might be best to split has-many-through out into a separate JSON API relation.
  */
-class HasMany extends AbstractRelation implements HasManyAdapterInterface
+class HasMany extends AbstractManyRelation
 {
-
-    /**
-     * @param Model $record
-     * @param EncodingParametersInterface $parameters
-     * @return mixed
-     */
-    public function query($record, EncodingParametersInterface $parameters)
-    {
-        /** If we do not need to pass to the inverse adapter, we can just return the whole relationship. */
-        if (!$this->requiresInverseAdapter($record, $parameters)) {
-            return $record->{$this->key};
-        }
-
-        $relation = $this->getRelation($record);
-        $adapter = $this->store()->adapterFor($relation->getModel());
-
-        if (!$adapter instanceof AbstractAdapter) {
-            throw new RuntimeException('Expecting inverse adapter to be an Eloquent adapter.');
-        }
-
-        return $adapter->queryRelation($relation, $parameters);
-    }
-
-    /**
-     * @param Model $record
-     * @param EncodingParametersInterface $parameters
-     * @return mixed
-     */
-    public function relationship($record, EncodingParametersInterface $parameters)
-    {
-        return $this->query($record, $parameters);
-    }
 
     /**
      * @param Model $record
@@ -75,7 +40,7 @@ class HasMany extends AbstractRelation implements HasManyAdapterInterface
     public function update($record, RelationshipInterface $relationship, EncodingParametersInterface $parameters)
     {
         $related = $this->findRelated($record, $relationship);
-        $relation = $this->getWritableRelation($record);
+        $relation = $this->getRelation($record);
 
         if ($relation instanceof Relations\BelongsToMany) {
             $relation->sync($related);
@@ -111,7 +76,7 @@ class HasMany extends AbstractRelation implements HasManyAdapterInterface
     {
         $related = $this->findRelated($record, $relationship);
 
-        $this->getWritableRelation($record)->saveMany($related);
+        $this->getRelation($record)->saveMany($related);
         $record->refresh(); // in case the relationship has been cached.
 
         return $record;
@@ -126,7 +91,7 @@ class HasMany extends AbstractRelation implements HasManyAdapterInterface
     public function remove($record, RelationshipInterface $relationship, EncodingParametersInterface $parameters)
     {
         $related = $this->findRelated($record, $relationship);
-        $relation = $this->getWritableRelation($record);
+        $relation = $this->getRelation($record);
 
         if ($relation instanceof Relations\BelongsToMany) {
             $relation->detach($related);
@@ -140,64 +105,11 @@ class HasMany extends AbstractRelation implements HasManyAdapterInterface
     }
 
     /**
-     * Does the query need to be passed to the inverse adapter?
-     *
-     * @param $record
-     * @param EncodingParametersInterface $parameters
-     * @return bool
+     * @inheritdoc
      */
-    private function requiresInverseAdapter($record, EncodingParametersInterface $parameters)
+    protected function acceptRelation($relation)
     {
-        return !empty($parameters->getFilteringParameters()) ||
-            !empty($parameters->getSortParameters()) ||
-            !empty($parameters->getPaginationParameters()) ||
-            !empty($parameters->getIncludePaths());
-    }
-
-    /**
-     * Get the relation for a modification request.
-     *
-     * @param Model $record
-     * @return Relations\BelongsToMany|Relations\HasMany|Relations\MorphMany|Relations\HasManyThrough
-     */
-    private function getRelation($record)
-    {
-        $relation = $record->{$this->key}();
-
-        if (!$this->acceptRelation($relation)) {
-            throw new RuntimeException(
-                "Expecting an Eloquent has-many, has-many-through or belongs-to-many relationship."
-            );
-        }
-
-        return $relation;
-    }
-
-    /**
-     * @param $record
-     * @return Relations\BelongsToMany|Relations\HasMany|Relations\MorphMany
-     */
-    private function getWritableRelation($record)
-    {
-        $relation = $this->getRelation($record);
-
-        if ($relation instanceof Relations\HasManyThrough) {
-            throw new RuntimeException('Modifying a has-many-through Eloquent relation is not supported.');
-        }
-
-        return $relation;
-    }
-
-    /**
-     * Is the relation acceptable for this JSON API relationship?
-     *
-     * @param $relation
-     * @return bool
-     */
-    private function acceptRelation($relation)
-    {
-        return $relation instanceof Relations\HasManyThrough ||
-            $relation instanceof Relations\BelongsToMany ||
+        return $relation instanceof Relations\BelongsToMany ||
             $relation instanceof Relations\HasMany ||
             $relation instanceof Relations\MorphMany;
     }
@@ -207,7 +119,7 @@ class HasMany extends AbstractRelation implements HasManyAdapterInterface
      * @param Collection $existing
      * @param $updated
      */
-    private function sync(Relations\HasMany $relation, Collection $existing, Collection $updated)
+    protected function sync(Relations\HasMany $relation, Collection $existing, Collection $updated)
     {
         $add = collect($updated)->reject(function ($model) use ($existing) {
             return $existing->contains($model);
@@ -228,7 +140,7 @@ class HasMany extends AbstractRelation implements HasManyAdapterInterface
      * @param Relations\HasMany $relation
      * @param Collection $remove
      */
-    private function detach(Relations\HasMany $relation, Collection $remove)
+    protected function detach(Relations\HasMany $relation, Collection $remove)
     {
         /** @var Model $model */
         foreach ($remove as $model) {
@@ -251,7 +163,7 @@ class HasMany extends AbstractRelation implements HasManyAdapterInterface
      * @param RelationshipInterface $relationship
      * @return Collection
      */
-    private function findRelated($record, RelationshipInterface $relationship)
+    protected function findRelated($record, RelationshipInterface $relationship)
     {
         $inverse = $this->getRelation($record)->getRelated();
         $related = $this->store()->findMany($relationship->getIdentifiers());

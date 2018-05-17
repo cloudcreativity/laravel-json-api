@@ -17,6 +17,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Unit\Unit\Resolver;
 
+use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
 use CloudCreativity\LaravelJsonApi\Resolver\NamespaceResolver;
 use PHPUnit\Framework\TestCase;
 
@@ -24,26 +25,9 @@ class NamespaceResolverTest extends TestCase
 {
 
     /**
-     * @var NamespaceResolver
-     */
-    private $resolver;
-
-    /**
-     * @return void
-     */
-    protected function setUp()
-    {
-        parent::setUp();
-        $this->resolver = new NamespaceResolver('App\JsonApi', [
-            'posts' => 'App\Post',
-            'comments' => 'App\Comment',
-        ]);
-    }
-
-    /**
      * @return array
      */
-    public function resourcesProvider()
+    public function byResourceProvider()
     {
         return [
             [
@@ -90,52 +74,242 @@ class NamespaceResolverTest extends TestCase
     }
 
     /**
+     * @return array
+     */
+    public function notByResourceProvider()
+    {
+        return [
+            [
+                'posts',
+                'App\Post',
+                'App\JsonApi\Schemas\PostSchema',
+                'App\JsonApi\Adapters\PostAdapter',
+                'App\JsonApi\Validators\PostValidator',
+                'App\JsonApi\Authorizers\PostAuthorizer',
+            ],
+            [
+                'comments',
+                'App\Comment',
+                'App\JsonApi\Schemas\CommentSchema',
+                'App\JsonApi\Adapters\CommentAdapter',
+                'App\JsonApi\Validators\CommentValidator',
+                'App\JsonApi\Authorizers\CommentAuthorizer',
+            ],
+            [
+                'tags',
+                null,
+                'App\JsonApi\Schemas\TagSchema',
+                'App\JsonApi\Adapters\TagAdapter',
+                'App\JsonApi\Validators\TagValidator',
+                'App\JsonApi\Authorizers\TagAuthorizer',
+            ],
+            [
+                'dance-events',
+                null,
+                'App\JsonApi\Schemas\DanceEventSchema',
+                'App\JsonApi\Adapters\DanceEventAdapter',
+                'App\JsonApi\Validators\DanceEventValidator',
+                'App\JsonApi\Authorizers\DanceEventAuthorizer',
+            ],
+            [
+                'dance_events',
+                null,
+                'App\JsonApi\Schemas\DanceEventSchema',
+                'App\JsonApi\Adapters\DanceEventAdapter',
+                'App\JsonApi\Validators\DanceEventValidator',
+                'App\JsonApi\Authorizers\DanceEventAuthorizer',
+            ],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function notByResourceWithoutTypeProvider()
+    {
+        return [
+            [
+                'posts',
+                'App\Post',
+                'App\JsonApi\Schemas\Post',
+                'App\JsonApi\Adapters\Post',
+                'App\JsonApi\Validators\Post',
+                'App\JsonApi\Authorizers\Post',
+            ],
+            [
+                'comments',
+                'App\Comment',
+                'App\JsonApi\Schemas\Comment',
+                'App\JsonApi\Adapters\Comment',
+                'App\JsonApi\Validators\Comment',
+                'App\JsonApi\Authorizers\Comment',
+            ],
+            [
+                'tags',
+                null,
+                'App\JsonApi\Schemas\Tag',
+                'App\JsonApi\Adapters\Tag',
+                'App\JsonApi\Validators\Tag',
+                'App\JsonApi\Authorizers\Tag',
+            ],
+            [
+                'dance-events',
+                null,
+                'App\JsonApi\Schemas\DanceEvent',
+                'App\JsonApi\Adapters\DanceEvent',
+                'App\JsonApi\Validators\DanceEvent',
+                'App\JsonApi\Authorizers\DanceEvent',
+            ],
+            [
+                'dance_events',
+                null,
+                'App\JsonApi\Schemas\DanceEvent',
+                'App\JsonApi\Adapters\DanceEvent',
+                'App\JsonApi\Validators\DanceEvent',
+                'App\JsonApi\Authorizers\DanceEvent',
+            ],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function genericAuthorizerProvider()
+    {
+        return [
+            // By resource
+            ['generic', 'App\JsonApi\GenericAuthorizer', true],
+            ['foo-bar', 'App\JsonApi\FooBarAuthorizer', true],
+            ['foo_bar', 'App\JsonApi\FooBarAuthorizer', true],
+            // Not by resource
+            ['generic', 'App\JsonApi\Authorizers\GenericAuthorizer', false],
+            ['foo-bar', 'App\JsonApi\Authorizers\FooBarAuthorizer', false],
+            ['foo_bar', 'App\JsonApi\Authorizers\FooBarAuthorizer', false],
+            // Not by resource without type appended:
+            ['generic', 'App\JsonApi\Authorizers\Generic', false, false],
+            ['foo-bar', 'App\JsonApi\Authorizers\FooBar', false, false],
+            ['foo_bar', 'App\JsonApi\Authorizers\FooBar', false, false],
+        ];
+    }
+
+    /**
      * @param $resourceType
      * @param $type
      * @param $schema
      * @param $adapter
      * @param $validator
      * @param $auth
-     * @dataProvider resourcesProvider
+     * @dataProvider byResourceProvider
      */
-    public function testResource($resourceType, $type, $schema, $adapter, $validator, $auth)
+    public function testByResource($resourceType, $type, $schema, $adapter, $validator, $auth)
     {
-        $exists = !is_null($type);
+        $resolver = $this->createResolver(true);
 
-        $this->assertSame($exists, $this->resolver->isType($type));
-        $this->assertSame($exists, $this->resolver->isResourceType($resourceType));
+        $this->assertResolver($resolver, $resourceType, $type, $schema, $adapter, $validator, $auth);
+    }
 
-        $this->assertSame($exists ? $type : null, $this->resolver->getType($resourceType));
-        $this->assertSame($exists ? $resourceType : null, $this->resolver->getResourceType($type));
+    /**
+     * @param $resourceType
+     * @param $type
+     * @param $schema
+     * @param $adapter
+     * @param $validator
+     * @param $auth
+     * @dataProvider notByResourceProvider
+     */
+    public function testNotByResource($resourceType, $type, $schema, $adapter, $validator, $auth)
+    {
+        $resolver = $this->createResolver(false);
 
-        $this->assertSame($exists ? $schema : null, $this->resolver->getSchemaByType($type));
-        $this->assertSame($schema, $this->resolver->getSchemaByResourceType($resourceType));
+        $this->assertResolver($resolver, $resourceType, $type, $schema, $adapter, $validator, $auth);
+    }
 
-        $this->assertSame($exists ? $adapter : null, $this->resolver->getAdapterByType($type));
-        $this->assertSame($adapter, $this->resolver->getAdapterByResourceType($resourceType));
+    /**
+     * @param $resourceType
+     * @param $type
+     * @param $schema
+     * @param $adapter
+     * @param $validator
+     * @param $auth
+     * @dataProvider notByResourceWithoutTypeProvider
+     */
+    public function testNotByResourceWithoutType($resourceType, $type, $schema, $adapter, $validator, $auth)
+    {
+        $resolver = $this->createResolver(false, false);
 
-        $this->assertSame($exists ? $validator : null, $this->resolver->getValidatorsByType($type));
-        $this->assertSame($validator, $this->resolver->getValidatorsByResourceType($resourceType));
-
-        $this->assertSame($exists ? $auth : null, $this->resolver->getAuthorizerByType($type));
-        $this->assertSame($auth, $this->resolver->getAuthorizerByResourceType($resourceType));
+        $this->assertResolver($resolver, $resourceType, $type, $schema, $adapter, $validator, $auth);
     }
 
     public function testAll()
     {
+        $resolver = $this->createResolver();
+
         $this->assertEquals([
             'App\Post',
             'App\Comment',
-        ], $this->resolver->getAllTypes());
+        ], $resolver->getAllTypes());
 
         $this->assertEquals([
             'posts',
             'comments',
-        ], $this->resolver->getAllResourceTypes());
+        ], $resolver->getAllResourceTypes());
     }
 
-    public function testNamedAuthorizer()
+    /**
+     * @param $name
+     * @param $expected
+     * @param $byResource
+     * @param $withType
+     * @dataProvider genericAuthorizerProvider
+     */
+    public function testNamedAuthorizer($name, $expected, $byResource, $withType = true)
     {
-        $this->assertSame('App\JsonApi\GenericAuthorizer', $this->resolver->getAuthorizerByName('generic'));
+        $resolver = $this->createResolver($byResource, $withType);
+        $this->assertSame($expected, $resolver->getAuthorizerByName($name));
+    }
+
+    /**
+     * @param bool $byResource
+     * @param bool $withType
+     * @return NamespaceResolver
+     */
+    private function createResolver($byResource = true, $withType = true)
+    {
+        return new NamespaceResolver('App\JsonApi', [
+            'posts' => 'App\Post',
+            'comments' => 'App\Comment',
+        ], $byResource, $withType);
+    }
+
+    /**
+     * @param ResolverInterface $resolver
+     * @param $resourceType
+     * @param $type
+     * @param $schema
+     * @param $adapter
+     * @param $validator
+     * @param $auth
+     */
+    private function assertResolver($resolver, $resourceType, $type, $schema, $adapter, $validator, $auth)
+    {
+        $exists = !is_null($type);
+
+        $this->assertSame($exists, $resolver->isType($type));
+        $this->assertSame($exists, $resolver->isResourceType($resourceType));
+
+        $this->assertSame($exists ? $type : null, $resolver->getType($resourceType));
+        $this->assertSame($exists ? $resourceType : null, $resolver->getResourceType($type));
+
+        $this->assertSame($exists ? $schema : null, $resolver->getSchemaByType($type));
+        $this->assertSame($schema, $resolver->getSchemaByResourceType($resourceType));
+
+        $this->assertSame($exists ? $adapter : null, $resolver->getAdapterByType($type));
+        $this->assertSame($adapter, $resolver->getAdapterByResourceType($resourceType));
+
+        $this->assertSame($exists ? $validator : null, $resolver->getValidatorsByType($type));
+        $this->assertSame($validator, $resolver->getValidatorsByResourceType($resourceType));
+
+        $this->assertSame($exists ? $auth : null, $resolver->getAuthorizerByType($type));
+        $this->assertSame($auth, $resolver->getAuthorizerByResourceType($resourceType));
     }
 }

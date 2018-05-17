@@ -17,6 +17,7 @@
 
 namespace DummyApp\Providers;
 
+use CloudCreativity\LaravelJsonApi\Facades\JsonApi;
 use DummyApp\Entities\SiteRepository;
 use DummyApp\Policies\PostPolicy;
 use DummyApp\Policies\UserPolicy;
@@ -34,20 +35,24 @@ class DummyServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        config()->set('database.default', 'testbench');
-        config()->set('database.connections.testbench', [
-            'driver' => 'sqlite',
-            'database' => ':memory:',
-            'prefix' => '',
+        config()->set([
+            'database.default' => 'testbench',
+            'database.connections.testbench' => [
+                'driver' => 'sqlite',
+                'database' => ':memory:',
+                'prefix' => '',
+            ],
+            'json-api-v1' => require __DIR__ . '/../../config/json-api-v1.php',
+            'auth.providers.users.model' => User::class,
         ]);
-
-        config()->set('json-api-default', require __DIR__ . '/../../config/json-api-default.php');
 
         $this->loadMigrationsFrom(__DIR__ . '/../../database/migrations');
         $this->app->make(ModelFactory::class)->load(__DIR__ . '/../../database/factories');
 
         Gate::policy(Post::class, PostPolicy::class);
         Gate::policy(User::class, UserPolicy::class);
+
+        JsonApi::defaultApi('v1');
     }
 
     /**

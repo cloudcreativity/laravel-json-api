@@ -18,9 +18,9 @@
 namespace CloudCreativity\LaravelJsonApi\Eloquent;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Object\RelationshipInterface;
-use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo as Relation;
+use Illuminate\Database\Eloquent\Relations;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 /**
@@ -59,7 +59,7 @@ class BelongsTo extends AbstractRelation
      */
     public function update($record, RelationshipInterface $relationship, EncodingParametersInterface $parameters)
     {
-        $relation = $this->relation($record);
+        $relation = $this->getRelation($record);
 
         if ($related = $this->related($relationship)) {
             $relation->associate($related);
@@ -85,16 +85,32 @@ class BelongsTo extends AbstractRelation
     /**
      * @param $record
      * @return Relation
+     * @deprecated 1.0.0 use `getRelation`
      */
     protected function relation($record)
     {
-        $relation = $record->{$this->key}();
+        return $this->getRelation($record);
+    }
 
-        if (!$relation instanceof Relation) {
-            throw new RuntimeException("Model relation '{$this->key}' is not an Eloquent belongs-to relation.");
-        }
+    /**
+     * @inheritdoc
+     */
+    protected function acceptRelation($relation)
+    {
+        return $relation instanceof Relations\BelongsTo;
+    }
 
-        return $relation;
+    /**
+     * Find the related model for the JSON API relationship.
+     *
+     * @param RelationshipInterface $relationship
+     * @return Model|null
+     */
+    protected function findRelated(RelationshipInterface $relationship)
+    {
+        $identifier = $relationship->hasIdentifier() ? $relationship->getIdentifier() : null;
+
+        return $identifier ? $this->store()->find($identifier) : null;
     }
 
     /**
@@ -102,12 +118,11 @@ class BelongsTo extends AbstractRelation
      *
      * @param RelationshipInterface $relationship
      * @return Model|null
+     * @deprecated 1.0.0 use `findRelated`
      */
     protected function related(RelationshipInterface $relationship)
     {
-        $identifier = $relationship->hasIdentifier() ? $relationship->getIdentifier() : null;
-
-        return $identifier ? $this->store()->find($identifier) : null;
+        return $this->findRelated($relationship);
     }
 
 }

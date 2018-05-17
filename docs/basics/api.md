@@ -1,5 +1,24 @@
 # APIs
 
+## Introduction
+
+This package allows your application to have one (or many) APIs that conform to the JSON API spec. Each API is
+given a name, and configuration is held on a per-API basis.
+
+The default API name is `default`. You can change the default name via the JSON API facade by adding
+the following to the `boot()` method of your `AppServiceProvider`:
+
+```php
+public function boot()
+{
+    JsonApi::defaultApi('v1');
+}
+```
+
+> You must set the default API if you are not using `default` as the name. It is used to render error responses
+when clients have sent an `Accept` header with the JSON API media type if the exception occurs before the
+`json-api` middleware runs.
+
 ## Generating an API
 
 To generate your first API in your application:
@@ -8,7 +27,7 @@ To generate your first API in your application:
 $ php artisan make:json-api
 ```
 
-This uses the name `default` for your API and generates a config file called `json-api-default.php`.
+This uses the default API name and generates a config file called `json-api-{name}.php`.
 
 ### Multiple APIs
 
@@ -44,9 +63,11 @@ App\JsonApi
   - Posts
     - Adapter
     - Schema
+    - Validators
   - Comments
     - Adapter
     - Schema
+    - Validators
 ```
 
 If `by-resource` is `false`, the sub-namespace will be the class type (e.g. `Adapters`). For example:
@@ -54,11 +75,14 @@ If `by-resource` is `false`, the sub-namespace will be the class type (e.g. `Ada
 ```text
 App\JsonApi
   - Adapters
-    - Post
-    - Comment
+    - PostAdapter
+    - CommentAdapter
   - Schemas
-    - Post
-    - Comment
+    - PostSchema
+    - CommentSchema
+  - Validators
+    - PostValidator
+    - CommentValidator
 ```
 
 You must stick to whatever pattern you choose to use. This is because we use the structure to automatically detect
