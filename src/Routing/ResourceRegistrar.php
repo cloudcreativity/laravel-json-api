@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2017 Cloud Creativity Limited
+ * Copyright 2018 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,7 @@
 namespace CloudCreativity\LaravelJsonApi\Routing;
 
 use Closure;
-use CloudCreativity\LaravelJsonApi\Api\Api;
 use CloudCreativity\LaravelJsonApi\Api\Repository;
-use CloudCreativity\LaravelJsonApi\Api\ResourceProviders;
 use Illuminate\Contracts\Routing\Registrar;
 
 /**
@@ -36,6 +34,7 @@ class ResourceRegistrar
     const PARAM_RESOURCE_TYPE = 'resource_type';
     const PARAM_RESOURCE_ID = 'record';
     const PARAM_RELATIONSHIP_NAME = 'relationship_name';
+    const PARAM_RELATIONSHIP_INVERSE_TYPE = 'relationship_inverse_type';
 
     /**
      * @var Registrar
@@ -68,51 +67,23 @@ class ResourceRegistrar
     public function api($apiName, array $options, Closure $routes)
     {
         $api = $this->apiRepository->createApi($apiName);
-        $groupOptions = $this->groupOptions($api);
+        $url = $api->getUrl();
 
-        $this->router->group($groupOptions, function () use ($api, $options, $routes) {
+        $this->router->group([
+            'middleware' => ["json-api:{$apiName}", "json-api.bindings"],
+            'as' => $url->getName(),
+            'prefix' => $url->getNamespace(),
+        ], function () use ($api, $options, $routes) {
             $group = new ApiGroup($this->router, $api, $options);
 
-            $this->router->group($options, function () use ($group, $routes) {
+            $this->router->group($options, function () use ($api, $group, $routes) {
                 $routes($group, $this->router);
-            });
 
-            $providers = $this->apiProviders($api->getName());
-            $providers->mountAll($group, $this->router);
+                $this->apiRepository
+                    ->createProviders($api->getName())
+                    ->mountAll($group, $this->router);
+            });
         });
     }
 
-    /**
-     * @param Api $api
-     * @return array
-     */
-    protected function groupOptions(Api $api)
-    {
-        return [
-            'middleware' => 'json-api:' . $api->getName(),
-            'as' => $api->getUrl()->getName(),
-            'prefix' => $api->getUrl()->getNamespace(),
-        ];
-    }
-
-    /**
-     * @param $apiName
-     * @param array $options
-     * @return ApiGroup
-     */
-    protected function apiGroup($apiName, array $options)
-    {
-        $definition = $this->apiRepository->createApi($apiName);
-
-        return new ApiGroup($this->router, $definition, $options);
-    }
-
-    /**
-     * @param $apiName
-     * @return ResourceProviders
-     */
-    protected function apiProviders($apiName)
-    {
-        return $this->apiRepository->createProviders($apiName);
-    }
 }

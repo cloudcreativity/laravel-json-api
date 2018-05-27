@@ -15,10 +15,13 @@ return [
     | The `by-resource` setting determines how your units are organised within
     | your root namespace.
     |
-    | - true: e.g. \App\JsonApi\Posts\{Schema, Hydrator}
+    | - true:
+    |   - e.g. App\JsonApi\Posts\{Adapter, Schema, Validators}
+    |   - e.g. App\JsonApi\Comments\{Adapter, Schema, Validators}
     | - false:
-    |   - e.g. \App\JsonApi\Schemas\{User, Post, Comment}
-    |   - e.g. \App\JsonApi\Hydrators\{User, Post, Comment}
+    |   - e.g. App\JsonApi\Adapters\PostAdapter, CommentAdapter}
+    |   - e.g. App\JsonApi\Schemas\{PostSchema, CommentSchema}
+    |   - e.g. App\JsonApi\Validators\{PostValidator, CommentValidator}
     |
     */
     'namespace' => null,
@@ -38,7 +41,7 @@ return [
     | `'posts' => App\Post::class`
     */
     'resources' => [
-        'posts' => 'App\Post',
+        'posts' => App\Post::class,
     ],
 
     /*
@@ -106,7 +109,7 @@ return [
     'codecs' => [
         'encoders' => [
             'application/vnd.api+json',
-            'text/plain' => JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES,
+            'text/plain' => JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_PRESERVE_ZERO_FRACTION,
         ],
         'decoders' => [
             'application/vnd.api+json',

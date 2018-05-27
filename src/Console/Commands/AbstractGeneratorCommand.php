@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2017 Cloud Creativity Limited
+ * Copyright 2018 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,9 @@
 
 namespace CloudCreativity\LaravelJsonApi\Console\Commands;
 
-use CloudCreativity\JsonApi\Utils\Str;
 use CloudCreativity\LaravelJsonApi\Api\Api;
 use CloudCreativity\LaravelJsonApi\Api\Repository;
-use CloudCreativity\LaravelJsonApi\Utils\Fqn;
+use CloudCreativity\LaravelJsonApi\Utils\Str;
 use Illuminate\Console\GeneratorCommand;
 use Illuminate\Filesystem\Filesystem;
 use Symfony\Component\Console\Input\InputArgument;
@@ -89,18 +88,18 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
     }
 
     /**
-     * @return bool|null
+     * @return int
      */
     public function handle()
     {
-        if (!$this->apiRepository->exists($api = $this->argument('api'))) {
+        if (!$this->apiRepository->exists($api = $this->getApiName())) {
             $this->error("JSON API '$api' does not exist.");
             return 1;
         }
 
         /** @todo remove when removing support for Laravel 5.4 */
-        if (is_callable(['parent', 'fire'])) {
-            return (parent::fire() !== false) ? 0 : 1;
+        if (method_exists($this, 'fire')) {
+            return ($this->fire() !== false) ? 0 : 1;
         }
 
         return (parent::handle() !== false) ? 0 : 1;
@@ -126,12 +125,10 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
      */
     protected function qualifyClass($name)
     {
-        return call_user_func(
-            Fqn::class . '::' . $this->type,
-            $this->getResourceName(),
-            $this->getRootNamespace(),
-            $this->isByResource()
-        );
+        $resolver = $this->getApi()->getDefaultResolver();
+        $method = "get{$this->type}ByResourceType";
+
+        return $resolver->{$method}($this->getResourceName());
     }
 
     /**
@@ -145,9 +142,10 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
         $stub = $this->files->get($this->getStub());
 
         $this->replaceNamespace($stub, $name)
-            ->replaceResourceType($stub, $this->getResourceName())
+            ->replaceClassName($stub, $name)
+            ->replaceResourceType($stub)
             ->replaceApplicationNamespace($stub)
-            ->replaceModel($stub, $this->getResourceName());
+            ->replaceRecord($stub);
 
         return $stub;
     }
@@ -161,7 +159,7 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
     {
         return [
             ['resource', InputArgument::REQUIRED, "The resource for which a {$this->type} class will be generated."],
-            ['api', InputArgument::OPTIONAL, "The API that the resource belongs to.", 'default'],
+            ['api', InputArgument::OPTIONAL, "The API that the resource belongs to."],
         ];
     }
 
@@ -205,9 +203,9 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
      *
      * @return string
      */
-    private function getResourceName()
+    protected function getResourceName()
     {
-        $name = ucwords($this->argument('resource'));
+        $name = ucwords($this->getResourceInput());
 
         if ($this->isByResource()) {
             return str_plural($name);
@@ -217,14 +215,22 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
     }
 
     /**
+     * @return string
+     */
+    protected function getResourceInput()
+    {
+        return $this->argument('resource');
+    }
+
+    /**
      * Replace the value of the resource type string.
      *
      * @param mixed $stub
-     * @param mixed $resource
      * @return $this
      */
-    private function replaceResourceType(&$stub, $resource)
+    protected function replaceResourceType(&$stub)
     {
+        $resource = $this->getResourceName();
         $stub = str_replace('dummyResourceType', Str::dasherize($resource), $stub);
 
         return $this;
@@ -234,12 +240,12 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
      * Replace the value of the model class name.
      *
      * @param $stub
-     * @param $resource
      * @return $this
      */
-    private function replaceModel(&$stub, $resource)
+    protected function replaceRecord(&$stub)
     {
-        $stub = str_replace('DummyModel', Str::classify(str_singular($resource)), $stub);
+        $resource = $this->getResourceName();
+        $stub = str_replace('DummyRecord', Str::classify(str_singular($resource)), $stub);
 
         return $this;
     }
@@ -250,10 +256,23 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
      * @param $stub
      * @return $this
      */
-    private function replaceApplicationNamespace(&$stub)
+    protected function replaceApplicationNamespace(&$stub)
     {
         $namespace = rtrim($this->laravel->getNamespace(), '\\');
         $stub = str_replace('DummyApplicationNamespace', $namespace, $stub);
+
+        return $this;
+    }
+
+    /**
+     * Replace the class name.
+     *
+     * @param $stub
+     * @return $this
+     */
+    protected function replaceClassName(&$stub, $name)
+    {
+        $stub = $this->replaceClass($stub, $name);
 
         return $this;
     }
@@ -264,7 +283,7 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
      * @param string $implementationType
      * @return string
      */
-    private function getStubFor($implementationType)
+    protected function getStubFor($implementationType)
     {
         return sprintf('%s/%s/%s.stub', $this->stubsDirectory, $implementationType, lcfirst($this->type));
     }
@@ -272,17 +291,9 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
     /**
      * @return bool
      */
-    private function isByResource()
+    protected function isByResource()
     {
         return $this->getApi()->isByResource();
-    }
-
-    /**
-     * @return string
-     */
-    private function getRootNamespace()
-    {
-        return $this->getApi()->getRootNamespace();
     }
 
     /**
@@ -290,7 +301,7 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
      *
      * @return boolean
      */
-    private function isEloquent()
+    protected function isEloquent()
     {
         if ($this->isIndependent) {
             return false;
@@ -306,8 +317,16 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
     /**
      * @return Api
      */
-    private function getApi()
+    protected function getApi()
     {
-        return $this->apiRepository->createApi($this->argument('api'));
+        return $this->apiRepository->createApi($this->getApiName());
+    }
+
+    /**
+     * @return string
+     */
+    protected function getApiName()
+    {
+        return $this->argument('api') ?: $this->laravel->make('json-api')->defaultApi();
     }
 }

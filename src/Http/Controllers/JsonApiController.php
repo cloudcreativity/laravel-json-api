@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2017 Cloud Creativity Limited
+ * Copyright 2018 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,11 @@
 
 namespace CloudCreativity\LaravelJsonApi\Http\Controllers;
 
-use CloudCreativity\JsonApi\Contracts\Http\Requests\RequestInterface as JsonApiRequest;
+use Closure;
+use CloudCreativity\LaravelJsonApi\Auth\AuthorizesRequests;
+use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
+use CloudCreativity\LaravelJsonApi\Http\Requests\ValidatedRequest;
+use CloudCreativity\LaravelJsonApi\Utils\Str;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 
@@ -26,111 +30,487 @@ use Illuminate\Routing\Controller;
  * Class JsonApiController
  *
  * @package CloudCreativity\LaravelJsonApi
- * @deprecated
  */
 class JsonApiController extends Controller
 {
 
-    use CreatesResponses;
+    use CreatesResponses, AuthorizesRequests;
 
     /**
-     * @param JsonApiRequest $request
+     * The database connection name to use for transactions, or null for the default connection.
+     *
+     * @var string|null
+     */
+    protected $connection;
+
+    /**
+     * Whether database transactions should be used.
+     *
+     * @var bool
+     */
+    protected $useTransactions = true;
+
+    /**
+     * Index action.
+     *
+     * @param StoreInterface $store
+     * @param ValidatedRequest $request
      * @return Response
      */
-    public function index(JsonApiRequest $request)
+    public function index(StoreInterface $store, ValidatedRequest $request)
     {
-        return $this->notImplemented();
+        $result = $this->doSearch($store, $request);
+
+        if ($result instanceof Response) {
+            return $result;
+        }
+
+        return $this->reply()->content($result);
     }
 
     /**
-     * @param JsonApiRequest $request
+     * Read resource action.
+     *
+     * @param ValidatedRequest $request
      * @return Response
      */
-    public function create(JsonApiRequest $request)
+    public function read(ValidatedRequest $request)
     {
-        return $this->notImplemented();
+        $record = $request->getRecord();
+
+        if ($result = $this->invoke('reading', $record, $request)) {
+            return $result;
+        }
+
+        return $this->reply()->content($record);
     }
 
     /**
-     * @param JsonApiRequest $request
+     * Create resource action.
+     *
+     * @param StoreInterface $store
+     * @param ValidatedRequest $request
      * @return Response
      */
-    public function read(JsonApiRequest $request)
+    public function create(StoreInterface $store, ValidatedRequest $request)
     {
-        return $this->notImplemented();
+        $record = $this->transaction(function () use ($store, $request) {
+            return $this->doCreate($store, $request);
+        });
+
+        if ($record instanceof Response) {
+            return $record;
+        }
+
+        return $this->reply()->created($record);
     }
 
     /**
-     * @param JsonApiRequest $request
+     * Update resource action.
+     *
+     * @param StoreInterface $store
+     * @param ValidatedRequest $request
      * @return Response
      */
-    public function update(JsonApiRequest $request)
+    public function update(StoreInterface $store, ValidatedRequest $request)
     {
-        return $this->notImplemented();
+        $record = $this->transaction(function () use ($store, $request) {
+            return $this->doUpdate($store, $request);
+        });
+
+        if ($record instanceof Response) {
+            return $record;
+        }
+
+        return $this->reply()->content($record);
     }
 
     /**
-     * @param JsonApiRequest $request
+     * Delete resource action.
+     *
+     * @param StoreInterface $store
+     * @param ValidatedRequest $request
      * @return Response
      */
-    public function delete(JsonApiRequest $request)
+    public function delete(StoreInterface $store, ValidatedRequest $request)
     {
-        return $this->notImplemented();
+        $result = $this->transaction(function () use ($store, $request) {
+            return $this->doDelete($store, $request);
+        });
+
+        if ($result instanceof Response) {
+            return $result;
+        }
+
+        return $this->reply()->noContent();
     }
 
     /**
-     * @param JsonApiRequest $request
+     * Read related resource action.
+     *
+     * @param StoreInterface $store
+     * @param ValidatedRequest $request
      * @return Response
      */
-    public function readRelatedResource(JsonApiRequest $request)
+    public function readRelatedResource(StoreInterface $store, ValidatedRequest $request)
     {
-        return $this->notImplemented();
+        $record = $request->getRecord();
+
+        if ($result = $this->beforeReadingRelationship($record, $request)) {
+            return $result;
+        }
+
+        $related = $store->queryRelated(
+            $record,
+            $request->getRelationshipName(),
+            $request->getParameters()
+        );
+
+        return $this->reply()->content($related);
     }
 
     /**
-     * @param JsonApiRequest $request
+     * Read relationship data action.
+     *
+     * @param StoreInterface $store
+     * @param ValidatedRequest $request
      * @return Response
      */
-    public function readRelationship(JsonApiRequest $request)
+    public function readRelationship(StoreInterface $store, ValidatedRequest $request)
     {
-        return $this->notImplemented();
+        $record = $request->getRecord();
+
+        if ($result = $this->beforeReadingRelationship($record, $request)) {
+            return $result;
+        }
+
+        $related = $store->queryRelationship(
+            $record,
+            $request->getRelationshipName(),
+            $request->getParameters()
+        );
+
+        return $this->reply()->relationship($related);
     }
 
     /**
-     * @param JsonApiRequest $request
+     * Replace relationship data action.
+     *
+     * @param StoreInterface $store
+     * @param ValidatedRequest $request
      * @return Response
      */
-    public function replaceRelationship(JsonApiRequest $request)
+    public function replaceRelationship(StoreInterface $store, ValidatedRequest $request)
     {
-        return $this->notImplemented();
+        $result = $this->transaction(function () use ($store, $request) {
+            return $this->doReplaceRelationship($store, $request);
+        });
+
+        if ($result instanceof Response) {
+            return $result;
+        }
+
+        return $this->reply()->noContent();
     }
 
     /**
-     * @param JsonApiRequest $request
+     * Add to relationship data action.
+     *
+     * @param StoreInterface $store
+     * @param ValidatedRequest $request
      * @return Response
      */
-    public function addToRelationship(JsonApiRequest $request)
+    public function addToRelationship(StoreInterface $store, ValidatedRequest $request)
     {
-        return $this->notImplemented();
+        $result = $this->transaction(function () use ($store, $request) {
+            return $this->doAddToRelationship($store, $request);
+        });
+
+        if ($result instanceof Response) {
+            return $result;
+        }
+
+        return $this->reply()->noContent();
     }
 
     /**
-     * @param JsonApiRequest $request
+     * Remove from relationship data action.
+     *
+     * @param StoreInterface $store
+     * @param ValidatedRequest $request
      * @return Response
      */
-    public function removeFromRelationship(JsonApiRequest $request)
+    public function removeFromRelationship(StoreInterface $store, ValidatedRequest $request)
     {
-        return $this->notImplemented();
+        $result = $this->transaction(function () use ($store, $request) {
+            return $this->doRemoveFromRelationship($store, $request);
+        });
+
+        if ($result instanceof Response) {
+            return $result;
+        }
+
+        return $this->reply()->noContent();
     }
 
     /**
-     * @return Response
+     * Search resources.
+     *
+     * @param StoreInterface $store
+     * @param ValidatedRequest $request
+     * @return mixed
      */
-    protected function notImplemented()
+    protected function doSearch(StoreInterface $store, ValidatedRequest $request)
     {
-        return $this
-            ->reply()
-            ->statusCode(Response::HTTP_NOT_IMPLEMENTED);
+        if ($result = $this->invoke('searching', $request)) {
+            return $result;
+        }
+
+        return $store->queryRecords($request->getResourceType(), $request->getParameters());
+    }
+
+    /**
+     * Create a resource.
+     *
+     * @param StoreInterface $store
+     * @param ValidatedRequest $request
+     * @return object|Response
+     *      the created record or a HTTP response.
+     */
+    protected function doCreate(StoreInterface $store, ValidatedRequest $request)
+    {
+        if ($response = $this->beforeCommit($request)) {
+            return $response;
+        }
+
+        $record = $store->createRecord(
+            $request->getResourceType(),
+            $request->getDocument()->getResource(),
+            $request->getParameters()
+        );
+
+        return $this->afterCommit($request, $record, false) ?: $record;
+    }
+
+    /**
+     * Update a resource.
+     *
+     * @param StoreInterface $store
+     * @param ValidatedRequest $request
+     * @return object|Response
+     *      the updated record or a HTTP response.
+     */
+    protected function doUpdate(StoreInterface $store, ValidatedRequest $request)
+    {
+        $response = $this->beforeCommit($request);
+
+        if ($response instanceof Response) {
+            return $response;
+        }
+
+        $record = $store->updateRecord(
+            $request->getRecord(),
+            $request->getDocument()->getResource(),
+            $request->getParameters()
+        );
+
+        return $this->afterCommit($request, $record, true) ?: $record;
+    }
+
+    /**
+     * Delete a resource.
+     *
+     * @param StoreInterface $store
+     * @param ValidatedRequest $request
+     * @return Response|null
+     *      an HTTP response or null.
+     */
+    protected function doDelete(StoreInterface $store, ValidatedRequest $request)
+    {
+        $record = $request->getRecord();
+        $response = $this->invoke('deleting', $record, $request);
+
+        if ($response instanceof Response) {
+            return $response;
+        }
+
+        $store->deleteRecord($record, $request->getParameters());
+
+        return $this->invoke('deleted', $record, $request);
+    }
+
+    /**
+     * Replace a relationship.
+     *
+     * @param StoreInterface $store
+     * @param ValidatedRequest $request
+     * @return Response|object
+     */
+    protected function doReplaceRelationship(StoreInterface $store, ValidatedRequest $request)
+    {
+        $record = $request->getRecord();
+        $name = Str::classify($field = $request->getRelationshipName());
+
+        if ($result = $this->invokeMany(['replacing', "replacing{$name}"], $record, $request)) {
+            return $result;
+        }
+
+        $record = $store->replaceRelationship(
+            $record,
+            $field,
+            $request->getDocument()->getRelationship(),
+            $request->getParameters()
+        );
+
+        return $this->invokeMany(["replaced{$name}", "replaced"], $record, $request) ?: $record;
+    }
+
+    /**
+     * Add to a relationship.
+     *
+     * @param StoreInterface $store
+     * @param ValidatedRequest $request
+     * @return Response|object
+     */
+    protected function doAddToRelationship(StoreInterface $store, ValidatedRequest $request)
+    {
+        $record = $request->getRecord();
+        $name = Str::classify($field = $request->getRelationshipName());
+
+        if ($result = $this->invokeMany(['adding', "adding{$name}"], $record, $request)) {
+            return $result;
+        }
+
+        $record = $store->addToRelationship(
+            $record,
+            $field,
+            $request->getDocument()->getRelationship(),
+            $request->getParameters()
+        );
+
+        return $this->invokeMany(["added{$name}", "added"], $record, $request) ?: $record;
+    }
+
+    /**
+     * Remove from a relationship.
+     *
+     * @param StoreInterface $store
+     * @param ValidatedRequest $request
+     * @return Response|object
+     */
+    protected function doRemoveFromRelationship(StoreInterface $store, ValidatedRequest $request)
+    {
+        $record = $request->getRecord();
+        $name = Str::classify($field = $request->getRelationshipName());
+
+        if ($result = $this->invokeMany(['removing', "removing{$name}"], $record, $request)) {
+            return $result;
+        }
+
+        $record = $store->removeFromRelationship(
+            $record,
+            $field,
+            $request->getDocument()->getRelationship(),
+            $request->getParameters()
+        );
+
+        return $this->invokeMany(["removed{$name}", "removed"], $record, $request) ?: $record;
+    }
+
+    /**
+     * Execute the closure within an optional transaction.
+     *
+     * @param Closure $closure
+     * @return mixed
+     */
+    protected function transaction(Closure $closure)
+    {
+        if (!$this->useTransactions) {
+            return $closure();
+        }
+
+        return app('db')->connection($this->connection)->transaction($closure);
+    }
+
+    /**
+     * @param ValidatedRequest $request
+     * @return Response|null
+     */
+    private function beforeCommit(ValidatedRequest $request)
+    {
+        $record = $request->getRecord();
+
+        if ($result = $this->invoke('saving', $record, $request)) {
+            return $result;
+        }
+
+        return is_null($record) ?
+            $this->invoke('creating', $request) :
+            $this->invoke('updating', $record, $request);
+    }
+
+    /**
+     * @param ValidatedRequest $request
+     * @param $record
+     * @param $updating
+     * @return Response|null
+     */
+    private function afterCommit(ValidatedRequest $request, $record, $updating)
+    {
+        $method = !$updating ? 'created' : 'updated';
+
+        if ($result = $this->invoke($method, $record, $request)) {
+            return $result;
+        }
+
+        return $this->invoke('saved', $record, $request);
+    }
+
+    /**
+     * @param $record
+     * @param ValidatedRequest $request
+     * @return Response|null
+     */
+    private function beforeReadingRelationship($record, ValidatedRequest $request)
+    {
+        $name = Str::classify($relationship = $request->getRelationshipName());
+        $hooks = ['readingRelationship', "reading{$name}"];
+
+        return $this->invokeMany($hooks, $record, $request);
+    }
+
+    /**
+     * Invoke a hook.
+     *
+     * @param $method
+     * @param mixed ...$arguments
+     * @return Response|null
+     */
+    private function invoke($method, ...$arguments)
+    {
+        $response = method_exists($this, $method) ? $this->{$method}(...$arguments) : null;
+
+        return ($response instanceof Response) ? $response : null;
+    }
+
+    /**
+     * Invoke multiple hooks.
+     *
+     * @param array $method
+     * @param mixed ...$arguments
+     * @return Response|null
+     */
+    private function invokeMany(array $method, ...$arguments)
+    {
+        foreach ($method as $hook) {
+            $result = $this->invoke($hook, ...$arguments);
+
+            if ($result instanceof Response) {
+                return $result;
+            }
+        }
+
+        return null;
     }
 
 }

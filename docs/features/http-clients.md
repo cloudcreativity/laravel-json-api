@@ -52,7 +52,7 @@ with a `base_uri` option, as the JSON API client submits requests relative to th
 To send an outbound index request for a resource type, use the `index` method:
 
 ```php
-/** @var CloudCreativity\JsonApi\Contracts\Http\Responses\ResponseInterface $response */
+/** @var CloudCreativity\LaravelJsonApi\Contracts\Http\Responses\ResponseInterface $response */
 $response = $client->index('posts');
 ```
 

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2017 Cloud Creativity Limited
+ * Copyright 2018 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ use CloudCreativity\LaravelJsonApi\Api\LinkGenerator;
  * Trait CreatesLinks
  *
  * @package CloudCreativity\LaravelJsonApi
+ * @deprecated 2.0.0 Use the `json_api` helper function instead.
  */
 trait CreatesLinks
 {

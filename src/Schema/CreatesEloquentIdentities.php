@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2017 Cloud Creativity Limited
+ * Copyright 2018 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Schema;
 
-use CloudCreativity\JsonApi\Exceptions\RuntimeException;
+use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -26,6 +26,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * Trait CreatesEloquentIdentities
  *
  * @package CloudCreativity\LaravelJsonApi
+ * @deprecated 2.0.0
  */
 trait CreatesEloquentIdentities
 {
@@ -41,6 +42,7 @@ trait CreatesEloquentIdentities
      * @param Model $model
      * @param $relationshipKey
      * @return Model
+     * @deprecated
      */
     protected function createBelongsToIdentity(Model $model, $relationshipKey)
     {
@@ -61,14 +63,7 @@ trait CreatesEloquentIdentities
         }
 
         $related = $relation->getRelated()->replicate();
-
-        /** Laravel 5.4 */
-        if (method_exists($relation, 'getOwnerKey')) {
-            $related->{$relation->getOwnerKey()} = $id;
-        } /** Laravel 5.1|5.2|5.3 */
-        else {
-            $related->{$relation->getOtherKey()} = $id;
-        }
+        $related->{$relation->getOwnerKey()} = $id;
 
         return $related;
     }
@@ -81,6 +76,7 @@ trait CreatesEloquentIdentities
      * @param string|null $keyName
      *      the key to set as the id - defaults to `Model::getKeyName()`
      * @return Model|null
+     * @deprecated
      */
     protected function createModelIdentity(
         $modelClass,

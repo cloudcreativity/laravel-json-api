@@ -1,9 +1,56 @@
 <?php
+/**
+ * Copyright 2018 Cloud Creativity Limited
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-use CloudCreativity\JsonApi\Contracts\Document\MutableErrorInterface as Error;
-use CloudCreativity\JsonApi\Validators\ValidatorErrorFactory as V;
+use CloudCreativity\LaravelJsonApi\Contracts\Document\MutableErrorInterface as Error;
+use CloudCreativity\LaravelJsonApi\Http\Headers\RestrictiveHeadersChecker as H;
+use CloudCreativity\LaravelJsonApi\Validators\ValidatorErrorFactory as V;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Auth\AuthenticationException;
+use Illuminate\Http\Response;
+use Illuminate\Session\TokenMismatchException;
+use Illuminate\Validation\ValidationException;
 
 return [
+
+    /**
+     * The client's `Accept` header does not a configured encoder.
+     */
+    H::NOT_ACCEPTABLE => [
+        Error::TITLE => 'Not Acceptable',
+        Error::STATUS => Response::HTTP_NOT_ACCEPTABLE,
+    ],
+
+    /**
+     * The client's `Content-Type` header contains multiple media types, so we do not
+     * know which media type to match against.
+     */
+    H::MULTIPLE_MEDIA_TYPES => [
+        Error::TITLE => 'Invalid Content-Type Header',
+        Error::STATUS => Response::HTTP_BAD_REQUEST,
+    ],
+
+    /**
+     * The client's `Content-Type` header does not match a configured decoder.
+     */
+    H::UNSUPPORTED_MEDIA_TYPE => [
+        Error::TITLE => 'Invalid Content-Type Header',
+        Error::STATUS => Response::HTTP_UNSUPPORTED_MEDIA_TYPE,
+        Error::DETAIL => 'The specified content type is not supported.',
+    ],
 
     /**
      * A compulsory member has not been included in document.
@@ -11,7 +58,7 @@ return [
     V::MEMBER_REQUIRED => [
         Error::TITLE => 'Required Member',
         Error::DETAIL => "The member '{member}' is required.",
-        Error::STATUS => 400,
+        Error::STATUS => Response::HTTP_BAD_REQUEST,
     ],
 
     /**
@@ -20,7 +67,7 @@ return [
     V::MEMBER_OBJECT_EXPECTED => [
         Error::TITLE => 'Object Expected',
         Error::DETAIL => "The member '{member}' must be an object.",
-        Error::STATUS => 400,
+        Error::STATUS => Response::HTTP_BAD_REQUEST,
     ],
 
     /**
@@ -30,7 +77,7 @@ return [
     V::MEMBER_STRING_EXPECTED => [
         Error::TITLE => 'String Expected',
         Error::DETAIL => "The member '{member}' must be a string.",
-        Error::STATUS => 400,
+        Error::STATUS => Response::HTTP_BAD_REQUEST,
     ],
 
     /**
@@ -39,7 +86,7 @@ return [
     V::MEMBER_EMPTY_NOT_ALLOWED => [
         Error::TITLE => 'Value Expected',
         Error::DETAIL => "The member '{member}' cannot be empty.",
-        Error::STATUS => 400,
+        Error::STATUS => Response::HTTP_BAD_REQUEST,
     ],
 
     /**
@@ -48,7 +95,7 @@ return [
     V::MEMBER_RELATIONSHIP_EXPECTED => [
         Error::TITLE => 'Relationship Expected',
         Error::DETAIL => "The member '{member}' must be a relationship object.",
-        Error::STATUS => 400,
+        Error::STATUS => Response::HTTP_BAD_REQUEST,
     ],
 
     /**
@@ -75,7 +122,7 @@ return [
     V::RESOURCE_INVALID_ATTRIBUTES => [
         Error::TITLE => 'Invalid Attributes',
         Error::DETAIL => 'The attributes member is invalid.',
-        Error::STATUS => 400,
+        Error::STATUS => Response::HTTP_BAD_REQUEST,
     ],
 
     /**
@@ -85,7 +132,7 @@ return [
      */
     V::RESOURCE_INVALID_ATTRIBUTES_MESSAGES => [
         Error::TITLE => 'Invalid Attribute',
-        Error::STATUS => 422,
+        Error::STATUS => Response::HTTP_UNPROCESSABLE_ENTITY,
     ],
 
     /**
@@ -94,7 +141,7 @@ return [
     V::RESOURCE_INVALID_RELATIONSHIPS => [
         Error::TITLE => 'Invalid Relationships',
         Error::DETAIL => 'The relationships member is invalid.',
-        Error::STATUS => 400,
+        Error::STATUS => Response::HTTP_BAD_REQUEST,
     ],
 
     /**
@@ -103,7 +150,7 @@ return [
     V::RELATIONSHIP_HAS_ONE_EXPECTED => [
         Error::TITLE => 'Invalid Relationship',
         Error::DETAIL => 'The provided relationship must be a has-one relationship',
-        Error::STATUS => 400,
+        Error::STATUS => Response::HTTP_BAD_REQUEST,
     ],
 
     /**
@@ -112,7 +159,7 @@ return [
     V::RELATIONSHIP_HAS_MANY_EXPECTED => [
         Error::TITLE => 'Invalid Relationship',
         Error::DETAIL => 'The provided relationship must be a has-many relationship',
-        Error::STATUS => 400,
+        Error::STATUS => Response::HTTP_BAD_REQUEST,
     ],
 
     /**
@@ -121,7 +168,7 @@ return [
     V::RELATIONSHIP_EMPTY_NOT_ALLOWED => [
         Error::TITLE => 'Invalid Relationship',
         Error::DETAIL => 'The provided relationship cannot be empty.',
-        Error::STATUS => 422,
+        Error::STATUS => Response::HTTP_UNPROCESSABLE_ENTITY,
     ],
 
     /**
@@ -139,7 +186,7 @@ return [
     V::RELATIONSHIP_NOT_ACCEPTABLE => [
         Error::TITLE => 'Invalid Relationship',
         Error::DETAIL => 'The related resource is not acceptable.',
-        Error::STATUS => 422,
+        Error::STATUS => Response::HTTP_UNPROCESSABLE_ENTITY,
     ],
 
     /**
@@ -148,7 +195,7 @@ return [
     V::RELATIONSHIP_UNKNOWN_TYPE => [
         Error::TITLE => 'Invalid Relationship',
         Error::DETAIL => "Resource type '{actual}' is not recognised.",
-        Error::STATUS => 400,
+        Error::STATUS => Response::HTTP_BAD_REQUEST,
     ],
 
     /**
@@ -157,7 +204,7 @@ return [
     V::RELATIONSHIP_UNSUPPORTED_TYPE => [
         Error::TITLE => 'Invalid Relationship',
         Error::DETAIL => "Resource '{actual}' is not among the type(s) supported by this relationship. Expecting only '{expected}' resources.",
-        Error::STATUS => 400,
+        Error::STATUS => Response::HTTP_BAD_REQUEST,
     ],
 
     /**
@@ -167,7 +214,38 @@ return [
      */
     V::QUERY_PARAMETERS_MESSAGES => [
         Error::TITLE => 'Invalid Query Parameter',
-        Error::STATUS => 400,
+        Error::STATUS => Response::HTTP_BAD_REQUEST,
+    ],
+
+    /**
+     * Error used when a user is not authenticated.
+     */
+    AuthenticationException::class => [
+        Error::TITLE => 'Unauthenticated',
+        Error::STATUS => Response::HTTP_UNAUTHORIZED,
+    ],
+
+    /**
+     * Error used when a request is not authorized.
+     */
+    AuthorizationException::class => [
+        Error::TITLE => 'Unauthorized',
+        Error::STATUS => Response::HTTP_FORBIDDEN,
+    ],
+
+    /**
+     * Error used when the CSRF token is invalid.
+     */
+    TokenMismatchException::class => [
+        Error::TITLE => 'Invalid Token',
+        Error::STATUS => '419',
+    ],
+
+    /**
+     * Error used when converting a Laravel validation exception outside of JSON API validation.
+     */
+    ValidationException::class => [
+        Error::STATUS => '422',
     ],
 
     /**
@@ -179,6 +257,6 @@ return [
      */
     Exception::class => [
         Error::TITLE => 'Internal Server Error',
-        Error::STATUS => 500,
+        Error::STATUS => Response::HTTP_INTERNAL_SERVER_ERROR,
     ],
 ];

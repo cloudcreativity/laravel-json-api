@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2017 Cloud Creativity Limited
+ * Copyright 2018 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@
 
 namespace CloudCreativity\LaravelJsonApi\Api;
 
+use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
+use CloudCreativity\LaravelJsonApi\Resolver\NamespaceResolver;
 use CloudCreativity\LaravelJsonApi\Routing\ApiGroup;
 use Illuminate\Contracts\Routing\Registrar;
 
@@ -59,11 +61,11 @@ abstract class ResourceProvider
     abstract protected function getRootNamespace();
 
     /**
-     * @return ApiResources
+     * @return ResolverInterface
      */
-    public function getResources()
+    public function getResolver()
     {
-        return $this->createResourceMap()->all();
+        return new NamespaceResolver($this->getRootNamespace(), $this->resources, $this->byResource);
     }
 
     /**
@@ -74,11 +76,4 @@ abstract class ResourceProvider
         return $this->errors;
     }
 
-    /**
-     * @return ResourceMap
-     */
-    protected function createResourceMap()
-    {
-        return new ResourceMap($this->getRootNamespace(), $this->resources, $this->byResource);
-    }
 }

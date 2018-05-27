@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2017 Cloud Creativity Limited
+ * Copyright 2018 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ use Illuminate\Support\Facades\Facade as BaseFacade;
  *
  * @package CloudCreativity\LaravelJsonApi
  * @method static void register(string $apiName, array $options, \Closure $callback)
+ * @method static string defaultApi(string|null $apiName)
  */
 class JsonApi extends BaseFacade
 {

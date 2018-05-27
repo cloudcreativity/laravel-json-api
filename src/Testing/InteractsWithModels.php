@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2017 Cloud Creativity Limited
+ * Copyright 2018 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ use PHPUnit\Framework\Constraint\LogicalNot;
  * Class InteractsWithModels
  *
  * @package CloudCreativity\LaravelJsonApi
+ * @deprecated use `assertDatabaseHas` or `assertDatabaseMissing` etc.
  */
 trait InteractsWithModels
 {
@@ -43,6 +44,7 @@ trait InteractsWithModels
      * @param string|null $keyName
      *      the key name to use for the resource id - defaults to `Model::getKeyName()`
      * @return $this
+     * @deprecated
      */
     protected function assertModelCreated(
         Model $model,
@@ -79,11 +81,12 @@ trait InteractsWithModels
      * @param string|string[] $unchangedKeys
      *      the keys of the attributes that should not have changed.
      * @return $this
+     * @deprecated
      */
     protected function assertModelPatched(Model $model, array $changedAttributes, $unchangedKeys = [])
     {
         /** We need to ensure values are cast to database values */
-        $expected = $model->newInstance($changedAttributes)->getAttributes();
+        $expected = $model->newInstance()->forceFill($changedAttributes)->getAttributes();
         $attributes = $model->getAttributes();
 
         foreach ((array) $unchangedKeys as $attr) {
@@ -100,6 +103,7 @@ trait InteractsWithModels
      *
      * @param Model $model
      * @return $this
+     * @deprecated
      */
     protected function assertModelDeleted(Model $model)
     {
@@ -111,6 +115,7 @@ trait InteractsWithModels
      *
      * @param Model $model
      * @return $this
+     * @deprecated
      */
     protected function assertModelTrashed(Model $model)
     {
@@ -138,6 +143,7 @@ trait InteractsWithModels
      * @param Model $model
      * @param array $data
      * @return $this
+     * @deprecated
      */
     protected function assertDatabaseHasModel(Model $model, array $data)
     {
@@ -152,7 +158,7 @@ trait InteractsWithModels
      * @param Model $model
      * @param array $data
      * @return $this
-     * @todo update method when dropping support for Laravel 5.4
+     * @deprecated
      */
     protected function assertDatabaseMissingModel(Model $model, array $data)
     {

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2017 Cloud Creativity Limited
+ * Copyright 2018 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,10 @@
 
 namespace CloudCreativity\LaravelJsonApi\Pagination;
 
-use CloudCreativity\JsonApi\Contracts\Factories\FactoryInterface;
-use CloudCreativity\JsonApi\Contracts\Pagination\PageInterface;
-use CloudCreativity\JsonApi\Utils\Str;
+use CloudCreativity\LaravelJsonApi\Contracts\Factories\FactoryInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PageInterface;
 use CloudCreativity\LaravelJsonApi\Schema\CreatesLinks;
+use CloudCreativity\LaravelJsonApi\Utils\Str;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Contracts\Pagination\Paginator;
 use Neomerx\JsonApi\Contracts\Document\LinkInterface;
@@ -144,7 +144,12 @@ trait CreatesPages
             return null;
         }
 
-        return $this->createLink($paginator->lastPage(), $paginator->perPage(), $params);
+        /** In older versions of Laravel, last page can return zero for an empty collection. */
+        if (1 > $last = $paginator->lastPage()) {
+            $last = 1;
+        }
+
+        return $this->createLink($last, $paginator->perPage(), $params);
     }
 
     /**
@@ -194,8 +199,13 @@ trait CreatesPages
         ];
 
         if ($paginator instanceof LengthAwarePaginator) {
+            /** In older versions of Laravel, last page can return zero for an empty collection. */
+            if (1 > $last = $paginator->lastPage()) {
+                $last = 1;
+            }
+
             $meta[$this->normalizeMetaKey('total')] = $paginator->total();
-            $meta[$this->normalizeMetaKey('last-page')] = $paginator->lastPage();
+            $meta[$this->normalizeMetaKey('last-page')] = $last;
         }
 
         return $meta;

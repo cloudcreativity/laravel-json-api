@@ -2,9 +2,9 @@
 
 namespace DummyNamespace;
 
-use CloudCreativity\LaravelJsonApi\Schema\EloquentSchema;
+use Neomerx\JsonApi\Schema\SchemaProvider;
 
-class Schema extends EloquentSchema
+class DummyClass extends SchemaProvider
 {
 
     /**
@@ -13,9 +13,25 @@ class Schema extends EloquentSchema
     protected $resourceType = 'dummyResourceType';
 
     /**
-     * @var array|null
+     * @param $resource
+     *      the domain record being serialized.
+     * @return string
      */
-    protected $attributes = null;
+    public function getId($resource)
+    {
+        return (string) $resource->getKey();
+    }
 
+    /**
+     * @param $resource
+     *      the domain record being serialized.
+     * @return array
+     */
+    public function getAttributes($resource)
+    {
+        return [
+            'created-at' => $resource->created_at->toAtomString(),
+            'updated-at' => $resource->updated_at->toAtomString(),
+        ];
+    }
 }
-

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2017 Cloud Creativity Limited
+ * Copyright 2018 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,8 @@
 
 namespace CloudCreativity\LaravelJsonApi\Routing;
 
-use CloudCreativity\JsonApi\Utils\Str;
-use CloudCreativity\LaravelJsonApi\Api\ApiResource;
+use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
+use CloudCreativity\LaravelJsonApi\Utils\Str;
 use Illuminate\Contracts\Routing\Registrar;
 use Illuminate\Routing\Route;
 use Illuminate\Support\Fluent;
@@ -35,21 +35,21 @@ class ResourceGroup
     use RegistersResources;
 
     /**
-     * @var ApiResource
+     * @var ResolverInterface
      */
-    private $apiResource;
+    private $resolver;
 
     /**
      * ResourceGroup constructor.
      *
      * @param string $resourceType
-     * @param ApiResource $apiResource
+     * @param ResolverInterface $resolver
      * @param Fluent $options
      */
-    public function __construct($resourceType, ApiResource $apiResource, Fluent $options)
+    public function __construct($resourceType, ResolverInterface $resolver, Fluent $options)
     {
         $this->resourceType = $resourceType;
-        $this->apiResource = $apiResource;
+        $this->resolver = $resolver;
         $this->options = $options;
     }
 
@@ -58,8 +58,13 @@ class ResourceGroup
      */
     public function addResource(Registrar $router)
     {
-        $router->group($this->groupAction(), function ($router) {
-            $this->addResourceRoutes($router);
+        $router->group($this->groupAction(), function (Registrar $router) {
+            /** Primary resource routes. */
+            $router->group([], function ($router) {
+                $this->addResourceRoutes($router);
+            });
+
+            /** Resource relationship Routes */
             $this->addRelationshipRoutes($router);
         });
     }
@@ -81,39 +86,7 @@ class ResourceGroup
      */
     protected function middleware()
     {
-        $middleware = (array) $this->options->get('middleware');
-        $authorizer = $this->authorizer();
-        $validators = $this->validators();
-
-        return array_merge($middleware, array_filter([
-            $authorizer ? "json-api.authorize:$authorizer" : null,
-            $validators ? "json-api.validate:$validators" : null,
-            'json-api.bindings',
-        ]));
-    }
-
-    /**
-     * @return string|null
-     */
-    protected function authorizer()
-    {
-        if ($authorizer = $this->options->get('authorizer')) {
-            return $authorizer;
-        }
-
-        return $this->apiResource->getAuthorizerFqn() ?: $this->options->get('default-authorizer');
-    }
-
-    /**
-     * @return string|null
-     */
-    protected function validators()
-    {
-        if ($validators = $this->options->get('validators')) {
-            return $validators;
-        }
-
-        return $this->apiResource->getValidatorsFqn();
+        return (array) $this->options->get('middleware');
     }
 
     /**

@@ -9,17 +9,32 @@ pages:
   - Installation: installation.md
   - Upgrading: upgrade.md
   - The Basics:
-    - API Setup: api.md
-    - Routing: routing.md
-  - Eloquent:
-    - Controllers: eloquent/controllers.md
-  - Non-Eloquent:
-    - Controllers: custom/controllers.md
+    - APIs: basics/api.md
+    - Routing: basics/routing.md
+    - Controllers: basics/controllers.md
+    - Adapters: basics/adapters.md
+    - Schemas: basics/schemas.md
+    - Validation: basics/validators.md
+    - Security: basics/security.md
+    - Testing: basics/testing.md
+  - Fetching Data:
+    - Fetching Resources: fetching/resources.md
+    - Fetching Relationships: fetching/relationships.md
+    - Inclusion of Related Resources: fetching/inclusion.md
+    - Sparse Fieldsets: fetching/sparse-fieldsets.md
+    - Sorting: fetching/sorting.md
+    - Pagination: fetching/pagination.md
+    - Filtering: fetching/filtering.md
+  - Creating, Updating and Deleting:
+    - Creating Resources: crud/creating.md
+    - Updating Resources: crud/updating.md
+    - Updating Relationships: crud/relationships.md
+    - Deleting Resources: crud/deleting.md
   - Digging Deeper:
-    - Inclusion: features/inclusion.md
-    - Custom Errors: features/custom-errors.md
     - Broadcasting: features/broadcasting.md
+    - Errors: features/errors.md
     - Helpers: features/helpers.md
     - HTTP Clients: features/http-clients.md
-    - Pagination: features/pagination.md
+    - Packages: features/packages.md
+    - Responses: features/responses.md
     - Views: features/views.md

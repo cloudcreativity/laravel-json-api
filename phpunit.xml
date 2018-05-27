@@ -15,10 +15,18 @@
 >
     <testsuites>
         <testsuite name="Unit">
-            <directory suffix="Test.php">./tests/Unit/</directory>
+            <directory suffix="Test.php">./tests/lib/Unit/</directory>
         </testsuite>
         <testsuite name="Integration">
-            <directory suffix="Test.php">./tests/Integration/</directory>
+            <directory suffix="Test.php">./tests/lib/Integration/</directory>
         </testsuite>
     </testsuites>
+    <filter>
+        <whitelist>
+            <directory suffix=".php">src/</directory>
+        </whitelist>
+    </filter>
+    <php>
+        <env name="APP_KEY" value="base64:BMfTqJC1cFk6A/jTPsjQgC+cROx7TDaEeGIAat6CuqY="/>
+    </php>
 </phpunit>

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2017 Cloud Creativity Limited
+ * Copyright 2018 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,19 +18,20 @@
 
 namespace CloudCreativity\LaravelJsonApi\Validators;
 
-use CloudCreativity\JsonApi\Contracts\Factories\FactoryInterface;
-use CloudCreativity\JsonApi\Contracts\Object\ResourceObjectInterface;
-use CloudCreativity\JsonApi\Contracts\Validators\AttributesValidatorInterface;
-use CloudCreativity\JsonApi\Contracts\Validators\QueryValidatorInterface;
-use CloudCreativity\JsonApi\Contracts\Validators\RelationshipsValidatorInterface;
-use CloudCreativity\JsonApi\Contracts\Validators\ResourceValidatorInterface;
-use CloudCreativity\JsonApi\Contracts\Validators\ValidatorProviderInterface;
-use CloudCreativity\JsonApi\Exceptions\RuntimeException;
-use CloudCreativity\JsonApi\Http\Query\ChecksQueryParameters;
 use CloudCreativity\LaravelJsonApi\Api\Api;
+use CloudCreativity\LaravelJsonApi\Contracts\Factories\FactoryInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Validators\AttributesValidatorInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Validators\QueryValidatorInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Validators\RelationshipsValidatorInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Validators\ResourceValidatorInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorFactoryInterface;
-use CloudCreativity\LaravelJsonApi\Http\Requests\RequestInterpreter;
+use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorProviderInterface;
+use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
+use CloudCreativity\LaravelJsonApi\Http\Query\ChecksQueryParameters;
 use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Support\Str;
+use Neomerx\JsonApi\Contracts\Http\Query\QueryCheckerInterface;
 
 /**
  * Class AbstractValidatorProvider
@@ -107,11 +108,6 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
     protected $allowedPagingParameters = null;
 
     /**
-     * @var RequestInterpreter
-     */
-    protected $requestInterpreter;
-
-    /**
      * @var Api
      */
     private $api;
@@ -149,13 +145,11 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
      * AbstractValidatorProvider constructor.
      *
      * @param Api $api
-     * @param RequestInterpreter $interpreter
      * @param FactoryInterface $factory
      */
-    public function __construct(Api $api, RequestInterpreter $interpreter, FactoryInterface $factory)
+    public function __construct(Api $api, FactoryInterface $factory)
     {
         $this->api = $api;
-        $this->requestInterpreter = $interpreter;
         $this->factory = $factory;
     }
 
@@ -192,12 +186,56 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
     }
 
     /**
-     * @inheritdoc
+     * @return QueryCheckerInterface
+     * @deprecated use `searchQueryChecker` instead.
      */
     public function queryChecker()
     {
         return $this->createQueryChecker($this->factory, $this->queryValidator());
     }
+
+    /**
+     * @inheritDoc
+     */
+    public function resourceQueryChecker()
+    {
+        return $this->factory->createExtendedQueryChecker(
+            $this->allowUnrecognizedParameters(),
+            $this->allowedIncludePaths(),
+            $this->allowedFieldSetTypes(),
+            [],
+            [],
+            [],
+            $this->queryValidatorWithoutSearch()
+        );
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function searchQueryChecker()
+    {
+        return $this->queryChecker();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function relatedQueryChecker()
+    {
+        // TODO: Implement searchRelatedQueryChecker() method.
+        return $this->queryChecker();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function relationshipQueryChecker()
+    {
+        // TODO: Implement searchRelationshipQueryChecker() method.
+        return $this->queryChecker();
+    }
+
 
     /**
      * @return string
@@ -334,7 +372,7 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
     }
 
     /**
-     * Get a validator for the filter query parameters.
+     * Get a validator for all query parameters.
      *
      * @return QueryValidatorInterface
      */
@@ -351,6 +389,23 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
     }
 
     /**
+     * Get a validator for query parameters except for filter, sort and page.
+     *
+     * @return QueryValidatorInterface
+     */
+    protected function queryValidatorWithoutSearch()
+    {
+        return $this->validatorFactory()->queryParameters(
+            $this->queryRulesWithoutSearch(),
+            $this->queryMessages(),
+            $this->queryCustomAttributes(),
+            function (Validator $validator) {
+                return $this->conditionalQuery($validator);
+            }
+        );
+    }
+
+    /**
      * Get the validation rules for the query parameters.
      *
      * @return array
@@ -358,6 +413,18 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
     protected function queryRules()
     {
         return $this->queryRules;
+    }
+
+    /**
+     * Get the validation rules for query parameters, excluding filter, sort and page.
+     *
+     * @return array
+     */
+    protected function queryRulesWithoutSearch()
+    {
+        return collect($this->queryRules())->reject(function ($value, $key) {
+            return Str::startsWith($key, ['filter.', 'sort.', 'page.']);
+        })->all();
     }
 
     /**

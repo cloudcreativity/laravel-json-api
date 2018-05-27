@@ -21,8 +21,7 @@ For example:
 @jsonapi('v1', JSON_PRETTY_PRINT, 250)
 ```
 
-Note that if you do not call the `@jsonapi` directive in your templates, then the JSON API named `default` will be
-used.
+Note that if you do not call the `@jsonapi` directive in your templates, then the default API will be used.
 
 ### Encoding Data
 

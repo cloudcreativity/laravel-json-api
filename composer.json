@@ -23,22 +23,24 @@
     ],
     "require": {
         "php": "^5.6|^7.0",
-        "cloudcreativity/json-api": "^0.11",
-        "illuminate/console": "5.4.*|5.5.*",
-        "illuminate/contracts": "5.4.*|5.5.*",
-        "illuminate/database": "5.4.*|5.5.*",
-        "illuminate/filesystem": "5.4.*|5.5.*",
-        "illuminate/http": "5.4.*|5.5.*",
-        "illuminate/pagination": "5.4.*|5.5.*",
-        "illuminate/support": "5.4.*|5.5.*",
+        "cloudcreativity/utils-object": "^1.0",
+        "illuminate/console": "5.4.*|5.5.*|5.6.*",
+        "illuminate/contracts": "5.4.*|5.5.*|5.6.*",
+        "illuminate/database": "5.4.*|5.5.*|5.6.*",
+        "illuminate/filesystem": "5.4.*|5.5.*|5.6.*",
+        "illuminate/http": "5.4.*|5.5.*|5.6.*",
+        "illuminate/pagination": "5.4.*|5.5.*|5.6.*",
+        "illuminate/support": "5.4.*|5.5.*|5.6.*",
+        "neomerx/json-api": "^1.0.3",
         "symfony/psr-http-message-bridge": "^1.0",
         "zendframework/zend-diactoros": "^1.3"
     },
     "require-dev": {
         "ext-sqlite3": "*",
-        "cloudcreativity/json-api-testing": "^0.1.1|^0.2",
-        "orchestra/testbench": "^3.4",
-        "phpunit/phpunit": "^5.7|^6.0"
+        "cloudcreativity/json-api-testing": "^0.4",
+        "guzzlehttp/guzzle": "^6.3",
+        "orchestra/testbench": "3.4.*|3.5.*|3.6.*",
+        "phpunit/phpunit": "^5.7|^6.0|^7.0"
     },
     "suggest": {
         "cloudcreativity/json-api-testing": "Required to use the test helpers."
@@ -53,12 +55,14 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "CloudCreativity\\LaravelJsonApi\\Tests\\": "tests/"
+            "DummyApp\\": "tests/dummy/app",
+            "CloudCreativity\\LaravelJsonApi\\Tests\\": "tests/lib",
+            "DummyPackage\\": "tests/package/src"
         }
     },
     "extra": {
         "branch-alias": {
-            "dev-develop": "0.12.x-dev"
+            "dev-develop": "1.x-dev"
         },
         "laravel": {
             "providers": [
