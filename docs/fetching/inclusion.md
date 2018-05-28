@@ -1,10 +1,9 @@
-# Inclusion
 
-## Introduction
+# Introduction
 
 This package supports the specification of [JSON API Inclusion of Related Resources](http://jsonapi.org/format/1.0/#fetching-includes). This allows you to load all the data of the specified resources that is bounded by relationship.
 
-### Using Include Parameter
+# Using Include Parameter
 
 Per the specification, the client is able to request for the inclusion of related resources through the following HTTP request:
 
@@ -45,14 +44,14 @@ class Validators extends AbstractValidatorProvider
 ```
 
 
-### Auto Inclusion
+# Auto Inclusion
 
 It is possible to force the inclusion of certain related resources; displaying it even when the client did not specify the related resource in the include parameter. To enable the automatic inclusion of resources, edit the resource's `Schema.php` file.
 
 ```php
 namespace App\JsonApiV1\Posts;
 
-class Schema extends EloquentSchema
+class Schema extends SchemaProvider
 {
 
     /* Your code here ...*/
