@@ -168,7 +168,7 @@ or sends a `404` response if the resource id is not recognised.
 If you need to run middleware *before* this JSON API middleware runs, wrap your JSON API registration in
 a group as follows:
 
- ```php
+```php
 Route::group(['middleware' => 'my_middleware'], function () {
   JsonApi::register('default', [], function ($api, $router) {
      // ...
@@ -176,7 +176,7 @@ Route::group(['middleware' => 'my_middleware'], function () {
 
   // other routes
 });
- ```
+```
 
 If you need to run middleware *after* this JSON API middleware, and across your entire API, you can do so using
 the options when registering the API. For example, if we wanted one throttle rate across the entire API:
