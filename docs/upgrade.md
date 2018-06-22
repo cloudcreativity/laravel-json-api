@@ -8,6 +8,34 @@ and then we are planning on tagging `1.0.0` after a limited number of beta tags.
 
 ## 1.0.0-alpha.3 to 1.0.0-beta.1
 
+### Controllers
+
+If you have overloaded the `read` method on any of your controllers, you will need to change the 
+method signature. Change this:
+
+```php
+/**
+ * @param CloudCreativity\LaravelJsonApi\Http\Requests\ValidatedRequest $request
+ */
+public function read(ValidatedRequest $request)
+{
+    // ...
+}
+```
+
+To this:
+
+```php
+/**
+ * @param CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface
+ * @param CloudCreativity\LaravelJsonApi\Http\Requests\ValidatedRequest $request
+ */
+public function read(StoreInterface $store, ValidatedRequest $request)
+{
+    // ...
+}
+```
+
 ### Has-Many
 
 The method signatures for the `sync` and `detach` methods in the JSON API Eloquent `HasMany` relation have been
