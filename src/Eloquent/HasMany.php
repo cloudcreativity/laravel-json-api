@@ -166,7 +166,7 @@ class HasMany extends AbstractManyRelation
     protected function findRelated($record, RelationshipInterface $relationship)
     {
         $inverse = $this->getRelation($record)->getRelated();
-        $related = $this->store()->findMany($relationship->getIdentifiers());
+        $related = $this->getStore()->findMany($relationship->getIdentifiers());
 
         $related = collect($related)->filter(function ($model) use ($inverse) {
             return $model instanceof $inverse;

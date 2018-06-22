@@ -396,6 +396,25 @@ class Adapter extends AbstractAdapter
 > The `morphMany` implementation currently has some limitations that we are hoping to resolve during our alpha
 and beta releases. If you have problems using it, please create an issue as this will help us out.
 
+#### Customising Relation Method Names
+
+If you want to use a method name for your relation that is different than the JSON API field name, overload
+the `methodForRelation` method on your adapter. For example, you would need to do this if the field name collides
+with a method that already exists on the abstract adapter.
+
+The method can be overloaded as follows:
+
+```php
+protected function methodForRelation($field)
+{
+  if ('myField' === $field) {
+    return 'myOtherMethodName';
+  }
+
+  return parent::methodForRelation($field);
+}
+```
+
 ## Custom Adapters
 
 Custom adapters can be used for any domain record that is not an Eloquent model. Adapters will work with this

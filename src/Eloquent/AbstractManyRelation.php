@@ -43,7 +43,7 @@ abstract class AbstractManyRelation extends AbstractRelation implements HasManyA
         }
 
         $relation = $this->getRelation($record);
-        $adapter = $this->store()->adapterFor($relation->getModel());
+        $adapter = $this->getStore()->adapterFor($relation->getModel());
 
         if (!$adapter instanceof AbstractAdapter) {
             throw new RuntimeException('Expecting inverse adapter to be an Eloquent adapter.');

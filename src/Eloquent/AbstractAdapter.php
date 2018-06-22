@@ -446,8 +446,20 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      *
      * @param Builder $query
      * @return Model
+     * @deprecated 1.0.0 use `searchOne`, renamed to avoid collisions with relation names.
      */
     protected function first(Builder $query)
+    {
+        return $this->searchOne($query);
+    }
+
+    /**
+     * Return the result for a search one query.
+     *
+     * @param Builder $query
+     * @return Model
+     */
+    protected function searchOne($query)
     {
         return $query->first();
     }
@@ -457,8 +469,20 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      *
      * @param Builder $query
      * @return mixed
+     * @deprecated 1.0.0 use `searchAll`, renamed to avoid collisions with relation names.
      */
     protected function all($query)
+    {
+        return $this->searchAll($query);
+    }
+
+    /**
+     * Return the result for query that is not paginated.
+     *
+     * @param Builder $query
+     * @return mixed
+     */
+    protected function searchAll($query)
     {
         return $query->get();
     }

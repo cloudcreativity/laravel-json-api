@@ -36,6 +36,11 @@ public function read(StoreInterface $store, ValidatedRequest $request)
 }
 ```
 
+### Adapters
+
+The `store` method has been renamed to `getStore` to avoid collisions with JSON API relation names. This change
+will only affect applications that are overloading internal adapter methods.
+
 ### Has-Many
 
 The method signatures for the `sync` and `detach` methods in the JSON API Eloquent `HasMany` relation have been

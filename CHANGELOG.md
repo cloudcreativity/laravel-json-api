@@ -5,6 +5,8 @@ All notable changes to this project will be documented in this file. This projec
 ## Unreleased
 
 ### Fixed
+- [#185](https://github.com/cloudcreativity/laravel-json-api/issues/185)
+Rename adapter `store` method to `getStore` to avoid collisions with relation methods.
 - [#187](https://github.com/cloudcreativity/laravel-json-api/issues/187)
 Ensure hydration of Eloquent morph-many relationship works.
 - [#194](https://github.com/cloudcreativity/laravel-json-api/issues/194)

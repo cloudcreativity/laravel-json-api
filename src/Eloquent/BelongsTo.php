@@ -110,7 +110,7 @@ class BelongsTo extends AbstractRelation
     {
         $identifier = $relationship->hasIdentifier() ? $relationship->getIdentifier() : null;
 
-        return $identifier ? $this->store()->find($identifier) : null;
+        return $identifier ? $this->getStore()->find($identifier) : null;
     }
 
     /**
