@@ -71,12 +71,17 @@ class JsonApiController extends Controller
     /**
      * Read resource action.
      *
+     * @param StoreInterface $store
      * @param ValidatedRequest $request
      * @return Response
      */
-    public function read(ValidatedRequest $request)
+    public function read(StoreInterface $store, ValidatedRequest $request)
     {
-        $record = $request->getRecord();
+        $record = $store->readRecord(
+            $request->getResourceType(),
+            $request->getResourceId(),
+            $request->getParameters()
+        );
 
         if ($result = $this->invoke('reading', $record, $request)) {
             return $result;

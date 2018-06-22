@@ -7,6 +7,8 @@ All notable changes to this project will be documented in this file. This projec
 ### Fixed
 - [#187](https://github.com/cloudcreativity/laravel-json-api/issues/187)
 Ensure hydration of Eloquent morph-many relationship works.
+- [#194](https://github.com/cloudcreativity/laravel-json-api/issues/194)
+Ensure encoding parameters are validated when reading a specific resource.
 
 ## [1.0.0-alpha.3] - 2018-05-17
 

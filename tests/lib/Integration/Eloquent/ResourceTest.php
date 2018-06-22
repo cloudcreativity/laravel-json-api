@@ -205,6 +205,19 @@ class ResourceTest extends TestCase
     }
 
     /**
+     * @see https://github.com/cloudcreativity/laravel-json-api/issues/194
+     */
+    public function testReadWithInvalidInclude()
+    {
+        $post = $this->createPost();
+
+        $this->doRead($post, ['include' => 'author,foo'])
+            ->assertStatus(400)
+            ->assertErrors()
+            ->assertParameters(['include']);
+    }
+
+    /**
      * Test that the resource can not be found.
      */
     public function testResourceNotFound()
