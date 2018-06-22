@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## Unreleased
+
+### Fixed
+- [#187](https://github.com/cloudcreativity/laravel-json-api/issues/187)
+Ensure hydration of Eloquent morph-many relationship works.
+
 ## [1.0.0-alpha.3] - 2018-05-17
 
 ### Added

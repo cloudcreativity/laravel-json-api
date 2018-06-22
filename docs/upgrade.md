@@ -6,6 +6,15 @@ We are now on `1.0.0` alpha releases. We are planning incremental changes during
 will involve only small upgrades. We will do one final large upgrade when we switch from alpha to beta releases,
 and then we are planning on tagging `1.0.0` after a limited number of beta tags.
 
+## 1.0.0-alpha.3 to 1.0.0-beta.1
+
+### Has-Many
+
+The method signatures for the `sync` and `detach` methods in the JSON API Eloquent `HasMany` relation have been
+changed to fix a bug with hydrating morph-many relations. This will only affect your application if you have
+extended that class and overloaded either of these methods. For both methods, the type-hinting of the first
+method argument has been removed.
+
 ## 1.0.0-alpha.2 to 1.0.0-alpha.3
 
 ### Exception Handler

@@ -16,6 +16,7 @@
  */
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Eloquent;
+
 use DummyApp\Comment;
 use DummyApp\Post;
 use DummyApp\User;
@@ -38,9 +39,194 @@ class MorphManyTest extends TestCase
      */
     protected $resourceType = 'posts';
 
-    public function test()
+    public function testCreateWithEmpty()
     {
-        $this->markTestIncomplete('@todo add other tests for this relationship.');
+        $post = factory(Post::class)->make();
+
+        $data = [
+            'type' => 'posts',
+            'attributes' => [
+                'title' => $post->title,
+                'slug' => $post->slug,
+                'content' => $post->content,
+            ],
+            'relationships' => [
+                'comments' => [
+                    'data' => [],
+                ],
+            ],
+        ];
+
+        $this->doCreate($data, ['include' => 'comments'])->assertCreatedWithId($data);
+
+        $this->assertDatabaseMissing('comments', [
+            'commentable_type' => Post::class,
+        ]);
+    }
+
+    public function testCreateWithRelated()
+    {
+        /** @var Post $post */
+        $post = factory(Post::class)->make();
+        /** @var Comment $comment */
+        $comment = factory(Comment::class)->create();
+
+        $data = [
+            'type' => 'posts',
+            'attributes' => [
+                'title' => $post->title,
+                'slug' => $post->slug,
+                'content' => $post->content,
+            ],
+            'relationships' => [
+                'comments' => [
+                    'data' => [
+                        [
+                            'type' => 'comments',
+                            'id' => (string) $comment->getKey(),
+                        ],
+                    ],
+                ],
+            ],
+        ];
+
+        $id = $this
+            ->doCreate($data, ['include' => 'comments'])
+            ->assertCreatedWithId($data);
+
+        $this->assertCommentIs(Post::find($id), $comment);
+    }
+
+    public function testCreateWithManyRelated()
+    {
+        /** @var Post $post */
+        $post = factory(Post::class)->make();
+        $comments = factory(Comment::class, 2)->create();
+
+        $data = [
+            'type' => 'posts',
+            'attributes' => [
+                'title' => $post->title,
+                'slug' => $post->slug,
+                'content' => $post->content,
+            ],
+            'relationships' => [
+                'comments' => [
+                    'data' => [
+                        [
+                            'type' => 'comments',
+                            'id' => (string) $comments->first()->getKey(),
+                        ],
+                        [
+                            'type' => 'comments',
+                            'id' => (string) $comments->last()->getKey(),
+                        ],
+                    ],
+                ],
+            ],
+        ];
+
+        $id = $this
+            ->doCreate($data, ['include' => 'comments'])
+            ->assertCreatedWithId($data);
+
+        $this->assertCommentsAre(Post::find($id), $comments);
+    }
+
+    public function testUpdateReplacesRelationshipWithEmptyRelationship()
+    {
+        /** @var Post $post */
+        $post = factory(Post::class)->create();
+        factory(Comment::class, 2)->create([
+            'commentable_type' => Post::class,
+            'commentable_id' => $post->getKey(),
+        ]);
+
+        $data = [
+            'type' => 'posts',
+            'id' => (string) $post->getKey(),
+            'relationships' => [
+                'comments' => [
+                    'data' => [],
+                ],
+            ],
+        ];
+
+        $this->doUpdate($data, ['include' => 'comments'])->assertUpdated($data);
+
+        $this->assertDatabaseMissing('comments', [
+            'commentable_type' => Post::class,
+            'commentable_id' => $post->getKey(),
+        ]);
+    }
+
+    public function testUpdateReplacesEmptyRelationshipWithResource()
+    {
+        /** @var Post $post */
+        $post = factory(Post::class)->create();
+        $comment = factory(Comment::class)->create();
+
+        $data = [
+            'type' => 'posts',
+            'id' => (string) $post->getKey(),
+            'attributes' => [
+                'title' => $post->title,
+                'slug' => $post->slug,
+                'content' => $post->content,
+            ],
+            'relationships' => [
+                'comments' => [
+                    'data' => [
+                        [
+                            'type' => 'comments',
+                            'id' => (string) $comment->getKey(),
+                        ],
+                    ],
+                ],
+            ],
+        ];
+
+        $this->doUpdate($data, ['include' => 'comments'])->assertUpdated($data);
+        $this->assertCommentIs($post, $comment);
+    }
+
+    public function testUpdateChangesRelatedResources()
+    {
+        /** @var Post $post */
+        $post = factory(Post::class)->create();
+        factory(Comment::class, 3)->create([
+            'commentable_type' => Post::class,
+            'commentable_id' => $post->getKey(),
+        ]);
+
+        $comments = factory(Comment::class, 2)->create();
+
+        $data = [
+            'type' => 'posts',
+            'id' => (string) $post->getKey(),
+            'attributes' => [
+                'title' => $post->title,
+                'slug' => $post->slug,
+                'content' => $post->content,
+            ],
+            'relationships' => [
+                'comments' => [
+                    'data' => [
+                        [
+                            'type' => 'comments',
+                            'id' => (string) $comments->first()->getKey(),
+                        ],
+                        [
+                            'type' => 'comments',
+                            'id' => (string) $comments->last()->getKey(),
+                        ],
+                    ],
+                ],
+            ],
+        ];
+
+        $this->doUpdate($data, ['include' => 'comments'])->assertUpdated($data);
+        $this->assertCommentsAre($post, $comments);
     }
 
     /**
@@ -196,5 +382,128 @@ class MorphManyTest extends TestCase
 
         $this->doReadRelated($model, 'comments')
             ->assertReadHasManyIdentifiers('comments', $comments);
+    }
+
+    public function testReadEmptyRelationship()
+    {
+        $post = factory(Post::class)->create();
+
+        $this->doReadRelationship($post, 'comments')
+            ->assertReadHasManyIdentifiers(null);
+    }
+
+    public function testReplaceEmptyRelationshipWithRelatedResource()
+    {
+        $post = factory(Post::class)->create();
+        $comments = factory(Comment::class, 2)->create();
+
+        $data = $comments->map(function (Comment $comment) {
+            return ['type' => 'comments', 'id' => (string) $comment->getKey()];
+        })->all();
+
+        $this->doReplaceRelationship($post, 'comments', $data)
+            ->assertStatus(204);
+
+        $this->assertCommentsAre($post, $comments);
+    }
+
+    public function testReplaceRelationshipWithNone()
+    {
+        $post = factory(Post::class)->create();
+        factory(Comment::class, 2)->create([
+            'commentable_type' => Post::class,
+            'commentable_id' => $post->getKey(),
+        ]);
+
+        $this->doReplaceRelationship($post, 'comments', [])
+            ->assertStatus(204);
+
+        $this->assertFalse($post->comments()->exists());
+    }
+
+    public function testReplaceRelationshipWithDifferentResources()
+    {
+        $post = factory(Post::class)->create();
+        factory(Comment::class, 2)->create([
+            'commentable_type' => Post::class,
+            'commentable_id' => $post->getKey(),
+        ]);
+
+        $comments = factory(Comment::class, 3)->create();
+
+        $data = $comments->map(function (Comment $comment) {
+            return ['type' => 'comments', 'id' => (string) $comment->getKey()];
+        })->all();
+
+        $this->doReplaceRelationship($post, 'comments', $data)
+            ->assertStatus(204);
+
+        $this->assertCommentsAre($post, $comments);
+    }
+
+    public function testAddToRelationship()
+    {
+        $post = factory(Post::class)->create();
+        $existing = factory(Comment::class, 2)->create([
+            'commentable_type' => Post::class,
+            'commentable_id' => $post->getKey(),
+        ]);
+
+        $add = factory(Comment::class, 2)->create();
+        $data = $add->map(function (Comment $comment) {
+            return ['type' => 'comments', 'id' => (string) $comment->getKey()];
+        })->all();
+
+        $this->doAddToRelationship($post, 'comments', $data)
+            ->assertStatus(204);
+
+        $this->assertCommentsAre($post, $existing->merge($add));
+    }
+
+    public function testRemoveFromRelationship()
+    {
+        $post = factory(Post::class)->create();
+        $comments = factory(Comment::class, 4)->create([
+            'commentable_type' => Post::class,
+            'commentable_id' => $post->getKey(),
+        ]);
+
+        $data = $comments->take(2)->map(function (Comment $comment) {
+            return ['type' => 'comments', 'id' => (string) $comment->getKey()];
+        })->all();
+
+        $this->doRemoveFromRelationship($post, 'comments', $data)
+            ->assertStatus(204);
+
+        $this->assertCommentsAre($post, [$comments->get(2), $comments->get(3)]);
+    }
+
+    /**
+     * @param $post
+     * @param $comment
+     * @return void
+     */
+    private function assertCommentIs(Post $post, Comment $comment)
+    {
+        $this->assertCommentsAre($post, [$comment]);
+    }
+
+    /**
+     * @param Post $post
+     * @param iterable $comments
+     * @return void
+     */
+    private function assertCommentsAre(Post $post, $comments)
+    {
+        $this->assertSame(count($comments), $post->comments()->count());
+
+        /** @var Comment $comment */
+        foreach ($comments as $comment) {
+            $this->assertDatabaseHas('comments', [
+                $comment->getKeyName() => $comment->getKey(),
+                'commentable_type' => Post::class,
+                'commentable_id' => $post->getKey(),
+            ]);
+        }
     }
 }
