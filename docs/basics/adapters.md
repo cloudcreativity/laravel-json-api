@@ -407,7 +407,7 @@ The method can be overloaded as follows:
 ```php
 protected function methodForRelation($field)
 {
-  if ('myField' === $field) {
+  if ('my-field' === $field) {
     return 'myOtherMethodName';
   }
 
