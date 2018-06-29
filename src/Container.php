@@ -442,11 +442,10 @@ class Container implements ContainerInterface
      */
     protected function create($className)
     {
-        if (!class_exists($className)) {
-            return null;
-        }
+        if ($this->container->has($className) || class_exists($className))
+            return $this->container->make($className);
 
-        return $this->container->make($className);
+        return null;
     }
 
 }
