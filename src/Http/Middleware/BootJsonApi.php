@@ -75,7 +75,7 @@ class BootJsonApi
         $serverRequest = $this->container->make(ServerRequestInterface::class);
 
         /** Build and register the API */
-        $api = $this->bindApi($namespace, $request->getSchemeAndHttpHost());
+        $api = $this->bindApi($namespace, $request->getSchemeAndHttpHost() . $request->getBaseUrl());
 
         /** Do content negotiation. */
         $this->doContentNegotiation($factory, $serverRequest, $api->getCodecMatcher());
