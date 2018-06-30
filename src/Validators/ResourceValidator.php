@@ -100,7 +100,12 @@ class ResourceValidator implements ResourceValidatorInterface
     {
         $this->reset();
 
-        $valid = $this->validateType($resource);
+        // if the type is not valid, we cannot run any other rules as they apply to the expected type.
+        if (!$this->validateType($resource)) {
+            return false;
+        }
+
+        $valid = true;
 
         if (!$this->validateId($resource)) {
             $valid = false;
