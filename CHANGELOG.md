@@ -12,6 +12,19 @@ Ensure hydration of Eloquent morph-many relationship works.
 - [#194](https://github.com/cloudcreativity/laravel-json-api/issues/194)
 Ensure encoding parameters are validated when reading a specific resource.
 
+## [1.0.0-alpha.4] - 2018-07-02
+
+### Added
+- [#203](https://github.com/cloudcreativity/laravel-json-api/issues/203)
+JSON API container now checks whether there is a Laravel container binding for a class name. This
+allows schemas, adapters etc to be bound into the container rather than having to exist as actual
+classes.
+
+### Fixed
+- [#202](https://github.com/cloudcreativity/laravel-json-api/issues/202) 
+When appending the schema and host on a request, the base URL is now also appended. This caters
+for Laravel applications that are served from host sub-directories.
+
 ## [1.0.0-alpha.3] - 2018-05-17
 
 ### Added

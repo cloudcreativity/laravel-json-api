@@ -88,6 +88,35 @@ App\JsonApi
 You must stick to whatever pattern you choose to use. This is because we use the structure to automatically detect
 JSON API classes.
 
+### Container Bindings
+
+All schemas, adapters and validators are created via Laravel's container. This means that you can use constructor
+dependency injection if desired. It also means you can register bindings in Laravel's container for the class name
+that this JSON API package is expecting.
+
+For example, if you wanted to write a generic adapter that can be used for both a `posts` and `blogs` resource,
+you can bind these into the service container using the expected JSON API class name:
+
+```php
+use App\JsonApi\GenericAdapter;
+
+class AppServiceProvider extends ServiceProvider
+{
+    // ...
+
+    public function register()
+    {
+        $this->app->bind('App\JsonApi\Posts\Adapter', function () {
+            return new GenericAdapter(new \App\Post());
+        });
+
+        $this->app->bind('App\JsonApi\Blogs\Adapter', function () {
+            return new GenericAdapter(new \App\Blog());
+        });
+    }
+}
+```
+
 ### Eloquent
 
 The config also contains a `use-eloquent` option. Set this to `true` if the majority of your resources relate to
@@ -170,6 +199,9 @@ If you do not want the host to be appended to URLs in the encoded document, set 
 
 The URL namespace is the URL under which all resources for the API are nested. For example, if the namespace is
 `/api/v1`, then the `posts` resource routes will exists at `/api/v1/posts`.
+
+> For sub-directory installs of Laravel applications, the namespace is the URL namespace within this 
+sub-directory, as per [this issue](https://github.com/cloudcreativity/laravel-json-api/issues/202).
 
 ### Name
 

@@ -39,13 +39,13 @@ trait IncludesModels
      * will be eager loaded.
      *
      * If there are any paths that do not map directly, you can define them
-     * on this property. For instance, if the JSON API `comments.created-by`
-     * path actually relates to `comments.user` model path, you can
+     * on this property. For example, if the JSON API `comments.created-by`
+     * include path actually relates to `comments.user` model path, you can
      * define that mapping here:
      *
      * ```php
      * protected $includePaths = [
-     *   'comments.author' => 'comments.user'
+     *   'comments.created-by' => 'comments.user'
      * ];
      * ```
      *
