@@ -10,7 +10,7 @@ and then we are planning on tagging `1.0.0` after a limited number of beta tags.
 
 If your application is served/installed in a sub-directory, you may need to amend your API's URL configuration as
 we now automatically appended the base URL to the URLs that appear within encoded responses.
-[See this issue for details.]()
+[See this issue for details.](https://github.com/cloudcreativity/laravel-json-api/issues/202)
 
 This change is unlikely to affect most installs, so you are likely to be able to upgrade to `1.0.0-alpha.4` without
 any changes.
