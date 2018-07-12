@@ -86,7 +86,7 @@ trait IncludesModels
     {
         return collect($includePaths)->map(function ($path) {
             return $this->convertIncludePath($path);
-        })->filter()->values();
+        })->flatten()->filter()->values();
     }
 
     /**
