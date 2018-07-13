@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. This projec
 
 ## Unreleased
 
+### Added
+- [#210](https://github.com/cloudcreativity/laravel-json-api/issues/210)
+Can now map a single JSON API path to multiple Eloquent eager load paths.
+
 ### Fixed
 - [#185](https://github.com/cloudcreativity/laravel-json-api/issues/185)
 Rename adapter `store` method to `getStore` to avoid collisions with relation methods.
