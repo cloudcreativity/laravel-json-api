@@ -30,6 +30,7 @@ A demo application is available at [here](https://github.com/cloudcreativity/dem
 | 5.4.* | `1.0.0-alpha.4` |
 | 5.5.* | `1.0.0-alpha.4` |
 | 5.6.* | `1.0.0-alpha.4` |
+| 5.7.* | `dev-develop` |
 
 Make sure you consult the [Upgrade Guide](http://laravel-json-api.readthedocs.io/en/latest/upgrade/) when upgrading.
 

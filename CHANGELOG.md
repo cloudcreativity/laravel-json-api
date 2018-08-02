@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file. This projec
 ## Unreleased
 
 ### Added
+- Package now supports Laravel 5.4 to 5.7 inclusive.
 - [#210](https://github.com/cloudcreativity/laravel-json-api/issues/210)
 Can now map a single JSON API path to multiple Eloquent eager load paths.
 
