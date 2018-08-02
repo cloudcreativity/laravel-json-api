@@ -27,6 +27,7 @@ use DummyApp\User;
 use DummyPackage;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Foundation\Application;
+use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Route;
 use Orchestra\Testbench\TestCase as BaseTestCase;
 
@@ -104,6 +105,29 @@ abstract class TestCase extends BaseTestCase
         ], function () {
             require __DIR__ . '/../../dummy/routes/json-api.php';
         });
+
+        $this->refreshRoutes();
+
+        return $this;
+    }
+
+    /**
+     * Refresh the router.
+     *
+     * This is required because it is the same as what a Laravel application's
+     * route service provider does. Without it, some of the names and actions
+     * may be missing from the maps within the router's route collection.
+     *
+     * @return $this
+     * @see https://github.com/laravel/framework/issues/19020#issuecomment-409873471
+     */
+    protected function refreshRoutes()
+    {
+        /** @var Router $router */
+        $router = app('router');
+
+        $router->getRoutes()->refreshNameLookups();
+        $router->getRoutes()->refreshActionLookups();
 
         return $this;
     }
