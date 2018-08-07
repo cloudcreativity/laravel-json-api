@@ -82,7 +82,7 @@ when [Including Related Resources](../fetching/inclusion.md). Details can be fou
 ### Resource ID
 
 By default, the Eloquent adapter expects the model key that is used for the resource `id` to be the
-model's primary key - i.e. the value returned from `Model::getKeyName()`. You can easily change this
+model's route key - i.e. the key returned from `Model::getRouteKeyName()`. You can easily change this
 behaviour by setting the `$primaryKey` attribute on your adapter.
 
 For example, if we were to use the `slug` model attribute as our resource `id`:

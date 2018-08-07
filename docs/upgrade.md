@@ -8,6 +8,39 @@ and then we are planning on tagging `1.0.0` after a limited number of beta tags.
 
 ## 1.0.0-alpha.3 to 1.0.0-beta.1
 
+### Key Names
+
+The default key name used for Eloquent models is now the route key, rather than the database key. I.e. we
+now use `Model::getRouteKey`/`Model::getRouteKeyName` rather than `Model::getKey`/`Model::getKeyName`.
+
+This will affect any JSON API resources that relate to Eloquent models where the route key and the database
+key are different. It affects both schemas and adapters.
+
+#### Schemas
+
+In your schemas, ensure that your `getId()` method is returning the correct key. You may need to change this:
+
+```php
+return (string) $model->geyKey()`;
+```
+
+to this:
+
+```php
+return (string) $model->getRouteKey();
+```
+
+Leaving it as `$model->geyKey()` will maintain the old behaviour, but you will also need to ensure you
+have updated your adapter to keep the old behaviour.
+
+> If you are using the deprecated Eloquent schema, you can maintain the old behaviour by setting the
+`$idName` property to the key name.
+
+#### Adapters
+
+The Eloquent adapter will now use the the route key name by default. If you need to keep the old
+behaviour, set the `$primaryKey` attribute on your adapter to the database key.
+
 ### Controllers
 
 If you have overloaded the `read` method on any of your controllers, you will need to change the 

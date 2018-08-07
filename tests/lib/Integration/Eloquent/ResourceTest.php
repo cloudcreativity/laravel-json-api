@@ -48,8 +48,8 @@ class ResourceTest extends TestCase
 
         $response = $this->doSearch(['sort' => '-title']);
         $response->assertSearchResponse()->assertContainsExact([
-            ['type' => 'posts', 'id' => $b->getKey()],
-            ['type' => 'posts', 'id' => $a->getKey()],
+            ['type' => 'posts', 'id' => $b->getRouteKey()],
+            ['type' => 'posts', 'id' => $a->getRouteKey()],
         ]);
     }
 
@@ -68,7 +68,7 @@ class ResourceTest extends TestCase
         ]);
 
         $this->doSearch(['filter' => ['title' => 'My']])
-            ->assertSearchResponse()->assertContainsOnly(['posts' => [$a->getKey(), $b->getKey()]]);
+            ->assertSearchResponse()->assertContainsOnly(['posts' => [$a->getRouteKey(), $b->getRouteKey()]]);
     }
 
     public function testInvalidFilter()
@@ -235,7 +235,7 @@ class ResourceTest extends TestCase
 
         $data = [
             'type' => 'posts',
-            'id' => (string) $model->getKey(),
+            'id' => (string) $model->getRouteKey(),
             'attributes' => [
                 'slug' => 'posts-test',
                 'title' => 'Foo Bar Baz Bat',
@@ -285,7 +285,7 @@ class ResourceTest extends TestCase
 
         $data = [
             'type' => 'posts',
-            'id' => (string) $model->getKey(),
+            'id' => (string) $model->getRouteKey(),
             'relationships' => [
                 'tags' => [
                     'data' => [
@@ -314,7 +314,7 @@ class ResourceTest extends TestCase
 
         $data = [
             'type' => 'posts',
-            'id' => (string) $post->getKey(),
+            'id' => (string) $post->getRouteKey(),
             'attributes' => [
                 'title' => 'Hello World',
             ],
@@ -368,11 +368,11 @@ class ResourceTest extends TestCase
      */
     private function serialize(Post $model)
     {
-        $self = "http://localhost/api/v1/posts/{$model->getKey()}";
+        $self = "http://localhost/api/v1/posts/{$model->getRouteKey()}";
 
         return [
             'type' => 'posts',
-            'id' => (string) $model->getKey(),
+            'id' => (string) $model->getRouteKey(),
             'attributes' => [
                 'created-at' => $model->created_at->toW3cString(),
                 'updated-at' => $model->updated_at->toW3cString(),

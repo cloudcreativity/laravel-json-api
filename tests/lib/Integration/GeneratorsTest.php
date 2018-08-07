@@ -406,7 +406,7 @@ class GeneratorsTest extends TestCase
     private function assertEloquentSchema()
     {
         $content = $this->assertSchema();
-        $this->assertContains('return (string) $resource->getKey();', $content);
+        $this->assertContains('return (string) $resource->getRouteKey();', $content);
     }
 
     /**
@@ -415,7 +415,7 @@ class GeneratorsTest extends TestCase
     private function assertGenericSchema()
     {
         $content = $this->assertSchema();
-        $this->assertNotContains('return (string) $resource->getKey();', $content);
+        $this->assertNotContains('return (string) $resource->getRouteKey();', $content);
     }
 
     /**

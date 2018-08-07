@@ -33,7 +33,7 @@ class LoginTest extends TestCase
         $expected = [
             'data' => [
                 'type' => 'users',
-                'id' => $user->getKey(),
+                'id' => $user->getRouteKey(),
                 'attributes' => [
                     'name' => $user->name,
                 ],

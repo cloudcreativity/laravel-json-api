@@ -26,11 +26,6 @@ class Adapter extends AbstractAdapter
 {
 
     /**
-     * @var string
-     */
-    protected $primaryKey = 'uuid';
-
-    /**
      * Adapter constructor.
      */
     public function __construct()

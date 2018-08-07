@@ -60,7 +60,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     /**
      * The model key that is the primary key for the resource id.
      *
-     * If empty, defaults to `Model::getKeyName()`.
+     * If empty, defaults to `Model::getRouteKeyName()`.
      *
      * @var string|null
      */
@@ -517,7 +517,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      */
     protected function getKeyName()
     {
-        return $this->primaryKey ?: $this->model->getKeyName();
+        return $this->primaryKey ?: $this->model->getRouteKeyName();
     }
 
     /**

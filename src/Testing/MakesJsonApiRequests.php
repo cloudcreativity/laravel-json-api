@@ -637,8 +637,19 @@ trait MakesJsonApiRequests
         }
 
         return collect($ids)->map(function ($id) {
-            return ($id instanceof UrlRoutable) ? $id->getRouteKey() : $id;
+            return $this->normalizeId($id);
         })->all();
+    }
+
+    /**
+     * Normalize an id for a resource request.
+     *
+     * @param $id
+     * @return string|int
+     */
+    protected function normalizeId($id)
+    {
+        return ($id instanceof UrlRoutable) ? $id->getRouteKey() : $id;
     }
 
 }

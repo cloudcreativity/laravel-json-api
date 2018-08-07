@@ -84,7 +84,7 @@ class HasManyTest extends TestCase
                     'data' => [
                         [
                             'type' => 'users',
-                            'id' => (string) $user->getKey(),
+                            'id' => (string) $user->getRouteKey(),
                         ],
                     ],
                 ],
@@ -118,11 +118,11 @@ class HasManyTest extends TestCase
                     'data' => [
                         [
                             'type' => 'users',
-                            'id' => (string) $users->first()->getKey(),
+                            'id' => (string) $users->first()->getRouteKey(),
                         ],
                         [
                             'type' => 'users',
-                            'id' => (string) $users->last()->getKey(),
+                            'id' => (string) $users->last()->getRouteKey(),
                         ],
                     ],
                 ],
@@ -148,7 +148,7 @@ class HasManyTest extends TestCase
 
         $data = [
             'type' => 'countries',
-            'id' => (string) $country->getKey(),
+            'id' => (string) $country->getRouteKey(),
             'relationships' => [
                 'users' => [
                     'data' => [],
@@ -174,13 +174,13 @@ class HasManyTest extends TestCase
 
         $data = [
             'type' => 'countries',
-            'id' => (string) $country->getKey(),
+            'id' => (string) $country->getRouteKey(),
             'relationships' => [
                 'users' => [
                     'data' => [
                         [
                             'type' => 'users',
-                            'id' => (string) $user->getKey(),
+                            'id' => (string) $user->getRouteKey(),
                         ],
                     ],
                 ],
@@ -204,17 +204,17 @@ class HasManyTest extends TestCase
 
         $data = [
             'type' => 'countries',
-            'id' => (string) $country->getKey(),
+            'id' => (string) $country->getRouteKey(),
             'relationships' => [
                 'users' => [
                     'data' => [
                         [
                             'type' => 'users',
-                            'id' => (string) $users->first()->getKey(),
+                            'id' => (string) $users->first()->getRouteKey(),
                         ],
                         [
                             'type' => 'users',
-                            'id' => (string) $users->last()->getKey(),
+                            'id' => (string) $users->last()->getRouteKey(),
                         ],
                     ],
                 ],
@@ -324,7 +324,7 @@ class HasManyTest extends TestCase
 
         $response->assertDocument()
             ->assertIncluded()
-            ->assertContainsOnly(['phones' => [$phone->getKey()]]);
+            ->assertContainsOnly(['phones' => [$phone->getRouteKey()]]);
     }
 
     public function testReadRelatedWithInvalidInclude()
@@ -385,7 +385,7 @@ class HasManyTest extends TestCase
         $users = factory(User::class, 2)->create();
 
         $data = $users->map(function (User $user) {
-            return ['type' => 'users', 'id' => (string) $user->getKey()];
+            return ['type' => 'users', 'id' => (string) $user->getRouteKey()];
         })->all();
 
         $this->doReplaceRelationship($country, 'users', $data)
@@ -414,7 +414,7 @@ class HasManyTest extends TestCase
         $users = factory(User::class, 3)->create();
 
         $data = $users->map(function (User $user) {
-            return ['type' => 'users', 'id' => (string) $user->getKey()];
+            return ['type' => 'users', 'id' => (string) $user->getRouteKey()];
         })->all();
 
         $this->doReplaceRelationship($country, 'users', $data)
@@ -431,7 +431,7 @@ class HasManyTest extends TestCase
 
         $add = factory(User::class, 2)->create();
         $data = $add->map(function (User $user) {
-            return ['type' => 'users', 'id' => (string) $user->getKey()];
+            return ['type' => 'users', 'id' => (string) $user->getRouteKey()];
         })->all();
 
         $this->doAddToRelationship($country, 'users', $data)
@@ -448,7 +448,7 @@ class HasManyTest extends TestCase
         ]);
 
         $data = $users->take(2)->map(function (User $user) {
-            return ['type' => 'users', 'id' => (string) $user->getKey()];
+            return ['type' => 'users', 'id' => (string) $user->getRouteKey()];
         })->all();
 
         $this->doRemoveFromRelationship($country, 'users', $data)
