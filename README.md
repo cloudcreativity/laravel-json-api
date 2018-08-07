@@ -3,8 +3,7 @@
 # cloudcreativity/laravel-json-api
 
 Add [jsonapi.org](http://jsonapi.org) compliant APIs to your Laravel 5 application. 
-Based on the framework agnostic packages [neomerx/json-api](https://github.com/neomerx/json-api) 
-and [cloudcreativity/json-api](https://github.com/cloudcreativity/json-api).
+Based on the framework agnostic package [neomerx/json-api](https://github.com/neomerx/json-api).
 
 ## What is JSON API?
 
