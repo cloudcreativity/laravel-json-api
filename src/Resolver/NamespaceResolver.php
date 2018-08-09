@@ -200,7 +200,7 @@ class NamespaceResolver implements ResolverInterface
 
         $classified = Str::classify($name);
 
-        return $this->append("{$classified}Authorizer");
+        return $this->append("{$classified}\Authorizer");
     }
 
     /**
