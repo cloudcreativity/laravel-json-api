@@ -20,6 +20,7 @@ Rename adapter `store` method to `getStore` to avoid collisions with relation me
 Ensure hydration of Eloquent morph-many relationship works.
 - [#194](https://github.com/cloudcreativity/laravel-json-api/issues/194)
 Ensure encoding parameters are validated when reading a specific resource.
+- Exception messages are no longer pushed into the JSON API error detail member.
 
 ## [1.0.0-alpha.4] - 2018-07-02
 

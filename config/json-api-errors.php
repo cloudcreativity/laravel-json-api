@@ -238,6 +238,7 @@ return [
      */
     TokenMismatchException::class => [
         Error::TITLE => 'Invalid Token',
+        Error::DETAIL => 'The token is not valid.',
         Error::STATUS => '419',
     ],
 

@@ -37,6 +37,15 @@ class ErrorsTest extends TestCase
     protected $resourceType = 'posts';
 
     /**
+     * @return void
+     */
+    protected function setUp()
+    {
+        parent::setUp();
+        $this->doNotRethrowExceptions();
+    }
+
+    /**
      * Returns a JSON API error for 404.
      */
     public function test404()
@@ -212,6 +221,23 @@ class ErrorsTest extends TestCase
                         'status' => '422',
                         'detail' => $detail,
                         'meta' => ['key' => 'email'],
+                    ],
+                ],
+            ]);
+    }
+
+    public function testGenericException()
+    {
+        $ex = new \Exception('Boom.');
+
+        $this->request($ex)
+            ->assertStatus(500)
+            ->assertHeader('Content-Type', 'application/vnd.api+json')
+            ->assertExactJson([
+                'errors' => [
+                    [
+                        'title' => 'Internal Server Error',
+                        'status' => '500',
                     ],
                 ],
             ]);
