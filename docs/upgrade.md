@@ -81,6 +81,45 @@ changed to fix a bug with hydrating morph-many relations. This will only affect 
 extended that class and overloaded either of these methods. For both methods, the type-hinting of the first
 method argument has been removed.
 
+### Filtering by ID
+
+The Eloquent adapter handles the `id` filter by default. Previously if a client provided an `id`
+filter in a request, this filter was applied and all other filters, sort and paging parameters were ignored.
+E.g. previously provide an `id` and `name` filter in the same request, only the `id` one would be applied
+and no sort order or paging would be applied.
+
+We have now fixed this so that if you now provide an `id` filter with other filters, then all the filters
+will be applied, and the response will be sorted and paged according to whatever settings you have on your
+adapter. Depending on how your API is used, this could potentially be a breaking change from the client's
+perspective.
+
+
+As part of this change, we renamed the `findByIds` method on the Eloquent adapter to `filterByIds`. There
+is no return type as the method now applies its filter to the Eloquent builder without returning results.
+If you have overloaded this method you will need to update your custom implementation accordingly.
+
+E.g. change this:
+
+```php
+protected function findByIds(Builder $query, Collection $filters)
+{
+    return $query->where(
+        //...
+    )->get();
+}
+```
+
+To this:
+
+```php
+protected function filterByIds($query, Collection $filters)
+{
+    $query->where(
+        //...
+    );
+}
+```
+
 ## 1.0.0-alpha.3 to 1.0.0-alpha.4
 
 If your application is served/installed in a sub-directory, you may need to amend your API's URL configuration as

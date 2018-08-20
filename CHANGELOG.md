@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file. This projec
 - Package now supports Laravel 5.4 to 5.7 inclusive.
 - [#210](https://github.com/cloudcreativity/laravel-json-api/issues/210)
 Can now map a single JSON API path to multiple Eloquent eager load paths.
+- Filtering Eloquent resources using the `id` filter is now also supported on to-many relationships.
 
 ### Changed
 - [#184](https://github.com/cloudcreativity/laravel-json-api/issues/184)
@@ -21,6 +22,9 @@ Ensure hydration of Eloquent morph-many relationship works.
 - [#194](https://github.com/cloudcreativity/laravel-json-api/issues/194)
 Ensure encoding parameters are validated when reading a specific resource.
 - Exception messages are no longer pushed into the JSON API error detail member.
+- [#219](https://github.com/cloudcreativity/laravel-json-api/issues/219)
+Can now use the `id` filter as one of many filters, previously the `id` filter ignored any
+other filters provided.
 
 ## [1.0.0-alpha.4] - 2018-07-02
 

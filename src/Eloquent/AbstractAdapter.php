@@ -138,36 +138,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      */
     public function query(EncodingParametersInterface $parameters)
     {
-        $filters = $this->extractFilters($parameters);
-        $query = $this->newQuery();
-
-        /** Apply eager loading */
-        $this->with($query, $this->extractIncludePaths($parameters));
-
-        /** Find by ids */
-        if ($this->isFindMany($filters)) {
-            return $this->findByIds($query, $filters);
-        }
-
-        /** Filter and sort */
-        $this->filter($query, $filters);
-        $this->sort($query, (array) $parameters->getSortParameters());
-
-        /** Return a single record if this is a search for one resource. */
-        if ($this->isSearchOne($filters)) {
-            return $this->first($query);
-        }
-
-        /** Paginate results if needed. */
-        $pagination = $this->extractPagination($parameters);
-
-        if (!$pagination->isEmpty() && !$this->hasPaging()) {
-            throw new RuntimeException('Paging parameters exist but paging is not supported.');
-        }
-
-        return $pagination->isEmpty() ?
-            $this->all($query) :
-            $this->paginate($query, $this->normalizeParameters($parameters, $pagination));
+        return $this->doQuery($this->newQuery(), $parameters);
     }
 
     /**
@@ -183,25 +154,10 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      */
     public function queryRelation($relation, EncodingParametersInterface $parameters)
     {
+        // @todo this does not have the default querying logic if there is any in `$this->newQuery()`
         $query = $relation->newQuery();
 
-        /** Apply eager loading */
-        $this->with($query, $this->extractIncludePaths($parameters));
-
-        /** Filter and sort */
-        $this->filter($query, $this->extractFilters($parameters));
-        $this->sort($query, (array) $parameters->getSortParameters());
-
-        /** Paginate results if needed. */
-        $pagination = collect($parameters->getPaginationParameters());
-
-        if (!$pagination->isEmpty() && !$this->hasPaging()) {
-            throw new RuntimeException('Paging parameters exist but paging is not supported.');
-        }
-
-        return $pagination->isEmpty() ?
-            $this->all($query) :
-            $this->paginate($query, $parameters);
+        return $this->doQuery($query, $parameters);
     }
 
     /**
@@ -304,6 +260,23 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
             /** @todo remove this when dropping support for Laravel 5.4 */
             $record->load($relationshipPaths);
         }
+    }
+
+    /**
+     * Apply filters to the provided query parameter.
+     *
+     * @param Builder $query
+     * @param Collection $filters
+     */
+    protected function applyFilters($query, Collection $filters)
+    {
+        /** By default we support the `id` filter. */
+        if ($this->isFindMany($filters)) {
+            $this->filterByIds($query, $filters);
+        }
+
+        /** Hook for custom filters. */
+        $this->filter($query, $filters);
     }
 
     /**
@@ -430,15 +403,16 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     }
 
     /**
-     * @param Builder $query
+     * @param $query
      * @param Collection $filters
-     * @return mixed
+     * @return void
      */
-    protected function findByIds(Builder $query, Collection $filters)
+    protected function filterByIds($query, Collection $filters)
     {
-        return $query
-            ->whereIn($this->getQualifiedKeyName(), $this->extractIds($filters))
-            ->get();
+        $query->whereIn(
+            $this->getQualifiedKeyName(),
+            $this->extractIds($filters)
+        );
     }
 
     /**
@@ -705,6 +679,42 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
         list($one, $two, $caller) = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3);
 
         return $caller['function'];
+    }
+
+    /**
+     * Default query execution used when querying records or relations.
+     *
+     * @param $query
+     * @param EncodingParametersInterface $parameters
+     * @return mixed
+     */
+    private function doQuery($query, EncodingParametersInterface $parameters)
+    {
+        /** Apply eager loading */
+        $this->with($query, $this->extractIncludePaths($parameters));
+
+        /** Filter */
+        $filters = $this->extractFilters($parameters);
+        $this->applyFilters($query, $filters);
+
+        /** Sort */
+        $this->sort($query, (array) $parameters->getSortParameters());
+
+        /** Return a single record if this is a search for one resource. */
+        if ($this->isSearchOne($filters)) {
+            return $this->first($query);
+        }
+
+        /** Paginate results if needed. */
+        $pagination = $this->extractPagination($parameters);
+
+        if (!$pagination->isEmpty() && !$this->hasPaging()) {
+            throw new RuntimeException('Paging parameters exist but paging is not supported.');
+        }
+
+        return $pagination->isEmpty() ?
+            $this->all($query) :
+            $this->paginate($query, $this->normalizeParameters($parameters, $pagination));
     }
 
     /**
