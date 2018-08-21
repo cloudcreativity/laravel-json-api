@@ -93,7 +93,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      * The model relationships to eager load on every query.
      *
      * @var string[]|null
-     * @deprecated use `$defaultWith` instead.
+     * @deprecated 1.0.0 use `$defaultWith` instead.
      */
     protected $with = null;
 
@@ -138,11 +138,11 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      */
     public function query(EncodingParametersInterface $parameters)
     {
-        return $this->doQuery($this->newQuery(), $parameters);
+        return $this->queryAllOrOne($this->newQuery(), $parameters);
     }
 
     /**
-     * Query the resource when it appears in a relation of a parent model.
+     * Query the resource when it appears in a to-many relation of a parent resource.
      *
      * For example, a request to `/posts/1/comments` will invoke this method on the
      * comments adapter.
@@ -150,14 +150,41 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      * @param Relations\BelongsToMany|Relations\HasMany|Relations\HasManyThrough $relation
      * @param EncodingParametersInterface $parameters
      * @return mixed
-     * @todo this does not currently support default pagination as it causes a problem with polymorphic relations
+     * @todo default pagination causes a problem with polymorphic relations??
+     */
+    public function queryToMany($relation, EncodingParametersInterface $parameters)
+    {
+        $query = $relation->newQuery();
+
+        return $this->queryAllOrOne($query, $parameters);
+    }
+
+    /**
+     * Query the resource when it appears in a to-one relation of a parent resource.
+     *
+     * For example, a request to `/posts/1/author` will invoke this method on the
+     * user adapter when the author relation returns a `users` resource.
+     *
+     * @param Relations\BelongsTo|Relations\HasOne $relation
+     * @param EncodingParametersInterface $parameters
+     * @return mixed
+     */
+    public function queryToOne($relation, EncodingParametersInterface $parameters)
+    {
+        $query = $relation->newQuery();
+
+        return $this->queryOne($query, $parameters);
+    }
+
+    /**
+     * @param $relation
+     * @param EncodingParametersInterface $parameters
+     * @return mixed
+     * @deprecated 1.0.0 use `queryToMany` directly.
      */
     public function queryRelation($relation, EncodingParametersInterface $parameters)
     {
-        // @todo this does not have the default querying logic if there is any in `$this->newQuery()`
-        $query = $relation->newQuery();
-
-        return $this->doQuery($query, $parameters);
+        return $this->queryToMany($relation, $parameters);
     }
 
     /**
@@ -165,9 +192,14 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      */
     public function read($resourceId, EncodingParametersInterface $parameters)
     {
-        if ($record = parent::read($resourceId, $parameters)) {
-            $this->load($record, $parameters);
+        $filters = $this->extractFilters($parameters);
+
+        if ($filters->isNotEmpty()) {
+            return $this->readWithFilters($resourceId, $parameters);
         }
+
+        $record = parent::read($resourceId, $parameters);
+        $this->load($record, $parameters);
 
         return $record;
     }
@@ -260,6 +292,20 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
             /** @todo remove this when dropping support for Laravel 5.4 */
             $record->load($relationshipPaths);
         }
+    }
+
+    /**
+     * Read by resource id and filters.
+     *
+     * @param $resourceId
+     * @param EncodingParametersInterface $parameters
+     * @return Model
+     */
+    protected function readWithFilters($resourceId, EncodingParametersInterface $parameters)
+    {
+        $query = $this->newQuery()->where($this->getQualifiedKeyName(), $resourceId);
+
+        return $this->queryOne($query, $parameters);
     }
 
     /**
@@ -413,18 +459,6 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
             $this->getQualifiedKeyName(),
             $this->extractIds($filters)
         );
-    }
-
-    /**
-     * Return the result for a search one query.
-     *
-     * @param Builder $query
-     * @return Model
-     * @deprecated 1.0.0 use `searchOne`, renamed to avoid collisions with relation names.
-     */
-    protected function first(Builder $query)
-    {
-        return $this->searchOne($query);
     }
 
     /**
@@ -672,23 +706,29 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     }
 
     /**
-     * @return string
-     */
-    private function guessRelation()
-    {
-        list($one, $two, $caller) = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3);
-
-        return $caller['function'];
-    }
-
-    /**
      * Default query execution used when querying records or relations.
      *
      * @param $query
      * @param EncodingParametersInterface $parameters
      * @return mixed
      */
-    private function doQuery($query, EncodingParametersInterface $parameters)
+    protected function queryAllOrOne($query, EncodingParametersInterface $parameters)
+    {
+        $filters = collect($parameters->getFilteringParameters());
+
+        if ($this->isSearchOne($filters)) {
+            return $this->queryOne($query, $parameters);
+        }
+
+        return $this->queryAll($query, $parameters);
+    }
+
+    /**
+     * @param $query
+     * @param EncodingParametersInterface $parameters
+     * @return PageInterface|mixed
+     */
+    protected function queryAll($query, EncodingParametersInterface $parameters)
     {
         /** Apply eager loading */
         $this->with($query, $this->extractIncludePaths($parameters));
@@ -700,11 +740,6 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
         /** Sort */
         $this->sort($query, (array) $parameters->getSortParameters());
 
-        /** Return a single record if this is a search for one resource. */
-        if ($this->isSearchOne($filters)) {
-            return $this->first($query);
-        }
-
         /** Paginate results if needed. */
         $pagination = $this->extractPagination($parameters);
 
@@ -715,6 +750,36 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
         return $pagination->isEmpty() ?
             $this->all($query) :
             $this->paginate($query, $this->normalizeParameters($parameters, $pagination));
+    }
+
+    /**
+     * @param $query
+     * @param EncodingParametersInterface $parameters
+     * @return Model
+     */
+    protected function queryOne($query, EncodingParametersInterface $parameters)
+    {
+        /** Apply eager loading */
+        $this->with($query, $this->extractIncludePaths($parameters));
+
+        /** Filter */
+        $filters = $this->extractFilters($parameters);
+        $this->applyFilters($query, $filters);
+
+        /** Sort */
+        $this->sort($query, (array) $parameters->getSortParameters());
+
+        return $this->searchOne($query);
+    }
+
+    /**
+     * @return string
+     */
+    private function guessRelation()
+    {
+        list($one, $two, $caller) = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3);
+
+        return $caller['function'];
     }
 
     /**

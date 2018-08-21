@@ -107,6 +107,9 @@ The `searching` and `reading` hooks are invoked when resource(s) are being acces
 `searching` hook is invoked when reading any resources (the *index* action), while `reading` is invoked when
 reading a specific record (the *read* action).
 
+> Note that the `reading` hook is **not** invoked if the request has filter parameters and there was no
+matching record.
+
 The `creating` and `created` hooks will be invoked when a resource is being created, i.e. a `POST` request. The
 `updating` and `updated` hooks are invoked for a `PATCH` request on an existing resource. The `saving` and `saved`
 hooks are called for both `POST` and `PATCH` requests.

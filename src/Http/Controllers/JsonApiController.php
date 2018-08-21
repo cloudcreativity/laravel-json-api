@@ -83,7 +83,7 @@ class JsonApiController extends Controller
             $request->getParameters()
         );
 
-        if ($result = $this->invoke('reading', $record, $request)) {
+        if ($record && $result = $this->invoke('reading', $record, $request)) {
             return $result;
         }
 

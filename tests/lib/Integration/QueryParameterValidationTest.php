@@ -91,21 +91,6 @@ class QueryParameterValidationTest extends TestCase
     }
 
     /**
-     * If we submit a read request with a filter parameter that is allowed for querying,
-     * it is rejected because read does not support filtering.
-     */
-    public function testReadRejectsFilter()
-    {
-        $comment = factory(Comment::class)->states('post')->create();
-
-        $this->actingAs($comment->user)
-            ->doRead($comment, ['filter' => ['created-by' => '1']])
-            ->assertStatus(400)
-            ->assertErrors()
-            ->assertParameters('filter');
-    }
-
-    /**
      * If we submit a read request with a page parameter that is allowed for querying,
      * it is rejected because read does not support pagination.
      */

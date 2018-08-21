@@ -8,11 +8,21 @@ All notable changes to this project will be documented in this file. This projec
 - Package now supports Laravel 5.4 to 5.7 inclusive.
 - [#210](https://github.com/cloudcreativity/laravel-json-api/issues/210)
 Can now map a single JSON API path to multiple Eloquent eager load paths.
-- Filtering Eloquent resources using the `id` filter is now also supported on to-many relationships.
+- [#218](https://github.com/cloudcreativity/laravel-json-api/issues/218)
+Can now filter a request for a specific resource, e.g. `/api/posts/1?filter['published']=1`.
+- Filtering Eloquent resources using the `id` filter is now also supported on to-many and to-one relationships.
 
 ### Changed
 - [#184](https://github.com/cloudcreativity/laravel-json-api/issues/184)
 Eloquent route keys are now used as the resource id by default.
+
+### Removed
+- The following deprecated methods have been removed from the Eloquent adapter:
+  - `first`: use `searchOne` instead.
+
+### Deprecated
+- The follow methods are deprecated on the Eloquent adapter and will be removed in `1.0.0`:
+  - `queryRelation`: use `queryToMany` or `queryToOne` instead.
 
 ### Fixed
 - [#185](https://github.com/cloudcreativity/laravel-json-api/issues/185)
