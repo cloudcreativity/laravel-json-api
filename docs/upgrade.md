@@ -83,20 +83,88 @@ method argument has been removed.
 
 ### Filtering by ID
 
-The Eloquent adapter handles the `id` filter by default. Previously if a client provided an `id`
+The Eloquent adapter comes with built-in support for an `id` filter. Previously if a client provided an `id`
 filter in a request, this filter was applied and all other filters, sort and paging parameters were ignored.
-E.g. previously provide an `id` and `name` filter in the same request, only the `id` one would be applied
-and no sort order or paging would be applied.
+E.g. previously providing an `id` and `name` filter in the same request would result in only the `id` filter
+being applied.
 
-We have now fixed this so that if you now provide an `id` filter with other filters, then all the filters
-will be applied, and the response will be sorted and paged according to whatever settings you have on your
-adapter. Depending on how your API is used, this could potentially be a breaking change from the client's
-perspective.
+This is now fixed so that if an `id` filter is provided with other `filter`, `page` and `sort` parameters,
+the other parameters are also applied. Depending on how your API is used, this could potentially be a
+breaking change from the client's perspective.
 
+This may also have subtle effects as follows:
 
-As part of this change, we renamed the `findByIds` method on the Eloquent adapter to `filterByIds`. There
-is no return type as the method now applies its filter to the Eloquent builder without returning results.
-If you have overloaded this method you will need to update your custom implementation accordingly.
+#### Default Filters
+
+If you applied a default filter in your `filter` method regardless of what the client sent, then this will
+now also be applied to the `id` filter.
+
+For example, if your `posts` adapter did the following:
+
+```php
+protected function filter($query, Collection $filters)
+{
+    $query->whereNotNull('published_at');
+}
+```
+
+Previously this would not have been applied if the client sent an `id` filter. I.e. this request:
+
+```http
+GET /api/v1/posts?filter['id'][]=1&filter['id'][]=6
+```
+
+Would return posts 1 and 6 if they exist, regardless of whether they were published. After upgrading
+the same request would return posts 1 and 6 if they exist *and* they are published.
+
+If you need to maintain the old behaviour, the above `filter` method could be modified as follows:
+
+```php
+protected function filter($query, Collection $filters)
+{
+    if ($filters->has('id')) {
+        return;
+    }
+
+    $query->whereNotNull('published_at');
+}
+```
+
+However, a better pattern is to let the client be specific about what it is requesting, e.g. write
+the `filter` method as follows:
+
+```php
+protected function filter($query, Collection $filters)
+{
+    if ($filters->has('published')) {
+        $query->whereNotNull('published_at');
+    }
+}
+```
+
+#### Tests
+
+If you are doing the following in tests:
+
+```php
+$this->doSearchById($models)->assertSearchedIds($models);
+```
+
+You may find that your tests fail after upgrading if your resource adapter has a default sort order,
+as the response will contain the models in a different order. You will need to update your test
+so that the asserted models are in an expected order. E.g.:
+
+```php
+$expected = $models->sortBy('name');
+
+$this->doSearchById($models)->assertSearchedIds($expected);
+```
+
+#### Renamed `findByIds` Method
+
+As part of this change, we renamed the `findByIds` method on the Eloquent adapter to `filterByIds`,
+and changed both the method signature and the return type. This will only affect your application if
+you overloaded this method.
 
 E.g. change this:
 
