@@ -35,6 +35,7 @@ use Illuminate\Support\Collection;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\SortParameterInterface;
 use Neomerx\JsonApi\Encoder\Parameters\EncodingParameters;
+use Neomerx\JsonApi\Encoder\Parameters\SortParameter;
 
 /**
  * Class AbstractAdapter
@@ -98,11 +99,37 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     protected $with = null;
 
     /**
+     * The default sorting to use if no sort parameters have been provided.
+     *
+     * Used when the client does not provide any sort parameters. Use
+     * either a string for a single default sort field, or an array
+     * of strings for multiple default sort fields.
+     *
+     * As per the JSON API convention, sort parameters prefixed with
+     * a `-` denoted descending order.
+     *
+     * For example, if `name` ascending is the default:
+     *
+     * ```
+     * protected $defaultSort = 'name';
+     * ```
+     *
+     * Or if `created-at` descending, then `name` ascending is the default:
+     *
+     * ```
+     * protected $defaultSort = ['-created-at`, 'name'];
+     * ```
+     *
+     * @var string|string[]
+     */
+    protected $defaultSort = [];
+
+    /**
      * A mapping of sort parameters to columns.
      *
      * Use this to map any parameters to columns where the two are not identical. E.g. if
-     * your sort param is called `sort` but the column to use is `type`, then set this
-     * property to `['sort' => 'type']`.
+     * your sort param is called `category` but the column to use is `type`, then set this
+     * property to `['category' => 'type']`.
      *
      * @var array
      */
@@ -604,15 +631,19 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     /**
      * Apply a default sort order if the client has not requested any sort order.
      *
-     * Child classes can override this method if they want to implement their
-     * own default sort order.
-     *
      * @param Builder $query
      * @return void
      */
     protected function defaultSort($query)
     {
-        // no-op
+        collect($this->defaultSort)->map(function ($param) {
+            $desc = ($param[0] === '-');
+            $field = ltrim($param, '-');
+
+            return new SortParameter($field, !$desc);
+        })->each(function (SortParameter $param) use ($query) {
+            $this->sortBy($query, $param);
+        });
     }
 
     /**

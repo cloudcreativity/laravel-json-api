@@ -231,7 +231,7 @@ class MorphToManyTest extends TestCase
         $post = factory(Post::class)->create();
         $tags = factory(Tag::class, 2)->create();
 
-        $expected = $tags->map(function (Tag $tag) {
+        $expected = $tags->sortBy('name')->map(function (Tag $tag) {
             return $tag->getRouteKey();
         });
 
@@ -256,7 +256,7 @@ class MorphToManyTest extends TestCase
         $tags = factory(Tag::class, 2)->create();
         $post->tags()->sync($tags);
 
-        $expected = $tags->map(function (Tag $tag) {
+        $expected = $tags->sortBy('name')->map(function (Tag $tag) {
             return $tag->getRouteKey();
         });
 

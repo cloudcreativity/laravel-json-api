@@ -26,6 +26,11 @@ class Adapter extends AbstractAdapter
 {
 
     /**
+     * @var array
+     */
+    protected $defaultSort = 'name';
+
+    /**
      * Adapter constructor.
      */
     public function __construct()

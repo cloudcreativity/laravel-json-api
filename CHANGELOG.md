@@ -11,6 +11,7 @@ Can now map a single JSON API path to multiple Eloquent eager load paths.
 - [#218](https://github.com/cloudcreativity/laravel-json-api/issues/218)
 Can now filter a request for a specific resource, e.g. `/api/posts/1?filter['published']=1`.
 - Filtering Eloquent resources using the `id` filter is now also supported on to-many and to-one relationships.
+- Can now set default sort parameters on an Eloquent adapter using the `$defaultSort` property.
 
 ### Changed
 - [#184](https://github.com/cloudcreativity/laravel-json-api/issues/184)
