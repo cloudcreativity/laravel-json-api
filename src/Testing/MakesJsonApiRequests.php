@@ -551,6 +551,30 @@ trait MakesJsonApiRequests
     }
 
     /**
+     * Assert that the resource's create, update and delete routes do not exist.
+     *
+     * @return void
+     */
+    protected function assertReadOnly()
+    {
+        $this->assertCannotCreate();
+        $this->assertCannotUpdate();
+        $this->assertCannotDelete();
+    }
+
+    /**
+     * Assert that the resource relationship's replace, add-to and remove-from routes do not exist.
+     *
+     * @param $relationshipName
+     */
+    protected function assertRelationshipIsReadOnly($relationshipName)
+    {
+        $this->assertCannotReplaceRelationship($relationshipName);
+        $this->assertCannotAddToRelationship($relationshipName);
+        $this->assertCannotRemoveFromRelationship($relationshipName);
+    }
+
+    /**
      * @return mixed
      */
     protected function resourceType()
