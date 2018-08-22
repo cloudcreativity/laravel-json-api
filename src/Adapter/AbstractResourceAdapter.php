@@ -130,7 +130,7 @@ abstract class AbstractResourceAdapter implements ResourceAdapterInterface, Stor
         $relation->withFieldName($field);
 
         if ($relation instanceof StoreAwareInterface) {
-            $relation->withStore($this->store());
+            $relation->withStore($this->getStore());
         }
 
         return $relation;

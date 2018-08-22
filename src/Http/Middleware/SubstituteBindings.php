@@ -78,29 +78,13 @@ class SubstituteBindings
      */
     private function bind(Route $route)
     {
-        if (!$record = $this->findRecord()) {
+        $record = $this->store->find($this->jsonApiRequest->getResourceIdentifier());
+
+        if (!$record) {
             throw new NotFoundException();
         }
 
         $route->setParameter(ResourceRegistrar::PARAM_RESOURCE_ID, $record);
     }
 
-    /**
-     * Check that the record exists.
-     *
-     * @return object|null
-     */
-    private function findRecord()
-    {
-        /** If the request is a read record request, we need to do this so eager loading occurs. */
-        if ($this->jsonApiRequest->isReadResource()) {
-            return $this->store->readRecord(
-                $this->jsonApiRequest->getResourceType(),
-                $this->jsonApiRequest->getResourceId(),
-                $this->jsonApiRequest->getParameters()
-            );
-        }
-
-        return $this->store->find($this->jsonApiRequest->getResourceIdentifier());
-    }
 }

@@ -23,6 +23,7 @@ use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Store\StoreAwareTrait;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 /**
  * Class AbstractRelation
@@ -100,6 +101,38 @@ abstract class AbstractRelation implements RelationshipAdapterInterface, StoreAw
         }
 
         return $relation;
+    }
+
+    /**
+     * Does the query need to be passed to the inverse adapter?
+     *
+     * @param $record
+     * @param EncodingParametersInterface $parameters
+     * @return bool
+     */
+    protected function requiresInverseAdapter($record, EncodingParametersInterface $parameters)
+    {
+        return !empty($parameters->getFilteringParameters()) ||
+            !empty($parameters->getSortParameters()) ||
+            !empty($parameters->getPaginationParameters()) ||
+            !empty($parameters->getIncludePaths());
+    }
+
+    /**
+     * Get an Eloquent adapter for the supplied record's relationship.
+     *
+     * @param Relation $relation
+     * @return AbstractAdapter
+     */
+    protected function adapterFor($relation)
+    {
+        $adapter = $this->getStore()->adapterFor($relation->getModel());
+
+        if (!$adapter instanceof AbstractAdapter) {
+            throw new RuntimeException('Expecting inverse resource adapter to be an Eloquent adapter.');
+        }
+
+        return $adapter;
     }
 
 }

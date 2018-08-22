@@ -49,6 +49,15 @@ trait IncludesModels
      * ];
      * ```
      *
+     * It is also possible to map a single JSON API include path to
+     * multiple model paths. For example:
+     *
+     * ```php
+     * protected $includePaths = [
+     *   'user' => ['user.city', 'user.organization']
+     * ];
+     * ```
+     *
      * To prevent an include path from being eager loaded, set its value
      * to `null` in the map. E.g.
      *
@@ -86,7 +95,7 @@ trait IncludesModels
     {
         return collect($includePaths)->map(function ($path) {
             return $this->convertIncludePath($path);
-        })->filter()->values();
+        })->flatten()->filter()->values();
     }
 
     /**

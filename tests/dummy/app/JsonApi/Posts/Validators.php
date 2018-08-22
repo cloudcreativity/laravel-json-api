@@ -35,6 +35,7 @@ class Validators extends AbstractValidatorProvider
     protected $queryRules = [
         'filter.title' => 'filled|string',
         'filter.slug' => 'filled|alpha_dash',
+        'filter.published' => 'boolean',
         'page.number' => 'integer|min:1',
         'page.size' => 'integer|between:1,50',
     ];
@@ -56,6 +57,7 @@ class Validators extends AbstractValidatorProvider
         'id',
         'title',
         'slug',
+        'published',
     ];
 
     /**

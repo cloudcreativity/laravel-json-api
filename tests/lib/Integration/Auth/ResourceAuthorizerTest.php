@@ -113,9 +113,23 @@ class ResourceAuthorizerTest extends TestCase
     {
         $tag = factory(Tag::class)->create();
 
+        $expected = [
+            'type' => 'tags',
+            'id' => $tag->getRouteKey(),
+            'attributes' => [
+                'created-at' => $tag->created_at->toAtomString(),
+                'updated-at' => $tag->updated_at->toAtomString(),
+                'name' => $tag->name,
+            ],
+            'links' => [
+                'self' => "http://localhost/api/v1/tags/{$tag->getRouteKey()}",
+            ],
+        ];
+
         $this->actingAsUser('admin')
             ->doRead($tag)
-            ->assertStatus(200);
+            ->assertStatus(200)
+            ->assertExactJson(['data' => $expected]);
     }
 
     public function testUpdateUnauthenticated()
@@ -123,7 +137,7 @@ class ResourceAuthorizerTest extends TestCase
         $tag = factory(Tag::class)->create();
         $data = [
             'type' => 'tags',
-            'id' => (string) $tag->getKey(),
+            'id' => $tag->getRouteKey(),
             'attributes' => [
                 'name' => 'News',
             ],
@@ -144,7 +158,7 @@ class ResourceAuthorizerTest extends TestCase
         $tag = factory(Tag::class)->create();
         $data = [
             'type' => 'tags',
-            'id' => (string) $tag->getKey(),
+            'id' => $tag->getRouteKey(),
             'attributes' => [
                 'name' => 'News',
             ],
@@ -165,7 +179,7 @@ class ResourceAuthorizerTest extends TestCase
         $tag = factory(Tag::class)->create();
         $data = [
             'type' => 'tags',
-            'id' => (string) $tag->getKey(),
+            'id' => $tag->getRouteKey(),
             'attributes' => [
                 'name' => 'News',
             ],

@@ -109,7 +109,7 @@ class PolymorphicHasManyTest extends TestCase
         unset($expected['relationships']);
 
         $id = $this->doCreate($data)->assertCreatedWithId($expected);
-        $tag = Tag::findOrFail($id);
+        $tag = Tag::findUuid($id);
 
         $this->assertTaggablesAre($tag, [$post], $videos);
     }
@@ -123,7 +123,7 @@ class PolymorphicHasManyTest extends TestCase
 
         $data = [
             'type' => 'tags',
-            'id' => (string) $tag->getKey(),
+            'id' => $tag->uuid,
             'relationships' => [
                 'taggables' => [
                     'data' => [],
@@ -148,7 +148,7 @@ class PolymorphicHasManyTest extends TestCase
 
         $data = [
             'type' => 'tags',
-            'id' => (string) $tag->getKey(),
+            'id' => $tag->uuid,
             'relationships' => [
                 'taggables' => [
                     'data' => [
@@ -177,7 +177,7 @@ class PolymorphicHasManyTest extends TestCase
 
         $data = [
             'type' => 'tags',
-            'id' => (string) $tag->getKey(),
+            'id' => $tag->uuid,
             'relationships' => [
                 'taggables' => [
                     'data' => [
@@ -209,7 +209,7 @@ class PolymorphicHasManyTest extends TestCase
         $tag->posts()->sync($post = factory(Post::class)->create());
         $tag->videos()->sync($videos = factory(Video::class, 2)->create());
 
-        $this->doReadRelated($tag, 'taggables')->assertReadPolymorphHasMany([
+        $this->doReadRelated($tag->uuid, 'taggables')->assertReadPolymorphHasMany([
             'posts' => $post,
             'videos' => $videos,
         ]);
@@ -219,7 +219,7 @@ class PolymorphicHasManyTest extends TestCase
     {
         $tag = factory(Tag::class)->create();
 
-        $this->doReadRelated($tag, 'taggables')
+        $this->doReadRelated($tag->uuid, 'taggables')
             ->assertReadPolymorphHasMany([]);
     }
 
@@ -230,7 +230,7 @@ class PolymorphicHasManyTest extends TestCase
         $tag->posts()->sync($post = factory(Post::class)->create());
         $tag->videos()->sync($videos = factory(Video::class, 2)->create());
 
-        $this->doReadRelated($tag, 'taggables')->assertReadPolymorphHasManyIdentifiers([
+        $this->doReadRelated($tag->uuid, 'taggables')->assertReadPolymorphHasManyIdentifiers([
             'posts' => $post,
             'videos' => $videos,
         ]);
@@ -240,7 +240,7 @@ class PolymorphicHasManyTest extends TestCase
     {
         $tag = factory(Tag::class)->create();
 
-        $this->doReadRelated($tag, 'taggables')
+        $this->doReadRelated($tag->uuid, 'taggables')
             ->assertReadPolymorphHasManyIdentifiers([]);
     }
 
@@ -250,7 +250,7 @@ class PolymorphicHasManyTest extends TestCase
         $post = factory(Post::class)->create();
         $video = factory(Video::class)->create();
 
-        $this->doReplaceRelationship($tag, 'taggables', [
+        $this->doReplaceRelationship($tag->uuid, 'taggables', [
             [
                 'type' => 'videos',
                 'id' => (string) $video->getKey(),
@@ -270,7 +270,7 @@ class PolymorphicHasManyTest extends TestCase
         $tag = factory(Tag::class)->create();
         $tag->videos()->attach(factory(Video::class)->create());
 
-        $this->doReplaceRelationship($tag, 'taggables', [])
+        $this->doReplaceRelationship($tag->uuid, 'taggables', [])
             ->assertStatus(204);
 
         $this->assertNoTaggables($tag);
@@ -286,7 +286,7 @@ class PolymorphicHasManyTest extends TestCase
         $posts = factory(Post::class, 2)->create();
         $video = factory(Video::class)->create();
 
-        $this->doReplaceRelationship($tag, 'taggables', [
+        $this->doReplaceRelationship($tag->uuid, 'taggables', [
             [
                 'type' => 'posts',
                 'id' => (string) $posts->last()->getKey(),
@@ -314,7 +314,7 @@ class PolymorphicHasManyTest extends TestCase
         $posts = factory(Post::class, 2)->create();
         $video = factory(Video::class)->create();
 
-        $this->doAddToRelationship($tag, 'taggables', [
+        $this->doAddToRelationship($tag->uuid, 'taggables', [
             [
                 'type' => 'posts',
                 'id' => (string) $posts->last()->getKey(),
@@ -346,7 +346,7 @@ class PolymorphicHasManyTest extends TestCase
         /** @var Video $video */
         $video = $allVideos->last();
 
-        $this->doRemoveFromRelationship($tag, 'taggables', [
+        $this->doRemoveFromRelationship($tag->uuid, 'taggables', [
             [
                 'type' => 'posts',
                 'id' => (string) $post1->getKey(),

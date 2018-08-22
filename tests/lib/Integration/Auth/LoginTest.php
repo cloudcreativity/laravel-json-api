@@ -24,40 +24,36 @@ use Illuminate\Support\Facades\Auth;
 class LoginTest extends TestCase
 {
 
-    public function testLogin()
+    public function test()
     {
         $user = factory(User::class)->create([
             'password' => bcrypt('secret'),
         ]);
 
-        $credentials = ['email' => $user->email, 'password' => 'secret'];
-
         $expected = [
             'data' => [
                 'type' => 'users',
-                'id' => $user->getKey(),
+                'id' => $user->getRouteKey(),
                 'attributes' => [
                     'name' => $user->name,
                 ],
             ],
         ];
 
-        $this->postJson('/login', $credentials, ['Accept' => 'application/vnd.api+json'])
+        $this->doLogin(['email' => $user->email, 'password' => 'secret'])
             ->assertSuccessful()
             ->assertJson($expected);
 
         $this->assertEquals($user->getKey(), Auth::id());
     }
 
-    public function testLoginInvalid()
+    public function testInvalid()
     {
         $user = factory(User::class)->create([
             'password' => bcrypt('secret'),
         ]);
 
-        $credentials = ['email' => $user->email, 'password' => 'foo'];
-
-        $this->postJson('/login', $credentials, ['Accept' => 'application/vnd.api+json'])
+        $this->doLogin(['email' => $user->email, 'password' => 'foo'])
             ->assertStatus(422)
             ->assertJson([
                 'errors' => [
@@ -68,5 +64,18 @@ class LoginTest extends TestCase
                     ],
                 ],
             ]);
+    }
+
+    /**
+     * @param $credentials
+     * @return \Illuminate\Foundation\Testing\TestResponse
+     */
+    private function doLogin($credentials)
+    {
+        return $this->postJson(
+            route('login'),
+            $credentials,
+            ['Accept' => 'application/vnd.api+json']
+        );
     }
 }

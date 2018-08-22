@@ -51,7 +51,7 @@ property on your schema. The `id` is returned by the `getId()` method and the JS
 that this **must** be a string.
 
 If you have generated your schema, the class will already have the `type` property filled in plus the `getId`
-method implemented. For example:
+method implemented if it is for an Eloquent resource. For example:
 
 ```php
 class Schema extends SchemaProvider
@@ -65,13 +65,15 @@ class Schema extends SchemaProvider
      */
     public function getId($resource)
     {
-        return (string) $resource->getKey();
+        return (string) $resource->getRouteKey();
     }
 }
 ```
 
-> If you are using the [Eloquent adapter](./adapters.md) and decide to use an `id` other than the model's key,
-you must set the `$primaryKey` property on your adapter.
+> If you are using the [Eloquent adapter](./adapters.md) and decide to use an `id` other than the model's
+route key, you must set the `$primaryKey` property on your adapter so that it matches your schema.
+For example, if your schema used `$model->getKey()` you would need to set the `$primaryKey` property
+on your adapter so that it matched the return value of `$model->getKeyName()`.
 
 ## Fields
 

@@ -82,7 +82,7 @@ when [Including Related Resources](../fetching/inclusion.md). Details can be fou
 ### Resource ID
 
 By default, the Eloquent adapter expects the model key that is used for the resource `id` to be the
-model's primary key - i.e. the value returned from `Model::getKeyName()`. You can easily change this
+model's route key - i.e. the key returned from `Model::getRouteKeyName()`. You can easily change this
 behaviour by setting the `$primaryKey` attribute on your adapter.
 
 For example, if we were to use the `slug` model attribute as our resource `id`:
@@ -395,6 +395,25 @@ class Adapter extends AbstractAdapter
 
 > The `morphMany` implementation currently has some limitations that we are hoping to resolve during our alpha
 and beta releases. If you have problems using it, please create an issue as this will help us out.
+
+#### Customising Relation Method Names
+
+If you want to use a method name for your relation that is different than the JSON API field name, overload
+the `methodForRelation` method on your adapter. For example, you would need to do this if the field name collides
+with a method that already exists on the abstract adapter.
+
+The method can be overloaded as follows:
+
+```php
+protected function methodForRelation($field)
+{
+  if ('my-field' === $field) {
+    return 'myOtherMethodName';
+  }
+
+  return parent::methodForRelation($field);
+}
+```
 
 ## Custom Adapters
 

@@ -2,6 +2,42 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## [1.0.0-beta.1] - 2018-08-22
+
+### Added
+- Package now supports Laravel 5.4 to 5.7 inclusive.
+- [#210](https://github.com/cloudcreativity/laravel-json-api/issues/210)
+Can now map a single JSON API path to multiple Eloquent eager load paths.
+- [#218](https://github.com/cloudcreativity/laravel-json-api/issues/218)
+Can now filter a request for a specific resource, e.g. `/api/posts/1?filter['published']=1`.
+- Filtering Eloquent resources using the `id` filter is now also supported on to-many and to-one relationships.
+- Can now set default sort parameters on an Eloquent adapter using the `$defaultSort` property.
+
+### Changed
+- [#184](https://github.com/cloudcreativity/laravel-json-api/issues/184)
+Eloquent route keys are now used as the resource id by default.
+
+### Removed
+- The following deprecated methods have been removed from the Eloquent adapter:
+  - `first`: use `searchOne` instead.
+
+### Deprecated
+- The follow methods are deprecated on the Eloquent adapter and will be removed in `1.0.0`:
+  - `queryRelation`: use `queryToMany` or `queryToOne` instead.
+
+### Fixed
+- [#185](https://github.com/cloudcreativity/laravel-json-api/issues/185)
+Rename adapter `store` method to `getStore` to avoid collisions with relation methods.
+- [#187](https://github.com/cloudcreativity/laravel-json-api/issues/187)
+Ensure hydration of Eloquent morph-many relationship works.
+- [#194](https://github.com/cloudcreativity/laravel-json-api/issues/194)
+Ensure encoding parameters are validated when reading a specific resource.
+- Exception messages are no longer pushed into the JSON API error detail member, unless the Exception is a
+HTTP Exception.
+- [#219](https://github.com/cloudcreativity/laravel-json-api/issues/219)
+Can now use the `id` filter as one of many filters, previously the `id` filter ignored any
+other filters provided. It now also respects sort and paging parameters.
+
 ## [1.0.0-alpha.4] - 2018-07-02
 
 ### Added

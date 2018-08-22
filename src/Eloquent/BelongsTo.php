@@ -38,7 +38,13 @@ class BelongsTo extends AbstractRelation
      */
     public function query($record, EncodingParametersInterface $parameters)
     {
-        return $record->{$this->key};
+        if (!$this->requiresInverseAdapter($record, $parameters)) {
+            return $record->{$this->key};
+        }
+
+        $relation = $this->getRelation($record);
+
+        return $this->adapterFor($relation)->queryToOne($relation, $parameters);
     }
 
     /**
@@ -110,7 +116,7 @@ class BelongsTo extends AbstractRelation
     {
         $identifier = $relationship->hasIdentifier() ? $relationship->getIdentifier() : null;
 
-        return $identifier ? $this->store()->find($identifier) : null;
+        return $identifier ? $this->getStore()->find($identifier) : null;
     }
 
     /**

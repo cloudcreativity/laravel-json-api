@@ -47,8 +47,8 @@ class ResourceTest extends TestCase
 
         $response = $this->doSearch(['sort' => '-title']);
         $response->assertSearchResponse()->assertContainsExact([
-            ['type' => 'posts', 'id' => $b->getKey()],
-            ['type' => 'posts', 'id' => $a->getKey()],
+            ['type' => 'posts', 'id' => $b->getRouteKey()],
+            ['type' => 'posts', 'id' => $a->getRouteKey()],
         ]);
     }
 
@@ -67,7 +67,7 @@ class ResourceTest extends TestCase
         ]);
 
         $this->doSearch(['filter' => ['title' => 'My']])
-            ->assertSearchResponse()->assertContainsOnly(['posts' => [$a->getKey(), $b->getKey()]]);
+            ->assertSearchResponse()->assertContainsOnly(['posts' => [$a->getRouteKey(), $b->getRouteKey()]]);
     }
 
     public function testInvalidFilter()
@@ -190,7 +190,7 @@ class ResourceTest extends TestCase
         ];
 
         $expected['relationships']['tags']['data'] = [
-            ['type' => 'tags', 'id' => (string) $tag->getKey()],
+            ['type' => 'tags', 'id' => $tag->uuid],
         ];
 
         $expected['relationships']['comments']['data'] = [];
@@ -199,8 +199,21 @@ class ResourceTest extends TestCase
 
         $response->assertDocument()->assertIncluded()->assertContainsOnly([
             'users' => [$model->author_id],
-            'tags' => [$tag->getKey()],
+            'tags' => [$tag->uuid],
         ]);
+    }
+
+    /**
+     * @see https://github.com/cloudcreativity/laravel-json-api/issues/194
+     */
+    public function testReadWithInvalidInclude()
+    {
+        $post = $this->createPost();
+
+        $this->doRead($post, ['include' => 'author,foo'])
+            ->assertStatus(400)
+            ->assertErrors()
+            ->assertParameters(['include']);
     }
 
     /**
@@ -221,7 +234,7 @@ class ResourceTest extends TestCase
 
         $data = [
             'type' => 'posts',
-            'id' => (string) $model->getKey(),
+            'id' => (string) $model->getRouteKey(),
             'attributes' => [
                 'slug' => 'posts-test',
                 'title' => 'Foo Bar Baz Bat',
@@ -271,11 +284,11 @@ class ResourceTest extends TestCase
 
         $data = [
             'type' => 'posts',
-            'id' => (string) $model->getKey(),
+            'id' => (string) $model->getRouteKey(),
             'relationships' => [
                 'tags' => [
                     'data' => [
-                        ['type' => 'tags', 'id' => (string) $tag->getKey()],
+                        ['type' => 'tags', 'id' => $tag->uuid],
                     ],
                 ],
             ],
@@ -300,7 +313,7 @@ class ResourceTest extends TestCase
 
         $data = [
             'type' => 'posts',
-            'id' => (string) $post->getKey(),
+            'id' => (string) $post->getRouteKey(),
             'attributes' => [
                 'title' => 'Hello World',
             ],
@@ -354,11 +367,11 @@ class ResourceTest extends TestCase
      */
     private function serialize(Post $model)
     {
-        $self = "http://localhost/api/v1/posts/{$model->getKey()}";
+        $self = "http://localhost/api/v1/posts/{$model->getRouteKey()}";
 
         return [
             'type' => 'posts',
-            'id' => (string) $model->getKey(),
+            'id' => (string) $model->getRouteKey(),
             'attributes' => [
                 'created-at' => $model->created_at->toW3cString(),
                 'updated-at' => $model->updated_at->toW3cString(),

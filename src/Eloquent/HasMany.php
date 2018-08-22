@@ -115,11 +115,11 @@ class HasMany extends AbstractManyRelation
     }
 
     /**
-     * @param Relations\HasMany $relation
+     * @param Relations\HasMany|Relations\MorphMany $relation
      * @param Collection $existing
      * @param $updated
      */
-    protected function sync(Relations\HasMany $relation, Collection $existing, Collection $updated)
+    protected function sync($relation, Collection $existing, Collection $updated)
     {
         $add = collect($updated)->reject(function ($model) use ($existing) {
             return $existing->contains($model);
@@ -137,10 +137,10 @@ class HasMany extends AbstractManyRelation
     }
 
     /**
-     * @param Relations\HasMany $relation
+     * @param Relations\HasMany|Relations\MorphMany $relation
      * @param Collection $remove
      */
-    protected function detach(Relations\HasMany $relation, Collection $remove)
+    protected function detach($relation, Collection $remove)
     {
         /** @var Model $model */
         foreach ($remove as $model) {
@@ -166,7 +166,7 @@ class HasMany extends AbstractManyRelation
     protected function findRelated($record, RelationshipInterface $relationship)
     {
         $inverse = $this->getRelation($record)->getRelated();
-        $related = $this->store()->findMany($relationship->getIdentifiers());
+        $related = $this->getStore()->findMany($relationship->getIdentifiers());
 
         $related = collect($related)->filter(function ($model) use ($inverse) {
             return $model instanceof $inverse;

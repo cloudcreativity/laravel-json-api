@@ -104,7 +104,9 @@ class Store implements StoreInterface
             ->adapterFor($resourceType)
             ->read($resourceId, $params);
 
-        $this->identityMap->add(ResourceIdentifier::create($resourceType, $resourceId), $record ?: false);
+        if ($record) {
+            $this->identityMap->add(ResourceIdentifier::create($resourceType, $resourceId), $record);
+        }
 
         return $record;
     }

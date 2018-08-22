@@ -45,7 +45,7 @@ trait StoreAwareTrait
     /**
      * @return StoreInterface
      */
-    protected function store()
+    protected function getStore()
     {
         if (!$this->store) {
             throw new RuntimeException('No store injected.');

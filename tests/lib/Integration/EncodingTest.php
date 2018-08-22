@@ -42,7 +42,7 @@ class EncodingTest extends TestCase
      */
     public function testRequestedResourceHasRequestHost()
     {
-        $id = factory(Post::class)->create()->getKey();
+        $id = factory(Post::class)->create()->getRouteKey();
         config()->set('json-api-v1.url.host', null);
 
         $json = $this
@@ -59,7 +59,7 @@ class EncodingTest extends TestCase
      */
     public function testRequestedResourceDoesNotHaveHost()
     {
-        $id = factory(Post::class)->create()->getKey();
+        $id = factory(Post::class)->create()->getRouteKey();
         config()->set('json-api-v1.url.host', false);
 
         $json = $this
@@ -76,7 +76,7 @@ class EncodingTest extends TestCase
      */
     public function testRequestResourceDoesNotHaveUrlNamespace()
     {
-        $id = factory(Post::class)->create()->getKey();
+        $id = factory(Post::class)->create()->getRouteKey();
         config()->set('json-api-v1.url.namespace', null);
 
         $json = $this
@@ -93,7 +93,7 @@ class EncodingTest extends TestCase
      */
     public function testRequestResourceHasEmptyUrlNamespace()
     {
-        $id = factory(Post::class)->create()->getKey();
+        $id = factory(Post::class)->create()->getRouteKey();
         config()->set('json-api-v1.url.namespace', '');
 
         $json = $this
@@ -110,7 +110,7 @@ class EncodingTest extends TestCase
      */
     public function testRequestResourceDoesNotHaveHostAndUrlNamespace()
     {
-        $id = factory(Post::class)->create()->getKey();
+        $id = factory(Post::class)->create()->getRouteKey();
         config()->set('json-api-v1.url.host', false);
         config()->set('json-api-v1.url.namespace', null);
 
@@ -135,7 +135,7 @@ class EncodingTest extends TestCase
         config()->set('json-api-v1.url.host', null);
 
         $json = json_api()->encoder()->serializeData($post);
-        $this->assertSelfLink("http://www.example.com/api/v1/posts/{$post->getKey()}", $json);
+        $this->assertSelfLink("http://www.example.com/api/v1/posts/{$post->getRouteKey()}", $json);
     }
 
     /**
@@ -150,7 +150,7 @@ class EncodingTest extends TestCase
         config()->set('json-api-v1.url.host', $host = 'http://www.example.com');
 
         $json = json_api()->encoder()->serializeData($post);
-        $this->assertSelfLink("http://www.example.com/api/v1/posts/{$post->getKey()}", $json);
+        $this->assertSelfLink("http://www.example.com/api/v1/posts/{$post->getRouteKey()}", $json);
     }
 
     /**
@@ -165,7 +165,7 @@ class EncodingTest extends TestCase
         config()->set('json-api-v1.url.host', false);
 
         $json = json_api()->encoder()->serializeData($post);
-        $this->assertSelfLink("/api/v1/posts/{$post->getKey()}", $json);
+        $this->assertSelfLink("/api/v1/posts/{$post->getRouteKey()}", $json);
     }
 
     /**

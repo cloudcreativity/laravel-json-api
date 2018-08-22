@@ -95,6 +95,10 @@ class Adapter extends AbstractAdapter
         if ($title = $filters->get('title')) {
             $query->where('title', 'like', $title . '%');
         }
+
+        if ($filters->has('published')) {
+            $query->whereNotNull('published_at');
+        }
     }
 
     /**

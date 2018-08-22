@@ -78,6 +78,30 @@ JsonApi::register('default', ['namespace' => 'Api'], function ($api, $router) {
 
 > Note that you can use a string for a single relationship, or an array of string for multiple.
 
+### Related Resource Type
+
+When registering relationship routes, it is assumed that the resource type returned by the route is the
+pluralised relationship name. For example, the above example assumes that the post's author route will
+return an `authors` JSON API resource.
+
+If this is not the case, then you can specify the related resource type using the `inverse` setting. For
+example, if the post's author route returned a `users` resource:
+
+```php
+JsonApi::register('default', ['namespace' => 'Api'], function ($api, $router) {
+    $api->resource('posts', [
+        'has-one' => [
+            'author' => ['inverse' => 'users'],
+        ],
+    ]);
+});
+```
+
+> The related resource type needs to be known so that the query parameters for requests to relationship
+routes can be validated correctly. For example, for a *to-many* relationship, the filters that are allowed
+will be those allowed for the related resource type. So a request to `posts/1/tags` will need to validate
+the filters for those allowed for `tags` resources, not the `posts` resource.
+
 ### To-One Routes
 
 The following to-one routes are registered (using the `author` relationship on the `posts` resource as an example):

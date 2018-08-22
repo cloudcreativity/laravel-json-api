@@ -34,7 +34,7 @@ $factory->state(DummyApp\Comment::class, 'post', function () {
     return [
         'commentable_type' => DummyApp\Post::class,
         'commentable_id' => function () {
-            return factory(DummyApp\Post::class)->create()->getKey();
+            return factory(DummyApp\Post::class)->states('published')->create()->getKey();
         }
     ];
 });
@@ -92,6 +92,7 @@ $factory->state(DummyApp\Post::class, 'published', function (Faker $faker) {
 /** Tag */
 $factory->define(DummyApp\Tag::class, function (Faker $faker) {
     return [
+        'uuid' => $faker->uuid,
         'name' => $faker->country,
     ];
 });

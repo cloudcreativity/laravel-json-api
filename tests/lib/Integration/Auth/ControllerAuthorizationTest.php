@@ -51,7 +51,7 @@ class ControllerAuthorizationTest extends TestCase
                 'commentable' => [
                     'data' => [
                         'type' => 'posts',
-                        'id' => (string) $post->getKey(),
+                        'id' => (string) $post->getRouteKey(),
                     ],
                 ],
             ],

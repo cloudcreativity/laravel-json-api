@@ -74,7 +74,7 @@ trait CreatesEloquentIdentities
      * @param $modelClass
      * @param string|int|null $id
      * @param string|null $keyName
-     *      the key to set as the id - defaults to `Model::getKeyName()`
+     *      the key to set as the id - defaults to `Model::getRouteKeyName()`
      * @return Model|null
      * @deprecated
      */
@@ -93,7 +93,7 @@ trait CreatesEloquentIdentities
             throw new RuntimeException(sprintf('Expecting a model class, got %s.', $modelClass));
         }
 
-        $model->setAttribute($keyName ?: $model->getKeyName(), $id);
+        $model->setAttribute($keyName ?: $model->getRouteKeyName(), $id);
 
         return $model;
     }
