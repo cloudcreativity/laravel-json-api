@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
-## Unreleased
+## [1.0.0-beta.1] - 2018-08-22
 
 ### Added
 - Package now supports Laravel 5.4 to 5.7 inclusive.
@@ -32,10 +32,11 @@ Rename adapter `store` method to `getStore` to avoid collisions with relation me
 Ensure hydration of Eloquent morph-many relationship works.
 - [#194](https://github.com/cloudcreativity/laravel-json-api/issues/194)
 Ensure encoding parameters are validated when reading a specific resource.
-- Exception messages are no longer pushed into the JSON API error detail member.
+- Exception messages are no longer pushed into the JSON API error detail member, unless the Exception is a
+HTTP Exception.
 - [#219](https://github.com/cloudcreativity/laravel-json-api/issues/219)
 Can now use the `id` filter as one of many filters, previously the `id` filter ignored any
-other filters provided.
+other filters provided. It now also respects sort and paging parameters.
 
 ## [1.0.0-alpha.4] - 2018-07-02
 
