@@ -23,7 +23,6 @@ use DummyApp\Events\ResourceEvent;
 use DummyApp\Http\Controllers\PostsController;
 use DummyApp\Post;
 use DummyApp\Tag;
-use Ramsey\Uuid\Uuid;
 
 class ResourceTest extends TestCase
 {
