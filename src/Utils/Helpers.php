@@ -80,6 +80,10 @@ class Helpers
             return false;
         }
 
+        if((string) $request->getBody() === '[]'){
+            return false;
+        }
+
         return 0 < $contentLength[0];
     }
 
