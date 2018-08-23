@@ -68,13 +68,15 @@ class InvalidJsonException extends JsonApiException
 
         $this->jsonError = $jsonError;
         $this->jsonErrorMessage = $jsonErrorMessage;
+        $this->addError($this->createError());
+    }
 
-        $this->addError(Error::create([
-            Error::TITLE => 'Invalid JSON',
-            Error::STATUS => self::HTTP_CODE_BAD_REQUEST,
-            Error::CODE => $jsonError,
-            Error::DETAIL => $jsonErrorMessage,
-        ]));
+    /**
+     * @return string
+     */
+    public function getTitle()
+    {
+        return 'Invalid JSON';
     }
 
     /**
@@ -91,5 +93,18 @@ class InvalidJsonException extends JsonApiException
     public function getJsonErrorMessage()
     {
         return $this->jsonErrorMessage;
+    }
+
+    /**
+     * @return Error
+     */
+    protected function createError()
+    {
+        return Error::create([
+            Error::TITLE => $this->getTitle(),
+            Error::STATUS => self::HTTP_CODE_BAD_REQUEST,
+            Error::CODE => $this->getJsonError(),
+            Error::DETAIL => $this->getJsonErrorMessage(),
+        ]);
     }
 }

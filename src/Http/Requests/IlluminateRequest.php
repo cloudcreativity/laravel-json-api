@@ -323,13 +323,17 @@ class IlluminateRequest implements RequestInterface
     /**
      * Extract the JSON API document from the request.
      *
-     * @return object|null
+     * @return object|false
      * @throws InvalidJsonException
      */
     private function decodeDocument()
     {
+        if (!$this->expectsData()) {
+            return false;
+        }
+
         if (!http_contains_body($this->serverRequest)) {
-            return null;
+            return false;
         }
 
         return json_decode((string) $this->serverRequest->getBody());
@@ -343,6 +347,29 @@ class IlluminateRequest implements RequestInterface
         $parser = $this->factory->createQueryParametersParser();
 
         return $parser->parseQueryParameters($this->serverRequest->getQueryParams());
+    }
+
+    /**
+     * Is data expected for the supplied request?
+     *
+     * If the JSON API request is any of the following, a JSON API document
+     * is expected to be set on the request:
+     *
+     * - Create resource
+     * - Update resource
+     * - Replace resource relationship
+     * - Add to resource relationship
+     * - Remove from resource relationship
+     *
+     * @return bool
+     */
+    private function expectsData()
+    {
+        return $this->isCreateResource() ||
+            $this->isUpdateResource() ||
+            $this->isReplaceRelationship() ||
+            $this->isAddToRelationship() ||
+            $this->isRemoveFromRelationship();
     }
 
 }

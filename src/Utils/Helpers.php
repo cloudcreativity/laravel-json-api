@@ -17,6 +17,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Utils;
 
+use CloudCreativity\LaravelJsonApi\Exceptions\DocumentRequiredException;
 use CloudCreativity\LaravelJsonApi\Exceptions\InvalidJsonException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str as IlluminateStr;
@@ -46,11 +47,11 @@ class Helpers
         }
 
         if (!$assoc && !is_object($decoded)) {
-            throw new InvalidJsonException(null, 'JSON is not an object.');
+            throw new DocumentRequiredException();
         }
 
         if ($assoc && !is_array($decoded)) {
-            throw new InvalidJsonException(null, 'JSON is not an object or array.');
+            throw new InvalidJsonException(null, 'JSON is not an array.');
         }
 
         return $decoded;
@@ -80,11 +81,11 @@ class Helpers
             return false;
         }
 
-        if((string) $request->getBody() === '[]'){
+        if (1 > $contentLength[0]) {
             return false;
         }
 
-        return 0 < $contentLength[0];
+        return true;
     }
 
     /**

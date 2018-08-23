@@ -21,6 +21,7 @@ use Carbon\Carbon;
 use CloudCreativity\LaravelJsonApi\Exceptions\DocumentRequiredException;
 use CloudCreativity\LaravelJsonApi\Exceptions\InvalidJsonException;
 use CloudCreativity\LaravelJsonApi\Exceptions\NotFoundException;
+use DummyApp\Post;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\Exceptions\MaintenanceModeException;
 use Illuminate\Session\TokenMismatchException;
@@ -71,13 +72,38 @@ class ErrorsTest extends TestCase
     }
 
     /**
-     * Returns a JSON API error when a document is not provided.
+     * @return array
      */
-    public function testDocumentRequired()
+    public function invalidDocumentProvider()
     {
-        $uri = $this->api()->url()->create('posts');
+        return [
+            'empty' => [''],
+            'array' => ['[]'],
+            'bool' => ['true'],
+            'string' => ['"foo"'],
+            'number' => ['1'],
+            'null' => ['null'],
+            'PATCH' => ['[]', 'PATCH'],
+        ];
+    }
 
-        $this->postJsonApi($uri, '')->assertStatus(400)->assertExactJson([
+    /**
+     * Returns a JSON API error when a document is not provided, or is not an object.
+     *
+     * @param string $content
+     * @param string $method
+     * @dataProvider invalidDocumentProvider
+     */
+    public function testDocumentRequired($content, $method = 'POST')
+    {
+        if ('POST' === $method) {
+            $uri = $this->api()->url()->create('posts');
+        } else {
+            $model = factory(Post::class)->create();
+            $uri = $this->api()->url()->read('posts', $model);
+        }
+
+        $expected = [
             'errors' => [
                 [
                     'title' => 'Document Required',
@@ -85,7 +111,42 @@ class ErrorsTest extends TestCase
                     'detail' => 'Expecting request to contain a JSON API document.',
                 ],
             ],
-        ]);
+        ];
+
+        $this->doInvalidRequest($uri, $content, $method)
+            ->assertStatus(400)
+            ->assertHeader('Content-Type', 'application/vnd.api+json')
+            ->assertExactJson($expected);
+    }
+
+    /**
+     * @return array
+     */
+    public function ignoreDocumentProvider()
+    {
+        return [
+            'empty' => [''],
+            'array' => ['[]'],
+            'bool' => ['true'],
+            'string' => ['"foo"'],
+            'number' => ['1'],
+            'null' => ['null'],
+            'DELETE' => ['[]', 'DELETE'],
+        ];
+    }
+
+    /**
+     * @param $content
+     * @param $method
+     * @dataProvider ignoreDocumentProvider
+     */
+    public function testIgnoresData($content, $method = 'GET')
+    {
+        $model = factory(Post::class)->create();
+        $uri = $this->api()->url()->update('posts', $model);
+
+        $this->doInvalidRequest($uri, $content, $method)
+            ->assertSuccessful();
     }
 
     /**
@@ -96,7 +157,10 @@ class ErrorsTest extends TestCase
         $uri = $this->api()->url()->create('posts');
         $expected = $this->withCustomError(DocumentRequiredException::class);
 
-        $this->postJsonApi($uri, '')->assertStatus(400)->assertExactJson($expected);
+        $this->doInvalidRequest($uri, '')
+            ->assertStatus(400)
+            ->assertHeader('Content-Type', 'application/vnd.api+json')
+            ->assertExactJson($expected);
     }
 
     /**
@@ -107,7 +171,7 @@ class ErrorsTest extends TestCase
         $uri = $this->api()->url()->create('posts');
         $content = '{"data": {}';
 
-        $this->postJsonApi($uri, $content)->assertStatus(400)->assertExactJson([
+        $this->doInvalidRequest($uri, $content)->assertStatus(400)->assertExactJson([
             'errors' => [
                 [
                     'title' => 'Invalid JSON',
@@ -128,7 +192,7 @@ class ErrorsTest extends TestCase
         $expected = $this->withCustomError(InvalidJsonException::class);
         $content = '{"data": {}';
 
-        $this->postJsonApi($uri, $content)->assertStatus(400)->assertExactJson($expected);
+        $this->doInvalidRequest($uri, $content)->assertStatus(400)->assertExactJson($expected);
     }
 
     /**
@@ -268,5 +332,22 @@ class ErrorsTest extends TestCase
         ]);
 
         return ['errors' => [$expected]];
+    }
+
+    /**
+     * @param $uri
+     * @param $content
+     * @param $method
+     * @return \Illuminate\Foundation\Testing\TestResponse
+     */
+    private function doInvalidRequest($uri, $content, $method = 'POST')
+    {
+        $headers = [
+            'CONTENT_LENGTH' => mb_strlen($content, '8bit'),
+            'CONTENT_TYPE' => 'application/vnd.api+json',
+            'Accept' => 'application/vnd.api+json',
+        ];
+
+        return $this->call($method, $uri, [], [], [], $headers, $content);
     }
 }

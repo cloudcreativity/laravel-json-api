@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## Unreleased
+
+### Changed
+- JSON API document is now only parsed out of the request if data is expected within the document.
+This ensures that Laravel's get JSON test helpers can be used.
+
 ## [1.0.0-beta.1] - 2018-08-22
 
 ### Added
