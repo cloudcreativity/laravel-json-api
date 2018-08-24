@@ -36,14 +36,9 @@ abstract class AbstractManyRelation extends AbstractRelation implements HasManyA
      */
     public function query($record, EncodingParametersInterface $parameters)
     {
-        /** If we do not need to pass to the inverse adapter, we can just return the whole relationship. */
-        if (!$this->requiresInverseAdapter($record, $parameters)) {
-            return $record->{$this->key};
-        }
-
         $relation = $this->getRelation($record);
 
-        return $this->adapterFor($relation)->queryRelation($relation, $parameters);
+        return $this->adapterFor($relation)->queryToMany($relation, $parameters);
     }
 
     /**
