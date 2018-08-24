@@ -852,7 +852,7 @@ class TestResponse extends BaseTestResponse
 
         return collect($ids)->map(function ($id) {
             return $this->normalizeId($id);
-        })->all();
+        })->values()->all();
     }
 
     /**
