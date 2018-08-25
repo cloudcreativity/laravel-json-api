@@ -26,6 +26,7 @@ use DateTime;
  * Class HydratesAttributesTrait
  *
  * @package CloudCreativity\LaravelJsonApi
+ * @deprecated 1.0.0
  */
 trait HydratesAttributesTrait
 {
