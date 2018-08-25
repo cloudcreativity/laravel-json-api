@@ -11,11 +11,25 @@ so this will not result in a major breaking change before `1.0.0`.
 
 ## 1.0.0-beta.1 to 1.0.0-beta.2
 
+This upgrade changes some of the internals of the package. You should be able to upgrade without any
+changes, unless you are extended and overriding parts of the package.
+
+### Adapters
+
+The `related` method on the resource adapter interface has been renamed `getRelated`. This is so that
+the `related` can be used as a JSON API relationship field name. This will not affect your application
+unless you have implemented a custom adapter or overridden any of the internals of the Eloquent adapter.
+
 ### Relations
 
 In implementing the new `queriesOne` and `queriesMany` relations, we have re-organised some of the internals
 of the Eloquent JSON API relation classes. This will not affect your application unless you have extended
 any of these classes.
+
+### Validated Request
+
+The protected `isExpectingDocument` method has been removed as it is no longer in use. This will not affect
+your application unless you have extended this class.
 
 ## 1.0.0-alpha.4 to 1.0.0-beta.1
 
