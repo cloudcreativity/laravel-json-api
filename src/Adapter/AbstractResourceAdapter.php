@@ -115,7 +115,7 @@ abstract class AbstractResourceAdapter implements ResourceAdapterInterface, Stor
     /**
      * @inheritDoc
      */
-    public function related($field)
+    public function getRelated($field)
     {
         if (!$method = $this->methodForRelation($field)) {
             throw new RuntimeException("No relationship method implemented for field {$field}.");
@@ -218,7 +218,7 @@ abstract class AbstractResourceAdapter implements ResourceAdapterInterface, Stor
         RelationshipInterface $relationship,
         EncodingParametersInterface $parameters
     ) {
-        $relation = $this->related($field);
+        $relation = $this->getRelated($field);
 
         $relation->update($record, $relationship, $parameters);
     }

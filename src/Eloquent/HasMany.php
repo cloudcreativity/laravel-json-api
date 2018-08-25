@@ -40,7 +40,7 @@ class HasMany extends AbstractManyRelation
     public function update($record, RelationshipInterface $relationship, EncodingParametersInterface $parameters)
     {
         $related = $this->findRelated($record, $relationship);
-        $relation = $this->getRelation($record);
+        $relation = $this->getRelation($record, $this->key);
 
         if ($relation instanceof Relations\BelongsToMany) {
             $relation->sync($related);
@@ -76,7 +76,7 @@ class HasMany extends AbstractManyRelation
     {
         $related = $this->findRelated($record, $relationship);
 
-        $this->getRelation($record)->saveMany($related);
+        $this->getRelation($record, $this->key)->saveMany($related);
         $record->refresh(); // in case the relationship has been cached.
 
         return $record;
@@ -91,7 +91,7 @@ class HasMany extends AbstractManyRelation
     public function remove($record, RelationshipInterface $relationship, EncodingParametersInterface $parameters)
     {
         $related = $this->findRelated($record, $relationship);
-        $relation = $this->getRelation($record);
+        $relation = $this->getRelation($record, $this->key);
 
         if ($relation instanceof Relations\BelongsToMany) {
             $relation->detach($related);
@@ -165,8 +165,8 @@ class HasMany extends AbstractManyRelation
      */
     protected function findRelated($record, RelationshipInterface $relationship)
     {
-        $inverse = $this->getRelation($record)->getRelated();
-        $related = $this->getStore()->findMany($relationship->getIdentifiers());
+        $inverse = $this->getRelation($record, $this->key)->getRelated();
+        $related = $this->findMany($relationship);
 
         $related = collect($related)->filter(function ($model) use ($inverse) {
             return $model instanceof $inverse;

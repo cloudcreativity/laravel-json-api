@@ -38,7 +38,12 @@ JsonApi::register('v1', [], function (ApiGroup $api) {
         'has-one' => [
             'author' => ['inverse' => 'users']
         ],
-        'has-many' => ['comments', 'tags'],
+        'has-many' => [
+            'comments',
+            'tags',
+            'related' => ['only' => ['read', 'related']],
+            'related-video' => ['only' => ['read', 'related']],
+        ],
     ]);
     $api->resource('users', [
         'has-one' => 'phone',

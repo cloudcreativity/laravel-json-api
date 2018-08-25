@@ -50,13 +50,18 @@ class HelpersTest extends TestCase
      */
     public function testInvalidJson($content, $jsonError = false)
     {
+        $actual = null;
+
         try {
             json_decode($content);
-            $this->fail('No exception thrown.');
         } catch (InvalidJsonException $ex) {
-            if ($jsonError) {
-                $this->assertJsonError($ex);
-            }
+            $actual = $ex;
+        }
+
+        $this->assertNotNull($actual);
+
+        if ($jsonError) {
+            $this->assertJsonError($ex);
         }
     }
 

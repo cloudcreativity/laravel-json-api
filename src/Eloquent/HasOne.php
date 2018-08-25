@@ -30,7 +30,7 @@ class HasOne extends BelongsTo
      */
     public function update($record, RelationshipInterface $relationship, EncodingParametersInterface $parameters)
     {
-        $relation = $this->getRelation($record);
+        $relation = $this->getRelation($record, $this->key);
         $related = $this->related($relationship);
         /** @var Model|null $current */
         $current = $record->{$this->key};

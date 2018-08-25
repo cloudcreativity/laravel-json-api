@@ -19,8 +19,10 @@ namespace CloudCreativity\LaravelJsonApi\Eloquent;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\HasManyAdapterInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Object\RelationshipInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PageInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreAwareInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
+use Illuminate\Pagination\AbstractPaginator;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 /**
@@ -80,7 +82,8 @@ class MorphHasMany implements HasManyAdapterInterface, StoreAwareInterface
         $all = collect();
 
         foreach ($this->adapters as $adapter) {
-            $all = $all->merge($adapter->query($record, $parameters));
+            $results = $adapter->query($record, $parameters);
+            $all = $all->merge($this->extractItems($results));
         }
 
         return $all;
@@ -94,7 +97,8 @@ class MorphHasMany implements HasManyAdapterInterface, StoreAwareInterface
         $all = collect();
 
         foreach ($this->adapters as $adapter) {
-            $all = $all->merge($adapter->relationship($record, $parameters));
+            $results = $adapter->relationship($record, $parameters);
+            $all = $all->merge($this->extractItems($results));
         }
 
         return $all;
@@ -146,6 +150,23 @@ class MorphHasMany implements HasManyAdapterInterface, StoreAwareInterface
         }
 
         return $record;
+    }
+
+    /**
+     * @param $results
+     * @return array|iterable
+     */
+    protected function extractItems($results)
+    {
+        if ($results instanceof PageInterface) {
+            $results = $results->getData();
+        }
+
+        if ($results instanceof AbstractPaginator) {
+            $results = $results->all();
+        }
+
+        return $results;
     }
 
 }

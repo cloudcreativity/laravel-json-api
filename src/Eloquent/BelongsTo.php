@@ -42,7 +42,7 @@ class BelongsTo extends AbstractRelation
             return $record->{$this->key};
         }
 
-        $relation = $this->getRelation($record);
+        $relation = $this->getRelation($record, $this->key);
 
         return $this->adapterFor($relation)->queryToOne($relation, $parameters);
     }
@@ -65,7 +65,7 @@ class BelongsTo extends AbstractRelation
      */
     public function update($record, RelationshipInterface $relationship, EncodingParametersInterface $parameters)
     {
-        $relation = $this->getRelation($record);
+        $relation = $this->getRelation($record, $this->key);
 
         if ($related = $this->related($relationship)) {
             $relation->associate($related);
@@ -95,7 +95,7 @@ class BelongsTo extends AbstractRelation
      */
     protected function relation($record)
     {
-        return $this->getRelation($record);
+        return $this->getRelation($record, $this->key);
     }
 
     /**
@@ -111,12 +111,11 @@ class BelongsTo extends AbstractRelation
      *
      * @param RelationshipInterface $relationship
      * @return Model|null
+     * @deprecated 1.0.0 use `findOne`
      */
     protected function findRelated(RelationshipInterface $relationship)
     {
-        $identifier = $relationship->hasIdentifier() ? $relationship->getIdentifier() : null;
-
-        return $identifier ? $this->getStore()->find($identifier) : null;
+        return $this->findOne($relationship);
     }
 
     /**

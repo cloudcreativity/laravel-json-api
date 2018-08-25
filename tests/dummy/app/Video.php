@@ -17,6 +17,7 @@
 
 namespace DummyApp;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
@@ -75,5 +76,24 @@ class Video extends Model
     public function tags()
     {
         return $this->morphToMany(Tag::class, 'taggable');
+    }
+
+    /**
+     * Scope a query for videos that are related to the supplied post.
+     *
+     * Finds videos that have at least one tag that is in common with
+     * the tags on the supplied post.
+     *
+     * @param Builder $query
+     * @param Post $post
+     * @return Builder
+     */
+    public function scopeRelated(Builder $query, Post $post)
+    {
+        $tags = $post->tags()->pluck('tags.id');
+
+        return $query->whereHas('tags', function (Builder $q) use ($tags) {
+            $q->whereIn('tags.id', $tags);
+        });
     }
 }
