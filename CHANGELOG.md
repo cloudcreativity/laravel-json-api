@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
-## Unreleased
+## [1.0.0-beta.2] - 2018-08-25
 
 ### Added
 - Can now use Eloquent query builders as resource relationships using the `queriesOne` or `queriesMany`
@@ -17,6 +17,8 @@ This ensures that Laravel's get JSON test helpers can be used.
 ### Deprecated
 - The `Eloquent\AbstractRelation` class is deprecated and will be removed in `1.0.0`. Use the new
 `Adapter\AbstractRelationshipAdapter` class and apply the `QueriesRelations` trait.
+- The `Adapter\HydratesAttributesTrait` is deprecated as it is no longer in use and will be removed in
+`1.0.0`.
 
 ## [1.0.0-beta.1] - 2018-08-22
 

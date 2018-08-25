@@ -601,7 +601,7 @@ You can add support for any kind of relationship by writing a class that impleme
 
 We provide a base abstract class that you can extend:
 `CloudCreativity\LaravelJsonApi\Adapter\AbstractRelationshipAdapter`.
-This implements that `to-one` interface. If your relation is a `to-many` relation, just extend the same
+This implements the `to-one` interface. If your relation is a `to-many` relation, just extend the same
 abstract class and implement the `HasManyAdapterInterface`.
 
 Refer to the doc blocks on the interfaces for the methods that you need to implement.
