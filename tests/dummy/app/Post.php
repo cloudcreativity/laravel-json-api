@@ -17,6 +17,7 @@
 
 namespace DummyApp;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
@@ -64,6 +65,27 @@ class Post extends Model
     public function tags()
     {
         return $this->morphToMany(Tag::class, 'taggable');
+    }
+
+    /**
+     * Scope a query for posts that are related to the supplied post.
+     *
+     * Related posts are those that:
+     *
+     * - have a tag in common with the provided post; or
+     * - are by the same author.
+     *
+     * @param Builder $query
+     * @param Post $post
+     * @return Builder
+     */
+    public function scopeRelated(Builder $query, Post $post)
+    {
+        return $query->where(function (Builder $q) use ($post) {
+            $q->whereHas('tags', function (Builder $t) use ($post) {
+                $t->whereIn('tags.id', $post->tags()->pluck('tags.id'));
+            })->orWhere('posts.author_id', $post->getKey());
+        })->where('posts.id', '<>', $post->getKey());
     }
 
     /**

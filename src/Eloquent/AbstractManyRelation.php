@@ -36,19 +36,9 @@ abstract class AbstractManyRelation extends AbstractRelation implements HasManyA
      */
     public function query($record, EncodingParametersInterface $parameters)
     {
-        $relation = $this->getRelation($record);
+        $relation = $this->getRelation($record, $this->key);
 
         return $this->adapterFor($relation)->queryToMany($relation, $parameters);
-    }
-
-    /**
-     * @param Model $record
-     * @param EncodingParametersInterface $parameters
-     * @return mixed
-     */
-    public function relationship($record, EncodingParametersInterface $parameters)
-    {
-        return $this->query($record, $parameters);
     }
 
 }

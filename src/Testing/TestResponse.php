@@ -409,7 +409,7 @@ class TestResponse extends BaseTestResponse
         if (is_null($resourceType)) {
             $document->assertDataNull();
         } else {
-            $document->assertResourceIdentifier()->assertIs($resourceType, $resourceId);
+            $document->assertResourceIdentifier()->assertIs($resourceType, $this->normalizeId($resourceId));
         }
 
         return $this;

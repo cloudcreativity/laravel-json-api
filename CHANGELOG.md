@@ -4,9 +4,19 @@ All notable changes to this project will be documented in this file. This projec
 
 ## Unreleased
 
+### Added
+- Can now use Eloquent query builders as resource relationships using the `queriesOne` or `queriesMany`
+JSON API relations.
+- Custom relationships can now extend the `Adapter\AbstractRelationshipAdapter` class.
+
 ### Changed
 - JSON API document is now only parsed out of the request if data is expected within the document.
 This ensures that Laravel's get JSON test helpers can be used.
+- Extracted common Eloquent relation querying methods to the `Eloquent\Concerns\QueriesRelations` trait.
+
+### Deprecated
+- The `Eloquent\AbstractRelation` class is deprecated and will be removed in `1.0.0`. Use the new
+`Adapter\AbstractRelationshipAdapter` class and apply the `QueriesRelations` trait.
 
 ## [1.0.0-beta.1] - 2018-08-22
 

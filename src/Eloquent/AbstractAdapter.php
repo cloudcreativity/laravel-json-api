@@ -174,7 +174,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      * For example, a request to `/posts/1/comments` will invoke this method on the
      * comments adapter.
      *
-     * @param Relations\BelongsToMany|Relations\HasMany|Relations\HasManyThrough $relation
+     * @param Relations\BelongsToMany|Relations\HasMany|Relations\HasManyThrough|Builder $relation
      * @param EncodingParametersInterface $parameters
      * @return mixed
      * @todo default pagination causes a problem with polymorphic relations??
@@ -192,7 +192,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      * For example, a request to `/posts/1/author` will invoke this method on the
      * user adapter when the author relation returns a `users` resource.
      *
-     * @param Relations\BelongsTo|Relations\HasOne $relation
+     * @param Relations\BelongsTo|Relations\HasOne|Builder $relation
      * @param EncodingParametersInterface $parameters
      * @return mixed
      */
@@ -406,7 +406,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
         RelationshipInterface $relationship,
         EncodingParametersInterface $parameters
     ) {
-        $relation = $this->related($field);
+        $relation = $this->getRelated($field);
 
         if (!$this->requiresPrimaryRecordPersistence($relation)) {
             $relation->update($record, $relationship, $parameters);
@@ -439,7 +439,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
                 continue;
             }
 
-            $relation = $this->related($field);
+            $relation = $this->getRelated($field);
 
             if ($this->requiresPrimaryRecordPersistence($relation)) {
                 $relation->update($record, $relationships->getRelationship($field), $parameters);
@@ -697,7 +697,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      */
     protected function belongsTo($modelKey = null)
     {
-        return new BelongsTo($this->model, $modelKey ?: $this->guessRelation());
+        return new BelongsTo($modelKey ?: $this->guessRelation());
     }
 
     /**
@@ -706,7 +706,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      */
     protected function hasOne($modelKey = null)
     {
-        return new HasOne($this->model, $modelKey ?: $this->guessRelation());
+        return new HasOne($modelKey ?: $this->guessRelation());
     }
 
     /**
@@ -715,7 +715,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      */
     protected function hasMany($modelKey = null)
     {
-        return new HasMany($this->model, $modelKey ?: $this->guessRelation());
+        return new HasMany($modelKey ?: $this->guessRelation());
     }
 
     /**
@@ -724,7 +724,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      */
     protected function hasManyThrough($modelKey = null)
     {
-        return new HasManyThrough($this->model, $modelKey ?: $this->guessRelation());
+        return new HasManyThrough($modelKey ?: $this->guessRelation());
     }
 
     /**
@@ -734,6 +734,25 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     protected function morphMany(HasManyAdapterInterface ...$adapters)
     {
         return new MorphHasMany(...$adapters);
+    }
+
+    /**
+     * @param \Closure $factory
+     *      a factory that creates a new Eloquent query builder.
+     * @return QueriesMany
+     */
+    protected function queriesMany(\Closure $factory)
+    {
+        return new QueriesMany($factory);
+    }
+
+    /**
+     * @param \Closure $factory
+     * @return QueriesOne
+     */
+    protected function queriesOne(\Closure $factory)
+    {
+        return new QueriesOne($factory);
     }
 
     /**

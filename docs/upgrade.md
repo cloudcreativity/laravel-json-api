@@ -9,6 +9,14 @@ Note that at some point during the beta releases the minimum PHP version will be
 support for Laravel 5.4 will be dropped. We do not plan to refactor existing code to use PHP 7 features,
 so this will not result in a major breaking change before `1.0.0`.
 
+## 1.0.0-beta.1 to 1.0.0-beta.2
+
+### Relations
+
+In implementing the new `queriesOne` and `queriesMany` relations, we have re-organised some of the internals
+of the Eloquent JSON API relation classes. This will not affect your application unless you have extended
+any of these classes.
+
 ## 1.0.0-alpha.4 to 1.0.0-beta.1
 
 ### Key Names

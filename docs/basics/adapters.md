@@ -215,8 +215,8 @@ class Adapter extends AbstractAdapter
 ### Relationships
 
 The Eloquent adapter provides a syntax for defining JSON API resource relationships that is similar to that used
-for Eloquent models. The relationship types available are `belongsTo`, `hasOne`, `hasMany`, `hasManyThrough` and
-`morphMany`. These map to Eloquent relations as follow:
+for Eloquent models. The relationship types available are `belongsTo`, `hasOne`, `hasMany`, `hasManyThrough`,
+`morphMany`, `queriesOne` and `queriesMany`. These map to Eloquent relations as follow:
 
 | Eloquent | JSON API |
 | :-- | :-- |
@@ -229,6 +229,8 @@ for Eloquent models. The relationship types available are `belongsTo`, `hasOne`,
 | `morphMany` | `hasMany` |
 | `morphToMany` | `hasMany` |
 | `morphedByMany` | `morphMany` |
+| n/a | `queriesOne` |
+| n/a | `queriesMany` |
 
 All relationships that you define on your adapter are treated as fillable by default when creating or updating
 a resource object. If you want to prevent a relationship from being filled, add the JSON API field name to your
@@ -396,6 +398,76 @@ class Adapter extends AbstractAdapter
 > The `morphMany` implementation currently has some limitations that we are hoping to resolve during our alpha
 and beta releases. If you have problems using it, please create an issue as this will help us out.
 
+#### Queries-One and Queries-Many
+
+Use the `queriesOne` or `queriesMany` relations when you want to expose a JSON API relationship that uses an
+Eloquent query builder instead of an Eloquent relation.
+
+For example, if our `Post` model had the following query scope:
+
+```php
+namespace App;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Post extends Model
+{
+
+    // ...
+
+    /**
+     * Scope a query for posts that are related to the supplied post.
+     *
+     * Related posts are those that:
+     *
+     * - have a tag in common with the provided post; or
+     * - are by the same author.
+     *
+     * @param Builder $query
+     * @param Post $post
+     * @return Builder
+     */
+    public function scopeRelated(Builder $query, Post $post)
+    {
+        return $query->where(function (Builder $q) use ($post) {
+            $q->whereHas('tags', function (Builder $t) use ($post) {
+                $t->whereIn('tags.id', $post->tags()->pluck('tags.id'));
+            })->orWhere('posts.author_id', $post->getKey());
+        })->where('posts.id', '<>', $post->getKey());
+    }
+}
+```
+
+We can expose this scope as a JSON API relationship called `related` on our `posts` resource by adding
+the following to our `posts` adapter:
+
+```php
+namespace App\JsonApi\Posts;
+
+class Adapter extends AbstractAdapter
+{
+    // ...
+
+    protected function related()
+    {
+        return $this->queriesMany(function (Post $post) {
+            return Post::query()->related($post);
+        });
+    }
+}
+```
+
+This will return a JSON API `to-many` relationship based on the Eloquent query builder returned by the
+closure. The `queriesOne()` relationship works in exactly the same way, but returns a `to-one` JSON API
+relationship.
+
+Note that the `queriesOne` and `queriesMany` relations are read-only and result in an error if you define
+any of the modify relationship routes. If you have a scenario where a client could modify one of these
+relationships, extend either of the following classes and add logic to the relevant methods:
+
+- `CloudCreativity\LaravelJsonApi\Eloquent\QueriesOne`
+- `CloudCreativity\LaravelJsonApi\Eloquent\QueriesMany`
+
 #### Customising Relation Method Names
 
 If you want to use a method name for your relation that is different than the JSON API field name, overload
@@ -527,7 +599,13 @@ You can add support for any kind of relationship by writing a class that impleme
 - `CloudCreativity\LaravelJsonApi\Contracts\Adapter\RelationshipAdapterInterface` for *to-one* relations.
 - `CloudCreativity\LaravelJsonApi\Contracts\Adapter\HasManyAdapterInterface` for *to-many* relations.
 
-Again, if you use a common persistence layer you are likely to find that you can write generic classes to
+We provide a base abstract class that you can extend:
+`CloudCreativity\LaravelJsonApi\Adapter\AbstractRelationshipAdapter`.
+This implements that `to-one` interface. If your relation is a `to-many` relation, just extend the same
+abstract class and implement the `HasManyAdapterInterface`.
+
+Refer to the doc blocks on the interfaces for the methods that you need to implement.
+If you use a common persistence layer you are likely to find that you can write generic classes to
 handle specific *types* of relationships. For examples see the Eloquent relation classes that are in the
 `CloudCreativity\LaravelJsonApi\Eloquent` namespace.
 

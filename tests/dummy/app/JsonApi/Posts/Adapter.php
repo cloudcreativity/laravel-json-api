@@ -20,8 +20,11 @@ namespace DummyApp\JsonApi\Posts;
 use CloudCreativity\LaravelJsonApi\Eloquent\AbstractAdapter;
 use CloudCreativity\LaravelJsonApi\Eloquent\BelongsTo;
 use CloudCreativity\LaravelJsonApi\Eloquent\HasMany;
+use CloudCreativity\LaravelJsonApi\Eloquent\QueriesMany;
+use CloudCreativity\LaravelJsonApi\Eloquent\QueriesOne;
 use CloudCreativity\LaravelJsonApi\Pagination\StandardStrategy;
 use DummyApp\Post;
+use DummyApp\Video;
 use Illuminate\Support\Collection;
 
 class Adapter extends AbstractAdapter
@@ -81,6 +84,26 @@ class Adapter extends AbstractAdapter
     protected function tags()
     {
         return $this->hasMany();
+    }
+
+    /**
+     * @return QueriesMany
+     */
+    protected function related()
+    {
+        return $this->queriesMany(function (Post $post) {
+            return Post::query()->related($post);
+        });
+    }
+
+    /**
+     * @return QueriesOne
+     */
+    protected function relatedVideo()
+    {
+        return $this->queriesOne(function (Post $post) {
+            return Video::query()->related($post);
+        });
     }
 
     /**
