@@ -2,6 +2,18 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## Unreleased
+
+### Changed
+- Extract model sorting from the Eloquent adapter into a `SortsModels` trait.
+
+### Deprecated
+- The following methods on the Eloquent adapter will be removed in `1.0.0` as they are no longer required:
+  - `extractIncludePaths`
+  - `extractFilters`
+  - `extractPagination`
+  - `columnForField`: use `getSortColumn` instead.
+
 ## [1.0.0-beta.2] - 2018-08-25
 
 ### Added
