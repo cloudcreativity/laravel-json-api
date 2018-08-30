@@ -31,6 +31,49 @@ interface ClientInterface
 {
 
     /**
+     * Return an instance with the encoding include paths applied.
+     *
+     * These paths are used for including related resources when
+     * encoding a resource to send outbound. This only applies to create
+     * and update requests.
+     *
+     * Note that the JSON API specification says that:
+     *
+     * > If a relationship is provided in the relationships member of the resource object,
+     * > its value MUST be a relationship object with a data member. The value of this key
+     * > represents the linkage the new resource is to have.
+     *
+     * This applies when both creating and updating a resource. This means that
+     * you MUST specify the include paths of all relationships that will be
+     * serialized an sent outbound, if those relationships are only serialized
+     * with a data member if they are included resources.
+     *
+     * This method MUST be implemented in such a way as to retain the
+     * immutability of the client, and MUST return an instance that has the
+     * new include paths.
+     *
+     * @param array|null $includePaths
+     * @return ClientInterface
+     */
+    public function withIncludePaths(array $includePaths = null);
+
+    /**
+     * Return an instance with the encoding field sets applied.
+     *
+     * The field sets are used as the sparse field sets when encoding
+     * a resource to send outbound. This only applied to create and update
+     * requests.
+     *
+     * This method MUST be implemented in such a way as to retain the
+     * immutability of the client, and MUST return an instance that has the
+     * new field sets.
+     *
+     * @param array|null $fields
+     * @return ClientInterface
+     */
+    public function withFields(array $fields = null);
+
+    /**
      * @param string $resourceType
      * @param EncodingParametersInterface|null $parameters
      *      the parameters to send to the remote server.
@@ -45,6 +88,7 @@ interface ClientInterface
      * Send the domain record to the remote JSON API.
      *
      * @param object $record
+     *      the resource fields to send, if sending sparse field-sets.
      * @param EncodingParametersInterface|null $parameters
      *      the parameters to send to the remote server.
      * @param array $options
@@ -77,8 +121,6 @@ interface ClientInterface
      * Update the domain record with the remote JSON API.
      *
      * @param object $record
-     * @param string[]|null $fields
-     *      the resource fields to send, if sending sparse field-sets.
      * @param EncodingParametersInterface|null $parameters
      *      the parameters to send to the remote server.
      * @param array $options
@@ -86,12 +128,7 @@ interface ClientInterface
      * @throws JsonApiException
      *      if the remote server replies with an error.
      */
-    public function update(
-        $record,
-        array $fields = null,
-        EncodingParametersInterface $parameters = null,
-        array $options = []
-    );
+    public function update($record, EncodingParametersInterface $parameters = null, array $options = []);
 
     /**
      * Delete the domain record from the remote JSON API.

@@ -20,7 +20,6 @@ namespace CloudCreativity\LaravelJsonApi\Http\Client;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Encoder\SerializerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Factories\FactoryInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Http\Client\ClientInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\Responses\ResponseInterface;
 use Exception;
 use GuzzleHttp\Client;
@@ -36,10 +35,8 @@ use Psr\Http\Message\RequestInterface as PsrRequest;
  *
  * @package CloudCreativity\LaravelJsonApi
  */
-class GuzzleClient implements ClientInterface
+class GuzzleClient extends AbstractClient
 {
-
-    use SendsRequestsTrait;
 
     /**
      * @var Client
@@ -60,10 +57,8 @@ class GuzzleClient implements ClientInterface
         ContainerInterface $schemas,
         SerializerInterface $serializer
     ) {
-        $this->factory = $factory;
+        parent::__construct($factory, $schemas, $serializer);
         $this->http = $http;
-        $this->schemas = $schemas;
-        $this->serializer = $serializer;
     }
 
     /**
@@ -82,8 +77,11 @@ class GuzzleClient implements ClientInterface
     /**
      * @inheritdoc
      */
-    public function create($record, EncodingParametersInterface $parameters = null, array $options = [])
-    {
+    public function create(
+        $record,
+        EncodingParametersInterface $parameters = null,
+        array $options = []
+    ) {
         return $this->sendRecord('POST', $this->serializeRecord($record), $parameters, $options);
     }
 
@@ -110,11 +108,10 @@ class GuzzleClient implements ClientInterface
      */
     public function update(
         $record,
-        array $fields = null,
         EncodingParametersInterface $parameters = null,
         array $options = []
     ) {
-        return $this->sendRecord('PATCH', $this->serializeRecord($record, $fields), $parameters, $options);
+        return $this->sendRecord('PATCH', $this->serializeRecord($record), $parameters, $options);
     }
 
     /**

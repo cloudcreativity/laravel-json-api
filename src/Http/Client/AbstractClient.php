@@ -20,17 +20,18 @@ namespace CloudCreativity\LaravelJsonApi\Http\Client;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Encoder\SerializerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Factories\FactoryInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Client\ClientInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use Neomerx\JsonApi\Contracts\Http\Query\QueryParametersParserInterface;
 use Neomerx\JsonApi\Contracts\Schema\ContainerInterface;
 use Neomerx\JsonApi\Http\Headers\MediaType;
 
 /**
- * Trait SendsRequestsTrait
+ * Class AbstractClient
  *
  * @package CloudCreativity\LaravelJsonApi
  */
-trait SendsRequestsTrait
+abstract class AbstractClient implements ClientInterface
 {
 
     /**
@@ -49,23 +50,95 @@ trait SendsRequestsTrait
     protected $serializer;
 
     /**
-     * @param $record
-     * @param string[]|null $fields
-     * @return array
+     * @var array|null
      */
-    protected function serializeRecord($record, array $fields = null)
-    {
-        $parameters = null;
+    protected $includePaths;
 
-        if ($fields) {
-            $resourceType = $this->schemas->getSchema($record)->getResourceType();
-            $parameters = $this->factory->createQueryParameters(null, [$resourceType => $fields]);
-        }
+    /**
+     * @var array|null
+     */
+    protected $fieldSets;
 
-        return $this->serializer->serializeData($record, $parameters);
+    /**
+     * AbstractClient constructor.
+     *
+     * @param FactoryInterface $factory
+     * @param ContainerInterface $schemas
+     * @param SerializerInterface $serializer
+     */
+    public function __construct(
+        FactoryInterface $factory,
+        ContainerInterface $schemas,
+        SerializerInterface $serializer
+    ) {
+        $this->factory = $factory;
+        $this->schemas = $schemas;
+        $this->serializer = $serializer;
     }
 
     /**
+     * @inheritDoc
+     */
+    public function withIncludePaths(array $includePaths = null)
+    {
+        $copy = clone $this;
+        $copy->includePaths = $includePaths;
+
+        return $copy;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function withFields(array $fields = null)
+    {
+        $copy = clone $this;
+        $copy->fieldSets = $fields;
+
+        return $copy;
+    }
+
+    /**
+     * @param $record
+     * @return array
+     */
+    protected function serializeRecord($record)
+    {
+        $parameters = null;
+        $fields = null;
+
+        if ($this->fieldSets) {
+            $resourceType = $this->schemas->getSchema($record)->getResourceType();
+            $fields = [$resourceType => $this->fieldSets];
+        }
+
+        $parameters = $this->factory->createQueryParameters(
+            $this->includePaths,
+            $fields
+        );
+
+        $resource = $this->serializer->serializeData($record, $parameters)['data'];
+
+        /** Remove resource links and included resources. */
+        unset($resource['links']);
+
+        /** Remove any relationships that do not have data as these are not allowed by the spec. */
+        if (isset($resource['relationships'])) {
+            $resource['relationships'] = collect($resource['relationships'])
+                ->filter(function (array $relation) {
+                    return isset($relation['data']);
+                })->map(function (array $relation) {
+                    unset($relation['links']);
+                    return $relation;
+                })->all();
+        }
+
+        return ['data' => $resource];
+    }
+
+    /**
+     * Get the path for a record.
+     *
      * @param object $record
      * @return string
      */
@@ -77,6 +150,8 @@ trait SendsRequestsTrait
     }
 
     /**
+     * Get the path for a resource type, or resource type and id.
+     *
      * @param string $resourceType
      * @param string|null $resourceId
      * @return string

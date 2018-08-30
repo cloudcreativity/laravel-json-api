@@ -19,7 +19,6 @@
 namespace CloudCreativity\LaravelJsonApi\Tests\Unit\Http\Client;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Encoder\SerializerInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Http\Client\ClientInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectInterface;
 use CloudCreativity\LaravelJsonApi\Document\Error;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
@@ -67,7 +66,7 @@ class GuzzleClientTest extends TestCase
     private $mock;
 
     /**
-     * @var ClientInterface
+     * @var GuzzleClient
      */
     private $client;
 
@@ -280,15 +279,65 @@ class GuzzleClientTest extends TestCase
         $this->client->read('posts', '1');
     }
 
+    /**
+     * By default when updating a record we expect:
+     *
+     * - Any relationship without a `data` key to be removed.
+     * - Links to be removed from relationships.
+     * - Links to be removed from the resource.
+     * - Included resources to be removed.
+     *
+     * This is because the JSON API spec states that all relationships that are sent
+     * for an update request MUST contain a data key.
+     *
+     * For links, we should not send them by default because if we use our JSON API
+     * config for an external API, the links refer to that external API not our
+     * server.
+     */
     public function testUpdate()
     {
-        $this->willSerializeRecord()->willSeeRecord();
+        $serialized = (array) $this->record;
+        $serialized['links'] = ['self' => '/api/v1/posts/1'];
+        $serialized['relationships'] = [
+            'author' => [
+                'data' => [
+                    'type' => 'users',
+                    'id' => '123',
+                ],
+                'links' => [
+                    'self' => '/api/v1/posts/1/relationships/author',
+                ],
+            ],
+            'comments' => [
+                'links' => [
+                    'self' => '/api/v1/posts/1/relationships/comments',
+                ],
+            ],
+        ];
+
+        $expected = $serialized;
+        unset($expected['links']);
+        unset($expected['relationships']['comments']);
+        unset($expected['relationships']['author']['links']);
+
+        $document = [
+            'data' => $serialized,
+            'included' => [
+                [
+                    'type' => 'users',
+                    'id' => '123',
+                    'attributes' => ['name' => 'John Doe'],
+                ],
+            ],
+        ];
+
+        $this->willSerializeRecord(null, $document)->willSeeRecord();
         $response = $this->client->update($this->record);
 
         $this->assertSame(200, $response->getPsrResponse()->getStatusCode());
         $this->assertResponseResource($response);
         $this->assertRequested('PATCH', '/posts/1');
-        $this->assertRequestSentRecord();
+        $this->assertRequestSentRecord(['data' => $expected]);
         $this->assertHeader('Accept', 'application/vnd.api+json');
         $this->assertHeader('Content-Type', 'application/vnd.api+json');
     }
@@ -301,7 +350,21 @@ class GuzzleClientTest extends TestCase
         );
 
         $this->willSerializeRecord($expected)->willSeeRecord();
-        $this->client->update($this->record, $fields);
+        $client = $this->client->withFields($fields);
+
+        $this->assertNotSame($this->client, $client, 'client field sets are immutable');
+        $client->update($this->record);
+    }
+
+    public function testUpdateWithIncludePaths()
+    {
+        $expected = new EncodingParameters(['author']);
+
+        $this->willSerializeRecord($expected)->willSeeRecord();
+        $client = $this->client->withIncludePaths(['author']);
+
+        $this->assertNotSame($this->client, $client, 'client include paths are immutable');
+        $client->update($this->record);
     }
 
     public function testUpdateWithParameters()
@@ -312,7 +375,7 @@ class GuzzleClientTest extends TestCase
         );
 
         $this->willSerializeRecord()->willSeeRecord(201);
-        $this->client->update($this->record, [], $parameters);
+        $this->client->update($this->record, $parameters);
 
         $this->assertQueryParameters([
             'include' => 'author,site',
@@ -332,7 +395,7 @@ class GuzzleClientTest extends TestCase
     public function testUpdateWithOptions()
     {
         $this->willSerializeRecord()->willSeeRecord();
-        $this->client->update($this->record, null, null, [
+        $this->client->update($this->record, null, [
             'headers' => [
                 'X-Foo' => 'Bar',
             ],
@@ -430,15 +493,16 @@ class GuzzleClientTest extends TestCase
 
     /**
      * @param EncodingParametersInterface|null $parameters
+     * @param array|null $serialized
      * @return $this
      */
-    private function willSerializeRecord(EncodingParametersInterface $parameters = null)
+    private function willSerializeRecord(EncodingParametersInterface $parameters = null, array $serialized = null)
     {
         $this->encoder
             ->expects($this->once())
             ->method('serializeData')
-            ->with($this->record, $parameters)
-            ->willReturn(['data' => (array) $this->record]);
+            ->with($this->record, $parameters ?: new EncodingParameters())
+            ->willReturn($serialized ?: ['data' => (array) $this->record]);
 
         return $this;
     }
@@ -503,11 +567,12 @@ class GuzzleClientTest extends TestCase
     }
 
     /**
+     * @param mixed|null $expected
      * @return void
      */
-    private function assertRequestSentRecord()
+    private function assertRequestSentRecord($expected = null)
     {
-        $expected = json_encode(['data' => (array) $this->record]);
+        $expected = json_encode($expected ?: ['data' => (array) $this->record]);
         $request = $this->mock->getLastRequest();
         $this->assertJsonStringEqualsJsonString($expected, (string) $request->getBody());
     }
