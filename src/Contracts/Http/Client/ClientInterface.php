@@ -52,10 +52,12 @@ interface ClientInterface
      * immutability of the client, and MUST return an instance that has the
      * new include paths.
      *
-     * @param array|null $includePaths
+     * @param string|string[]|null $includePaths
+     * @param bool $compoundDocument
+     *      whether a compound document is sent, i.e. send the `included` member.
      * @return ClientInterface
      */
-    public function withIncludePaths(array $includePaths = null);
+    public function withIncludePaths($includePaths = null, $compoundDocument = false);
 
     /**
      * Return an instance with the encoding field sets applied.
@@ -72,6 +74,25 @@ interface ClientInterface
      * @return ClientInterface
      */
     public function withFields(array $fields = null);
+
+    /**
+     * Return an instance that will keep links in encoded documents.
+     *
+     * By default a client MUST remove any `links` members from the JSON
+     * API document it is sending. This behaviour can be overridden using
+     * this method.
+     *
+     * Note that a client MUST always remove relationships that do not
+     * contain the `data` member, because these are not allowed by the
+     * spec when sending to a server for a create or update action.
+     *
+     * This method MUST be implemented in such a way as to retain the
+     * immutability of the client, and MUST return an instance that
+     * will send links in encoded documents.
+     *
+     * @return ClientInterface
+     */
+    public function withLinks();
 
     /**
      * @param string $resourceType

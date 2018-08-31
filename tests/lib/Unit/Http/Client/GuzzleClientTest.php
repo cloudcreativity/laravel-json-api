@@ -342,6 +342,137 @@ class GuzzleClientTest extends TestCase
         $this->assertHeader('Content-Type', 'application/vnd.api+json');
     }
 
+    /**
+     * Test that we can set the client to send both links and included resources.
+     * We still need to strip out any relationships that do not have data
+     * because these are not allowed by the spec.
+     */
+    public function testUpdateWithLinksAndIncluded()
+    {
+        $serialized = (array) $this->record;
+        $serialized['links'] = ['self' => '/api/v1/posts/1'];
+        $serialized['relationships'] = [
+            'author' => [
+                'data' => [
+                    'type' => 'users',
+                    'id' => '123',
+                ],
+                'links' => [
+                    'self' => '/api/v1/posts/1/relationships/author',
+                ],
+            ],
+            'comments' => [
+                'links' => [
+                    'self' => '/api/v1/posts/1/relationships/comments',
+                ],
+            ],
+        ];
+
+        $expected = $serialized;
+        unset($expected['relationships']['comments']);
+
+        $document = [
+            'data' => $serialized,
+            'included' => [
+                [
+                    'type' => 'users',
+                    'id' => '123',
+                    'attributes' => ['name' => 'John Doe'],
+                    'relationships' => [
+                        'posts' => [
+                            'links' => [
+                                'self' => '/api/v1/users/123/posts',
+                            ],
+                        ],
+                    ],
+                    'links' => [
+                        'self' => '/api/v1/users/123',
+                    ],
+                ],
+            ],
+        ];
+
+        $this->willSerializeRecord(new EncodingParameters(['author']), $document)
+            ->willSeeRecord();
+
+        $this->client
+            ->withIncludePaths('author', true)
+            ->withLinks()
+            ->update($this->record);
+
+        $this->assertRequestSentRecord([
+            'data' => $expected,
+            'included' => $document['included'],
+        ]);
+    }
+
+    /**
+     * Test that we can set the client to send both links and included resources.
+     * We still need to strip out any relationships that do not have data
+     * because these are not allowed by the spec.
+     */
+    public function testUpdateWithIncludedAndWithoutLinks()
+    {
+        $serialized = (array) $this->record;
+        $serialized['links'] = ['self' => '/api/v1/posts/1'];
+        $serialized['relationships'] = [
+            'author' => [
+                'data' => [
+                    'type' => 'users',
+                    'id' => '123',
+                ],
+                'links' => [
+                    'self' => '/api/v1/posts/1/relationships/author',
+                ],
+            ],
+            'comments' => [
+                'links' => [
+                    'self' => '/api/v1/posts/1/relationships/comments',
+                ],
+            ],
+        ];
+
+        $document = [
+            'data' => $serialized,
+            'included' => [
+                [
+                    'type' => 'users',
+                    'id' => '123',
+                    'attributes' => ['name' => 'John Doe'],
+                    'relationships' => [
+                        'posts' => [
+                            'links' => [
+                                'self' => '/api/v1/users/123/posts',
+                            ],
+                        ],
+                    ],
+                    'links' => [
+                        'self' => '/api/v1/users/123',
+                    ],
+                ],
+            ],
+        ];
+
+        $expected = $document;
+
+        unset(
+            $expected['data']['links'],
+            $expected['data']['relationships']['author']['links'],
+            $expected['data']['relationships']['comments'],
+            $expected['included'][0]['links'],
+            $expected['included'][0]['relationships'] // as relationships are now empty, do not include them
+        );
+
+        $this->willSerializeRecord(new EncodingParameters(['author']), $document)
+            ->willSeeRecord();
+
+        $this->client
+            ->withIncludePaths('author', true)
+            ->update($this->record);
+
+        $this->assertRequestSentRecord($expected);
+    }
+
     public function testUpdateWithFieldsets()
     {
         $expected = new EncodingParameters(
