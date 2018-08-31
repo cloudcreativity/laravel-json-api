@@ -21,7 +21,6 @@ namespace CloudCreativity\LaravelJsonApi\Http\Client;
 use CloudCreativity\LaravelJsonApi\Contracts\Encoder\SerializerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Factories\FactoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\Client\ClientInterface;
-use Illuminate\Support\Collection;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use Neomerx\JsonApi\Contracts\Http\Query\QueryParametersParserInterface;
 use Neomerx\JsonApi\Contracts\Schema\ContainerInterface;
@@ -46,19 +45,9 @@ abstract class AbstractClient implements ClientInterface
     protected $schemas;
 
     /**
-     * @var SerializerInterface
+     * @var ClientSerializer
      */
     protected $serializer;
-
-    /**
-     * @var array|null
-     */
-    protected $includePaths;
-
-    /**
-     * @var bool
-     */
-    protected $compoundDocument;
 
     /**
      * @var array|null
@@ -84,19 +73,17 @@ abstract class AbstractClient implements ClientInterface
     ) {
         $this->factory = $factory;
         $this->schemas = $schemas;
-        $this->serializer = $serializer;
-        $this->compoundDocument = false;
+        $this->serializer = new ClientSerializer($serializer, $factory);
         $this->links = false;
     }
 
     /**
      * @inheritDoc
      */
-    public function withIncludePaths($includePaths = null, $compoundDocument = false)
+    public function withIncludePaths(...$includePaths)
     {
         $copy = clone $this;
-        $copy->includePaths = $includePaths ? (array) $includePaths : null;
-        $copy->compoundDocument = $compoundDocument;
+        $copy->serializer = $copy->serializer->withIncludePaths(...$includePaths);
 
         return $copy;
     }
@@ -104,10 +91,21 @@ abstract class AbstractClient implements ClientInterface
     /**
      * @inheritDoc
      */
-    public function withFields(array $fields = null)
+    public function withFields($resourceType, ...$fields)
     {
         $copy = clone $this;
-        $copy->fieldSets = $fields;
+        $copy->serializer = $copy->serializer->withFieldsets($resourceType, ...$fields);
+
+        return $copy;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function withCompoundDocuments()
+    {
+        $copy = clone $this;
+        $copy->serializer = $copy->serializer->withCompoundDocuments(true);
 
         return $copy;
     }
@@ -118,88 +116,9 @@ abstract class AbstractClient implements ClientInterface
     public function withLinks()
     {
         $copy = clone $this;
-        $copy->links = true;
+        $copy->serializer = $copy->serializer->withLinks(true);
 
         return $copy;
-    }
-
-    /**
-     * @param $record
-     * @return array
-     */
-    protected function serializeRecord($record)
-    {
-        $parameters = null;
-        $fields = null;
-
-        if ($this->fieldSets) {
-            $resourceType = $this->schemas->getSchema($record)->getResourceType();
-            $fields = [$resourceType => $this->fieldSets];
-        }
-
-        $parameters = $this->factory->createQueryParameters(
-            $this->includePaths,
-            $fields
-        );
-
-        $document = $this->serializer->serializeData($record, $parameters);
-
-        /** Remove resource links and included resources. */
-        if ($this->doesNotIncludeLinks()) {
-            unset($document['links']);
-        }
-
-        if ($this->doesNotSendCompoundDocuments()) {
-            unset($document['included']);
-        } else if (isset($document['included'])) {
-            $document['included'] = collect($document['included'])->map(function (array $resource) {
-                return $this->parseSerializedResource($resource, false);
-            })->all();
-        }
-
-        $document['data'] = $this->parseSerializedResource($document['data']);
-
-        return $document;
-    }
-
-    /**
-     * @param array $resource
-     * @param bool $primary
-     * @return array
-     */
-    protected function parseSerializedResource(array $resource, $primary = true)
-    {
-        if ($this->doesNotIncludeLinks()) {
-            unset($resource['links']);
-        }
-
-        $relationships = isset($resource['relationships']) ?
-            $this->parseSerializedRelationships($resource['relationships'], $primary) : [];
-
-        if ($relationships) {
-            $resource['relationships'] = $relationships;
-        } else {
-            unset($resource['relationships']);
-        }
-
-        return $resource;
-    }
-
-    /**
-     * @param array $relationships
-     * @param bool $primary
-     * @return array
-     */
-    protected function parseSerializedRelationships(array $relationships, $primary = true)
-    {
-        return collect($relationships)->reject(function (array $relation) use ($primary) {
-            return $primary && !isset($relation['data']);
-        })->when($this->doesNotIncludeLinks(), function (Collection $relationships) {
-            return $relationships->map(function (array $relation) {
-                unset($relation['links']);
-                return $relation ?: null;
-            })->filter();
-        })->all();
     }
 
     /**

@@ -82,7 +82,7 @@ class GuzzleClient extends AbstractClient
         EncodingParametersInterface $parameters = null,
         array $options = []
     ) {
-        return $this->sendRecord('POST', $this->serializeRecord($record), $parameters, $options);
+        return $this->sendRecord('POST', $this->serializer->record($record), $parameters, $options);
     }
 
     /**
@@ -111,7 +111,7 @@ class GuzzleClient extends AbstractClient
         EncodingParametersInterface $parameters = null,
         array $options = []
     ) {
-        return $this->sendRecord('PATCH', $this->serializeRecord($record), $parameters, $options);
+        return $this->sendRecord('PATCH', $this->serializer->record($record), $parameters, $options);
     }
 
     /**

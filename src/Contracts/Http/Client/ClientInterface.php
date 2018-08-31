@@ -45,22 +45,20 @@ interface ClientInterface
      *
      * This applies when both creating and updating a resource. This means that
      * you MUST specify the include paths of all relationships that will be
-     * serialized an sent outbound, if those relationships are only serialized
+     * serialized and sent outbound, if those relationships are only serialized
      * with a data member if they are included resources.
      *
      * This method MUST be implemented in such a way as to retain the
      * immutability of the client, and MUST return an instance that has the
      * new include paths.
      *
-     * @param string|string[]|null $includePaths
-     * @param bool $compoundDocument
-     *      whether a compound document is sent, i.e. send the `included` member.
+     * @param string ...$includePaths
      * @return ClientInterface
      */
-    public function withIncludePaths($includePaths = null, $compoundDocument = false);
+    public function withIncludePaths(...$includePaths);
 
     /**
-     * Return an instance with the encoding field sets applied.
+     * Return an instance with the encoding field sets applied for the resource type.
      *
      * The field sets are used as the sparse field sets when encoding
      * a resource to send outbound. This only applied to create and update
@@ -70,10 +68,11 @@ interface ClientInterface
      * immutability of the client, and MUST return an instance that has the
      * new field sets.
      *
-     * @param array|null $fields
+     * @param string $resourceType
+     * @param string ...$fields
      * @return ClientInterface
      */
-    public function withFields(array $fields = null);
+    public function withFields($resourceType, ...$fields);
 
     /**
      * Return an instance that will keep links in encoded documents.
@@ -93,6 +92,21 @@ interface ClientInterface
      * @return ClientInterface
      */
     public function withLinks();
+
+    /**
+     * Return an instance that will send compound documents.
+     *
+     * By default clients do not send compound documents (JSON API documents
+     * with any related resources encoded in the top-level `included` member).
+     * This behaviour can be changed by calling this method.
+     *
+     * This method MUST be implemented in such a way as to retain the
+     * immutability of the client, and MUST return an instance that
+     * will send compound documents.
+     *
+     * @return ClientInterface
+     */
+    public function withCompoundDocuments();
 
     /**
      * @param string $resourceType

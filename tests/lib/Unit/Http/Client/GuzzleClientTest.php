@@ -164,6 +164,9 @@ class GuzzleClientTest extends TestCase
 
     public function testCreateWithoutId()
     {
+        $expected = (array) $this->record;
+        unset($expected['id']);
+
         $this->record->id = null;
         $this->willSerializeRecord()->willSeeRecord(201);
         $response = $this->client->create($this->record);
@@ -171,7 +174,7 @@ class GuzzleClientTest extends TestCase
         $this->assertSame(201, $response->getPsrResponse()->getStatusCode());
         $this->assertResponseResource($response);
         $this->assertRequested('POST', '/posts');
-        $this->assertRequestSentRecord();
+        $this->assertRequestSentRecord(['data' => $expected]);
         $this->assertHeader('Accept', 'application/vnd.api+json');
         $this->assertHeader('Content-Type', 'application/vnd.api+json');
     }
@@ -396,7 +399,8 @@ class GuzzleClientTest extends TestCase
             ->willSeeRecord();
 
         $this->client
-            ->withIncludePaths('author', true)
+            ->withIncludePaths('author')
+            ->withCompoundDocuments()
             ->withLinks()
             ->update($this->record);
 
@@ -467,7 +471,8 @@ class GuzzleClientTest extends TestCase
             ->willSeeRecord();
 
         $this->client
-            ->withIncludePaths('author', true)
+            ->withIncludePaths('author')
+            ->withCompoundDocuments()
             ->update($this->record);
 
         $this->assertRequestSentRecord($expected);
@@ -477,11 +482,11 @@ class GuzzleClientTest extends TestCase
     {
         $expected = new EncodingParameters(
             null,
-            ['posts' => $fields = ['content', 'published-at']]
+            ['posts' => ['content', 'published-at']]
         );
 
         $this->willSerializeRecord($expected)->willSeeRecord();
-        $client = $this->client->withFields($fields);
+        $client = $this->client->withFields('posts', 'content', 'published-at');
 
         $this->assertNotSame($this->client, $client, 'client field sets are immutable');
         $client->update($this->record);
@@ -492,7 +497,7 @@ class GuzzleClientTest extends TestCase
         $expected = new EncodingParameters(['author']);
 
         $this->willSerializeRecord($expected)->willSeeRecord();
-        $client = $this->client->withIncludePaths(['author']);
+        $client = $this->client->withIncludePaths('author');
 
         $this->assertNotSame($this->client, $client, 'client include paths are immutable');
         $client->update($this->record);
