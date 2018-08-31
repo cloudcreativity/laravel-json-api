@@ -317,13 +317,13 @@ class Api
     }
 
     /**
-     * @param GuzzleClient|string $clientHostOrOptions
+     * @param GuzzleClient|string|array $clientHostOrOptions
      *      Guzzle client, string host or array of Guzzle options
      * @param array $options
      *      Guzzle options, only used if first argument is a string host name.
      * @return ClientInterface
      */
-    public function client($clientHostOrOptions, array $options = [])
+    public function client($clientHostOrOptions = [], array $options = [])
     {
         if (is_array($clientHostOrOptions)) {
             $options = array_replace($clientHostOrOptions, [

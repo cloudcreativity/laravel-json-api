@@ -4,14 +4,20 @@ namespace CloudCreativity\LaravelJsonApi\Tests\Integration;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Http\Client\ClientInterface;
 use DummyApp\Post;
+use GuzzleHttp\Client;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;
-use function GuzzleHttp\Psr7\parse_query;
 use Neomerx\JsonApi\Encoder\Parameters\EncodingParameters;
+use function GuzzleHttp\Psr7\parse_query;
 
 class ClientTest extends TestCase
 {
+
+    /**
+     * @var HandlerStack
+     */
+    private $handler;
 
     /**
      * @var MockHandler
@@ -29,13 +35,73 @@ class ClientTest extends TestCase
     protected function setUp()
     {
         parent::setUp();
-        $handler = HandlerStack::create($this->mock = new MockHandler());
-        $this->client = $this->api()->client('http://example.com', ['handler' => $handler]);
+        $this->handler = HandlerStack::create($this->mock = new MockHandler());
+        $this->client = $this->api()->client('http://example.com', ['handler' => $this->handler]);
     }
 
     public function test()
     {
         $this->markTestIncomplete('@todo move other tests over from the unit test');
+    }
+
+    /**
+     * Uses the host in the JSON API config file.
+     */
+    public function testClientWithoutHost()
+    {
+        $client = $this->api()->client(['handler' => $this->handler]);
+        $post = factory(Post::class)->make();
+
+        $this->willSeeResponse($post, 201);
+        $client->create($post);
+
+        $this->assertSame(
+            'http://localhost/api/v1/posts',
+            (string) $this->mock->getLastRequest()->getUri()
+        );
+    }
+
+    /**
+     * The host that is provided can have a path as well.
+     */
+    public function testClientWithHostAndPath()
+    {
+        $client = $this->api()->client(
+            'http://example.com/foo',
+            ['handler' => $this->handler]
+        );
+
+        $post = factory(Post::class)->make();
+
+        $this->willSeeResponse($post, 201);
+        $client->create($post);
+
+        $this->assertSame(
+            'http://example.com/foo/api/v1/posts',
+            (string) $this->mock->getLastRequest()->getUri()
+        );
+    }
+
+    /**
+     * A Guzzle client can be provided.
+     */
+    public function testWithGuzzleClient()
+    {
+        $guzzle = new Client([
+            'handler' => $this->handler,
+            'base_uri' => 'http://foobar.local/baz/bat/',
+        ]);
+
+        $client = $this->api()->client($guzzle);
+        $post = factory(Post::class)->make();
+
+        $this->willSeeResponse($post, 201);
+        $client->create($post);
+
+        $this->assertSame(
+            'http://foobar.local/baz/bat/posts',
+            (string) $this->mock->getLastRequest()->getUri()
+        );
     }
 
     public function testCreate()
