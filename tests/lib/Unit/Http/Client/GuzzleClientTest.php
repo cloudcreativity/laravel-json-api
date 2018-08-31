@@ -81,8 +81,9 @@ class GuzzleClientTest extends TestCase
             'attributes' => ['title' => 'Hello World'],
         ];
 
-        /** @var SerializerInterface $serializer */
         $serializer = $this->encoder = $this->createMock(SerializerInterface::class);
+        $serializer->method('withMeta')->willReturnSelf();
+        $serializer->method('withLinks')->willReturnSelf();
 
         $schema = $this->createMock(SchemaProviderInterface::class);
         $schema->method('getResourceType')->willReturn('posts');

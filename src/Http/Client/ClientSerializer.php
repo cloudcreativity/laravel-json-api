@@ -121,13 +121,12 @@ class ClientSerializer
      * @param mixed|null $links
      * @return array
      */
-    public function record($record, $meta = null, $links = null)
+    public function serialize($record, $meta = null, array $links = [])
     {
         $serializer = clone $this->serializer;
-//        $serializer->withMeta($meta)->withLinks($links);
+        $serializer->withMeta($meta)->withLinks($links);
         $serialized = $serializer->serializeData($record, $this->createEncodingParameters());
-
-        $resourceLinks = !$this->doesRemoveLinks();
+        $resourceLinks = null;
 
         if (empty($serialized['data']['id'])) {
             unset($serialized['data']['id']);
@@ -183,14 +182,12 @@ class ClientSerializer
      */
     protected function parseResource(array $resource, $primary = false, $links = null)
     {
-        $links = is_null($links) ? !$this->doesRemoveLinks() : $links;
-
-        if (!$links) {
+        if (false === $links || $this->doesRemoveLinks()) {
             unset($resource['links']);
         }
 
         $relationships = isset($resource['relationships']) ?
-            $this->parseRelationships($resource['relationships'], $primary) : [];
+            $this->parseRelationships($resource['relationships'], $primary, $links) : [];
 
         if ($relationships) {
             $resource['relationships'] = $relationships;
@@ -210,8 +207,6 @@ class ClientSerializer
      */
     protected function parseRelationships(array $relationships, $primary = false, $links = null)
     {
-        $links = is_null($links) ? !$this->doesRemoveLinks() : $links;
-
         return collect($relationships)->reject(function (array $relation) use ($primary) {
             return $primary && !isset($relation['data']);
         })->map(function (array $relation) use ($primary, $links) {
@@ -227,9 +222,7 @@ class ClientSerializer
      */
     protected function parseRelationship(array $relationship, $primary = false, $links = null)
     {
-        $links = is_null($links) ? !$this->doesRemoveLinks() : $links;
-
-        if (!$links) {
+        if (false === $links || $this->doesRemoveLinks()) {
             unset($relationship['links']);
         }
 

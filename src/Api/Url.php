@@ -60,7 +60,27 @@ class Url
      */
     public function __toString()
     {
-        return $this->host . $this->namespace;
+        return $this->toString();
+    }
+
+    /**
+     * @return string
+     */
+    public function toString()
+    {
+        return rtrim($this->host . $this->namespace, '/');
+    }
+
+    /**
+     * @param $host
+     * @return Url
+     */
+    public function withHost($host)
+    {
+        $copy = clone $this;
+        $copy->host = rtrim($host, '/');
+
+        return $copy;
     }
 
     /**
@@ -85,6 +105,14 @@ class Url
     public function getName()
     {
         return $this->name;
+    }
+
+    /**
+     * @return string
+     */
+    public function getBaseUri()
+    {
+        return $this->toString() . '/';
     }
 
 
