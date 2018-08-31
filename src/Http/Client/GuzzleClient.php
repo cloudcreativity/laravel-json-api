@@ -18,7 +18,6 @@
 
 namespace CloudCreativity\LaravelJsonApi\Http\Client;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Encoder\SerializerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Factories\FactoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\Responses\ResponseInterface;
 use Exception;
@@ -49,13 +48,13 @@ class GuzzleClient extends AbstractClient
      * @param FactoryInterface $factory
      * @param Client $http
      * @param ContainerInterface $schemas
-     * @param SerializerInterface $serializer
+     * @param ClientSerializer $serializer
      */
     public function __construct(
         FactoryInterface $factory,
         Client $http,
         ContainerInterface $schemas,
-        SerializerInterface $serializer
+        ClientSerializer $serializer
     ) {
         parent::__construct($factory, $schemas, $serializer);
         $this->http = $http;

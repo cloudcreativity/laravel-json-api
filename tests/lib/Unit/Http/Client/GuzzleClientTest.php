@@ -22,6 +22,7 @@ use CloudCreativity\LaravelJsonApi\Contracts\Encoder\SerializerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectInterface;
 use CloudCreativity\LaravelJsonApi\Document\Error;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
+use CloudCreativity\LaravelJsonApi\Http\Client\ClientSerializer;
 use CloudCreativity\LaravelJsonApi\Http\Client\GuzzleClient;
 use CloudCreativity\LaravelJsonApi\Http\Responses\Response as ClientResponse;
 use CloudCreativity\LaravelJsonApi\Object\ResourceIdentifier;
@@ -99,7 +100,12 @@ class GuzzleClientTest extends TestCase
 
         /** @var ContainerInterface $container */
         $factory = new Factory($this->createMock(Container::class));
-        $this->client = new GuzzleClient($factory, $http, $container, $serializer);
+        $this->client = new GuzzleClient(
+            $factory,
+            $http,
+            $container,
+            new ClientSerializer($serializer, $factory)
+        );
     }
 
     public function testIndex()

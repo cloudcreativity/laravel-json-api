@@ -32,6 +32,7 @@ use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\QueryValidatorInterface;
 use CloudCreativity\LaravelJsonApi\Encoder\Encoder;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
+use CloudCreativity\LaravelJsonApi\Http\Client\ClientSerializer;
 use CloudCreativity\LaravelJsonApi\Http\Client\GuzzleClient;
 use CloudCreativity\LaravelJsonApi\Http\Headers\RestrictiveHeadersChecker;
 use CloudCreativity\LaravelJsonApi\Http\Query\ValidationQueryChecker;
@@ -162,7 +163,12 @@ class Factory extends BaseFactory implements FactoryInterface
      */
     public function createClient($httpClient, SchemaContainerInterface $container, SerializerInterface $encoder)
     {
-        return new GuzzleClient($this, $httpClient, $container, $encoder);
+        return new GuzzleClient(
+            $this,
+            $httpClient,
+            $container,
+            new ClientSerializer($encoder, $this)
+        );
     }
 
     /**

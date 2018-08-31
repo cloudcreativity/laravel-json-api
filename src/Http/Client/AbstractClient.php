@@ -18,7 +18,6 @@
 
 namespace CloudCreativity\LaravelJsonApi\Http\Client;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Encoder\SerializerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Factories\FactoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\Client\ClientInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
@@ -64,16 +63,16 @@ abstract class AbstractClient implements ClientInterface
      *
      * @param FactoryInterface $factory
      * @param ContainerInterface $schemas
-     * @param SerializerInterface $serializer
+     * @param ClientSerializer $serializer
      */
     public function __construct(
         FactoryInterface $factory,
         ContainerInterface $schemas,
-        SerializerInterface $serializer
+        ClientSerializer $serializer
     ) {
         $this->factory = $factory;
         $this->schemas = $schemas;
-        $this->serializer = new ClientSerializer($serializer, $factory);
+        $this->serializer = $serializer;
         $this->links = false;
     }
 
