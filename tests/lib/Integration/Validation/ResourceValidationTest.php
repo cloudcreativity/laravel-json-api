@@ -2,7 +2,6 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Validation;
 
-use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
 use DummyApp\Post;
 
 class ResourceValidationTest extends TestCase
@@ -363,7 +362,7 @@ class ResourceValidationTest extends TestCase
      */
     public function testPost($data, array $error)
     {
-        $this->postJsonApi('/api/v1/posts', json_encode($data))
+        $this->doInvalidRequest('/api/v1/posts', $data)
             ->assertStatus($error['status'])
             ->assertJson(['errors' => [$error]]);
     }
@@ -381,7 +380,7 @@ class ResourceValidationTest extends TestCase
             $this->fail('Test scenario expects id to be 1.');
         }
 
-        $this->patchJsonApi("/api/v1/posts/{$post->getKey()}", json_encode($data))
+        $this->doInvalidRequest("/api/v1/posts/{$post->getKey()}", $data, 'PATCH')
             ->assertStatus($error['status'])
             ->assertJson(['errors' => [$error]]);
     }

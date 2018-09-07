@@ -2,7 +2,6 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Validation;
 
-use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
 use DummyApp\Post;
 
 class RelationshipValidationTest extends TestCase
@@ -344,7 +343,7 @@ class RelationshipValidationTest extends TestCase
     {
         $post = factory(Post::class)->create();
 
-        $this->patchJsonApi("/api/v1/posts/{$post->getKey()}/relationships/author", json_encode($data))
+        $this->doInvalidRequest("/api/v1/posts/{$post->getKey()}/relationships/author", $data, 'PATCH')
             ->assertStatus($error['status'])
             ->assertJson([
                 'errors' => [$error],
@@ -360,7 +359,7 @@ class RelationshipValidationTest extends TestCase
     {
         $post = factory(Post::class)->create();
 
-        $this->patchJsonApi("/api/v1/posts/{$post->getKey()}/relationships/tags", json_encode($data))
+        $this->doInvalidRequest("/api/v1/posts/{$post->getKey()}/relationships/tags", $data, 'PATCH')
             ->assertStatus($error['status'])
             ->assertJson([
                 'errors' => [$error],
