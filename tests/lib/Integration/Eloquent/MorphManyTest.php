@@ -83,7 +83,7 @@ class MorphManyTest extends TestCase
                     'data' => [
                         [
                             'type' => 'comments',
-                            'id' => (string) $comment->getKey(),
+                            'id' => (string) $comment->getRouteKey(),
                         ],
                     ],
                 ],
@@ -115,11 +115,11 @@ class MorphManyTest extends TestCase
                     'data' => [
                         [
                             'type' => 'comments',
-                            'id' => (string) $comments->first()->getKey(),
+                            'id' => (string) $comments->first()->getRouteKey(),
                         ],
                         [
                             'type' => 'comments',
-                            'id' => (string) $comments->last()->getKey(),
+                            'id' => (string) $comments->last()->getRouteKey(),
                         ],
                     ],
                 ],
@@ -144,7 +144,7 @@ class MorphManyTest extends TestCase
 
         $data = [
             'type' => 'posts',
-            'id' => (string) $post->getKey(),
+            'id' => (string) $post->getRouteKey(),
             'relationships' => [
                 'comments' => [
                     'data' => [],
@@ -168,7 +168,7 @@ class MorphManyTest extends TestCase
 
         $data = [
             'type' => 'posts',
-            'id' => (string) $post->getKey(),
+            'id' => (string) $post->getRouteKey(),
             'attributes' => [
                 'title' => $post->title,
                 'slug' => $post->slug,
@@ -179,7 +179,7 @@ class MorphManyTest extends TestCase
                     'data' => [
                         [
                             'type' => 'comments',
-                            'id' => (string) $comment->getKey(),
+                            'id' => (string) $comment->getRouteKey(),
                         ],
                     ],
                 ],
@@ -203,7 +203,7 @@ class MorphManyTest extends TestCase
 
         $data = [
             'type' => 'posts',
-            'id' => (string) $post->getKey(),
+            'id' => (string) $post->getRouteKey(),
             'attributes' => [
                 'title' => $post->title,
                 'slug' => $post->slug,
@@ -214,11 +214,11 @@ class MorphManyTest extends TestCase
                     'data' => [
                         [
                             'type' => 'comments',
-                            'id' => (string) $comments->first()->getKey(),
+                            'id' => (string) $comments->first()->getRouteKey(),
                         ],
                         [
                             'type' => 'comments',
-                            'id' => (string) $comments->last()->getKey(),
+                            'id' => (string) $comments->last()->getRouteKey(),
                         ],
                     ],
                 ],
@@ -264,7 +264,7 @@ class MorphManyTest extends TestCase
             'commentable_id' => $post->getKey(),
         ]);
 
-        $this->doReadRelated($post, 'comments', ['filter' => ['created-by' => $user->getKey()]])
+        $this->doReadRelated($post, 'comments', ['filter' => ['created-by' => $user->getRouteKey()]])
             ->assertReadHasMany('comments', $expected);
     }
 
@@ -398,7 +398,7 @@ class MorphManyTest extends TestCase
         $comments = factory(Comment::class, 2)->create();
 
         $data = $comments->map(function (Comment $comment) {
-            return ['type' => 'comments', 'id' => (string) $comment->getKey()];
+            return ['type' => 'comments', 'id' => (string) $comment->getRouteKey()];
         })->all();
 
         $this->doReplaceRelationship($post, 'comments', $data)
@@ -432,7 +432,7 @@ class MorphManyTest extends TestCase
         $comments = factory(Comment::class, 3)->create();
 
         $data = $comments->map(function (Comment $comment) {
-            return ['type' => 'comments', 'id' => (string) $comment->getKey()];
+            return ['type' => 'comments', 'id' => (string) $comment->getRouteKey()];
         })->all();
 
         $this->doReplaceRelationship($post, 'comments', $data)
@@ -451,7 +451,7 @@ class MorphManyTest extends TestCase
 
         $add = factory(Comment::class, 2)->create();
         $data = $add->map(function (Comment $comment) {
-            return ['type' => 'comments', 'id' => (string) $comment->getKey()];
+            return ['type' => 'comments', 'id' => (string) $comment->getRouteKey()];
         })->all();
 
         $this->doAddToRelationship($post, 'comments', $data)
@@ -469,7 +469,7 @@ class MorphManyTest extends TestCase
         ]);
 
         $data = $comments->take(2)->map(function (Comment $comment) {
-            return ['type' => 'comments', 'id' => (string) $comment->getKey()];
+            return ['type' => 'comments', 'id' => (string) $comment->getRouteKey()];
         })->all();
 
         $this->doRemoveFromRelationship($post, 'comments', $data)

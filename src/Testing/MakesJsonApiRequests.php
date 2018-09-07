@@ -45,26 +45,13 @@ trait MakesJsonApiRequests
      * @param array $headers
      * @return TestResponse
      */
-    protected function jsonApi($method, $uri, $data = [], array $headers = [])
+    protected function jsonApi($method, $uri, array $data = [], array $headers = [])
     {
         if ($uri instanceof LinkInterface) {
             $uri = $uri->getSubHref();
         }
 
-        if (is_array($data) && !empty($data)) {
-            $content = json_encode($data);
-        } else {
-            $content = $data ?: null;
-        }
-
-        $headers = $this->normalizeHeaders($headers, $content);
-
-        /** @var TestResponse $response */
-        $response = $this->call(
-            $method, $uri, [], [], [], $this->transformHeadersToServerVars($headers), $content
-        );
-
-        return $response;
+        return $this->json($method, $uri, $data, $this->normalizeHeaders($headers));
     }
 
     /**
@@ -113,19 +100,14 @@ trait MakesJsonApiRequests
 
     /**
      * @param array $headers
-     * @param string|null $content
      * @return array
      */
-    protected function normalizeHeaders(array $headers, $content = null)
+    protected function normalizeHeaders(array $headers)
     {
-        $defaultHeaders = ['Accept' => $this->acceptMediaType()];
-
-        if (!is_null($content)) {
-            $defaultHeaders['CONTENT_LENGTH'] = mb_strlen($content, '8bit');
-            $defaultHeaders['CONTENT_TYPE'] = $this->contentMediaType();
-        }
-
-        return array_merge($defaultHeaders, $headers);
+        return array_merge([
+            'Accept' => $this->acceptMediaType(),
+            'CONTENT_TYPE' => $this->contentMediaType(),
+        ], $headers);
     }
 
     /**
@@ -551,6 +533,30 @@ trait MakesJsonApiRequests
     }
 
     /**
+     * Assert that the resource's create, update and delete routes do not exist.
+     *
+     * @return void
+     */
+    protected function assertReadOnly()
+    {
+        $this->assertCannotCreate();
+        $this->assertCannotUpdate();
+        $this->assertCannotDelete();
+    }
+
+    /**
+     * Assert that the resource relationship's replace, add-to and remove-from routes do not exist.
+     *
+     * @param $relationshipName
+     */
+    protected function assertRelationshipIsReadOnly($relationshipName)
+    {
+        $this->assertCannotReplaceRelationship($relationshipName);
+        $this->assertCannotAddToRelationship($relationshipName);
+        $this->assertCannotRemoveFromRelationship($relationshipName);
+    }
+
+    /**
      * @return mixed
      */
     protected function resourceType()
@@ -637,8 +643,19 @@ trait MakesJsonApiRequests
         }
 
         return collect($ids)->map(function ($id) {
-            return ($id instanceof UrlRoutable) ? $id->getRouteKey() : $id;
+            return $this->normalizeId($id);
         })->all();
+    }
+
+    /**
+     * Normalize an id for a resource request.
+     *
+     * @param $id
+     * @return string|int
+     */
+    protected function normalizeId($id)
+    {
+        return ($id instanceof UrlRoutable) ? $id->getRouteKey() : $id;
     }
 
 }

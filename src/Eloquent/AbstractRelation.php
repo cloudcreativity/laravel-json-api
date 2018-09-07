@@ -17,89 +17,33 @@
 
 namespace CloudCreativity\LaravelJsonApi\Eloquent;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Adapter\RelationshipAdapterInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreAwareInterface;
-use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
-use CloudCreativity\LaravelJsonApi\Store\StoreAwareTrait;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\Relation;
+use CloudCreativity\LaravelJsonApi\Adapter\AbstractRelationshipAdapter;
+use CloudCreativity\LaravelJsonApi\Eloquent\Concerns\QueriesRelations;
 
 /**
  * Class AbstractRelation
  *
  * @package CloudCreativity\LaravelJsonApi
+ * @deprecated 1.0.0 extend AbstractRelationshipAdapter and use the QueriesRelations trait.
  */
-abstract class AbstractRelation implements RelationshipAdapterInterface, StoreAwareInterface
+abstract class AbstractRelation extends AbstractRelationshipAdapter
 {
 
-    use StoreAwareTrait;
+    use QueriesRelations;
 
     /**
-     * @var Model
-     */
-    protected $model;
-
-    /**
-     * The model key.
-     *
      * @var string
      */
     protected $key;
 
     /**
-     * @var string|null
-     */
-    protected $field;
-
-    /**
-     * Is the supplied Eloquent relation acceptable for this JSON API relation?
-     *
-     * @param Relation $relation
-     * @return bool
-     */
-    abstract protected function acceptRelation($relation);
-
-    /**
      * AbstractRelation constructor.
      *
-     * @param Model $model
-     * @param $key
+     * @param string $key
+     *      the model key for the relation.
      */
-    public function __construct(Model $model, $key)
+    public function __construct($key)
     {
-        $this->model = $model;
         $this->key = $key;
     }
-
-    /**
-     * @inheritdoc
-     */
-    public function withFieldName($name)
-    {
-        $this->field = $name;
-
-        return $this;
-    }
-
-    /**
-     * Get the relation from the model.
-     *
-     * @param Model $record
-     * @return Relation
-     */
-    protected function getRelation($record)
-    {
-        $relation = $record->{$this->key}();
-
-        if (!$this->acceptRelation($relation)) {
-            throw new RuntimeException(sprintf(
-                'JSON API relation %s cannot be used for an Eloquent %s relation.',
-                class_basename($this),
-                class_basename($relation)
-            ));
-        }
-
-        return $relation;
-    }
-
 }

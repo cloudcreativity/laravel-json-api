@@ -18,7 +18,6 @@
 namespace CloudCreativity\LaravelJsonApi\Eloquent;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\HasManyAdapterInterface;
-use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use Illuminate\Database\Eloquent\Model;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
@@ -37,44 +36,9 @@ abstract class AbstractManyRelation extends AbstractRelation implements HasManyA
      */
     public function query($record, EncodingParametersInterface $parameters)
     {
-        /** If we do not need to pass to the inverse adapter, we can just return the whole relationship. */
-        if (!$this->requiresInverseAdapter($record, $parameters)) {
-            return $record->{$this->key};
-        }
+        $relation = $this->getRelation($record, $this->key);
 
-        $relation = $this->getRelation($record);
-        $adapter = $this->getStore()->adapterFor($relation->getModel());
-
-        if (!$adapter instanceof AbstractAdapter) {
-            throw new RuntimeException('Expecting inverse adapter to be an Eloquent adapter.');
-        }
-
-        return $adapter->queryRelation($relation, $parameters);
-    }
-
-    /**
-     * @param Model $record
-     * @param EncodingParametersInterface $parameters
-     * @return mixed
-     */
-    public function relationship($record, EncodingParametersInterface $parameters)
-    {
-        return $this->query($record, $parameters);
-    }
-
-    /**
-     * Does the query need to be passed to the inverse adapter?
-     *
-     * @param $record
-     * @param EncodingParametersInterface $parameters
-     * @return bool
-     */
-    protected function requiresInverseAdapter($record, EncodingParametersInterface $parameters)
-    {
-        return !empty($parameters->getFilteringParameters()) ||
-            !empty($parameters->getSortParameters()) ||
-            !empty($parameters->getPaginationParameters()) ||
-            !empty($parameters->getIncludePaths());
+        return $this->adapterFor($relation)->queryToMany($relation, $parameters);
     }
 
 }

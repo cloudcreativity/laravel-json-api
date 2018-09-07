@@ -199,6 +199,26 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
      */
     public function resourceQueryChecker()
     {
+        /**
+         * Allow filter params, but not sort and page, for a resource GET.
+         *
+         * @see https://github.com/cloudcreativity/laravel-json-api/issues/218
+         */
+        if (request()->isMethod('GET')) {
+            return $this->factory->createExtendedQueryChecker(
+                $this->allowUnrecognizedParameters(),
+                $this->allowedIncludePaths(),
+                $this->allowedFieldSetTypes(),
+                [],
+                [],
+                $this->allowedFilteringParametersWithoutId(),
+                $this->queryValidatorWithoutSortAndPage()
+            );
+        }
+
+        /**
+         * For modify resource requests, do not allow filter, sort and page.
+         */
         return $this->factory->createExtendedQueryChecker(
             $this->allowUnrecognizedParameters(),
             $this->allowedIncludePaths(),
@@ -406,6 +426,21 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
     }
 
     /**
+     * @return QueryValidatorInterface
+     */
+    protected function queryValidatorWithoutSortAndPage()
+    {
+        return $this->validatorFactory()->queryParameters(
+            $this->queryRulesWithoutSortAndPage(),
+            $this->queryMessages(),
+            $this->queryCustomAttributes(),
+            function (Validator $validator) {
+                return $this->conditionalQuery($validator);
+            }
+        );
+    }
+
+    /**
      * Get the validation rules for the query parameters.
      *
      * @return array
@@ -425,6 +460,26 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
         return collect($this->queryRules())->reject(function ($value, $key) {
             return Str::startsWith($key, ['filter.', 'sort.', 'page.']);
         })->all();
+    }
+
+    /**
+     * Get the validation rules for query parameters excluding sort and page.
+     *
+     * @return array
+     */
+    protected function queryRulesWithoutSortAndPage()
+    {
+        return collect($this->queryRules())->reject(function ($value, $key) {
+            return Str::startsWith($key, ['sort.', 'page.']);
+        })->all();
+    }
+
+    /**
+     * @return array
+     */
+    protected function allowedFilteringParametersWithoutId()
+    {
+        return collect($this->allowedFilteringParameters())->reject('id')->values()->all();
     }
 
     /**

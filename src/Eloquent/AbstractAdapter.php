@@ -26,14 +26,12 @@ use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PageInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PagingStrategyInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
-use CloudCreativity\LaravelJsonApi\Utils\Str;
 use CloudCreativity\Utils\Object\StandardObjectInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations;
 use Illuminate\Support\Collection;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
-use Neomerx\JsonApi\Contracts\Encoder\Parameters\SortParameterInterface;
 use Neomerx\JsonApi\Encoder\Parameters\EncodingParameters;
 
 /**
@@ -45,7 +43,8 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
 {
 
     use Concerns\DeserializesAttributes,
-        Concerns\IncludesModels;
+        Concerns\IncludesModels,
+        Concerns\SortsModels;
 
     /**
      * @var Model
@@ -60,7 +59,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     /**
      * The model key that is the primary key for the resource id.
      *
-     * If empty, defaults to `Model::getKeyName()`.
+     * If empty, defaults to `Model::getRouteKeyName()`.
      *
      * @var string|null
      */
@@ -93,20 +92,9 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      * The model relationships to eager load on every query.
      *
      * @var string[]|null
-     * @deprecated use `$defaultWith` instead.
+     * @deprecated 1.0.0 use `$defaultWith` instead.
      */
     protected $with = null;
-
-    /**
-     * A mapping of sort parameters to columns.
-     *
-     * Use this to map any parameters to columns where the two are not identical. E.g. if
-     * your sort param is called `sort` but the column to use is `type`, then set this
-     * property to `['sort' => 'type']`.
-     *
-     * @var array
-     */
-    protected $sortColumns = [];
 
     /**
      * Apply the supplied filters to the builder instance.
@@ -138,70 +126,57 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      */
     public function query(EncodingParametersInterface $parameters)
     {
-        $filters = $this->extractFilters($parameters);
-        $query = $this->newQuery();
+        $parameters = $this->getQueryParameters($parameters);
 
-        /** Apply eager loading */
-        $this->with($query, $this->extractIncludePaths($parameters));
-
-        /** Find by ids */
-        if ($this->isFindMany($filters)) {
-            return $this->findByIds($query, $filters);
-        }
-
-        /** Filter and sort */
-        $this->filter($query, $filters);
-        $this->sort($query, (array) $parameters->getSortParameters());
-
-        /** Return a single record if this is a search for one resource. */
-        if ($this->isSearchOne($filters)) {
-            return $this->first($query);
-        }
-
-        /** Paginate results if needed. */
-        $pagination = $this->extractPagination($parameters);
-
-        if (!$pagination->isEmpty() && !$this->hasPaging()) {
-            throw new RuntimeException('Paging parameters exist but paging is not supported.');
-        }
-
-        return $pagination->isEmpty() ?
-            $this->all($query) :
-            $this->paginate($query, $this->normalizeParameters($parameters, $pagination));
+        return $this->queryAllOrOne($this->newQuery(), $parameters);
     }
 
     /**
-     * Query the resource when it appears in a relation of a parent model.
+     * Query the resource when it appears in a to-many relation of a parent resource.
      *
      * For example, a request to `/posts/1/comments` will invoke this method on the
      * comments adapter.
      *
-     * @param Relations\BelongsToMany|Relations\HasMany|Relations\HasManyThrough $relation
+     * @param Relations\BelongsToMany|Relations\HasMany|Relations\HasManyThrough|Builder $relation
      * @param EncodingParametersInterface $parameters
      * @return mixed
-     * @todo this does not currently support default pagination as it causes a problem with polymorphic relations
+     * @todo default pagination causes a problem with polymorphic relations??
+     */
+    public function queryToMany($relation, EncodingParametersInterface $parameters)
+    {
+        return $this->queryAllOrOne(
+            $relation->newQuery(),
+            $this->getQueryParameters($parameters)
+        );
+    }
+
+    /**
+     * Query the resource when it appears in a to-one relation of a parent resource.
+     *
+     * For example, a request to `/posts/1/author` will invoke this method on the
+     * user adapter when the author relation returns a `users` resource.
+     *
+     * @param Relations\BelongsTo|Relations\HasOne|Builder $relation
+     * @param EncodingParametersInterface $parameters
+     * @return mixed
+     */
+    public function queryToOne($relation, EncodingParametersInterface $parameters)
+    {
+        return $this->queryOne(
+            $relation->newQuery(),
+            $this->getQueryParameters($parameters)
+        );
+    }
+
+    /**
+     * @param $relation
+     * @param EncodingParametersInterface $parameters
+     * @return mixed
+     * @deprecated 1.0.0 use `queryToMany` directly.
      */
     public function queryRelation($relation, EncodingParametersInterface $parameters)
     {
-        $query = $relation->newQuery();
-
-        /** Apply eager loading */
-        $this->with($query, $this->extractIncludePaths($parameters));
-
-        /** Filter and sort */
-        $this->filter($query, $this->extractFilters($parameters));
-        $this->sort($query, (array) $parameters->getSortParameters());
-
-        /** Paginate results if needed. */
-        $pagination = collect($parameters->getPaginationParameters());
-
-        if (!$pagination->isEmpty() && !$this->hasPaging()) {
-            throw new RuntimeException('Paging parameters exist but paging is not supported.');
-        }
-
-        return $pagination->isEmpty() ?
-            $this->all($query) :
-            $this->paginate($query, $parameters);
+        return $this->queryToMany($relation, $parameters);
     }
 
     /**
@@ -209,9 +184,14 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      */
     public function read($resourceId, EncodingParametersInterface $parameters)
     {
-        if ($record = parent::read($resourceId, $parameters)) {
-            $this->load($record, $parameters);
+        $parameters = $this->getQueryParameters($parameters);
+
+        if (!empty($parameters->getFilteringParameters())) {
+            return $this->readWithFilters($resourceId, $parameters);
         }
+
+        $record = parent::read($resourceId, $parameters);
+        $this->load($record, $parameters);
 
         return $record;
     }
@@ -221,6 +201,8 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      */
     public function update($record, ResourceObjectInterface $resource, EncodingParametersInterface $parameters)
     {
+        $parameters = $this->getQueryParameters($parameters);
+
         /** @var Model $record */
         $record = parent::update($record, $resource, $parameters);
         $this->load($record, $parameters);
@@ -275,35 +257,34 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     }
 
     /**
-     * Add eager loading to the query.
+     * Read by resource id and filters.
      *
-     * @param Builder $query
-     * @param Collection $includePaths
-     *      the paths for resources that will be included.
-     * @return void
+     * @param $resourceId
+     * @param EncodingParametersInterface $parameters
+     * @return Model
      */
-    protected function with($query, Collection $includePaths)
+    protected function readWithFilters($resourceId, EncodingParametersInterface $parameters)
     {
-        $query->with($this->getRelationshipPaths($includePaths));
+        $query = $this->newQuery()->where($this->getQualifiedKeyName(), $resourceId);
+
+        return $this->queryOne($query, $parameters);
     }
 
     /**
-     * Add eager loading to a record.
+     * Apply filters to the provided query parameter.
      *
-     * @param $record
-     * @param EncodingParametersInterface $parameters
+     * @param Builder $query
+     * @param Collection $filters
      */
-    protected function load($record, EncodingParametersInterface $parameters)
+    protected function applyFilters($query, Collection $filters)
     {
-        $relationshipPaths = $this->getRelationshipPaths($this->extractIncludePaths($parameters));
-
-        /** Eager load anything that needs to be loaded. */
-        if (method_exists($record, 'loadMissing')) {
-            $record->loadMissing($relationshipPaths);
-        } else {
-            /** @todo remove this when dropping support for Laravel 5.4 */
-            $record->load($relationshipPaths);
+        /** By default we support the `id` filter. */
+        if ($this->isFindMany($filters)) {
+            $this->filterByIds($query, $filters);
         }
+
+        /** Hook for custom filters. */
+        $this->filter($query, $filters);
     }
 
     /**
@@ -360,7 +341,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
         RelationshipInterface $relationship,
         EncodingParametersInterface $parameters
     ) {
-        $relation = $this->related($field);
+        $relation = $this->getRelated($field);
 
         if (!$this->requiresPrimaryRecordPersistence($relation)) {
             $relation->update($record, $relationship, $parameters);
@@ -393,7 +374,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
                 continue;
             }
 
-            $relation = $this->related($field);
+            $relation = $this->getRelated($field);
 
             if ($this->requiresPrimaryRecordPersistence($relation)) {
                 $relation->update($record, $relationships->getRelationship($field), $parameters);
@@ -430,27 +411,16 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     }
 
     /**
-     * @param Builder $query
+     * @param $query
      * @param Collection $filters
-     * @return mixed
+     * @return void
      */
-    protected function findByIds(Builder $query, Collection $filters)
+    protected function filterByIds($query, Collection $filters)
     {
-        return $query
-            ->whereIn($this->getQualifiedKeyName(), $this->extractIds($filters))
-            ->get();
-    }
-
-    /**
-     * Return the result for a search one query.
-     *
-     * @param Builder $query
-     * @return Model
-     * @deprecated 1.0.0 use `searchOne`, renamed to avoid collisions with relation names.
-     */
-    protected function first(Builder $query)
-    {
-        return $this->searchOne($query);
+        $query->whereIn(
+            $this->getQualifiedKeyName(),
+            $this->extractIds($filters)
+        );
     }
 
     /**
@@ -507,6 +477,10 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      */
     protected function paginate($query, EncodingParametersInterface $parameters)
     {
+        if (!$this->paging) {
+            throw new RuntimeException('Paging is not supported on adapter: ' . get_class($this));
+        }
+
         return $this->paging->paginate($query, $parameters);
     }
 
@@ -517,20 +491,23 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      */
     protected function getKeyName()
     {
-        return $this->primaryKey ?: $this->model->getKeyName();
+        return $this->primaryKey ?: $this->model->getRouteKeyName();
     }
 
     /**
      * @return string
+     * @todo on Laravel >=5.5 can use `qualifyColumn` method.
      */
     protected function getQualifiedKeyName()
     {
-        return sprintf('%s.%s', $this->model->getTable(), $this->getKeyName());
+        return $this->model->getTable() . '.' . $this->getKeyName();
     }
 
     /**
      * @param EncodingParametersInterface $parameters
      * @return Collection
+     * @deprecated 1.0.0
+     *      overload the `getQueryParameters` method as needed.
      */
     protected function extractIncludePaths(EncodingParametersInterface $parameters)
     {
@@ -540,6 +517,8 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     /**
      * @param EncodingParametersInterface $parameters
      * @return Collection
+     * @deprecated 1.0.0
+     *      overload the `getQueryParameters` method as needed.
      */
     protected function extractFilters(EncodingParametersInterface $parameters)
     {
@@ -549,6 +528,8 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     /**
      * @param EncodingParametersInterface $parameters
      * @return Collection
+     * @deprecated 1.0.0
+     *      overload the `getQueryParameters` method as needed.
      */
     protected function extractPagination(EncodingParametersInterface $parameters)
     {
@@ -558,6 +539,8 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     }
 
     /**
+     * Get pagination parameters to use when the client has not provided paging parameters.
+     *
      * @return array
      */
     protected function defaultPagination()
@@ -566,99 +549,12 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     }
 
     /**
-     * @return bool
-     */
-    protected function hasPaging()
-    {
-        return $this->paging instanceof PagingStrategyInterface;
-    }
-
-    /**
-     * Apply sort parameters to the query.
-     *
-     * @param Builder $query
-     * @param SortParameterInterface[] $sortBy
-     * @return void
-     */
-    protected function sort($query, array $sortBy)
-    {
-        if (empty($sortBy)) {
-            $this->defaultSort($query);
-            return;
-        }
-
-        /** @var SortParameterInterface $param */
-        foreach ($sortBy as $param) {
-            $this->sortBy($query, $param);
-        }
-    }
-
-    /**
-     * Apply a default sort order if the client has not requested any sort order.
-     *
-     * Child classes can override this method if they want to implement their
-     * own default sort order.
-     *
-     * @param Builder $query
-     * @return void
-     */
-    protected function defaultSort($query)
-    {
-        // no-op
-    }
-
-    /**
-     * @param Builder $query
-     * @param SortParameterInterface $param
-     */
-    protected function sortBy($query, SortParameterInterface $param)
-    {
-        $column = $this->getQualifiedSortColumn($query, $param->getField());
-        $order = $param->isAscending() ? 'asc' : 'desc';
-
-        $query->orderBy($column, $order);
-    }
-
-    /**
-     * @param Builder $query
-     * @param string $field
-     * @return string
-     */
-    protected function getQualifiedSortColumn($query, $field)
-    {
-        $key = $this->columnForField($field, $query->getModel());
-
-        if (!str_contains($key, '.')) {
-            $key = sprintf('%s.%s', $query->getModel()->getTable(), $key);
-        }
-
-        return $key;
-    }
-
-    /**
-     * Get the table column to use for the specified search field.
-     *
-     * @param string $field
-     * @param Model $model
-     * @return string
-     */
-    protected function columnForField($field, Model $model)
-    {
-        /** If there is a custom mapping, return that */
-        if (isset($this->sortColumns[$field])) {
-            return $this->sortColumns[$field];
-        }
-
-        return $model::$snakeAttributes ? Str::underscore($field) : Str::camelize($field);
-    }
-
-    /**
      * @param string|null $modelKey
      * @return BelongsTo
      */
     protected function belongsTo($modelKey = null)
     {
-        return new BelongsTo($this->model, $modelKey ?: $this->guessRelation());
+        return new BelongsTo($modelKey ?: $this->guessRelation());
     }
 
     /**
@@ -667,7 +563,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      */
     protected function hasOne($modelKey = null)
     {
-        return new HasOne($this->model, $modelKey ?: $this->guessRelation());
+        return new HasOne($modelKey ?: $this->guessRelation());
     }
 
     /**
@@ -676,7 +572,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      */
     protected function hasMany($modelKey = null)
     {
-        return new HasMany($this->model, $modelKey ?: $this->guessRelation());
+        return new HasMany($modelKey ?: $this->guessRelation());
     }
 
     /**
@@ -685,7 +581,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      */
     protected function hasManyThrough($modelKey = null)
     {
-        return new HasManyThrough($this->model, $modelKey ?: $this->guessRelation());
+        return new HasManyThrough($modelKey ?: $this->guessRelation());
     }
 
     /**
@@ -698,6 +594,109 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     }
 
     /**
+     * @param \Closure $factory
+     *      a factory that creates a new Eloquent query builder.
+     * @return QueriesMany
+     */
+    protected function queriesMany(\Closure $factory)
+    {
+        return new QueriesMany($factory);
+    }
+
+    /**
+     * @param \Closure $factory
+     * @return QueriesOne
+     */
+    protected function queriesOne(\Closure $factory)
+    {
+        return new QueriesOne($factory);
+    }
+
+    /**
+     * Default query execution used when querying records or relations.
+     *
+     * @param $query
+     * @param EncodingParametersInterface $parameters
+     * @return mixed
+     */
+    protected function queryAllOrOne($query, EncodingParametersInterface $parameters)
+    {
+        $filters = collect($parameters->getFilteringParameters());
+
+        if ($this->isSearchOne($filters)) {
+            return $this->queryOne($query, $parameters);
+        }
+
+        return $this->queryAll($query, $parameters);
+    }
+
+    /**
+     * @param $query
+     * @param EncodingParametersInterface $parameters
+     * @return PageInterface|mixed
+     */
+    protected function queryAll($query, EncodingParametersInterface $parameters)
+    {
+        /** Apply eager loading */
+        $this->with($query, $parameters);
+
+        /** Filter */
+        $this->applyFilters($query, collect($parameters->getFilteringParameters()));
+
+        /** Sort */
+        $this->sort($query, $parameters->getSortParameters());
+
+        /** Paginate results if needed. */
+        $pagination = collect($parameters->getPaginationParameters());
+
+        return $pagination->isEmpty() ?
+            $this->all($query) :
+            $this->paginate($query, $parameters);
+    }
+
+    /**
+     * @param $query
+     * @param EncodingParametersInterface $parameters
+     * @return Model
+     */
+    protected function queryOne($query, EncodingParametersInterface $parameters)
+    {
+        $parameters = $this->getQueryParameters($parameters);
+
+        /** Apply eager loading */
+        $this->with($query, $parameters);
+
+        /** Filter */
+        $this->applyFilters($query, collect($parameters->getFilteringParameters()));
+
+        /** Sort */
+        $this->sort($query, $parameters->getSortParameters());
+
+        return $this->searchOne($query);
+    }
+
+    /**
+     * Get JSON API parameters to use when constructing an Eloquent query.
+     *
+     * This method is used to push in any default parameter values that should
+     * be used if the client has not provided any.
+     *
+     * @param EncodingParametersInterface $parameters
+     * @return EncodingParametersInterface
+     */
+    protected function getQueryParameters(EncodingParametersInterface $parameters)
+    {
+        return new EncodingParameters(
+            $this->extractIncludePaths($parameters)->all(),
+            $parameters->getFieldSets(),
+            $parameters->getSortParameters() ?: $this->defaultSort(),
+            $this->extractPagination($parameters)->all(),
+            $this->extractFilters($parameters)->all(),
+            $parameters->getUnrecognizedParameters()
+        );
+    }
+
+    /**
      * @return string
      */
     private function guessRelation()
@@ -705,28 +704,6 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
         list($one, $two, $caller) = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3);
 
         return $caller['function'];
-    }
-
-    /**
-     * Normalize parameters for pagination.
-     *
-     * This is a temporary solution for Issue #131 in the v0.11/v0.12 series.
-     *
-     * @param EncodingParametersInterface $parameters
-     * @param Collection $extractedPagination
-     * @return EncodingParameters
-     * @see https://github.com/cloudcreativity/laravel-json-api/issues/131
-     */
-    private function normalizeParameters(EncodingParametersInterface $parameters, Collection $extractedPagination)
-    {
-        return new EncodingParameters(
-            $parameters->getIncludePaths(),
-            $parameters->getFieldSets(),
-            $parameters->getSortParameters(),
-            $extractedPagination->all(),
-            $parameters->getFilteringParameters(),
-            $parameters->getUnrecognizedParameters()
-        );
     }
 
 }

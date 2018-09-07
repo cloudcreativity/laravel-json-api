@@ -20,8 +20,11 @@ namespace DummyApp\JsonApi\Posts;
 use CloudCreativity\LaravelJsonApi\Eloquent\AbstractAdapter;
 use CloudCreativity\LaravelJsonApi\Eloquent\BelongsTo;
 use CloudCreativity\LaravelJsonApi\Eloquent\HasMany;
+use CloudCreativity\LaravelJsonApi\Eloquent\QueriesMany;
+use CloudCreativity\LaravelJsonApi\Eloquent\QueriesOne;
 use CloudCreativity\LaravelJsonApi\Pagination\StandardStrategy;
 use DummyApp\Post;
+use DummyApp\Video;
 use Illuminate\Support\Collection;
 
 class Adapter extends AbstractAdapter
@@ -84,6 +87,26 @@ class Adapter extends AbstractAdapter
     }
 
     /**
+     * @return QueriesMany
+     */
+    protected function related()
+    {
+        return $this->queriesMany(function (Post $post) {
+            return Post::query()->related($post);
+        });
+    }
+
+    /**
+     * @return QueriesOne
+     */
+    protected function relatedVideo()
+    {
+        return $this->queriesOne(function (Post $post) {
+            return Video::query()->related($post);
+        });
+    }
+
+    /**
      * @inheritDoc
      */
     protected function filter($query, Collection $filters)
@@ -94,6 +117,10 @@ class Adapter extends AbstractAdapter
 
         if ($title = $filters->get('title')) {
             $query->where('title', 'like', $title . '%');
+        }
+
+        if ($filters->has('published')) {
+            $query->whereNotNull('published_at');
         }
     }
 

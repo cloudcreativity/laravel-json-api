@@ -26,9 +26,9 @@ class Adapter extends AbstractAdapter
 {
 
     /**
-     * @var string
+     * @var array
      */
-    protected $primaryKey = 'uuid';
+    protected $defaultSort = 'name';
 
     /**
      * Adapter constructor.

@@ -108,7 +108,7 @@ class BelongsToTest extends TestCase
 
         $data = [
             'type' => 'posts',
-            'id' => (string) $post->getKey(),
+            'id' => (string) $post->getRouteKey(),
             'attributes' => [
                 'title' => $post->title,
                 'slug' => $post->slug,
@@ -141,7 +141,7 @@ class BelongsToTest extends TestCase
 
         $data = [
             'type' => 'posts',
-            'id' => (string) $post->getKey(),
+            'id' => (string) $post->getRouteKey(),
             'attributes' => [
                 'title' => $post->title,
                 'slug' => $post->slug,
@@ -151,7 +151,7 @@ class BelongsToTest extends TestCase
                 'author' => [
                     'data' => [
                         'type' => 'users',
-                        'id' => (string) $user->getKey(),
+                        'id' => (string) $user->getRouteKey(),
                     ],
                 ],
             ],
@@ -176,7 +176,7 @@ class BelongsToTest extends TestCase
 
         $data = [
             'type' => 'posts',
-            'id' => (string) $post->getKey(),
+            'id' => (string) $post->getRouteKey(),
             'attributes' => [
                 'title' => $post->title,
                 'slug' => $post->slug,
@@ -186,7 +186,7 @@ class BelongsToTest extends TestCase
                 'author' => [
                     'data' => [
                         'type' => 'users',
-                        'id' => (string) $user->getKey(),
+                        'id' => (string) $user->getRouteKey(),
                     ],
                 ],
             ],

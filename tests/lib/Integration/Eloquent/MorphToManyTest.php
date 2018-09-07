@@ -85,7 +85,7 @@ class MorphToManyTest extends TestCase
                     'data' => [
                         [
                             'type' => 'tags',
-                            'id' => $tag->uuid,
+                            'id' => $tag->getRouteKey(),
                         ],
                     ],
                 ],
@@ -117,11 +117,11 @@ class MorphToManyTest extends TestCase
                     'data' => [
                         [
                             'type' => 'tags',
-                            'id' => $tags->first()->uuid,
+                            'id' => $tags->first()->getRouteKey(),
                         ],
                         [
                             'type' => 'tags',
-                            'id' => $tags->last()->uuid,
+                            'id' => $tags->last()->getRouteKey(),
                         ],
                     ],
                 ],
@@ -144,7 +144,7 @@ class MorphToManyTest extends TestCase
 
         $data = [
             'type' => 'posts',
-            'id' => (string) $post->getKey(),
+            'id' => (string) $post->getRouteKey(),
             'relationships' => [
                 'tags' => [
                     'data' => [],
@@ -167,7 +167,7 @@ class MorphToManyTest extends TestCase
 
         $data = [
             'type' => 'posts',
-            'id' => (string) $post->getKey(),
+            'id' => (string) $post->getRouteKey(),
             'attributes' => [
                 'title' => $post->title,
                 'slug' => $post->slug,
@@ -178,7 +178,7 @@ class MorphToManyTest extends TestCase
                     'data' => [
                         [
                             'type' => 'tags',
-                            'id' => $tag->uuid,
+                            'id' => $tag->getRouteKey(),
                         ],
                     ],
                 ],
@@ -199,7 +199,7 @@ class MorphToManyTest extends TestCase
 
         $data = [
             'type' => 'posts',
-            'id' => (string) $post->getKey(),
+            'id' => (string) $post->getRouteKey(),
             'attributes' => [
                 'title' => $post->title,
                 'slug' => $post->slug,
@@ -210,11 +210,11 @@ class MorphToManyTest extends TestCase
                     'data' => [
                         [
                             'type' => 'tags',
-                            'id' => $tags->first()->uuid,
+                            'id' => $tags->first()->getRouteKey(),
                         ],
                         [
                             'type' => 'tags',
-                            'id' => $tags->last()->uuid,
+                            'id' => $tags->last()->getRouteKey(),
                         ],
                     ],
                 ],
@@ -230,10 +230,7 @@ class MorphToManyTest extends TestCase
         /** @var Post $post */
         $post = factory(Post::class)->create();
         $tags = factory(Tag::class, 2)->create();
-
-        $expected = $tags->map(function (Tag $tag) {
-            return $tag->uuid;
-        });
+        $expected = $tags->sortBy('name');
 
         $post->tags()->sync($tags);
 
@@ -256,8 +253,8 @@ class MorphToManyTest extends TestCase
         $tags = factory(Tag::class, 2)->create();
         $post->tags()->sync($tags);
 
-        $expected = $tags->map(function (Tag $tag) {
-            return $tag->uuid;
+        $expected = $tags->sortBy('name')->map(function (Tag $tag) {
+            return $tag->getRouteKey();
         });
 
         $this->doReadRelationship($post, 'tags')
@@ -278,7 +275,7 @@ class MorphToManyTest extends TestCase
         $tags = factory(Tag::class, 2)->create();
 
         $data = $tags->map(function (Tag $tag) {
-            return ['type' => 'tags', 'id' => $tag->uuid];
+            return ['type' => 'tags', 'id' => $tag->getRouteKey()];
         })->all();
 
         $this->doReplaceRelationship($post, 'tags', $data)
@@ -307,7 +304,7 @@ class MorphToManyTest extends TestCase
         $tags = factory(Tag::class, 3)->create();
 
         $data = $tags->map(function (Tag $tag) {
-            return ['type' => 'tags', 'id' => $tag->uuid];
+            return ['type' => 'tags', 'id' => $tag->getRouteKey()];
         })->all();
 
         $this->doReplaceRelationship($post, 'tags', $data)
@@ -324,7 +321,7 @@ class MorphToManyTest extends TestCase
 
         $add = factory(Tag::class, 2)->create();
         $data = $add->map(function (Tag $tag) {
-            return ['type' => 'tags', 'id' => $tag->uuid];
+            return ['type' => 'tags', 'id' => $tag->getRouteKey()];
         })->all();
 
         $this->doAddToRelationship($post, 'tags', $data)
@@ -340,7 +337,7 @@ class MorphToManyTest extends TestCase
         $post->tags()->sync($tags);
 
         $data = $tags->take(2)->map(function (Tag $tag) {
-            return ['type' => 'tags', 'id' => $tag->uuid];
+            return ['type' => 'tags', 'id' => $tag->getRouteKey()];
         })->all();
 
         $this->doRemoveFromRelationship($post, 'tags', $data)

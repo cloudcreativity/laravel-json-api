@@ -152,10 +152,6 @@ class ExceptionParser implements ExceptionParserInterface
             $error->setTitle($this->getDefaultTitle($error->getStatus()));
         }
 
-        if (!$error->getDetail()) {
-            $error->setDetail($e->getMessage());
-        }
-
         return $error;
     }
 

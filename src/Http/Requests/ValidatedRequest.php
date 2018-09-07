@@ -260,39 +260,19 @@ class ValidatedRequest implements ValidatesWhenResolved
      */
     protected function checkDocumentIsAcceptable(ValidatorProviderInterface $validators)
     {
-        $validator = $this->documentAcceptanceValidator($validators);
+        if (!$validator = $this->documentAcceptanceValidator($validators)) {
+            return;
+        }
+
         $document = $this->getDocument();
 
-        if ($validator && !$document && $this->isExpectingDocument()) {
+        if (!$document) {
             throw new DocumentRequiredException();
         }
 
-        if ($validator && !$validator->isValid($document, $this->getRecord())) {
+        if (!$validator->isValid($document, $this->getRecord())) {
             throw new ValidationException($validator->getErrors());
         }
-    }
-
-    /**
-     * Is a document expected for the supplied request?
-     *
-     * If the JSON API request is any of the following, a JSON API document
-     * is expected to be set on the request:
-     *
-     * - Create resource
-     * - Update resource
-     * - Replace resource relationship
-     * - Add to resource relationship
-     * - Remove from resource relationship
-     *
-     * @return bool
-     */
-    protected function isExpectingDocument()
-    {
-        return $this->request->isCreateResource() ||
-            $this->request->isUpdateResource() ||
-            $this->request->isReplaceRelationship() ||
-            $this->request->isAddToRelationship() ||
-            $this->request->isRemoveFromRelationship();
     }
 
     /**

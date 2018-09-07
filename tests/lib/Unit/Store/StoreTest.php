@@ -684,7 +684,7 @@ class StoreTest extends TestCase
         $mock->expects($this->never())->method('read');
         $mock->expects($this->never())->method('update');
         $mock->expects($this->never())->method('delete');
-        $mock->expects($this->never())->method('related');
+        $mock->expects($this->never())->method('getRelated');
 
         return $mock;
     }
@@ -697,7 +697,7 @@ class StoreTest extends TestCase
     {
         $mock = $this->createMock(AdapterInterface::class);
 
-        $mock->method('related')->willReturnCallback(function ($name) use ($relationships) {
+        $mock->method('getRelated')->willReturnCallback(function ($name) use ($relationships) {
             return $relationships[$name];
         });
 

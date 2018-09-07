@@ -35,7 +35,7 @@ class Schema extends SchemaProvider
      */
     public function getId($resource)
     {
-        return (string) $resource->uuid;
+        return (string) $resource->getRouteKey();
     }
 
     /**

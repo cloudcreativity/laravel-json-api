@@ -104,7 +104,9 @@ class Store implements StoreInterface
             ->adapterFor($resourceType)
             ->read($resourceId, $params);
 
-        $this->identityMap->add(ResourceIdentifier::create($resourceType, $resourceId), $record ?: false);
+        if ($record) {
+            $this->identityMap->add(ResourceIdentifier::create($resourceType, $resourceId), $record);
+        }
 
         return $record;
     }
@@ -141,7 +143,7 @@ class Store implements StoreInterface
     ) {
         return $this
             ->adapterFor($record)
-            ->related($relationshipName)
+            ->getRelated($relationshipName)
             ->query($record, $params);
     }
 
@@ -155,7 +157,7 @@ class Store implements StoreInterface
     ) {
         return $this
             ->adapterFor($record)
-            ->related($relationshipName)
+            ->getRelated($relationshipName)
             ->relationship($record, $params);
     }
 
@@ -170,7 +172,7 @@ class Store implements StoreInterface
     ) {
         return $this
             ->adapterFor($record)
-            ->related($relationshipName)
+            ->getRelated($relationshipName)
             ->replace($record, $relationship, $params);
     }
 
@@ -306,7 +308,7 @@ class Store implements StoreInterface
      */
     private function adapterForHasMany($resourceType, $relationshipName)
     {
-        $adapter = $this->adapterFor($resourceType)->related($relationshipName);
+        $adapter = $this->adapterFor($resourceType)->getRelated($relationshipName);
 
         if (!$adapter instanceof HasManyAdapterInterface) {
             throw new RuntimeException("Expecting a has-many relationship adapter.");

@@ -131,7 +131,7 @@ class ControllerHooksTest extends TestCase
 
         $data = [
             'type' => 'posts',
-            'id' => (string) $post->getKey(),
+            'id' => (string) $post->getRouteKey(),
             'attributes' => [
                 'title' => 'My First Post',
             ],
@@ -147,7 +147,7 @@ class ControllerHooksTest extends TestCase
 
         $data = [
             'type' => 'posts',
-            'id' => (string) $post->getKey(),
+            'id' => (string) $post->getRouteKey(),
             'attributes' => ['title' => null],
         ];
 

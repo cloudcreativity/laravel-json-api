@@ -52,7 +52,7 @@ abstract class AbstractSchema extends SchemaProvider
     /**
      * The attribute to use for the resource id.
      *
-     * If null, defaults to `Model::getKeyName()`
+     * If null, defaults to `Model::getRouteKeyName()`
      *
      * @var
      */
@@ -68,7 +68,7 @@ abstract class AbstractSchema extends SchemaProvider
             throw new RuntimeException('Expecting an Eloquent model.');
         }
 
-        $key = $this->idName ?: $resource->getKeyName();
+        $key = $this->idName ?: $resource->getRouteKeyName();
 
         return (string) $resource->{$key};
     }

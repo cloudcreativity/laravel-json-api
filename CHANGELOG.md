@@ -4,6 +4,57 @@ All notable changes to this project will be documented in this file. This projec
 
 ## Unreleased
 
+### Changed
+- Extract model sorting from the Eloquent adapter into a `SortsModels` trait.
+
+### Deprecated
+- The following methods on the Eloquent adapter will be removed in `1.0.0` as they are no longer required:
+  - `extractIncludePaths`
+  - `extractFilters`
+  - `extractPagination`
+  - `columnForField`: use `getSortColumn` instead.
+
+## [1.0.0-beta.2] - 2018-08-25
+
+### Added
+- Can now use Eloquent query builders as resource relationships using the `queriesOne` or `queriesMany`
+JSON API relations.
+- Custom relationships can now extend the `Adapter\AbstractRelationshipAdapter` class.
+
+### Changed
+- JSON API document is now only parsed out of the request if data is expected within the document.
+This ensures that Laravel's get JSON test helpers can be used.
+- Extracted common Eloquent relation querying methods to the `Eloquent\Concerns\QueriesRelations` trait.
+
+### Deprecated
+- The `Eloquent\AbstractRelation` class is deprecated and will be removed in `1.0.0`. Use the new
+`Adapter\AbstractRelationshipAdapter` class and apply the `QueriesRelations` trait.
+- The `Adapter\HydratesAttributesTrait` is deprecated as it is no longer in use and will be removed in
+`1.0.0`.
+
+## [1.0.0-beta.1] - 2018-08-22
+
+### Added
+- Package now supports Laravel 5.4 to 5.7 inclusive.
+- [#210](https://github.com/cloudcreativity/laravel-json-api/issues/210)
+Can now map a single JSON API path to multiple Eloquent eager load paths.
+- [#218](https://github.com/cloudcreativity/laravel-json-api/issues/218)
+Can now filter a request for a specific resource, e.g. `/api/posts/1?filter['published']=1`.
+- Filtering Eloquent resources using the `id` filter is now also supported on to-many and to-one relationships.
+- Can now set default sort parameters on an Eloquent adapter using the `$defaultSort` property.
+
+### Changed
+- [#184](https://github.com/cloudcreativity/laravel-json-api/issues/184)
+Eloquent route keys are now used as the resource id by default.
+
+### Removed
+- The following deprecated methods have been removed from the Eloquent adapter:
+  - `first`: use `searchOne` instead.
+
+### Deprecated
+- The follow methods are deprecated on the Eloquent adapter and will be removed in `1.0.0`:
+  - `queryRelation`: use `queryToMany` or `queryToOne` instead.
+
 ### Fixed
 - [#185](https://github.com/cloudcreativity/laravel-json-api/issues/185)
 Rename adapter `store` method to `getStore` to avoid collisions with relation methods.
@@ -11,6 +62,24 @@ Rename adapter `store` method to `getStore` to avoid collisions with relation me
 Ensure hydration of Eloquent morph-many relationship works.
 - [#194](https://github.com/cloudcreativity/laravel-json-api/issues/194)
 Ensure encoding parameters are validated when reading a specific resource.
+- Exception messages are no longer pushed into the JSON API error detail member, unless the Exception is a
+HTTP Exception.
+- [#219](https://github.com/cloudcreativity/laravel-json-api/issues/219)
+Can now use the `id` filter as one of many filters, previously the `id` filter ignored any
+other filters provided. It now also respects sort and paging parameters.
+
+## [1.0.0-alpha.4] - 2018-07-02
+
+### Added
+- [#203](https://github.com/cloudcreativity/laravel-json-api/issues/203)
+JSON API container now checks whether there is a Laravel container binding for a class name. This
+allows schemas, adapters etc to be bound into the container rather than having to exist as actual
+classes.
+
+### Fixed
+- [#202](https://github.com/cloudcreativity/laravel-json-api/issues/202) 
+When appending the schema and host on a request, the base URL is now also appended. This caters
+for Laravel applications that are served from host sub-directories.
 
 ## [1.0.0-alpha.3] - 2018-05-17
 
