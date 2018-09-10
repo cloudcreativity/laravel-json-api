@@ -18,6 +18,9 @@
 
 namespace CloudCreativity\LaravelJsonApi\Contracts\Pagination;
 
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
+use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Database\Query\Builder as QueryBuilder;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 /**
@@ -29,10 +32,10 @@ interface PagingStrategyInterface
 {
 
     /**
-     * @param mixed $query
-     * @param EncodingParametersInterface $pagingParameters
+     * @param QueryBuilder|EloquentBuilder|Relation $query
+     * @param EncodingParametersInterface $parameters
      * @return PageInterface
      */
-    public function paginate($query, EncodingParametersInterface $pagingParameters);
+    public function paginate($query, EncodingParametersInterface $parameters);
 
 }

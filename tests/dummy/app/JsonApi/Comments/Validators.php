@@ -32,8 +32,9 @@ class Validators extends AbstractValidatorProvider
      * @var array
      */
     protected $queryRules = [
-        'page.number' => 'filled|integer|min:1',
-        'page.size' => 'filled|integer|between:1,50',
+        'page.after' => 'filled|integer|min:1',
+        'page.before' => 'filled|integer|min:1',
+        'page.limit' => 'filled|integer|between:1,50',
         'filter.created-by' => 'filled|numeric',
     ];
 
@@ -52,14 +53,6 @@ class Validators extends AbstractValidatorProvider
     protected $allowedFilteringParameters = [
         'id',
         'created-by',
-    ];
-
-    /**
-     * @var array
-     */
-    protected $allowedPagingParameters = [
-        'number',
-        'size',
     ];
 
     protected $allowedIncludePaths = ['created-by'];

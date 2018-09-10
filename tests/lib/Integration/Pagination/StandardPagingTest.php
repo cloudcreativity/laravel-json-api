@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\LaravelJsonApi\Tests\Integration;
+namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Pagination;
 
 use CloudCreativity\LaravelJsonApi\Pagination\StandardStrategy;
 use DummyApp\Post;
 
-class PaginationTest extends TestCase
+class StandardPagingTest extends TestCase
 {
 
     /**
@@ -88,7 +88,7 @@ class PaginationTest extends TestCase
             ],
             'links' => [
                 'first' => $first = $this->buildLink(
-                    'http://localhost/api/v1/posts',
+                    '/api/v1/posts',
                     ['page' => ['number' => 1, 'size' => 3]]
                 ),
                 'last' => $first,
@@ -115,15 +115,15 @@ class PaginationTest extends TestCase
             ],
             'links' => [
                 'first' => $this->buildLink(
-                    'http://localhost/api/v1/posts',
+                    '/api/v1/posts',
                     ['page' => ['number' => 1, 'size' => 3]]
                 ),
                 'next' => $this->buildLink(
-                    'http://localhost/api/v1/posts',
+                    '/api/v1/posts',
                     ['page' => ['number' => 2, 'size' => 3]]
                 ),
                 'last' => $this->buildLink(
-                    'http://localhost/api/v1/posts',
+                    '/api/v1/posts',
                     ['page' => ['number' => 2, 'size' => 3]]
                 ),
             ],
@@ -149,15 +149,15 @@ class PaginationTest extends TestCase
             ],
             'links' => [
                 'first' => $this->buildLink(
-                    'http://localhost/api/v1/posts',
+                    '/api/v1/posts',
                     ['page' => ['number' => 1, 'size' => 3]]
                 ),
                 'prev' => $this->buildLink(
-                    'http://localhost/api/v1/posts',
+                    '/api/v1/posts',
                     ['page' => ['number' => 1, 'size' => 3]]
                 ),
                 'last' => $this->buildLink(
-                    'http://localhost/api/v1/posts',
+                    '/api/v1/posts',
                     ['page' => ['number' => 2, 'size' => 3]]
                 ),
             ],
@@ -175,15 +175,15 @@ class PaginationTest extends TestCase
         $response->assertJson([
             'links' => [
                 'first' => $this->buildLink(
-                    'http://localhost/api/v1/posts',
+                    '/api/v1/posts',
                     ['page' => ['page' => 1, 'limit' => 3]]
                 ),
                 'next' => $this->buildLink(
-                    'http://localhost/api/v1/posts',
+                    '/api/v1/posts',
                     ['page' => ['page' => 2, 'limit' => 3]]
                 ),
                 'last' => $this->buildLink(
-                    'http://localhost/api/v1/posts',
+                    '/api/v1/posts',
                     ['page' => ['page' => 2, 'limit' => 3]]
                 ),
             ],
@@ -212,11 +212,11 @@ class PaginationTest extends TestCase
             ],
             'links' => [
                 'first' => $this->buildLink(
-                    'http://localhost/api/v1/posts',
+                    '/api/v1/posts',
                     ['page' => ['number' => 1, 'size' => 3]]
                 ),
                 'next' => $this->buildLink(
-                    'http://localhost/api/v1/posts',
+                    '/api/v1/posts',
                     ['page' => ['number' => 2, 'size' => 3]]
                 ),
             ],
@@ -272,16 +272,6 @@ class PaginationTest extends TestCase
             ->assertStatus(400)
             ->assertErrors()
             ->assertParameters('page.size');
-    }
-
-    /**
-     * @param $path
-     * @param array $params
-     * @return string
-     */
-    private function buildLink($path, array $params)
-    {
-        return $path . '?' . http_build_query($params);
     }
 
 }

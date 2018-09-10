@@ -23,6 +23,11 @@ use Illuminate\Database\Eloquent\Model;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\SortParameterInterface;
 use Neomerx\JsonApi\Encoder\Parameters\SortParameter;
 
+/**
+ * Trait SortsModels
+ *
+ * @package CloudCreativity\LaravelJsonApi
+ */
 trait SortsModels
 {
 

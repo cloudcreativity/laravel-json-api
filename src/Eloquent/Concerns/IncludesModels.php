@@ -23,6 +23,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
+/**
+ * Trait IncludesModels
+ *
+ * @package CloudCreativity\LaravelJsonApi
+ */
 trait IncludesModels
 {
 
