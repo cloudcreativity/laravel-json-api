@@ -26,6 +26,7 @@ use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PageInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PagingStrategyInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
+use CloudCreativity\LaravelJsonApi\Pagination\CursorStrategy;
 use CloudCreativity\Utils\Object\StandardObjectInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -479,6 +480,11 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     {
         if (!$this->paging) {
             throw new RuntimeException('Paging is not supported on adapter: ' . get_class($this));
+        }
+
+        /** If using the cursor strategy, we need to set the key name for the cursor. */
+        if ($this->paging instanceof CursorStrategy) {
+            $this->paging->withIdentifierColumn($this->getKeyName());
         }
 
         return $this->paging->paginate($query, $parameters);

@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. This projec
 
 ## Unreleased
 
+### Added
+- New cursor-based paging strategy, refer to the [Pagination docs](./docs/fetching/pagination.md) for
+details.
+
 ### Changed
 - Extract model sorting from the Eloquent adapter into a `SortsModels` trait.
 

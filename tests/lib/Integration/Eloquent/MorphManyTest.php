@@ -17,6 +17,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Eloquent;
 
+use Carbon\Carbon;
 use DummyApp\Comment;
 use DummyApp\Post;
 use DummyApp\User;
@@ -344,26 +345,33 @@ class MorphManyTest extends TestCase
     {
         $post = factory(Post::class)->create();
         $comments = factory(Comment::class, 3)->create([
+            'created_at' => Carbon::now(),
             'commentable_type' => Post::class,
             'commentable_id' => $post->getKey(),
-        ]);
+        ])->sortByDesc('id')->values();
 
         $response = $this
-            ->doReadRelated($post, 'comments', ['page' => ['number' => 1, 'size' => 2]])
+            ->doReadRelated($post, 'comments', ['page' => ['limit' => 2]])
             ->assertReadHasMany('comments', $comments->take(2));
 
-        $response->assertDocument()
-            ->assertMetaSubset(['page' => ['current-page' => 1, 'per-page' => 2]]);
+        $response->assertDocument()->assertMetaSubset([
+            'page' => [
+                'per-page' => 2,
+                'from' => $comments->first()->getRouteKey(),
+                'to' => $comments->get(1)->getRouteKey(),
+                'has-more' => true,
+            ],
+        ]);
     }
 
     public function testReadRelatedWithInvalidPagination()
     {
         $post = factory(Post::class)->create();
 
-        $this->doReadRelated($post, 'comments', ['page' => ['number' => 1, 'size' => -1]])
+        $this->doReadRelated($post, 'comments', ['page' => ['limit' => 100]])
             ->assertStatus(400)
             ->assertErrors()
-            ->assertParameters('page.size');
+            ->assertParameters('page.limit');
     }
 
     /**

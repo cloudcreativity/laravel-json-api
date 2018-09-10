@@ -20,6 +20,7 @@ namespace DummyApp\JsonApi\Comments;
 use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectInterface;
 use CloudCreativity\LaravelJsonApi\Eloquent\AbstractAdapter;
 use CloudCreativity\LaravelJsonApi\Eloquent\BelongsTo;
+use CloudCreativity\LaravelJsonApi\Pagination\CursorStrategy;
 use CloudCreativity\LaravelJsonApi\Pagination\StandardStrategy;
 use DummyApp\Comment;
 use Illuminate\Support\Collection;
@@ -45,9 +46,9 @@ class Adapter extends AbstractAdapter
     /**
      * Adapter constructor.
      *
-     * @param StandardStrategy $paging
+     * @param CursorStrategy $paging
      */
-    public function __construct(StandardStrategy $paging)
+    public function __construct(CursorStrategy $paging)
     {
         parent::__construct(new Comment(), $paging);
     }
