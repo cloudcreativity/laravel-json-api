@@ -16,7 +16,7 @@ class FactoryTest extends TestCase
         $client = $this->api()->client(['handler' => $this->handler]);
         $post = factory(Post::class)->make();
 
-        $this->willSeeResponse($post, 201);
+        $this->willSeeResource($post, 201);
         $client->create($post);
 
         $this->assertSame(
@@ -37,7 +37,7 @@ class FactoryTest extends TestCase
 
         $post = factory(Post::class)->make();
 
-        $this->willSeeResponse($post, 201);
+        $this->willSeeResource($post, 201);
         $client->create($post);
 
         $this->assertSame(
@@ -59,7 +59,7 @@ class FactoryTest extends TestCase
         $client = $this->api()->client($guzzle);
         $post = factory(Post::class)->make();
 
-        $this->willSeeResponse($post, 201);
+        $this->willSeeResource($post, 201);
         $client->create($post);
 
         $this->assertSame(

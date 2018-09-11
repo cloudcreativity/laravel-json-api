@@ -59,8 +59,9 @@ abstract class TestCase extends BaseTestCase
     protected function willSeeResponse(array $json = null, $status = 200, array $headers = [])
     {
         if ($json) {
-            $headers['Content-Type'] = 'application/vnd.api+json';
             $body = json_encode($json);
+            $headers['Content-Type'] = 'application/vnd.api+json';
+            $headers['Content-Length'] = mb_strlen($body, '8bit');
         } else {
             $body = null;
         }
@@ -70,6 +71,18 @@ abstract class TestCase extends BaseTestCase
         );
 
         return $response;
+    }
+
+    /**
+     * @param array $errors
+     * @param int $status
+     * @return Response
+     */
+    protected function willSeeErrors(array $errors, $status = 400)
+    {
+        $errors = $errors ?: ['errors' => []];
+
+        return $this->willSeeResponse($errors, $status);
     }
 
     /**

@@ -4,13 +4,13 @@ namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Client;
 
 use DummyApp\Post;
 use Neomerx\JsonApi\Encoder\Parameters\EncodingParameters;
+use Neomerx\JsonApi\Exceptions\JsonApiException;
 
 class CreateTest extends TestCase
 {
 
     public function test()
     {
-        $this->mock->append();
         $post = factory(Post::class)->make();
 
         $resource = [
@@ -37,6 +37,7 @@ class CreateTest extends TestCase
         $actual = $this->client->withIncludePaths('author')->create($post);
 
         $this->assertSame($expected, $actual->getPsrResponse(), 'http response');
+        $this->assertNotNull($actual->getDocument(), 'document');
         $this->assertRequested('POST', '/posts');
         $this->assertHeader('Accept', 'application/vnd.api+json');
         $this->assertHeader('Content-Type', 'application/vnd.api+json');
@@ -173,14 +174,62 @@ class CreateTest extends TestCase
             ],
         ];
 
-        $expected = $this->willSeeResource($post, 201);
+        $expected = $this->willSeeResponse(null, 204);
         $actual = $this->client
             ->withLinks()
             ->withIncludePaths('author')
             ->create($post);
 
         $this->assertSame($expected, $actual->getPsrResponse(), 'http response');
+        $this->assertNull($actual->getDocument(), 'no document for no content response');
         $this->assertSentDocument($document);
+    }
+
+    public function testWithParameters()
+    {
+        $parameters = new EncodingParameters(
+            ['author', 'site'],
+            ['author' => ['first-name', 'surname'], 'site' => ['uri']],
+            null,
+            null,
+            null,
+            ['foo' => 'bar']
+        );
+
+        $post = factory(Post::class)->make();
+
+        $this->willSeeResource($post, 201);
+        $this->client->create($post, $parameters);
+
+        $this->assertQueryParameters([
+            'include' => 'author,site',
+            'fields[author]' => 'first-name,surname',
+            'fields[site]' => 'uri',
+            'foo' => 'bar'
+        ]);
+    }
+
+    public function testWithOptions()
+    {
+        $post = factory(Post::class)->make();
+
+        $this->willSeeResource($post, 201);
+
+        $this->client->create($post, null, [
+            'headers' => ['X-Foo' => 'Bar'],
+        ]);
+
+        $this->assertHeader('X-Foo', 'Bar');
+        $this->assertHeader('Content-Type', 'application/vnd.api+json');
+    }
+
+    public function testError()
+    {
+        $post = factory(Post::class)->make();
+
+        $this->willSeeErrors([], 405);
+        $this->expectException(JsonApiException::class);
+        $this->client->create($post);
     }
 
 }
