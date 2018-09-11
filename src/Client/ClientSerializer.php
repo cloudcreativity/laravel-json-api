@@ -1,6 +1,6 @@
 <?php
 
-namespace CloudCreativity\LaravelJsonApi\Http\Client;
+namespace CloudCreativity\LaravelJsonApi\Client;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Encoder\SerializerInterface;
 use Illuminate\Support\Collection;

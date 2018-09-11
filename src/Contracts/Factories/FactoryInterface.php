@@ -18,9 +18,9 @@
 
 namespace CloudCreativity\LaravelJsonApi\Contracts\Factories;
 
+use CloudCreativity\LaravelJsonApi\Contracts\Client\ClientInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Encoder\SerializerInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Http\Client\ClientInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\Responses\ResponseInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Object\DocumentInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PageInterface;

@@ -16,10 +16,10 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\LaravelJsonApi\Http\Client;
+namespace CloudCreativity\LaravelJsonApi\Client;
 
+use CloudCreativity\LaravelJsonApi\Contracts\Client\ClientInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Factories\FactoryInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Http\Client\ClientInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use Neomerx\JsonApi\Contracts\Http\Query\QueryParametersParserInterface;
 use Neomerx\JsonApi\Contracts\Schema\ContainerInterface;

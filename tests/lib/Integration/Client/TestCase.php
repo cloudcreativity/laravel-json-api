@@ -2,7 +2,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Client;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Http\Client\ClientInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Client\ClientInterface;
 use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase as BaseTestCase;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;

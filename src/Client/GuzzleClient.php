@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\LaravelJsonApi\Http\Client;
+namespace CloudCreativity\LaravelJsonApi\Client;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Factories\FactoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\Responses\ResponseInterface;

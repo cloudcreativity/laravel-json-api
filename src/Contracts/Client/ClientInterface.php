@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\LaravelJsonApi\Contracts\Http\Client;
+namespace CloudCreativity\LaravelJsonApi\Contracts\Client;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Http\Responses\ResponseInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
