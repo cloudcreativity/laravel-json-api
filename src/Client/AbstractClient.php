@@ -59,6 +59,11 @@ abstract class AbstractClient implements ClientInterface
     protected $links;
 
     /**
+     * @var array
+     */
+    protected $options;
+
+    /**
      * AbstractClient constructor.
      *
      * @param FactoryInterface $factory
@@ -74,6 +79,7 @@ abstract class AbstractClient implements ClientInterface
         $this->schemas = $schemas;
         $this->serializer = $serializer;
         $this->links = false;
+        $this->options = [];
     }
 
     /**
@@ -121,9 +127,20 @@ abstract class AbstractClient implements ClientInterface
     }
 
     /**
+     * @inheritDoc
+     */
+    public function withOptions(array $options)
+    {
+        $copy = clone $this;
+        $copy->options = array_replace_recursive($this->options, $options);
+
+        return $copy;
+    }
+
+    /**
      * Get the path for a record.
      *
-     * @param object $record
+     * @param mixed $record
      * @return string
      */
     protected function recordUri($record)
@@ -142,6 +159,10 @@ abstract class AbstractClient implements ClientInterface
      */
     protected function resourceUri($resourceType, $resourceId = null)
     {
+        if (is_object($resourceType)) {
+            return $this->recordUri($resourceType);
+        }
+
         return $resourceId ? "$resourceType/$resourceId" : $resourceType;
     }
 

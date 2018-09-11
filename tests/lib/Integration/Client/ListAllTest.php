@@ -48,13 +48,14 @@ class ListAllTest extends TestCase
 
     public function testWithOptions()
     {
-        $this->willSeeResponse(['data' => []]);
-
-        $this->client->index('posts', null, [
+        $options = [
             'headers' => [
                 'X-Foo' => 'Bar'
             ],
-        ]);
+        ];
+
+        $this->willSeeResponse(['data' => []]);
+        $this->client->withOptions($options)->index('posts');
 
         $this->assertHeader('X-Foo', 'Bar');
         $this->assertHeader('Accept', 'application/vnd.api+json');

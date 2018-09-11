@@ -241,13 +241,14 @@ class UpdateTest extends TestCase
 
     public function testWithOptions()
     {
-        $this->willSeeResource($this->post);
-
-        $this->client->update($this->post, null, [
+        $options = [
             'headers' => [
                 'X-Foo' => 'Bar',
             ],
-        ]);
+        ];
+
+        $this->willSeeResource($this->post);
+        $this->client->withOptions($options)->update($this->post);
 
         $this->assertHeader('X-Foo', 'Bar');
         $this->assertHeader('Content-Type', 'application/vnd.api+json');

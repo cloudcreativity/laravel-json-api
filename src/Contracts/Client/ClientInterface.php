@@ -109,14 +109,27 @@ interface ClientInterface
     public function withCompoundDocuments();
 
     /**
+     * Return an instance that will use the supplied options when making requests.
+     *
+     * This method MUST be implemented in such a way as to retain the immutability
+     * of the client, and MUST return an instance that will use the supplied options.
+     *
+     * Implementations MAY merge or overwrite any existing options when this method
+     * is invoked.
+     *
+     * @param array $options
+     * @return ClientInterface
+     */
+    public function withOptions(array $options);
+
+    /**
      * @param string $resourceType
      * @param EncodingParametersInterface|null $parameters
      *      the parameters to send to the remote server.
-     * @param array $options
      * @return ResponseInterface
      * @throws ClientException
      */
-    public function index($resourceType, EncodingParametersInterface $parameters = null, array $options = []);
+    public function index($resourceType, EncodingParametersInterface $parameters = null);
 
     /**
      * Send the domain record to the remote JSON API.
@@ -125,28 +138,25 @@ interface ClientInterface
      *      the resource fields to send, if sending sparse field-sets.
      * @param EncodingParametersInterface|null $parameters
      *      the parameters to send to the remote server.
-     * @param array $options
      * @return ResponseInterface
      * @throws ClientException
      */
-    public function create($record, EncodingParametersInterface $parameters = null, array $options = []);
+    public function create($record, EncodingParametersInterface $parameters = null);
 
     /**
      * Read the domain record from the remote JSON API.
      *
-     * @param string $resourceType
-     * @param string $resourceId
+     * @param object|string $resourceType
+     * @param string|null $resourceId
      * @param EncodingParametersInterface|null $parameters
      *      the parameters to send to the remote server.
-     * @param array $options
      * @return ResponseInterface
      * @throws ClientException
      */
     public function read(
         $resourceType,
-        $resourceId,
-        EncodingParametersInterface $parameters = null,
-        array $options = []
+        $resourceId = null,
+        EncodingParametersInterface $parameters = null
     );
 
     /**
@@ -155,19 +165,18 @@ interface ClientInterface
      * @param object $record
      * @param EncodingParametersInterface|null $parameters
      *      the parameters to send to the remote server.
-     * @param array $options
      * @return ResponseInterface
      * @throws ClientException
      */
-    public function update($record, EncodingParametersInterface $parameters = null, array $options = []);
+    public function update($record, EncodingParametersInterface $parameters = null);
 
     /**
      * Delete the domain record from the remote JSON API.
      *
-     * @param object $record
-     * @param array $options
+     * @param object|string $resourceType
+     * @param string|null $resourceId
      * @return ResponseInterface
      * @throws ClientException
      */
-    public function delete($record, array $options = []);
+    public function delete($resourceType, $resourceId = null);
 }

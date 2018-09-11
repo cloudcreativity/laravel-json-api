@@ -33,6 +33,15 @@ class ReadTest extends TestCase
         $this->assertHeader('Accept', 'application/vnd.api+json');
     }
 
+    public function testWithObject()
+    {
+        $expected = $this->willSeeResource($this->post);
+        $response = $this->client->read($this->post);
+
+        $this->assertSame($expected, $response);
+        $this->assertRequested('GET', "/posts/{$this->post->getRouteKey()}");
+    }
+
     public function testWithParameters()
     {
         $parameters = new EncodingParameters(
@@ -52,12 +61,14 @@ class ReadTest extends TestCase
 
     public function testWithOptions()
     {
-        $this->willSeeResource($this->post);
-        $this->client->read('posts', '1', null, [
+        $options = [
             'headers' => [
                 'X-Foo' => 'Bar',
             ],
-        ]);
+        ];
+
+        $this->willSeeResource($this->post);
+        $this->client->withOptions($options)->read('posts', '1');
 
         $this->assertHeader('X-Foo', 'Bar');
         $this->assertHeader('Accept', 'application/vnd.api+json');

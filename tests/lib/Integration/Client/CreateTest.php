@@ -213,12 +213,20 @@ class CreateTest extends TestCase
 
         $this->willSeeResource($post, 201);
 
-        $this->client->create($post, null, [
-            'headers' => ['X-Foo' => 'Bar'],
-        ]);
+        $options = [
+            'headers' => [
+                'X-Foo' => 'Bar',
+                'Content-Type' => 'text/html', // should be overwritten
+            ],
+        ];
+
+        $this->client
+            ->withOptions($options)
+            ->create($post);
 
         $this->assertHeader('X-Foo', 'Bar');
         $this->assertHeader('Content-Type', 'application/vnd.api+json');
+        $this->assertHeader('Accept', 'application/vnd.api+json');
     }
 
     public function testError()
