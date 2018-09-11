@@ -13,7 +13,7 @@ class ListAllTest extends TestCase
     public function test()
     {
         $expected = $this->willSeeResponse(['data' => []]);
-        $response = $this->client->index('posts');
+        $response = $this->client->query('posts');
 
         $this->assertSame($expected, $response);
         $this->assertRequested('GET', '/posts');
@@ -32,7 +32,7 @@ class ListAllTest extends TestCase
         );
 
         $this->willSeeResponse(['data' => []]);
-        $this->client->index('posts', $parameters);
+        $this->client->query('posts', $parameters);
 
         $this->assertQueryParameters([
             'include' => 'author,site',
@@ -55,7 +55,7 @@ class ListAllTest extends TestCase
         ];
 
         $this->willSeeResponse(['data' => []]);
-        $this->client->withOptions($options)->index('posts');
+        $this->client->withOptions($options)->query('posts');
 
         $this->assertHeader('X-Foo', 'Bar');
         $this->assertHeader('Accept', 'application/vnd.api+json');
@@ -65,6 +65,6 @@ class ListAllTest extends TestCase
     {
         $this->willSeeErrors([], 405);
         $this->expectException(ClientException::class);
-        $this->client->index('posts');
+        $this->client->query('posts');
     }
 }

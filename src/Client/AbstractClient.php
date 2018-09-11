@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Copyright 2018 Cloud Creativity Limited
  *
@@ -20,10 +19,11 @@ namespace CloudCreativity\LaravelJsonApi\Client;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Client\ClientInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Factories\FactoryInterface;
+use CloudCreativity\LaravelJsonApi\Exceptions\ClientException;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
-use Neomerx\JsonApi\Contracts\Http\Query\QueryParametersParserInterface;
 use Neomerx\JsonApi\Contracts\Schema\ContainerInterface;
 use Neomerx\JsonApi\Http\Headers\MediaType;
+use Psr\Http\Message\ResponseInterface;
 
 /**
  * Class AbstractClient
@@ -32,11 +32,6 @@ use Neomerx\JsonApi\Http\Headers\MediaType;
  */
 abstract class AbstractClient implements ClientInterface
 {
-
-    /**
-     * @var FactoryInterface
-     */
-    protected $factory;
 
     /**
      * @var ContainerInterface
@@ -64,18 +59,31 @@ abstract class AbstractClient implements ClientInterface
     protected $options;
 
     /**
+     * Send a request.
+     *
+     * @param string $method
+     * @param string $uri
+     * @param array|null $payload
+     *      the JSON API payload, or null if no payload to send.
+     * @param EncodingParametersInterface|null $parameters
+     * @return ResponseInterface
+     * @throws ClientException
+     */
+    abstract protected function request(
+        $method,
+        $uri,
+        array $payload = null,
+        EncodingParametersInterface $parameters = null
+    );
+
+    /**
      * AbstractClient constructor.
      *
-     * @param FactoryInterface $factory
      * @param ContainerInterface $schemas
      * @param ClientSerializer $serializer
      */
-    public function __construct(
-        FactoryInterface $factory,
-        ContainerInterface $schemas,
-        ClientSerializer $serializer
-    ) {
-        $this->factory = $factory;
+    public function __construct(ContainerInterface $schemas, ClientSerializer $serializer)
+    {
         $this->schemas = $schemas;
         $this->serializer = $serializer;
         $this->links = false;
@@ -137,17 +145,108 @@ abstract class AbstractClient implements ClientInterface
         return $copy;
     }
 
+
     /**
-     * Get the path for a record.
-     *
-     * @param mixed $record
-     * @return string
+     * @inheritdoc
      */
-    protected function recordUri($record)
+    public function query($resourceType, EncodingParametersInterface $parameters = null)
+    {
+        return $this->request('GET', $this->resourceUri($resourceType), null, $parameters);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function create($resourceType, array $payload, EncodingParametersInterface $parameters = null)
+    {
+        $uri = $this->resourceUri($resourceType);
+
+        return $this->request('POST', $uri, $payload, $parameters);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function createRecord($record, EncodingParametersInterface $parameters = null)
+    {
+        list($resourceType) = $this->resourceIdentifier($record);
+
+        return $this->create($resourceType, $this->serializer->serialize($record), $parameters);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function read($resourceType, $resourceId, EncodingParametersInterface $parameters = null)
+    {
+        $uri = $this->resourceUri($resourceType, $resourceId);
+
+        return $this->request('GET', $uri, null, $parameters);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function readRecord($record, EncodingParametersInterface $parameters = null)
+    {
+        list ($resourceType, $resourceId) = $this->resourceIdentifier($record);
+
+        return $this->read($resourceType, $resourceId, $parameters);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function update(
+        $resourceType,
+        $resourceId,
+        array $payload,
+        EncodingParametersInterface $parameters = null
+    ) {
+        $uri = $this->resourceUri($resourceType, $resourceId);
+
+        return $this->request('PATCH', $uri, $payload, $parameters);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function updateRecord($record, EncodingParametersInterface $parameters = null)
+    {
+        list ($resourceType, $resourceId) = $this->resourceIdentifier($record);
+
+        return $this->update($resourceType, $resourceId, $this->serializer->serialize($record), $parameters);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function delete($resourceType, $resourceId)
+    {
+        $uri = $this->resourceUri($resourceType, $resourceId);
+
+        return $this->request('DELETE', $uri);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function deleteRecord($record)
+    {
+        list ($resourceType, $resourceId) = $this->resourceIdentifier($record);
+
+        return $this->delete($resourceType, $resourceId);
+    }
+
+    /**
+     * @param object $record
+     * @return array
+     */
+    protected function resourceIdentifier($record)
     {
         $schema = $this->schemas->getSchema($record);
 
-        return $this->resourceUri($schema->getResourceType(), $schema->getId($record));
+        return [$schema->getResourceType(), $schema->getId($record)];
     }
 
     /**
@@ -159,10 +258,6 @@ abstract class AbstractClient implements ClientInterface
      */
     protected function resourceUri($resourceType, $resourceId = null)
     {
-        if (is_object($resourceType)) {
-            return $this->recordUri($resourceType);
-        }
-
         return $resourceId ? "$resourceType/$resourceId" : $resourceType;
     }
 
@@ -180,78 +275,5 @@ abstract class AbstractClient implements ClientInterface
         }
 
         return $headers;
-    }
-
-    /**
-     * @param EncodingParametersInterface $parameters
-     * @return array
-     */
-    protected function parseQuery(EncodingParametersInterface $parameters)
-    {
-        return array_filter(array_merge((array) $parameters->getUnrecognizedParameters(), [
-            QueryParametersParserInterface::PARAM_INCLUDE =>
-                implode(',', (array) $parameters->getIncludePaths()),
-            QueryParametersParserInterface::PARAM_FIELDS =>
-                $this->parseQueryFieldsets((array) $parameters->getFieldSets()),
-        ]));
-    }
-
-    /**
-     * @param EncodingParametersInterface $parameters
-     * @return array
-     */
-    protected function parseSearchQuery(EncodingParametersInterface $parameters)
-    {
-        return array_filter(array_merge($this->parseQuery($parameters), [
-            QueryParametersParserInterface::PARAM_SORT =>
-                implode(',', (array) $parameters->getSortParameters()),
-            QueryParametersParserInterface::PARAM_PAGE =>
-                $parameters->getPaginationParameters(),
-            QueryParametersParserInterface::PARAM_FILTER =>
-                $parameters->getFilteringParameters(),
-        ]));
-    }
-
-    /**
-     * @return bool
-     */
-    protected function doesIncludeLinks()
-    {
-        return $this->links;
-    }
-
-    /**
-     * @return bool
-     */
-    protected function doesNotIncludeLinks()
-    {
-        return !$this->doesIncludeLinks();
-    }
-
-    /**
-     * @return bool
-     */
-    protected function doesSendCompoundDocuments()
-    {
-        return $this->compoundDocument;
-    }
-
-    /**
-     * @return bool
-     */
-    protected function doesNotSendCompoundDocuments()
-    {
-        return !$this->doesSendCompoundDocuments();
-    }
-
-    /**
-     * @param array $fieldsets
-     * @return array
-     */
-    private function parseQueryFieldsets(array $fieldsets)
-    {
-        return array_map(function ($values) {
-            return implode(',', (array) $values);
-        }, $fieldsets);
     }
 }

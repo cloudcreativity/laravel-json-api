@@ -62,7 +62,7 @@ class UpdateTest extends TestCase
         ];
 
         $expected = $this->willSeeResource($this->post);
-        $actual = $this->client->withIncludePaths('author')->update($this->post);
+        $actual = $this->client->withIncludePaths('author')->updateRecord($this->post);
 
         $this->assertSame($expected, $actual, 'http response');
         $this->assertRequested('PATCH', "/posts/{$this->post->getRouteKey()}");
@@ -135,7 +135,7 @@ class UpdateTest extends TestCase
             ->withIncludePaths('author')
             ->withCompoundDocuments()
             ->withLinks()
-            ->update($this->post);
+            ->updateRecord($this->post);
 
         $this->assertSentDocument([
             'data' => $resource,
@@ -187,7 +187,7 @@ class UpdateTest extends TestCase
         $this->client
             ->withIncludePaths('author')
             ->withCompoundDocuments()
-            ->update($this->post);
+            ->updateRecord($this->post);
 
         $this->assertSentDocument([
             'data' => $resource,
@@ -210,7 +210,7 @@ class UpdateTest extends TestCase
 
         $this->client
             ->withFields('posts', ['content', 'published'])
-            ->update($this->post);
+            ->updateRecord($this->post);
 
         $this->assertSentDocument(['data' => $resource]);
     }
@@ -223,7 +223,7 @@ class UpdateTest extends TestCase
         );
 
         $this->willSeeResource($this->post);
-        $this->client->update($this->post, $parameters);
+        $this->client->updateRecord($this->post, $parameters);
 
         $this->assertQueryParameters([
             'include' => 'author,site',
@@ -235,7 +235,7 @@ class UpdateTest extends TestCase
     public function testWithNoContentResponse()
     {
         $expected = $this->willSeeResponse(null, 204);
-        $response = $this->client->update($this->post);
+        $response = $this->client->updateRecord($this->post);
         $this->assertSame($expected, $response, 'response');
     }
 
@@ -248,7 +248,7 @@ class UpdateTest extends TestCase
         ];
 
         $this->willSeeResource($this->post);
-        $this->client->withOptions($options)->update($this->post);
+        $this->client->withOptions($options)->updateRecord($this->post);
 
         $this->assertHeader('X-Foo', 'Bar');
         $this->assertHeader('Content-Type', 'application/vnd.api+json');
@@ -258,6 +258,6 @@ class UpdateTest extends TestCase
     {
         $this->willSeeErrors([], 422);
         $this->expectException(ClientException::class);
-        $this->client->update($this->post);
+        $this->client->updateRecord($this->post);
     }
 }

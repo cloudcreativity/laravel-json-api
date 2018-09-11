@@ -36,7 +36,7 @@ class ReadTest extends TestCase
     public function testWithObject()
     {
         $expected = $this->willSeeResource($this->post);
-        $response = $this->client->read($this->post);
+        $response = $this->client->readRecord($this->post);
 
         $this->assertSame($expected, $response);
         $this->assertRequested('GET', "/posts/{$this->post->getRouteKey()}");

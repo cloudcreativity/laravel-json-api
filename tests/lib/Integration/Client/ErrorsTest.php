@@ -47,7 +47,7 @@ class ErrorsTest extends TestCase
         ], 500);
 
         try {
-            $this->client->index('posts');
+            $this->client->query('posts');
             $this->fail('No exception thrown.');
         } catch (ClientException $ex) {
             $this->assertEquals(collect($expected), $ex->getErrors());

@@ -35,7 +35,7 @@ class DeleteTest extends TestCase
     public function testWithObject()
     {
         $expected = $this->willSeeResponse(null, 204);
-        $response = $this->client->delete($this->post);
+        $response = $this->client->deleteRecord($this->post);
         $this->assertSame($expected, $response);
         $this->assertRequested('DELETE', "/posts/{$this->post->getRouteKey()}");
         $this->assertHeader('Accept', 'application/vnd.api+json');
@@ -50,7 +50,7 @@ class DeleteTest extends TestCase
         ];
 
         $this->willSeeResponse(null, 204);
-        $this->client->withOptions($options)->delete($this->post);
+        $this->client->withOptions($options)->deleteRecord($this->post);
 
         $this->assertHeader('X-Foo', 'Bar');
         $this->assertHeader('Accept', 'application/vnd.api+json');
@@ -60,6 +60,6 @@ class DeleteTest extends TestCase
     {
         $this->willSeeErrors([], 405);
         $this->expectException(ClientException::class);
-        $this->client->delete($this->post);
+        $this->client->deleteRecord($this->post);
     }
 }

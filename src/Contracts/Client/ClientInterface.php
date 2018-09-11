@@ -123,16 +123,29 @@ interface ClientInterface
     public function withOptions(array $options);
 
     /**
+     * Query a resource type on the remote JSON API.
+     *
      * @param string $resourceType
      * @param EncodingParametersInterface|null $parameters
      *      the parameters to send to the remote server.
      * @return ResponseInterface
      * @throws ClientException
      */
-    public function index($resourceType, EncodingParametersInterface $parameters = null);
+    public function query($resourceType, EncodingParametersInterface $parameters = null);
 
     /**
-     * Send the domain record to the remote JSON API.
+     * Create a resource on the remote JSON API.
+     *
+     * @param string $resourceType
+     * @param array $payload
+     * @param EncodingParametersInterface|null $parameters
+     * @return ResponseInterface
+     * @throws ClientException
+     */
+    public function create($resourceType, array $payload, EncodingParametersInterface $parameters = null);
+
+    /**
+     * Serialize the domain record and create it on the remote JSON API.
      *
      * @param object $record
      *      the resource fields to send, if sending sparse field-sets.
@@ -141,13 +154,13 @@ interface ClientInterface
      * @return ResponseInterface
      * @throws ClientException
      */
-    public function create($record, EncodingParametersInterface $parameters = null);
+    public function createRecord($record, EncodingParametersInterface $parameters = null);
 
     /**
-     * Read the domain record from the remote JSON API.
+     * Read the specified resource from the remote JSON API.
      *
-     * @param object|string $resourceType
-     * @param string|null $resourceId
+     * @param string $resourceType
+     * @param string $resourceId
      * @param EncodingParametersInterface|null $parameters
      *      the parameters to send to the remote server.
      * @return ResponseInterface
@@ -155,12 +168,39 @@ interface ClientInterface
      */
     public function read(
         $resourceType,
-        $resourceId = null,
+        $resourceId,
         EncodingParametersInterface $parameters = null
     );
 
     /**
-     * Update the domain record with the remote JSON API.
+     * Read the domain record from the remote JSON API.
+     *
+     * @param $record
+     * @param EncodingParametersInterface|null $parameters
+     * @return ResponseInterface
+     * @throws ClientException
+     */
+    public function readRecord($record, EncodingParametersInterface $parameters = null);
+
+    /**
+     * Update the specified resource on the remote JSON API.
+     *
+     * @param $resourceType
+     * @param $resourceId
+     * @param array $payload
+     * @param EncodingParametersInterface|null $parameters
+     * @return ResponseInterface
+     * @throws ClientException
+     */
+    public function update(
+        $resourceType,
+        $resourceId,
+        array $payload,
+        EncodingParametersInterface $parameters = null
+    );
+
+    /**
+     * Serialize the domain record and update it on the remote JSON API.
      *
      * @param object $record
      * @param EncodingParametersInterface|null $parameters
@@ -168,15 +208,25 @@ interface ClientInterface
      * @return ResponseInterface
      * @throws ClientException
      */
-    public function update($record, EncodingParametersInterface $parameters = null);
+    public function updateRecord($record, EncodingParametersInterface $parameters = null);
+
+    /**
+     * Delete the specified resource from the remote JSON API.
+     *
+     * @param string $resourceType
+     * @param string $resourceId
+     * @return ResponseInterface
+     * @throws ClientException
+     */
+    public function delete($resourceType, $resourceId);
 
     /**
      * Delete the domain record from the remote JSON API.
      *
-     * @param object|string $resourceType
-     * @param string|null $resourceId
+     * @param object $record
      * @return ResponseInterface
      * @throws ClientException
      */
-    public function delete($resourceType, $resourceId = null);
+    public function deleteRecord($record);
+
 }

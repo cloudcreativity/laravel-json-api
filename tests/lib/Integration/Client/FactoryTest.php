@@ -17,7 +17,7 @@ class FactoryTest extends TestCase
         $post = factory(Post::class)->make();
 
         $this->willSeeResource($post, 201);
-        $client->create($post);
+        $client->createRecord($post);
 
         $this->assertSame(
             'http://localhost/api/v1/posts',
@@ -38,7 +38,7 @@ class FactoryTest extends TestCase
         $post = factory(Post::class)->make();
 
         $this->willSeeResource($post, 201);
-        $client->create($post);
+        $client->createRecord($post);
 
         $this->assertSame(
             'http://example.com/foo/api/v1/posts',
@@ -60,7 +60,7 @@ class FactoryTest extends TestCase
         $post = factory(Post::class)->make();
 
         $this->willSeeResource($post, 201);
-        $client->create($post);
+        $client->createRecord($post);
 
         $this->assertSame(
             'http://foobar.local/baz/bat/posts',

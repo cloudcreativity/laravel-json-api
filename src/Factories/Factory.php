@@ -33,6 +33,7 @@ use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\QueryValidatorInterface;
 use CloudCreativity\LaravelJsonApi\Encoder\Encoder;
+use CloudCreativity\LaravelJsonApi\Encoder\Parameters\EncodingParameters;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Http\Headers\RestrictiveHeadersChecker;
 use CloudCreativity\LaravelJsonApi\Http\Query\ValidationQueryChecker;
@@ -155,7 +156,6 @@ class Factory extends BaseFactory implements FactoryInterface
     public function createClient($httpClient, SchemaContainerInterface $container, SerializerInterface $encoder)
     {
         return new GuzzleClient(
-            $this,
             $httpClient,
             $container,
             new ClientSerializer($encoder, $this)
@@ -307,6 +307,27 @@ class Factory extends BaseFactory implements FactoryInterface
         $generator = $this->container->make(IlluminateUrlGenerator::class);
 
         return new LinkGenerator($this, $urls, $generator);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function createQueryParameters(
+        $includePaths = null,
+        array $fieldSets = null,
+        $sortParameters = null,
+        array $pagingParameters = null,
+        array $filteringParameters = null,
+        array $unrecognizedParams = null
+    ) {
+        return new EncodingParameters(
+            $includePaths,
+            $fieldSets,
+            $sortParameters,
+            $pagingParameters,
+            $filteringParameters,
+            $unrecognizedParams
+        );
     }
 
     /**

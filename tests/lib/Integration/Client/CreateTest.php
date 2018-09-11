@@ -34,7 +34,7 @@ class CreateTest extends TestCase
         ];
 
         $expected = $this->willSeeResource($post, 201);
-        $actual = $this->client->withIncludePaths('author')->create($post);
+        $actual = $this->client->withIncludePaths('author')->createRecord($post);
 
         $this->assertSame($expected, $actual, 'http response');
         $this->assertRequested('POST', '/posts');
@@ -83,7 +83,7 @@ class CreateTest extends TestCase
             ->withCompoundDocuments()
             ->withFields('posts', ['title', 'slug', 'content', 'published', 'author'])
             ->withFields('users', 'name')
-            ->create($post);
+            ->createRecord($post);
 
         $this->assertSame($expected, $actual, 'http response');
         $this->assertSentDocument($document);
@@ -127,7 +127,7 @@ class CreateTest extends TestCase
         $actual = $this->client
             ->withLinks()
             ->withIncludePaths('author')
-            ->create($post, $params);
+            ->createRecord($post, $params);
 
         $this->assertSame($expected, $actual, 'http response');
         $this->assertQueryParameters([
@@ -177,7 +177,7 @@ class CreateTest extends TestCase
         $actual = $this->client
             ->withLinks()
             ->withIncludePaths('author')
-            ->create($post);
+            ->createRecord($post);
 
         $this->assertSame($expected, $actual, 'http response');
         $this->assertSentDocument($document);
@@ -197,7 +197,7 @@ class CreateTest extends TestCase
         $post = factory(Post::class)->make();
 
         $this->willSeeResource($post, 201);
-        $this->client->create($post, $parameters);
+        $this->client->createRecord($post, $parameters);
 
         $this->assertQueryParameters([
             'include' => 'author,site',
@@ -222,7 +222,7 @@ class CreateTest extends TestCase
 
         $this->client
             ->withOptions($options)
-            ->create($post);
+            ->createRecord($post);
 
         $this->assertHeader('X-Foo', 'Bar');
         $this->assertHeader('Content-Type', 'application/vnd.api+json');
@@ -235,7 +235,7 @@ class CreateTest extends TestCase
 
         $this->willSeeErrors([], 405);
         $this->expectException(ClientException::class);
-        $this->client->create($post);
+        $this->client->createRecord($post);
     }
 
 }
