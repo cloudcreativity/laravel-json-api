@@ -69,10 +69,10 @@ interface ClientInterface
      * new field sets.
      *
      * @param string $resourceType
-     * @param string ...$fields
+     * @param string|string[] $fields
      * @return ClientInterface
      */
-    public function withFields($resourceType, ...$fields);
+    public function withFields($resourceType, $fields);
 
     /**
      * Return an instance that will keep links in encoded documents.

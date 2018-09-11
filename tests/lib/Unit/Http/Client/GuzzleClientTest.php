@@ -493,7 +493,7 @@ class GuzzleClientTest extends TestCase
         );
 
         $this->willSerializeRecord($expected)->willSeeRecord();
-        $client = $this->client->withFields('posts', 'content', 'published-at');
+        $client = $this->client->withFields('posts', ['content', 'published-at']);
 
         $this->assertNotSame($this->client, $client, 'client field sets are immutable');
         $client->update($this->record);

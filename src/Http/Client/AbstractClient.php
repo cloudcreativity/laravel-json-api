@@ -90,10 +90,10 @@ abstract class AbstractClient implements ClientInterface
     /**
      * @inheritDoc
      */
-    public function withFields($resourceType, ...$fields)
+    public function withFields($resourceType, $fields)
     {
         $copy = clone $this;
-        $copy->serializer = $copy->serializer->withFieldsets($resourceType, ...$fields);
+        $copy->serializer = $copy->serializer->withFieldsets($resourceType, $fields);
 
         return $copy;
     }

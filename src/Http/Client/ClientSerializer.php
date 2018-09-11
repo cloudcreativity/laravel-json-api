@@ -94,15 +94,15 @@ class ClientSerializer
 
     /**
      * @param string $resourceType
-     * @param string ...$fields
+     * @param string|string[] $fields
      * @return ClientSerializer
      */
-    public function withFieldsets($resourceType, ...$fields)
+    public function withFieldsets($resourceType, $fields)
     {
         $fieldsets = $this->fieldsets ?: [];
 
         if ($fields) {
-            $fieldsets[$resourceType] = $fields;
+            $fieldsets[$resourceType] = (array) $fields;
         } else {
             unset($fieldsets[$resourceType]);
         }

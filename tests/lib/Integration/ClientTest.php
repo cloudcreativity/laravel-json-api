@@ -177,7 +177,7 @@ class ClientTest extends TestCase
         $actual = $this->client
             ->withIncludePaths('author')
             ->withCompoundDocuments()
-            ->withFields('posts', 'title', 'slug', 'content', 'published', 'author')
+            ->withFields('posts', ['title', 'slug', 'content', 'published', 'author'])
             ->withFields('users', 'name')
             ->create($post);
 
