@@ -2,9 +2,9 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Client;
 
+use CloudCreativity\LaravelJsonApi\Exceptions\ClientException;
 use Neomerx\JsonApi\Encoder\Parameters\EncodingParameters;
 use Neomerx\JsonApi\Encoder\Parameters\SortParameter;
-use Neomerx\JsonApi\Exceptions\JsonApiException;
 
 class ListAllTest extends TestCase
 {
@@ -15,7 +15,7 @@ class ListAllTest extends TestCase
         $expected = $this->willSeeResponse(['data' => []]);
         $response = $this->client->index('posts');
 
-        $this->assertSame($expected, $response->getPsrResponse());
+        $this->assertSame($expected, $response);
         $this->assertRequested('GET', '/posts');
         $this->assertHeader('Accept', 'application/vnd.api+json');
     }
@@ -63,7 +63,7 @@ class ListAllTest extends TestCase
     public function testError()
     {
         $this->willSeeErrors([], 405);
-        $this->expectException(JsonApiException::class);
+        $this->expectException(ClientException::class);
         $this->client->index('posts');
     }
 }

@@ -22,6 +22,8 @@ use CloudCreativity\LaravelJsonApi\Api\LinkGenerator;
 use CloudCreativity\LaravelJsonApi\Api\ResourceProvider;
 use CloudCreativity\LaravelJsonApi\Api\Url;
 use CloudCreativity\LaravelJsonApi\Api\UrlGenerator;
+use CloudCreativity\LaravelJsonApi\Client\ClientSerializer;
+use CloudCreativity\LaravelJsonApi\Client\GuzzleClient;
 use CloudCreativity\LaravelJsonApi\Container;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Encoder\SerializerInterface;
@@ -32,12 +34,9 @@ use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\QueryValidatorInterface;
 use CloudCreativity\LaravelJsonApi\Encoder\Encoder;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
-use CloudCreativity\LaravelJsonApi\Client\ClientSerializer;
-use CloudCreativity\LaravelJsonApi\Client\GuzzleClient;
 use CloudCreativity\LaravelJsonApi\Http\Headers\RestrictiveHeadersChecker;
 use CloudCreativity\LaravelJsonApi\Http\Query\ValidationQueryChecker;
 use CloudCreativity\LaravelJsonApi\Http\Responses\ErrorResponse;
-use CloudCreativity\LaravelJsonApi\Http\Responses\Response;
 use CloudCreativity\LaravelJsonApi\Http\Responses\Responses;
 use CloudCreativity\LaravelJsonApi\Object\Document;
 use CloudCreativity\LaravelJsonApi\Pagination\Page;
@@ -128,14 +127,6 @@ class Factory extends BaseFactory implements FactoryInterface
         $encoder->setLogger($this->logger);
 
         return $encoder;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function createResponse(PsrRequest $request, PsrResponse $response)
-    {
-        return new Response($response, $this->createDocumentObject($request, $response));
     }
 
     /**

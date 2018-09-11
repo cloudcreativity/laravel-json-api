@@ -19,15 +19,14 @@
 namespace CloudCreativity\LaravelJsonApi\Client;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Factories\FactoryInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Http\Responses\ResponseInterface;
-use Exception;
+use CloudCreativity\LaravelJsonApi\Exceptions\ClientException;
 use GuzzleHttp\Client;
-use GuzzleHttp\Exception\BadResponseException;
+use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Exception\TransferException;
 use GuzzleHttp\Psr7\Request;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use Neomerx\JsonApi\Contracts\Schema\ContainerInterface;
-use Neomerx\JsonApi\Exceptions\JsonApiException;
-use Psr\Http\Message\RequestInterface as PsrRequest;
+use Psr\Http\Message\ResponseInterface;
 
 /**
  * Class GuzzleClient
@@ -173,44 +172,19 @@ class GuzzleClient extends AbstractClient
      * @param $uri
      * @param array $options
      * @return ResponseInterface
-     * @throws JsonApiException
+     * @throws ClientException
      */
     protected function request($method, $uri, array $options = [])
     {
         $request = new Request($method, $uri);
 
         try {
-            $response = $this->http->send($request, $options);
-        } catch (BadResponseException $ex) {
-            throw $this->parseErrorResponse($request, $ex);
+            return $this->http->send($request, $options);
+        } catch (RequestException $ex) {
+            throw new ClientException($request, $ex->getResponse(), $ex);
+        } catch (TransferException $ex) {
+            throw new ClientException($request, null, $ex);
         }
-
-        return $this->factory->createResponse($request, $response);
-    }
-
-    /**
-     * Safely parse an error response.
-     *
-     * This method wraps decoding the body content of the provided exception, so that
-     * another exception is not thrown while trying to parse an existing exception.
-     *
-     * @param PsrRequest $request
-     * @param BadResponseException $ex
-     * @return JsonApiException
-     */
-    private function parseErrorResponse(PsrRequest $request, BadResponseException $ex)
-    {
-        try {
-            $response = $ex->getResponse();
-            $document = $response ? $this->factory->createDocumentObject($request, $response) : null;
-            $errors = $document ? $document->getErrors() : [];
-            $statusCode = $response ? $response->getStatusCode() : 0;
-        } catch (Exception $e) {
-            $errors = [];
-            $statusCode = 0;
-        }
-
-        return new JsonApiException($errors, $statusCode, $ex);
     }
 
 }

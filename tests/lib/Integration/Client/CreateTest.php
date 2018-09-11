@@ -2,9 +2,9 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Client;
 
+use CloudCreativity\LaravelJsonApi\Exceptions\ClientException;
 use DummyApp\Post;
 use Neomerx\JsonApi\Encoder\Parameters\EncodingParameters;
-use Neomerx\JsonApi\Exceptions\JsonApiException;
 
 class CreateTest extends TestCase
 {
@@ -36,8 +36,7 @@ class CreateTest extends TestCase
         $expected = $this->willSeeResource($post, 201);
         $actual = $this->client->withIncludePaths('author')->create($post);
 
-        $this->assertSame($expected, $actual->getPsrResponse(), 'http response');
-        $this->assertNotNull($actual->getDocument(), 'document');
+        $this->assertSame($expected, $actual, 'http response');
         $this->assertRequested('POST', '/posts');
         $this->assertHeader('Accept', 'application/vnd.api+json');
         $this->assertHeader('Content-Type', 'application/vnd.api+json');
@@ -86,7 +85,7 @@ class CreateTest extends TestCase
             ->withFields('users', 'name')
             ->create($post);
 
-        $this->assertSame($expected, $actual->getPsrResponse(), 'http response');
+        $this->assertSame($expected, $actual, 'http response');
         $this->assertSentDocument($document);
     }
 
@@ -130,7 +129,7 @@ class CreateTest extends TestCase
             ->withIncludePaths('author')
             ->create($post, $params);
 
-        $this->assertSame($expected, $actual->getPsrResponse(), 'http response');
+        $this->assertSame($expected, $actual, 'http response');
         $this->assertQueryParameters([
             'include' => 'author,comments',
             'fields[users]' => 'name,email',
@@ -180,8 +179,7 @@ class CreateTest extends TestCase
             ->withIncludePaths('author')
             ->create($post);
 
-        $this->assertSame($expected, $actual->getPsrResponse(), 'http response');
-        $this->assertNull($actual->getDocument(), 'no document for no content response');
+        $this->assertSame($expected, $actual, 'http response');
         $this->assertSentDocument($document);
     }
 
@@ -228,7 +226,7 @@ class CreateTest extends TestCase
         $post = factory(Post::class)->make();
 
         $this->willSeeErrors([], 405);
-        $this->expectException(JsonApiException::class);
+        $this->expectException(ClientException::class);
         $this->client->create($post);
     }
 

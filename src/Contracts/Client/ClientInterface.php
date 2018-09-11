@@ -18,9 +18,9 @@
 
 namespace CloudCreativity\LaravelJsonApi\Contracts\Client;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Http\Responses\ResponseInterface;
+use CloudCreativity\LaravelJsonApi\Exceptions\ClientException;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
-use Neomerx\JsonApi\Exceptions\JsonApiException;
+use Psr\Http\Message\ResponseInterface;
 
 /**
  * Interface ClientInterface
@@ -114,8 +114,7 @@ interface ClientInterface
      *      the parameters to send to the remote server.
      * @param array $options
      * @return ResponseInterface
-     * @throws JsonApiException
-     *      if the remote server replies with an error.
+     * @throws ClientException
      */
     public function index($resourceType, EncodingParametersInterface $parameters = null, array $options = []);
 
@@ -128,8 +127,7 @@ interface ClientInterface
      *      the parameters to send to the remote server.
      * @param array $options
      * @return ResponseInterface
-     * @throws JsonApiException
-     *      if the remote server replies with an error.
+     * @throws ClientException
      */
     public function create($record, EncodingParametersInterface $parameters = null, array $options = []);
 
@@ -142,8 +140,7 @@ interface ClientInterface
      *      the parameters to send to the remote server.
      * @param array $options
      * @return ResponseInterface
-     * @throws JsonApiException
-     *      if the remote server replies with an error.
+     * @throws ClientException
      */
     public function read(
         $resourceType,
@@ -160,8 +157,7 @@ interface ClientInterface
      *      the parameters to send to the remote server.
      * @param array $options
      * @return ResponseInterface
-     * @throws JsonApiException
-     *      if the remote server replies with an error.
+     * @throws ClientException
      */
     public function update($record, EncodingParametersInterface $parameters = null, array $options = []);
 
@@ -171,8 +167,7 @@ interface ClientInterface
      * @param object $record
      * @param array $options
      * @return ResponseInterface
-     * @throws JsonApiException
-     *      if the remote server replies with an error.
+     * @throws ClientException
      */
     public function delete($record, array $options = []);
 }

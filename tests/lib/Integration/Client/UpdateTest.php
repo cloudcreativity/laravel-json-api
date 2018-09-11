@@ -2,9 +2,9 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Client;
 
+use CloudCreativity\LaravelJsonApi\Exceptions\ClientException;
 use DummyApp\Post;
 use Neomerx\JsonApi\Encoder\Parameters\EncodingParameters;
-use Neomerx\JsonApi\Exceptions\JsonApiException;
 
 class UpdateTest extends TestCase
 {
@@ -64,8 +64,7 @@ class UpdateTest extends TestCase
         $expected = $this->willSeeResource($this->post);
         $actual = $this->client->withIncludePaths('author')->update($this->post);
 
-        $this->assertSame($expected, $actual->getPsrResponse(), 'http response');
-        $this->assertNotNull($actual->getDocument(), 'document');
+        $this->assertSame($expected, $actual, 'http response');
         $this->assertRequested('PATCH', "/posts/{$this->post->getRouteKey()}");
         $this->assertHeader('Accept', 'application/vnd.api+json');
         $this->assertHeader('Content-Type', 'application/vnd.api+json');
@@ -237,8 +236,7 @@ class UpdateTest extends TestCase
     {
         $expected = $this->willSeeResponse(null, 204);
         $response = $this->client->update($this->post);
-        $this->assertSame($expected, $response->getPsrResponse(), 'response');
-        $this->assertNull($response->getDocument());
+        $this->assertSame($expected, $response, 'response');
     }
 
     public function testWithOptions()
@@ -258,7 +256,7 @@ class UpdateTest extends TestCase
     public function testError()
     {
         $this->willSeeErrors([], 422);
-        $this->expectException(JsonApiException::class);
+        $this->expectException(ClientException::class);
         $this->client->update($this->post);
     }
 }

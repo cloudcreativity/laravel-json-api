@@ -2,9 +2,9 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Client;
 
+use CloudCreativity\LaravelJsonApi\Exceptions\ClientException;
 use DummyApp\Post;
 use Neomerx\JsonApi\Encoder\Parameters\EncodingParameters;
-use Neomerx\JsonApi\Exceptions\JsonApiException;
 
 class ReadTest extends TestCase
 {
@@ -28,8 +28,7 @@ class ReadTest extends TestCase
         $expected = $this->willSeeResource($this->post);
         $response = $this->client->read('posts', $this->post->getRouteKey());
 
-        $this->assertSame($expected, $response->getPsrResponse());
-        $this->assertNotNull($response->getDocument());
+        $this->assertSame($expected, $response);
         $this->assertRequested('GET', "/posts/{$this->post->getRouteKey()}");
         $this->assertHeader('Accept', 'application/vnd.api+json');
     }
@@ -67,7 +66,7 @@ class ReadTest extends TestCase
     public function testError()
     {
         $this->willSeeErrors([], 404);
-        $this->expectException(JsonApiException::class);
+        $this->expectException(ClientException::class);
         $this->client->read('posts', '1');
     }
 }
