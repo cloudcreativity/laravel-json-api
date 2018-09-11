@@ -1,110 +1,14 @@
 <?php
 
-namespace CloudCreativity\LaravelJsonApi\Tests\Integration;
+namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Client;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Http\Client\ClientInterface;
 use DummyApp\Post;
-use GuzzleHttp\Client;
-use GuzzleHttp\Handler\MockHandler;
-use GuzzleHttp\HandlerStack;
-use GuzzleHttp\Psr7\Response;
 use Neomerx\JsonApi\Encoder\Parameters\EncodingParameters;
-use function GuzzleHttp\Psr7\parse_query;
 
-class ClientTest extends TestCase
+class CreateTest extends TestCase
 {
 
-    /**
-     * @var HandlerStack
-     */
-    private $handler;
-
-    /**
-     * @var MockHandler
-     */
-    private $mock;
-
-    /**
-     * @var ClientInterface
-     */
-    private $client;
-
-    /**
-     * @return void
-     */
-    protected function setUp()
-    {
-        parent::setUp();
-        $this->handler = HandlerStack::create($this->mock = new MockHandler());
-        $this->client = $this->api()->client('http://example.com', ['handler' => $this->handler]);
-    }
-
     public function test()
-    {
-        $this->markTestIncomplete('@todo move other tests over from the unit test');
-    }
-
-    /**
-     * Uses the host in the JSON API config file.
-     */
-    public function testClientWithoutHost()
-    {
-        $client = $this->api()->client(['handler' => $this->handler]);
-        $post = factory(Post::class)->make();
-
-        $this->willSeeResponse($post, 201);
-        $client->create($post);
-
-        $this->assertSame(
-            'http://localhost/api/v1/posts',
-            (string) $this->mock->getLastRequest()->getUri()
-        );
-    }
-
-    /**
-     * The host that is provided can have a path as well.
-     */
-    public function testClientWithHostAndPath()
-    {
-        $client = $this->api()->client(
-            'http://example.com/foo',
-            ['handler' => $this->handler]
-        );
-
-        $post = factory(Post::class)->make();
-
-        $this->willSeeResponse($post, 201);
-        $client->create($post);
-
-        $this->assertSame(
-            'http://example.com/foo/api/v1/posts',
-            (string) $this->mock->getLastRequest()->getUri()
-        );
-    }
-
-    /**
-     * A Guzzle client can be provided.
-     */
-    public function testWithGuzzleClient()
-    {
-        $guzzle = new Client([
-            'handler' => $this->handler,
-            'base_uri' => 'http://foobar.local/baz/bat/',
-        ]);
-
-        $client = $this->api()->client($guzzle);
-        $post = factory(Post::class)->make();
-
-        $this->willSeeResponse($post, 201);
-        $client->create($post);
-
-        $this->assertSame(
-            'http://foobar.local/baz/bat/posts',
-            (string) $this->mock->getLastRequest()->getUri()
-        );
-    }
-
-    public function testCreate()
     {
         $this->mock->append();
         $post = factory(Post::class)->make();
@@ -129,7 +33,7 @@ class ClientTest extends TestCase
             ],
         ];
 
-        $expected = $this->willSeeResponse($post, 201);
+        $expected = $this->willSeeResource($post, 201);
         $actual = $this->client->withIncludePaths('author')->create($post);
 
         $this->assertSame($expected, $actual->getPsrResponse(), 'http response');
@@ -139,7 +43,7 @@ class ClientTest extends TestCase
         $this->assertSentDocument(['data' => $resource]);
     }
 
-    public function testCreateWithCompoundDocumentAndFieldsets()
+    public function testWithCompoundDocumentAndFieldsets()
     {
         $this->mock->append();
         $post = factory(Post::class)->make();
@@ -173,7 +77,7 @@ class ClientTest extends TestCase
             ],
         ];
 
-        $expected = $this->willSeeResponse($post, 201);
+        $expected = $this->willSeeResource($post, 201);
         $actual = $this->client
             ->withIncludePaths('author')
             ->withCompoundDocuments()
@@ -189,7 +93,7 @@ class ClientTest extends TestCase
      * As the resource does not have an id, we expect links to be removed even if the
      * client is set to include links.
      */
-    public function testCreateRemovesLinksIfNoId()
+    public function testRemovesLinksIfNoId()
     {
         $this->mock->append();
         $post = factory(Post::class)->make();
@@ -219,7 +123,7 @@ class ClientTest extends TestCase
 
         $params = new EncodingParameters(['author', 'comments'], ['users' => ['name', 'email']]);
 
-        $expected = $this->willSeeResponse($post, 201);
+        $expected = $this->willSeeResource($post, 201);
         $actual = $this->client
             ->withLinks()
             ->withIncludePaths('author')
@@ -233,7 +137,7 @@ class ClientTest extends TestCase
         $this->assertSentDocument($document);
     }
 
-    public function testCreateWithClientIdAndLinks()
+    public function testWithClientIdAndLinks()
     {
         $this->mock->append();
         $post = factory(Post::class)->create();
@@ -269,7 +173,7 @@ class ClientTest extends TestCase
             ],
         ];
 
-        $expected = $this->willSeeResponse($post, 201);
+        $expected = $this->willSeeResource($post, 201);
         $actual = $this->client
             ->withLinks()
             ->withIncludePaths('author')
@@ -279,75 +183,4 @@ class ClientTest extends TestCase
         $this->assertSentDocument($document);
     }
 
-    /**
-     * @param mixed|null $json
-     * @param int $status
-     * @param array|null $headers
-     * @return Response
-     */
-    private function willSeeResponse($json = null, $status = 200, array $headers = null)
-    {
-        if ($json instanceof Post) {
-            $json = $this->api()->encoder()->serializeData($json);
-        }
-
-        if ($json) {
-            $headers['Content-Type'] = 'application/vnd.api+json';
-            $body = json_encode($json);
-        } else {
-            $body = null;
-        }
-
-        $this->mock->append(
-            $response = new Response($status, $headers, $body)
-        );
-
-        return $response;
-    }
-
-    /**
-     * @param array $expected
-     */
-    private function assertSentDocument(array $expected)
-    {
-        $this->assertJsonStringEqualsJsonString(
-            json_encode($expected),
-            (string) $this->mock->getLastRequest()->getBody()
-        );
-    }
-
-    /**
-     * @param $method
-     * @param $path
-     * @return void
-     */
-    private function assertRequested($method, $path)
-    {
-        $uri = 'http://example.com/api/v1' . $path;
-        $request = $this->mock->getLastRequest();
-        $this->assertEquals($method, $request->getMethod());
-        $this->assertEquals($uri, (string) $request->getUri(), 'request uri');
-    }
-
-    /**
-     * @param $key
-     * @param $expected
-     * @return void
-     */
-    private function assertHeader($key, $expected)
-    {
-        $request = $this->mock->getLastRequest();
-        $actual = $request->getHeaderLine($key);
-        $this->assertSame($expected, $actual);
-    }
-
-    /**
-     * @param array $expected
-     * @return void
-     */
-    private function assertQueryParameters(array $expected)
-    {
-        $query = $this->mock->getLastRequest()->getUri()->getQuery();
-        $this->assertEquals($expected, parse_query($query));
-    }
 }
