@@ -273,14 +273,30 @@ class CursorBuilder
      */
     protected function getColumnValue($id)
     {
-        $query = clone $this->query;
-        $value = $query->where($this->key, $id)->value($this->column);
+        $value = $this
+            ->getQuery() // we want the raw DB value, not the Model value as that can be mutated.
+            ->where($this->key, $id)
+            ->value($this->column);
 
         if (is_null($value)) {
             throw new \OutOfRangeException("Cursor key {$id} does not exist or has a null value.");
         }
 
         return $value;
+    }
+
+    /**
+     * Get a base query builder instance.
+     *
+     * @return QueryBuilder
+     */
+    protected function getQuery()
+    {
+        if (!$this->query instanceof QueryBuilder) {
+            return clone $this->query->getQuery();
+        }
+
+        return clone $this->query;
     }
 
     /**
