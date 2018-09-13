@@ -239,6 +239,168 @@ abstract class AbstractClient implements ClientInterface
     }
 
     /**
+     * @inheritDoc
+     */
+    public function readRelated(
+        $resourceType,
+        $resourceId,
+        $relationship,
+        EncodingParametersInterface $parameters = null
+    ) {
+        $uri = $this->relatedUri($resourceType, $resourceId, $relationship);
+
+        return $this->request('GET', $uri, null, $parameters);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function readRecordRelated($record, $relationship, EncodingParametersInterface $parameters = null)
+    {
+        list ($resourceType, $resourceId) = $this->resourceIdentifier($record);
+
+        return $this->readRelated($resourceType, $resourceId, $relationship, $parameters);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function readRelationship(
+        $resourceType,
+        $resourceId,
+        $relationship,
+        EncodingParametersInterface $parameters = null
+    ) {
+        $uri = $this->relationshipUri($resourceType, $resourceId, $relationship);
+
+        return $this->request('GET', $uri, null, $parameters);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function readRecordRelationship($record, $relationship, EncodingParametersInterface $parameters = null)
+    {
+        list ($resourceType, $resourceId) = $this->resourceIdentifier($record);
+
+        return $this->readRelationship($resourceType, $resourceId, $relationship, $parameters);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function replaceRelationship(
+        $resourceType,
+        $resourceId,
+        $relationship,
+        array $payload,
+        EncodingParametersInterface $parameters = null
+    ) {
+        return $this->request(
+            'PATCH',
+            $this->relationshipUri($resourceType, $resourceId, $relationship),
+            $payload,
+            $parameters
+        );
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function replaceRecordRelationship(
+        $record,
+        $related,
+        $relationship,
+        EncodingParametersInterface $parameters = null
+    ) {
+        list ($resourceType, $resourceId) = $this->resourceIdentifier($record);
+
+        return $this->replaceRelationship(
+            $resourceType,
+            $resourceId,
+            $relationship,
+            $this->serializer->serializeRelated($related),
+            $parameters
+        );
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function addToRelationship(
+        $resourceType,
+        $resourceId,
+        $relationship,
+        array $payload,
+        EncodingParametersInterface $parameters = null
+    ) {
+        return $this->request(
+            'POST',
+            $this->relationshipUri($resourceType, $resourceId, $relationship),
+            $payload,
+            $parameters
+        );
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function addToRecordRelationship(
+        $record,
+        $related,
+        $relationship,
+        EncodingParametersInterface $parameters = null
+    ) {
+        list ($resourceType, $resourceId) = $this->resourceIdentifier($record);
+
+        return $this->addToRelationship(
+            $resourceType,
+            $resourceId,
+            $relationship,
+            $this->serializer->serializeRelated($related),
+            $parameters
+        );
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function removeFromRelationship(
+        $resourceType,
+        $resourceId,
+        $relationship,
+        array $payload,
+        EncodingParametersInterface $parameters = null
+    ) {
+        return $this->request(
+            'DELETE',
+            $this->relationshipUri($resourceType, $resourceId, $relationship),
+            $payload,
+            $parameters
+        );
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function removeFromRecordRelationship(
+        $record,
+        $related,
+        $relationship,
+        EncodingParametersInterface $parameters = null
+    ) {
+        list ($resourceType, $resourceId) = $this->resourceIdentifier($record);
+
+        return $this->removeFromRelationship(
+            $resourceType,
+            $resourceId,
+            $relationship,
+            $this->serializer->serializeRelated($related),
+            $parameters
+        );
+    }
+
+    /**
      * @param object $record
      * @return array
      */
@@ -259,6 +421,32 @@ abstract class AbstractClient implements ClientInterface
     protected function resourceUri($resourceType, $resourceId = null)
     {
         return $resourceId ? "$resourceType/$resourceId" : $resourceType;
+    }
+
+    /**
+     * Get the path for reading the related resource in a relationship.
+     *
+     * @param $resourceType
+     * @param $resourceId
+     * @param $relationship
+     * @return string
+     */
+    protected function relatedUri($resourceType, $resourceId, $relationship)
+    {
+        return $this->resourceUri($resourceType, $resourceId) . '/' . $relationship;
+    }
+
+    /**
+     * Get the path for a resource's relationship.
+     *
+     * @param $resourceType
+     * @param $resourceId
+     * @param $relationship
+     * @return string
+     */
+    protected function relationshipUri($resourceType, $resourceId, $relationship)
+    {
+        return $this->resourceUri($resourceType, $resourceId) . '/relationships/' . $relationship;
     }
 
     /**

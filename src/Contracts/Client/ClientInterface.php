@@ -229,4 +229,193 @@ interface ClientInterface
      */
     public function deleteRecord($record);
 
+    /**
+     * Read the related resource for the specified relationship.
+     *
+     * @param string $resourceType
+     * @param string $resourceId
+     * @param string $relationship
+     *      the field name for the relationship.
+     * @param EncodingParametersInterface|null $parameters
+     * @return ResponseInterface
+     * @throws ClientException
+     */
+    public function readRelated(
+        $resourceType,
+        $resourceId,
+        $relationship,
+        EncodingParametersInterface $parameters = null
+    );
+
+    /**
+     * Read the related resource for the provided record's relationship.
+     *
+     * @param object $record
+     * @param string $relationship
+     *      the field name for the relationship.
+     * @param EncodingParametersInterface|null $parameters
+     * @return ResponseInterface
+     * @throws ClientException
+     */
+    public function readRecordRelated($record, $relationship, EncodingParametersInterface $parameters = null);
+
+    /**
+     * Read the specified relationship.
+     *
+     * @param string $resourceType
+     * @param string $resourceId
+     * @param string $relationship
+     *      the field name for the relationship.
+     * @param EncodingParametersInterface|null $parameters
+     * @return ResponseInterface
+     * @throws ClientException
+     */
+    public function readRelationship(
+        $resourceType,
+        $resourceId,
+        $relationship,
+        EncodingParametersInterface $parameters = null
+    );
+
+    /**
+     * Read the specified relationship for the provided record.
+     *
+     * @param object $record
+     * @param string $relationship
+     * @param EncodingParametersInterface|null $parameters
+     * @return ResponseInterface
+     * @throws ClientException
+     */
+    public function readRecordRelationship($record, $relationship, EncodingParametersInterface $parameters = null);
+
+    /**
+     * Replace the specified relationship.
+     *
+     * @param string $resourceType
+     * @param string $resourceId
+     * @param string $relationship
+     *      the field name for the relationship.
+     * @param array $payload
+     * @param EncodingParametersInterface|null $parameters
+     * @return ResponseInterface
+     */
+    public function replaceRelationship(
+        $resourceType,
+        $resourceId,
+        $relationship,
+        array $payload,
+        EncodingParametersInterface $parameters = null
+    );
+
+    /**
+     * Replace the specified relationship for the record by serializing the related records.
+     *
+     * This request is valid for both a to-one and to-many relationship.
+     *
+     * For to-one relationships, the related argument can be:
+     *
+     * - An object.
+     * - Null.
+     *
+     * For a to-many relationship, the related argument can be:
+     *
+     * - An array or iterable containing objects.
+     * - An empty array or iterable (to clear the relationship).
+     *
+     * @param object $record
+     *      the record on which the relationship is being replaced.
+     * @param object|iterable|array|null $related
+     *      the related record or record(s) to replace the relationship with.
+     * @param string $relationship
+     *      the field name for the relationship.
+     * @param EncodingParametersInterface|null $parameters
+     * @return ResponseInterface
+     * @throws ClientException
+     */
+    public function replaceRecordRelationship(
+        $record,
+        $related,
+        $relationship,
+        EncodingParametersInterface $parameters = null
+    );
+
+
+    /**
+     * Add-to the specified relationship.
+     *
+     * @param string $resourceType
+     * @param string $resourceId
+     * @param string $relationship
+     *      the field name for the relationship.
+     * @param array $payload
+     * @param EncodingParametersInterface|null $parameters
+     * @return ResponseInterface
+     */
+    public function addToRelationship(
+        $resourceType,
+        $resourceId,
+        $relationship,
+        array $payload,
+        EncodingParametersInterface $parameters = null
+    );
+
+    /**
+     * Add-to the specified relationship for the record by serializing the related records.
+     *
+     * @param object $record
+     *      the record on which the relationship is being replaced.
+     * @param iterable|array $related
+     *      the related records to replace the relationship with.
+     * @param string $relationship
+     *      the field name for the relationship.
+     * @param EncodingParametersInterface|null $parameters
+     * @return ResponseInterface
+     * @throws ClientException
+     */
+    public function addToRecordRelationship(
+        $record,
+        $related,
+        $relationship,
+        EncodingParametersInterface $parameters = null
+    );
+
+
+    /**
+     * Remove-from the specified relationship.
+     *
+     * @param string $resourceType
+     * @param string $resourceId
+     * @param string $relationship
+     *      the field name for the relationship.
+     * @param array $payload
+     * @param EncodingParametersInterface|null $parameters
+     * @return ResponseInterface
+     */
+    public function removeFromRelationship(
+        $resourceType,
+        $resourceId,
+        $relationship,
+        array $payload,
+        EncodingParametersInterface $parameters = null
+    );
+
+    /**
+     * Remove-from the specified relationship for the record by serializing the related records.
+     *
+     * @param object $record
+     *      the record on which the relationship is being replaced.
+     * @param iterable|array $related
+     *      the related records to replace the relationship with.
+     * @param string $relationship
+     *      the field name for the relationship.
+     * @param EncodingParametersInterface|null $parameters
+     * @return ResponseInterface
+     * @throws ClientException
+     */
+    public function removeFromRecordRelationship(
+        $record,
+        $related,
+        $relationship,
+        EncodingParametersInterface $parameters = null
+    );
 }

@@ -144,6 +144,22 @@ class ClientSerializer
     }
 
     /**
+     * Serialize related record(s).
+     *
+     * @param object|iterable|array|null $related
+     * @param mixed|null $meta
+     * @param array $links
+     * @return array
+     */
+    public function serializeRelated($related, $meta = null, array $links = [])
+    {
+        $serializer = clone $this->serializer;
+        $serializer->withMeta($meta)->withLinks($links);
+
+        return $serializer->serializeIdentifiers($related);
+    }
+
+    /**
      * @param array $resource
      * @param bool|null $links
      * @return array

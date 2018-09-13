@@ -51,6 +51,19 @@ abstract class TestCase extends BaseTestCase
     }
 
     /**
+     * @param $data
+     * @param int $status
+     * @param array $headers
+     * @return Response
+     */
+    protected function willSeeIdentifiers($data, $status = 200, array $headers = [])
+    {
+        $json = $this->api()->encoder()->serializeIdentifiers($data);
+
+        return $this->willSeeResponse($json, $status, $headers);
+    }
+
+    /**
      * @param array|null $json
      * @param int $status
      * @param array $headers
