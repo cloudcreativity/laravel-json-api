@@ -208,7 +208,7 @@ class ClientSerializer
     protected function parseRelationships(array $relationships, $primary = false, $links = null)
     {
         return collect($relationships)->reject(function (array $relation) use ($primary) {
-            return $primary && !isset($relation['data']);
+            return $primary && !array_key_exists('data', $relation);
         })->map(function (array $relation) use ($primary, $links) {
             return $this->parseRelationship($relation, $primary, $links);
         })->filter()->all();

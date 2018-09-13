@@ -43,6 +43,33 @@ class CreateTest extends TestCase
         $this->assertSentDocument(['data' => $resource]);
     }
 
+    public function testNullRelation()
+    {
+        $post = factory(Post::class)->make(['author_id' => null]);
+
+        $resource = [
+            'type' => 'posts',
+            'attributes' => [
+                'created-at' => null,
+                'updated-at' => null,
+                'title' => $post->title,
+                'slug' => $post->slug,
+                'content' => $post->content,
+                'published' => $post->published_at,
+            ],
+            'relationships' => [
+                'author' => [
+                    'data' => null,
+                ],
+            ],
+        ];
+
+        $this->willSeeResource($post, 201);
+        $this->client->withIncludePaths('author')->createRecord($post);
+
+        $this->assertSentDocument(['data' => $resource]);
+    }
+
     public function testWithCompoundDocumentAndFieldsets()
     {
         $this->mock->append();
