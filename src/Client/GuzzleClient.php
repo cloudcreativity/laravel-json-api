@@ -63,14 +63,14 @@ class GuzzleClient extends AbstractClient
         $method,
         $uri,
         array $payload = null,
-        EncodingParametersInterface $parameters = null
+        array $parameters = []
     ) {
         $request = new Request($method, $uri);
 
         $options = array_filter([
             'json' => is_array($payload) ? $payload : null,
             'headers' => $this->jsonApiHeaders(is_array($payload)),
-            'query' => $parameters ? EncodingParameters::cast($parameters)->toArray() : null,
+            'query' => $parameters ?: null,
         ]);
 
         try {

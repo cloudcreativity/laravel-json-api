@@ -4,6 +4,7 @@ namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Client;
 
 use CloudCreativity\LaravelJsonApi\Exceptions\ClientException;
 use DummyApp\Post;
+use Neomerx\JsonApi\Encoder\Parameters\EncodingParameters;
 
 class DeleteTest extends TestCase
 {
@@ -39,6 +40,35 @@ class DeleteTest extends TestCase
         $this->assertSame($expected, $response);
         $this->assertRequested('DELETE', "/posts/{$this->post->getRouteKey()}");
         $this->assertHeader('Accept', 'application/vnd.api+json');
+    }
+
+    public function testWithParameters()
+    {
+        $this->willSeeResponse(null, 204);
+        $this->client->deleteRecord($this->post, [
+            'foo' => 'bar',
+        ]);
+
+        $this->assertQueryParameters([
+            'foo' => 'bar'
+        ]);
+    }
+
+    public function testWithEncodingParameters()
+    {
+        $parameters = new EncodingParameters(
+            null,
+            null,
+            null,
+            null,
+            null,
+            ['foo' => 'bar']
+        );
+
+        $this->willSeeResponse(null, 204);
+        $this->client->deleteRecord($this->post, $parameters);
+
+        $this->assertQueryParameters(['foo' => 'bar']);
     }
 
     public function testWithOptions()

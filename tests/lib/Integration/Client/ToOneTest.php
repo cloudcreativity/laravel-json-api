@@ -34,6 +34,19 @@ class ToOneTest extends TestCase
 
     public function testRelatedWithParameters()
     {
+        $this->willSeeResource($this->post->author);
+
+        $this->client->readRecordRelated($this->post, 'author', [
+            'include' => 'posts',
+        ]);
+
+        $this->assertQueryParameters([
+            'include' => 'posts',
+        ]);
+    }
+
+    public function testRelatedWithEncodingParameters()
+    {
         $parameters = new EncodingParameters(
             ['posts'],
             ['author' => ['first-name', 'surname']]
@@ -59,6 +72,21 @@ class ToOneTest extends TestCase
     }
 
     public function testRelationshipWithParameters()
+    {
+        $this->willSeeIdentifiers($this->post->author);
+
+        $this->client->readRecordRelationship($this->post, 'author', [
+            'include' => 'posts',
+            'fields' => ['author' => 'first-name,surname'],
+        ]);
+
+        $this->assertQueryParameters([
+            'include' => 'posts',
+            'fields[author]' => 'first-name,surname',
+        ]);
+    }
+
+    public function testRelationshipWithEncodingParameters()
     {
         $parameters = new EncodingParameters(
             ['posts'],

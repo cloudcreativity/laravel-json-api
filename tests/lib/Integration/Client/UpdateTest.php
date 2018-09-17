@@ -217,6 +217,19 @@ class UpdateTest extends TestCase
 
     public function testWithParameters()
     {
+        $this->willSeeResource($this->post);
+
+        $this->client->updateRecord($this->post, [
+            'include' => 'author,site',
+        ]);
+
+        $this->assertQueryParameters([
+            'include' => 'author,site',
+        ]);
+    }
+
+    public function testWithEncodingParameters()
+    {
         $parameters = new EncodingParameters(
             ['author', 'site'],
             ['author' => ['first-name', 'surname'], 'site' => ['uri']]

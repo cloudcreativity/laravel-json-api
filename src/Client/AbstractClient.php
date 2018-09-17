@@ -19,6 +19,7 @@ namespace CloudCreativity\LaravelJsonApi\Client;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Client\ClientInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Factories\FactoryInterface;
+use CloudCreativity\LaravelJsonApi\Encoder\Parameters\EncodingParameters;
 use CloudCreativity\LaravelJsonApi\Exceptions\ClientException;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use Neomerx\JsonApi\Contracts\Schema\ContainerInterface;
@@ -65,7 +66,7 @@ abstract class AbstractClient implements ClientInterface
      * @param string $uri
      * @param array|null $payload
      *      the JSON API payload, or null if no payload to send.
-     * @param EncodingParametersInterface|null $parameters
+     * @param array $parameters
      * @return ResponseInterface
      * @throws ClientException
      */
@@ -73,7 +74,7 @@ abstract class AbstractClient implements ClientInterface
         $method,
         $uri,
         array $payload = null,
-        EncodingParametersInterface $parameters = null
+        array $parameters = []
     );
 
     /**
@@ -149,25 +150,33 @@ abstract class AbstractClient implements ClientInterface
     /**
      * @inheritdoc
      */
-    public function query($resourceType, EncodingParametersInterface $parameters = null)
+    public function query($resourceType, $parameters = [])
     {
-        return $this->request('GET', $this->resourceUri($resourceType), null, $parameters);
+        return $this->request(
+            'GET',
+            $this->resourceUri($resourceType),
+            null,
+            $this->queryParameters($parameters)
+        );
     }
 
     /**
      * @inheritDoc
      */
-    public function create($resourceType, array $payload, EncodingParametersInterface $parameters = null)
+    public function create($resourceType, array $payload, $parameters = [])
     {
-        $uri = $this->resourceUri($resourceType);
-
-        return $this->request('POST', $uri, $payload, $parameters);
+        return $this->request(
+            'POST',
+            $this->resourceUri($resourceType),
+            $payload,
+            $this->queryParameters($parameters)
+        );
     }
 
     /**
      * @inheritdoc
      */
-    public function createRecord($record, EncodingParametersInterface $parameters = null)
+    public function createRecord($record, $parameters = [])
     {
         list($resourceType) = $this->resourceIdentifier($record);
 
@@ -177,17 +186,20 @@ abstract class AbstractClient implements ClientInterface
     /**
      * @inheritdoc
      */
-    public function read($resourceType, $resourceId, EncodingParametersInterface $parameters = null)
+    public function read($resourceType, $resourceId, $parameters = [])
     {
-        $uri = $this->resourceUri($resourceType, $resourceId);
-
-        return $this->request('GET', $uri, null, $parameters);
+        return $this->request(
+            'GET',
+            $this->resourceUri($resourceType, $resourceId),
+            null,
+            $this->queryParameters($parameters)
+        );
     }
 
     /**
      * @inheritDoc
      */
-    public function readRecord($record, EncodingParametersInterface $parameters = null)
+    public function readRecord($record, $parameters = [])
     {
         list ($resourceType, $resourceId) = $this->resourceIdentifier($record);
 
@@ -197,21 +209,20 @@ abstract class AbstractClient implements ClientInterface
     /**
      * @inheritDoc
      */
-    public function update(
-        $resourceType,
-        $resourceId,
-        array $payload,
-        EncodingParametersInterface $parameters = null
-    ) {
-        $uri = $this->resourceUri($resourceType, $resourceId);
-
-        return $this->request('PATCH', $uri, $payload, $parameters);
+    public function update($resourceType, $resourceId, array $payload, $parameters = [])
+    {
+        return $this->request(
+            'PATCH',
+            $this->resourceUri($resourceType, $resourceId),
+            $payload,
+            $this->queryParameters($parameters)
+        );
     }
 
     /**
      * @inheritdoc
      */
-    public function updateRecord($record, EncodingParametersInterface $parameters = null)
+    public function updateRecord($record, $parameters = [])
     {
         list ($resourceType, $resourceId) = $this->resourceIdentifier($record);
 
@@ -221,41 +232,43 @@ abstract class AbstractClient implements ClientInterface
     /**
      * @inheritdoc
      */
-    public function delete($resourceType, $resourceId)
+    public function delete($resourceType, $resourceId, $parameters = [])
     {
-        $uri = $this->resourceUri($resourceType, $resourceId);
-
-        return $this->request('DELETE', $uri);
+        return $this->request(
+            'DELETE',
+            $this->resourceUri($resourceType, $resourceId),
+            null,
+            $this->queryParameters($parameters)
+        );
     }
 
     /**
      * @inheritDoc
      */
-    public function deleteRecord($record)
+    public function deleteRecord($record, $parameters = [])
     {
         list ($resourceType, $resourceId) = $this->resourceIdentifier($record);
 
-        return $this->delete($resourceType, $resourceId);
+        return $this->delete($resourceType, $resourceId, $parameters);
     }
 
     /**
      * @inheritDoc
      */
-    public function readRelated(
-        $resourceType,
-        $resourceId,
-        $relationship,
-        EncodingParametersInterface $parameters = null
-    ) {
-        $uri = $this->relatedUri($resourceType, $resourceId, $relationship);
-
-        return $this->request('GET', $uri, null, $parameters);
+    public function readRelated($resourceType, $resourceId, $relationship, $parameters = [])
+    {
+        return $this->request(
+            'GET',
+            $this->relatedUri($resourceType, $resourceId, $relationship),
+            null,
+            $this->queryParameters($parameters)
+        );
     }
 
     /**
      * @inheritDoc
      */
-    public function readRecordRelated($record, $relationship, EncodingParametersInterface $parameters = null)
+    public function readRecordRelated($record, $relationship, $parameters = [])
     {
         list ($resourceType, $resourceId) = $this->resourceIdentifier($record);
 
@@ -265,21 +278,20 @@ abstract class AbstractClient implements ClientInterface
     /**
      * @inheritDoc
      */
-    public function readRelationship(
-        $resourceType,
-        $resourceId,
-        $relationship,
-        EncodingParametersInterface $parameters = null
-    ) {
-        $uri = $this->relationshipUri($resourceType, $resourceId, $relationship);
-
-        return $this->request('GET', $uri, null, $parameters);
+    public function readRelationship($resourceType, $resourceId, $relationship, $parameters = [])
+    {
+        return $this->request(
+            'GET',
+            $this->relationshipUri($resourceType, $resourceId, $relationship),
+            null,
+            $this->queryParameters($parameters)
+        );
     }
 
     /**
      * @inheritDoc
      */
-    public function readRecordRelationship($record, $relationship, EncodingParametersInterface $parameters = null)
+    public function readRecordRelationship($record, $relationship, $parameters = [])
     {
         list ($resourceType, $resourceId) = $this->resourceIdentifier($record);
 
@@ -294,25 +306,21 @@ abstract class AbstractClient implements ClientInterface
         $resourceId,
         $relationship,
         array $payload,
-        EncodingParametersInterface $parameters = null
+        $parameters = []
     ) {
         return $this->request(
             'PATCH',
             $this->relationshipUri($resourceType, $resourceId, $relationship),
             $payload,
-            $parameters
+            $this->queryParameters($parameters)
         );
     }
 
     /**
      * @inheritDoc
      */
-    public function replaceRecordRelationship(
-        $record,
-        $related,
-        $relationship,
-        EncodingParametersInterface $parameters = null
-    ) {
+    public function replaceRecordRelationship($record, $related, $relationship, $parameters = [])
+    {
         list ($resourceType, $resourceId) = $this->resourceIdentifier($record);
 
         return $this->replaceRelationship(
@@ -327,30 +335,21 @@ abstract class AbstractClient implements ClientInterface
     /**
      * @inheritDoc
      */
-    public function addToRelationship(
-        $resourceType,
-        $resourceId,
-        $relationship,
-        array $payload,
-        EncodingParametersInterface $parameters = null
-    ) {
+    public function addToRelationship($resourceType, $resourceId, $relationship, array $payload, $parameters = [])
+    {
         return $this->request(
             'POST',
             $this->relationshipUri($resourceType, $resourceId, $relationship),
             $payload,
-            $parameters
+            $this->queryParameters($parameters)
         );
     }
 
     /**
      * @inheritDoc
      */
-    public function addToRecordRelationship(
-        $record,
-        $related,
-        $relationship,
-        EncodingParametersInterface $parameters = null
-    ) {
+    public function addToRecordRelationship($record, $related, $relationship, $parameters = [])
+    {
         list ($resourceType, $resourceId) = $this->resourceIdentifier($record);
 
         return $this->addToRelationship(
@@ -370,13 +369,13 @@ abstract class AbstractClient implements ClientInterface
         $resourceId,
         $relationship,
         array $payload,
-        EncodingParametersInterface $parameters = null
+        $parameters = []
     ) {
         return $this->request(
             'DELETE',
             $this->relationshipUri($resourceType, $resourceId, $relationship),
             $payload,
-            $parameters
+            $this->queryParameters($parameters)
         );
     }
 
@@ -387,7 +386,7 @@ abstract class AbstractClient implements ClientInterface
         $record,
         $related,
         $relationship,
-        EncodingParametersInterface $parameters = null
+        $parameters = []
     ) {
         list ($resourceType, $resourceId) = $this->resourceIdentifier($record);
 
@@ -463,5 +462,18 @@ abstract class AbstractClient implements ClientInterface
         }
 
         return $headers;
+    }
+
+    /**
+     * @param EncodingParametersInterface|array $parameters
+     * @return array
+     */
+    protected function queryParameters($parameters)
+    {
+        if ($parameters instanceof EncodingParametersInterface) {
+            return EncodingParameters::cast($parameters)->toArray();
+        }
+
+        return $parameters;
     }
 }

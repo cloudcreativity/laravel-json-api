@@ -212,6 +212,28 @@ class CreateTest extends TestCase
 
     public function testWithParameters()
     {
+        $post = factory(Post::class)->make();
+
+        $this->willSeeResource($post, 201);
+        $this->client->createRecord($post, [
+            'include' => 'author,site',
+            'fields' => [
+                'author' => 'first-name,surname',
+                'site' => 'uri',
+            ],
+            'foo' => 'bar',
+        ]);
+
+        $this->assertQueryParameters([
+            'include' => 'author,site',
+            'fields[author]' => 'first-name,surname',
+            'fields[site]' => 'uri',
+            'foo' => 'bar'
+        ]);
+    }
+
+    public function testWithEncodingParameters()
+    {
         $parameters = new EncodingParameters(
             ['author', 'site'],
             ['author' => ['first-name', 'surname'], 'site' => ['uri']],

@@ -22,6 +22,25 @@ class ListAllTest extends TestCase
 
     public function testWithParameters()
     {
+        $this->willSeeResponse(['data' => []]);
+        $this->client->query('posts', [
+            'include' => 'author,site',
+            'sort' => '-created-at,author',
+            'filter' => ['author' => '99'],
+            'page' => ['number' => '1', 'size' => '15'],
+        ]);
+
+        $this->assertQueryParameters([
+            'include' => 'author,site',
+            'sort' => '-created-at,author',
+            'page[number]' => '1',
+            'page[size]' => '15',
+            'filter[author]' => '99',
+        ]);
+    }
+
+    public function testWithEncodingParameters()
+    {
         $parameters = new EncodingParameters(
             ['author', 'site'],
             ['author' => ['first-name', 'surname'], 'site' => ['uri']],

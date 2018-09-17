@@ -44,6 +44,19 @@ class ReadTest extends TestCase
 
     public function testWithParameters()
     {
+        $this->willSeeResource($this->post);
+
+        $this->client->read('posts', '1', [
+            'include' => 'author,site',
+        ]);
+
+        $this->assertQueryParameters([
+            'include' => 'author,site',
+        ]);
+    }
+
+    public function testWithEncodingParameters()
+    {
         $parameters = new EncodingParameters(
             ['author', 'site'],
             ['author' => ['first-name', 'surname'], 'site' => ['uri']]
