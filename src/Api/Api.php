@@ -18,7 +18,6 @@
 
 namespace CloudCreativity\LaravelJsonApi\Api;
 
-use CloudCreativity\LaravelJsonApi\Client\GuzzleClient;
 use CloudCreativity\LaravelJsonApi\Contracts\Client\ClientInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Encoder\SerializerInterface;
@@ -317,7 +316,7 @@ class Api
     }
 
     /**
-     * @param GuzzleClient|string|array $clientHostOrOptions
+     * @param Client|string|array $clientHostOrOptions
      *      Guzzle client, string host or array of Guzzle options
      * @param array $options
      *      Guzzle options, only used if first argument is a string host name.
@@ -326,9 +325,9 @@ class Api
     public function client($clientHostOrOptions = [], array $options = [])
     {
         if (is_array($clientHostOrOptions)) {
-            $options = array_replace($clientHostOrOptions, [
-                'base_uri' => $this->url->getBaseUri(),
-            ]);
+            $options = $clientHostOrOptions;
+            $options['base_uri'] = isset($options['base_uri']) ?
+                $options['base_uri'] : $this->url->getBaseUri();
         }
 
         if (is_string($clientHostOrOptions)) {

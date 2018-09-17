@@ -53,20 +53,15 @@ $client = json_api()->client('http://external.com/webhooks');
 > This will create a client using the schemas from your default API. If you need a client for a 
 different API, pass the API name to the `json_api()` method, e.g. `json_api('v1')->client(...)`.
 
-The first argument to the `client()` method is the base URI of the external host. You can provide
-Guzzle options as the first or second argument, e.g.:
+The first argument to the `client` method can be any of the following:
 
-```php
-$clientA = json_api()->client('http://external.com/webhooks', ['allow_redirects' => false]);
-$clientB = json_api()->client([
-  'base_uri' => 'http://external.com/webhooks',
-  'allow_redirects' => false
-]);
-// $clientA == $clientB
-```
-
-If you want to create a JSON API client with an existing Guzzle client, provide the Guzzle client
-as the first argument:
+- A `string` base URI of the external host. As your JSON API config contains the API namespace,
+the API namespace will be appended to the base URI. For example, if you provide `http://external.com`
+as the base URI and your API config has the namespace as `/api/v1`, a request for the `posts` resource
+type will be sent to `http://external.com/api/v1/posts`.
+- An array of Guzzle options. If the options do not include a `base_uri` option, the host and API
+namespace from your JSON API config will be used as the base URI.
+- A Guzzle client.
 
 ```php
 $guzzleClient = new GuzzleHttp\Client(['base_uri' => 'http://external.com/webhooks/']);

@@ -26,6 +26,27 @@ class FactoryTest extends TestCase
     }
 
     /**
+     * If the options have a base URI, it should not be overridden.
+     */
+    public function testWithOptionsIncludingBaseUri()
+    {
+        $client = $this->api()->client([
+            'handler' => $this->handler,
+            'base_uri' => 'http://external.com/api/v1/',
+        ]);
+
+        $post = factory(Post::class)->make();
+
+        $this->willSeeResource($post, 201);
+        $client->createRecord($post);
+
+        $this->assertSame(
+            'http://external.com/api/v1/posts',
+            (string) $this->mock->getLastRequest()->getUri()
+        );
+    }
+
+    /**
      * The host that is provided can have a path as well.
      */
     public function testWithHostAndPath()
