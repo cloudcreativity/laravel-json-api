@@ -9,6 +9,33 @@ Note that at some point during the beta releases the minimum PHP version will be
 support for Laravel 5.4 will be dropped. We do not plan to refactor existing code to use PHP 7 features,
 so this will not result in a major breaking change before `1.0.0`.
 
+## 1.0.0-beta.2 to 1.0.0-beta.3
+
+### Clients
+
+We have updated the client implementation to add the following:
+
+- Support for relationship endpoints.
+- Ability to pass raw payloads or records to serialize.
+- Support include resources and sparse fieldsets when serializing records.
+
+This is now feature complete for `1.0`. If you were already using clients, you will need to check
+the updated documentation in the guides. In addition, please note that the namespace within the
+package has changed to remove the nesting within the `Http` namespace. For example:
+
+- `Contracts\Http\Client\ClientInterface` is now `Contracts\Client\ClientInterface`
+- `Http\Client\GuzzleClient` is now `Client\GuzzleClient`.
+
+The other major changes are:
+
+- The `ClientInterface` has new methods and changes to existing method signatures. If you have
+implemented the interface you will need to update your implementation.
+- The client now always returns a PSR response, i.e. an instance of
+`Psr\Http\Message\ResponseInterface`.
+- The client now throws this exception: `\CloudCreaitivity\LaravelJsonApi\Exception\ClientException`.
+- We have changed how records are serialized when sending create and update requests: refer to
+the documentation for details.
+
 ## 1.0.0-beta.1 to 1.0.0-beta.2
 
 This upgrade changes some of the internals of the package. You should be able to upgrade without any

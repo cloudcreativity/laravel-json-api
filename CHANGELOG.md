@@ -7,6 +7,11 @@ All notable changes to this project will be documented in this file. This projec
 ### Added
 - New cursor-based paging strategy, refer to the [Pagination docs](./docs/fetching/pagination.md) for
 details.
+- Refactored the client interface and implementation, improving record serializing and adding missing
+relationship request methods.
+- [#144](https://github.com/cloudcreativity/laravel-json-api/issues/144)
+Improved the helper method that creates new client instances so that it automatically adds a base
+URI for the client if one is not provided.
 
 ### Changed
 - Extract model sorting from the Eloquent adapter into a `SortsModels` trait.

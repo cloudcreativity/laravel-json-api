@@ -22,6 +22,8 @@ use CloudCreativity\LaravelJsonApi\Api\LinkGenerator;
 use CloudCreativity\LaravelJsonApi\Api\ResourceProvider;
 use CloudCreativity\LaravelJsonApi\Api\Url;
 use CloudCreativity\LaravelJsonApi\Api\UrlGenerator;
+use CloudCreativity\LaravelJsonApi\Client\ClientSerializer;
+use CloudCreativity\LaravelJsonApi\Client\GuzzleClient;
 use CloudCreativity\LaravelJsonApi\Container;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Encoder\SerializerInterface;
@@ -31,12 +33,11 @@ use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\QueryValidatorInterface;
 use CloudCreativity\LaravelJsonApi\Encoder\Encoder;
+use CloudCreativity\LaravelJsonApi\Encoder\Parameters\EncodingParameters;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
-use CloudCreativity\LaravelJsonApi\Http\Client\GuzzleClient;
 use CloudCreativity\LaravelJsonApi\Http\Headers\RestrictiveHeadersChecker;
 use CloudCreativity\LaravelJsonApi\Http\Query\ValidationQueryChecker;
 use CloudCreativity\LaravelJsonApi\Http\Responses\ErrorResponse;
-use CloudCreativity\LaravelJsonApi\Http\Responses\Response;
 use CloudCreativity\LaravelJsonApi\Http\Responses\Responses;
 use CloudCreativity\LaravelJsonApi\Object\Document;
 use CloudCreativity\LaravelJsonApi\Pagination\Page;
@@ -132,14 +133,6 @@ class Factory extends BaseFactory implements FactoryInterface
     /**
      * @inheritDoc
      */
-    public function createResponse(PsrRequest $request, PsrResponse $response)
-    {
-        return new Response($response, $this->createDocumentObject($request, $response));
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function createErrorResponse($errors, $defaultHttpCode, array $headers = [])
     {
         return new ErrorResponse($errors, $defaultHttpCode, $headers);
@@ -162,7 +155,11 @@ class Factory extends BaseFactory implements FactoryInterface
      */
     public function createClient($httpClient, SchemaContainerInterface $container, SerializerInterface $encoder)
     {
-        return new GuzzleClient($this, $httpClient, $container, $encoder);
+        return new GuzzleClient(
+            $httpClient,
+            $container,
+            new ClientSerializer($encoder, $this)
+        );
     }
 
     /**
@@ -310,6 +307,27 @@ class Factory extends BaseFactory implements FactoryInterface
         $generator = $this->container->make(IlluminateUrlGenerator::class);
 
         return new LinkGenerator($this, $urls, $generator);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function createQueryParameters(
+        $includePaths = null,
+        array $fieldSets = null,
+        $sortParameters = null,
+        array $pagingParameters = null,
+        array $filteringParameters = null,
+        array $unrecognizedParams = null
+    ) {
+        return new EncodingParameters(
+            $includePaths,
+            $fieldSets,
+            $sortParameters,
+            $pagingParameters,
+            $filteringParameters,
+            $unrecognizedParams
+        );
     }
 
     /**

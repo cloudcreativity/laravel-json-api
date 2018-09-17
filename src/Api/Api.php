@@ -18,9 +18,9 @@
 
 namespace CloudCreativity\LaravelJsonApi\Api;
 
+use CloudCreativity\LaravelJsonApi\Contracts\Client\ClientInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Encoder\SerializerInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Http\Client\ClientInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\Responses\ErrorResponseInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Repositories\ErrorRepositoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
@@ -30,6 +30,7 @@ use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use CloudCreativity\LaravelJsonApi\Http\Responses\Responses;
 use CloudCreativity\LaravelJsonApi\Resolver\AggregateResolver;
 use CloudCreativity\LaravelJsonApi\Resolver\NamespaceResolver;
+use GuzzleHttp\Client;
 use Neomerx\JsonApi\Contracts\Codec\CodecMatcherInterface;
 use Neomerx\JsonApi\Contracts\Encoder\EncoderInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
@@ -315,12 +316,29 @@ class Api
     }
 
     /**
-     * @param $httpClient
+     * @param Client|string|array $clientHostOrOptions
+     *      Guzzle client, string host or array of Guzzle options
+     * @param array $options
+     *      Guzzle options, only used if first argument is a string host name.
      * @return ClientInterface
      */
-    public function client($httpClient)
+    public function client($clientHostOrOptions = [], array $options = [])
     {
-        return $this->factory->createClient($httpClient, $this->getContainer(), $this->encoder());
+        if (is_array($clientHostOrOptions)) {
+            $options = $clientHostOrOptions;
+            $options['base_uri'] = isset($options['base_uri']) ?
+                $options['base_uri'] : $this->url->getBaseUri();
+        }
+
+        if (is_string($clientHostOrOptions)) {
+            $options = array_replace($options, [
+                'base_uri' => $this->url->withHost($clientHostOrOptions)->getBaseUri(),
+            ]);
+        }
+
+        $client = ($clientHostOrOptions instanceof Client) ? $clientHostOrOptions : new Client($options);
+
+        return $this->factory->createClient($client, $this->getContainer(), $this->encoder());
     }
 
     /**
