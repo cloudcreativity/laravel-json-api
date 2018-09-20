@@ -19,7 +19,6 @@
 namespace CloudCreativity\LaravelJsonApi\Routing;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
-use CloudCreativity\LaravelJsonApi\Utils\Str;
 use Illuminate\Contracts\Routing\Registrar;
 use Illuminate\Routing\Route;
 use Illuminate\Support\Fluent;
@@ -77,7 +76,7 @@ class ResourceGroup
         return [
             'middleware' => $this->middleware(),
             'as' => "{$this->resourceType}.",
-            'prefix' => Str::dasherize($this->resourceType),
+            'prefix' => $this->resourceType,
         ];
     }
 

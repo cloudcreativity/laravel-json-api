@@ -70,6 +70,14 @@ class NamespaceResolverTest extends TestCase
                 'App\JsonApi\DanceEvents\Validators',
                 'App\JsonApi\DanceEvents\Authorizer',
             ],
+            [
+                'danceEvents',
+                null,
+                'App\JsonApi\DanceEvents\Schema',
+                'App\JsonApi\DanceEvents\Adapter',
+                'App\JsonApi\DanceEvents\Validators',
+                'App\JsonApi\DanceEvents\Authorizer',
+            ],
         ];
     }
 
@@ -113,6 +121,14 @@ class NamespaceResolverTest extends TestCase
             ],
             [
                 'dance_events',
+                null,
+                'App\JsonApi\Schemas\DanceEventSchema',
+                'App\JsonApi\Adapters\DanceEventAdapter',
+                'App\JsonApi\Validators\DanceEventValidator',
+                'App\JsonApi\Authorizers\DanceEventAuthorizer',
+            ],
+            [
+                'danceEvents',
                 null,
                 'App\JsonApi\Schemas\DanceEventSchema',
                 'App\JsonApi\Adapters\DanceEventAdapter',
@@ -168,6 +184,14 @@ class NamespaceResolverTest extends TestCase
                 'App\JsonApi\Validators\DanceEvent',
                 'App\JsonApi\Authorizers\DanceEvent',
             ],
+            [
+                'danceEvents',
+                null,
+                'App\JsonApi\Schemas\DanceEvent',
+                'App\JsonApi\Adapters\DanceEvent',
+                'App\JsonApi\Validators\DanceEvent',
+                'App\JsonApi\Authorizers\DanceEvent',
+            ],
         ];
     }
 
@@ -181,14 +205,17 @@ class NamespaceResolverTest extends TestCase
             ['generic', 'App\JsonApi\GenericAuthorizer', true],
             ['foo-bar', 'App\JsonApi\FooBarAuthorizer', true],
             ['foo_bar', 'App\JsonApi\FooBarAuthorizer', true],
+            ['fooBar', 'App\JsonApi\FooBarAuthorizer', true],
             // Not by resource
             ['generic', 'App\JsonApi\Authorizers\GenericAuthorizer', false],
             ['foo-bar', 'App\JsonApi\Authorizers\FooBarAuthorizer', false],
             ['foo_bar', 'App\JsonApi\Authorizers\FooBarAuthorizer', false],
+            ['fooBar', 'App\JsonApi\Authorizers\FooBarAuthorizer', false],
             // Not by resource without type appended:
             ['generic', 'App\JsonApi\Authorizers\Generic', false, false],
             ['foo-bar', 'App\JsonApi\Authorizers\FooBar', false, false],
             ['foo_bar', 'App\JsonApi\Authorizers\FooBar', false, false],
+            ['fooBar', 'App\JsonApi\Authorizers\FooBar', false, false],
         ];
     }
 
