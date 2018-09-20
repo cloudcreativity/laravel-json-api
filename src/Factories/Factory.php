@@ -96,6 +96,21 @@ class Factory extends BaseFactory implements FactoryInterface
     }
 
     /**
+     * @param $name
+     * @return ResolverInterface
+     */
+    public function createCustomResolver($name)
+    {
+        $resolver = $this->container->make($name);
+
+        if (!$resolver instanceof ResolverInterface) {
+            throw new \InvalidArgumentException("Container binding {$name} is not a resolver.");
+        }
+
+        return $resolver;
+    }
+
+    /**
      * @inheritdoc
      */
     public function createHeadersChecker(CodecMatcherInterface $codecMatcher)

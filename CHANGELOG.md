@@ -12,6 +12,10 @@ relationship request methods.
 - [#144](https://github.com/cloudcreativity/laravel-json-api/issues/144)
 Improved the helper method that creates new client instances so that it automatically adds a base
 URI for the client if one is not provided.
+- [#123](https://github.com/cloudcreativity/laravel-json-api/issues/123)
+Can now use a custom resolver if wanting to override the default namespace resolution provided by
+this package. To do this, set the `resolver` config option to the container binding that returns a
+resolver instance.
 
 ### Changed
 - Extract model sorting from the Eloquent adapter into a `SortsModels` trait.

@@ -18,6 +18,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Api;
 
+use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use CloudCreativity\LaravelJsonApi\Resolver\AggregateResolver;
@@ -70,17 +71,7 @@ class Repository
     public function createApi($apiName, $host = null)
     {
         $config = $this->configFor($apiName);
-        $rootNamespace = $this->normalizeRootNamespace(array_get($config, 'namespace'));
-        $byResource = array_get($config, 'by-resource', true);
-        $withType = true;
-
-        if ('false-0.x' === $byResource) {
-            $byResource = false;
-            $withType = false;
-        }
-
-        $resources = (array) array_get($config, 'resources');
-        $resolver = $this->factory->createResolver($rootNamespace, $resources, (bool) $byResource, $withType);
+        $resolver = $this->createResolver($config);
 
         $api = new Api(
             $this->factory,
@@ -109,6 +100,30 @@ class Repository
             $this->factory,
             $this->config->get($this->configKey($apiName, 'providers'))
         );
+    }
+
+    /**
+     * @param array $config
+     * @return ResolverInterface
+     */
+    private function createResolver(array $config)
+    {
+        if ($resolver = array_get($config, 'resolver')) {
+            return $this->factory->createCustomResolver($resolver);
+        }
+
+        $rootNamespace = $this->normalizeRootNamespace(array_get($config, 'namespace'));
+        $byResource = array_get($config, 'by-resource', true);
+        $withType = true;
+
+        if ('false-0.x' === $byResource) {
+            $byResource = false;
+            $withType = false;
+        }
+
+        $resources = (array) array_get($config, 'resources');
+
+        return $this->factory->createResolver($rootNamespace, $resources, (bool) $byResource, $withType);
     }
 
     /**

@@ -23,9 +23,15 @@ return [
     |   - e.g. App\JsonApi\Schemas\{PostSchema, CommentSchema}
     |   - e.g. App\JsonApi\Validators\{PostValidator, CommentValidator}
     |
+    | If you do not want to use our namespace resolution, write your own logic
+    | in a class that implements
+    | `CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface`.
+    | Then set the `resolver` option to the container binding that returns your
+    | implementation.
     */
     'namespace' => null,
     'by-resource' => true,
+    'resolver' => null,
 
     /*
     |--------------------------------------------------------------------------
