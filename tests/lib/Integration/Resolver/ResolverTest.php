@@ -29,11 +29,6 @@ class ResolverTest extends TestCase
     {
         parent::setUp();
 
-        config()->set('json-api-v1.resolver', CreateCustomResolver::class);
-        config()->set('json-api-v1.resources', [
-            'foobars' => Post::class,
-        ]);
-
         $this->app->bind('adapters:foobars', Adapter::class);
         $this->app->bind('schemas:foobars', Schema::class);
 
@@ -46,8 +41,38 @@ class ResolverTest extends TestCase
         });
     }
 
-    public function test()
+    /**
+     * Use a resolver returned from a container binding.
+     */
+    public function testBinding()
     {
+        config()->set('json-api-v1.resolver', 'my-resolver');
+
+        $this->app->instance('my-resolver', new CustomResolver([
+            'foobars' => Post::class,
+        ]));
+
+        $post = factory(Post::class)->create();
+
+        $this->doRead($post)->assertRead([
+            'type' => 'foobars',
+            'id' => $post->getRouteKey(),
+            'attributes' => [
+                'title' => $post->title,
+            ],
+        ]);
+    }
+
+    /**
+     * Create a resolver via a factory.
+     */
+    public function testViaFactory()
+    {
+        config()->set('json-api-v1.resolver', CreateCustomResolver::class);
+        config()->set('json-api-v1.resources', [
+            'foobars' => Post::class,
+        ]);
+
         $post = factory(Post::class)->create();
 
         $this->doRead($post)->assertRead([

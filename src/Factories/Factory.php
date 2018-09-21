@@ -99,6 +99,10 @@ class Factory extends BaseFactory implements FactoryInterface
         $factoryName = isset($config['resolver']) ? $config['resolver'] : ResolverFactory::class;
         $factory = $this->container->make($factoryName);
 
+        if ($factory instanceof ResolverInterface) {
+            return $factory;
+        }
+
         if (!is_callable($factory)) {
             throw new RuntimeException("Factory {$factoryName} cannot be invoked.");
         }
