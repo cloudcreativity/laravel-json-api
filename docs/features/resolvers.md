@@ -99,7 +99,7 @@ the generators will not work.
 
 ### Without a Factory
 
-If you do not need to access any configuration for your API when creating your resolver, and
+If you do not need to access any configuration for your API when creating your resolver,
 you can use your resolver by adding its fully qualified class name (or a container binding
 name) to your API's `resolver` configuration setting.
 
@@ -119,7 +119,7 @@ return [
 
 If you need access to your API's configuration when creating a resolver, or if you need
 to calculate any resolver settings, you can create the resolver via a factory. For example,
-if you have extended our abstract resolver, you will need to provide the `resources` value
+if you have extended our abstract resolver you will need to provide the `resources` value
 from the config when constructing your resolver.
 
 The factory is an invokable class that receives the API name and the API's config. For 

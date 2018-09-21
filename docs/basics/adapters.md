@@ -395,8 +395,8 @@ class Adapter extends AbstractAdapter
 }
 ```
 
-> The `morphMany` implementation currently has some limitations that we are hoping to resolve during our alpha
-and beta releases. If you have problems using it, please create an issue as this will help us out.
+> The `morphMany` implementation currently has some limitations that we are hoping to resolve during our
+beta releases. If you have problems using it, please create an issue as this will help us out.
 
 #### Queries-One and Queries-Many
 

@@ -5,7 +5,7 @@
 Install using [Composer](http://getcomposer.org):
 
 ``` bash
-$ composer require cloudcreativity/laravel-json-api:1.0.0-beta.2
+$ composer require cloudcreativity/laravel-json-api:1.0.0-beta.3
 $ composer require --dev cloudcreativity/json-api-testing
 ```
 
@@ -17,7 +17,7 @@ need to follow the instructions below for updating your `ExceptionHandler`.
 Install using [Composer](http://getcomposer.org):
 
 ``` bash
-$ composer require cloudcreativity/laravel-json-api:1.0.0-beta.2
+$ composer require cloudcreativity/laravel-json-api:1.0.0-beta.3
 $ composer require --dev cloudcreativity/json-api-testing
 ```
 
