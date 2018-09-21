@@ -42,6 +42,21 @@ class Url
     private $name;
 
     /**
+     * Create a URL from an array.
+     *
+     * @param array $url
+     * @return Url
+     */
+    public static function fromArray(array $url)
+    {
+        return new self(
+            isset($url['host']) ? $url['host'] : '',
+            isset($url['namespace']) ? $url['namespace'] : '',
+            isset($url['name']) ? $url['name'] : ''
+        );
+    }
+
+    /**
      * Url constructor.
      *
      * @param string $host

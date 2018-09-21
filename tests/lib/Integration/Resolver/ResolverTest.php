@@ -29,6 +29,11 @@ class ResolverTest extends TestCase
     {
         parent::setUp();
 
+        config()->set('json-api-v1.resolver', CreateCustomResolver::class);
+        config()->set('json-api-v1.resources', [
+            'foobars' => Post::class,
+        ]);
+
         $this->app->bind('adapters:foobars', Adapter::class);
         $this->app->bind('schemas:foobars', Schema::class);
 
@@ -39,8 +44,6 @@ class ResolverTest extends TestCase
                 $api->resource('foobars');
             });
         });
-
-        config()->set('json-api-v1.resolver', Resolver::class);
     }
 
     public function test()

@@ -125,7 +125,7 @@ class Api
         Url $url,
         $useEloquent = true,
         $supportedExt = null,
-        array $errors
+        array $errors = []
     ) {
         $this->factory = $factory;
         $this->resolver = $resolver;
