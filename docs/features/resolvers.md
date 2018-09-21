@@ -118,7 +118,7 @@ class CreateModuleResolver
 
 ```
 
-> Module factories are constructed via the service container so you can use constructor injection
+> Resolver factories are constructed via the service container so you can use constructor injection
 for any dependencies.
 
 Then all we would need to do is change the `resolver` value in our API's configuration so that
