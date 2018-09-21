@@ -43,6 +43,7 @@ use CloudCreativity\LaravelJsonApi\Object\Document;
 use CloudCreativity\LaravelJsonApi\Pagination\Page;
 use CloudCreativity\LaravelJsonApi\Repositories\CodecMatcherRepository;
 use CloudCreativity\LaravelJsonApi\Repositories\ErrorRepository;
+use CloudCreativity\LaravelJsonApi\Resolver\ResolverFactory;
 use CloudCreativity\LaravelJsonApi\Store\Store;
 use CloudCreativity\LaravelJsonApi\Utils\Replacer;
 use CloudCreativity\LaravelJsonApi\Validators\ValidatorErrorFactory;
@@ -88,15 +89,21 @@ class Factory extends BaseFactory implements FactoryInterface
 
     /**
      * Create a resolver.
-     *
-     * @param string $factoryName
+
      * @param string $apiName
      * @param array $config
      * @return ResolverInterface
      */
-    public function createResolver($factoryName, $apiName, array $config)
+    public function createResolver($apiName, array $config)
     {
-        $resolver = $this->container->make($factoryName)($apiName, $config);
+        $factoryName = isset($config['resolver']) ? $config['resolver'] : ResolverFactory::class;
+        $factory = $this->container->make($factoryName);
+
+        if (!is_callable($factory)) {
+            throw new RuntimeException("Factory {$factoryName} cannot be invoked.");
+        }
+
+        $resolver = $factory($apiName, $config);
 
         if (!$resolver instanceof ResolverInterface) {
             throw new RuntimeException("Factory {$factoryName} did not create a resolver instance.");

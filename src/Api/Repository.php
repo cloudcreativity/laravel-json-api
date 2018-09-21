@@ -21,7 +21,6 @@ namespace CloudCreativity\LaravelJsonApi\Api;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use CloudCreativity\LaravelJsonApi\Resolver\AggregateResolver;
-use CloudCreativity\LaravelJsonApi\Resolver\ResolverFactory;
 use Illuminate\Contracts\Config\Repository as Config;
 
 /**
@@ -72,7 +71,7 @@ class Repository
     {
         $config = $this->configFor($apiName);
         $config = $this->normalize($config, $host);
-        $resolver = $this->factory->createResolver($config['resolver'], $apiName, $config);
+        $resolver = $this->factory->createResolver($apiName, $config);
 
         $api = new Api(
             $this->factory,
@@ -126,7 +125,6 @@ class Repository
     private function normalize(array $config, $host = null)
     {
         $config = array_replace([
-            'resolver' => ResolverFactory::class,
             'namespace' => null,
             'by-resource' => true,
             'resources' => null,
