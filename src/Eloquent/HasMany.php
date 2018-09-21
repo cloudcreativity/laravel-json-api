@@ -67,6 +67,12 @@ class HasMany extends AbstractManyRelation
     }
 
     /**
+     * Add records to the relationship.
+     *
+     * Note that the spec says that duplicates MUST NOT be added. The default Laravel
+     * behaviour is to add duplicates, therefore we need to do some work to ensure
+     * that we only add the records that are not already in the relationship.
+     *
      * @param Model $record
      * @param RelationshipInterface $relationship
      * @param EncodingParametersInterface $parameters
@@ -75,8 +81,14 @@ class HasMany extends AbstractManyRelation
     public function add($record, RelationshipInterface $relationship, EncodingParametersInterface $parameters)
     {
         $related = $this->findRelated($record, $relationship);
+        $relation = $this->getRelation($record, $this->key);
 
-        $this->getRelation($record, $this->key)->saveMany($related);
+        $existing = $relation
+            ->getQuery()
+            ->whereKey($related->modelKeys())
+            ->get();
+
+        $relation->saveMany($related->diff($existing));
         $record->refresh(); // in case the relationship has been cached.
 
         return $record;

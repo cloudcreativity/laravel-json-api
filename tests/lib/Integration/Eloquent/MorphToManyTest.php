@@ -330,6 +330,31 @@ class MorphToManyTest extends TestCase
         $this->assertTagsAre($post, $existing->merge($add));
     }
 
+    /**
+     * From the spec:
+     *
+     * > If a client makes a POST request to a URL from a relationship link,
+     * > the server MUST add the specified members to the relationship unless
+     * > they are already present. If a given type and id is already in the
+     * > relationship, the server MUST NOT add it again.
+     */
+    public function testAddToRelationshipDoesNotCreateDuplicates()
+    {
+        $post = factory(Post::class)->create();
+        $existing = factory(Tag::class, 2)->create();
+        $post->tags()->sync($existing);
+
+        $add = factory(Tag::class, 2)->create();
+        $data = $add->merge($existing)->map(function (Tag $tag) {
+            return ['type' => 'tags', 'id' => $tag->getRouteKey()];
+        })->all();
+
+        $this->doAddToRelationship($post, 'tags', $data)
+            ->assertStatus(204);
+
+        $this->assertTagsAre($post, $existing->merge($add));
+    }
+
     public function testRemoveFromRelationship()
     {
         $post = factory(Post::class)->create();
@@ -344,6 +369,29 @@ class MorphToManyTest extends TestCase
             ->assertStatus(204);
 
         $this->assertTagsAre($post, [$tags->get(2), $tags->get(3)]);
+    }
+
+    /**
+     * From the spec:
+     *
+     * > If all of the specified resources are able to be removed from,
+     * > or are already missing from, the relationship then the server
+     * > MUST return a successful response.
+     */
+    public function testRemoveWithIdsThatAreNotRelated()
+    {
+        $post = factory(Post::class)->create();
+        $tags = factory(Tag::class, 2)->create();
+        $post->tags()->sync($tags);
+
+        $data = factory(Tag::class, 2)->create()->map(function (Tag $tag) {
+            return ['type' => 'tags', 'id' => $tag->getRouteKey()];
+        })->all();
+
+        $this->doRemoveFromRelationship($post, 'tags', $data)
+            ->assertStatus(204);
+
+        $this->assertTagsAre($post, $tags);
     }
 
     /**

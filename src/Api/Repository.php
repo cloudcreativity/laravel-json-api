@@ -70,27 +70,18 @@ class Repository
     public function createApi($apiName, $host = null)
     {
         $config = $this->configFor($apiName);
-        $rootNamespace = $this->normalizeRootNamespace(array_get($config, 'namespace'));
-        $byResource = array_get($config, 'by-resource', true);
-        $withType = true;
-
-        if ('false-0.x' === $byResource) {
-            $byResource = false;
-            $withType = false;
-        }
-
-        $resources = (array) array_get($config, 'resources');
-        $resolver = $this->factory->createResolver($rootNamespace, $resources, (bool) $byResource, $withType);
+        $config = $this->normalize($config, $host);
+        $resolver = $this->factory->createResolver($apiName, $config);
 
         $api = new Api(
             $this->factory,
             new AggregateResolver($resolver),
             $apiName,
-            (array) array_get($config, 'codecs'),
-            $this->normalizeUrl((array) array_get($config, 'url'), $host),
-            (bool) array_get($config, 'use-eloquent', true),
-            array_get($config, 'supported-ext'),
-            $this->mergeErrors((array) array_get($config, 'errors'))
+            $config['codecs'],
+            Url::fromArray($config['url']),
+            $config['use-eloquent'],
+            $config['supported-ext'],
+            $config['errors']
         );
 
         /** Attach resource providers to the API. */
@@ -127,6 +118,34 @@ class Repository
     }
 
     /**
+     * @param array $config
+     * @param string|null $host
+     * @return array
+     */
+    private function normalize(array $config, $host = null)
+    {
+        $config = array_replace([
+            'namespace' => null,
+            'by-resource' => true,
+            'resources' => null,
+            'use-eloquent' => true,
+            'codecs' => null,
+            'supported-ext' => null,
+            'url' => null,
+            'errors' => null,
+        ], $config);
+
+        if (!$config['namespace']) {
+            $config['namespace'] = rtrim(app()->getNamespace(), '\\') . '\\JsonApi';
+        }
+
+        $config['url'] = $this->normalizeUrl((array) $config['url'], $host);
+        $config['errors'] = array_replace($this->defaultErrors(), (array) $config['errors']);
+
+        return $config;
+    }
+
+    /**
      * @param string $apiName
      * @param string|null $path
      * @return string
@@ -147,27 +166,9 @@ class Repository
     }
 
     /**
-     * @param array $errors
-     * @return array
-     */
-    private function mergeErrors(array $errors)
-    {
-        return array_replace($this->defaultErrors(), $errors);
-    }
-
-    /**
-     * @param $namespace
-     * @return string
-     */
-    private function normalizeRootNamespace($namespace)
-    {
-        return $namespace ?: rtrim(app()->getNamespace(), '\\') . '\\JsonApi';
-    }
-
-    /**
      * @param array $url
      * @param string|null $host
-     * @return Url
+     * @return array
      */
     private function normalizeUrl(array $url, $host = null)
     {
@@ -179,10 +180,10 @@ class Repository
             $url['host'] = $this->config->get('app.url');
         }
 
-        return new Url(
-            $prependHost ? (string) $url['host'] : '',
-            (string) array_get($url, 'namespace'),
-            (string) array_get($url, 'name')
-        );
+        return [
+            'host' => $prependHost ? (string) $url['host'] : '',
+            'namespace' => (string) array_get($url, 'namespace'),
+            'name' => (string) array_get($url, 'name'),
+        ];
     }
 }

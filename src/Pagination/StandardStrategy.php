@@ -146,7 +146,7 @@ class StandardStrategy implements PagingStrategyInterface
      */
     public function paginate($query, EncodingParametersInterface $parameters)
     {
-        $pageParameters = new Collection((array) $parameters->getPaginationParameters());
+        $pageParameters = collect((array) $parameters->getPaginationParameters());
         $paginator = $this->query($query, $pageParameters);
 
         return $this->createPage($paginator, $parameters);

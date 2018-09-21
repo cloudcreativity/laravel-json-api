@@ -17,7 +17,6 @@
 
 namespace CloudCreativity\LaravelJsonApi\Resolver;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
 use CloudCreativity\LaravelJsonApi\Utils\Str;
 
 /**
@@ -25,23 +24,13 @@ use CloudCreativity\LaravelJsonApi\Utils\Str;
  *
  * @package CloudCreativity\LaravelJsonApi
  */
-class NamespaceResolver implements ResolverInterface
+class NamespaceResolver extends AbstractResolver
 {
 
     /**
      * @var string
      */
     private $rootNamespace;
-
-    /**
-     * @var array
-     */
-    private $resources;
-
-    /**
-     * @var array
-     */
-    private $types;
 
     /**
      * @var bool
@@ -71,122 +60,10 @@ class NamespaceResolver implements ResolverInterface
      */
     public function __construct($rootNamespace, array $resources, $byResource = true, $withType = true)
     {
+        parent::__construct($resources);
         $this->rootNamespace = $rootNamespace;
-        $this->resources = $resources;
-        $this->types = $this->flip($resources);
         $this->byResource = $byResource;
         $this->withType = $withType;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function isType($type)
-    {
-        return isset($this->types[$type]);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getType($resourceType)
-    {
-        if (!isset($this->resources[$resourceType])) {
-            return null;
-        }
-
-        return $this->resources[$resourceType];
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getAllTypes()
-    {
-        return array_keys($this->types);
-    }
-
-
-    /**
-     * @inheritDoc
-     */
-    public function isResourceType($resourceType)
-    {
-        return isset($this->resources[$resourceType]);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getResourceType($type)
-    {
-        if (!isset($this->types[$type])) {
-            return null;
-        }
-
-        return $this->types[$type];
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getAllResourceTypes()
-    {
-        return array_keys($this->resources);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getSchemaByType($type)
-    {
-        $resourceType = $this->getResourceType($type);
-
-        return $resourceType ? $this->getSchemaByResourceType($resourceType) : null;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getSchemaByResourceType($resourceType)
-    {
-        return $this->resolve('Schema', $resourceType);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getAdapterByType($type)
-    {
-        $resourceType = $this->getResourceType($type);
-
-        return $resourceType ? $this->getAdapterByResourceType($resourceType) : null;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getAdapterByResourceType($resourceType)
-    {
-        return $this->resolve('Adapter', $resourceType);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getAuthorizerByType($type)
-    {
-        $resourceType = $this->getResourceType($type);
-
-        return $resourceType ? $this->getAuthorizerByResourceType($resourceType) : null;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getAuthorizerByResourceType($resourceType)
-    {
-        return $this->resolve('Authorizer', $resourceType);
     }
 
     /**
@@ -204,29 +81,7 @@ class NamespaceResolver implements ResolverInterface
     }
 
     /**
-     * @inheritdoc
-     */
-    public function getValidatorsByType($type)
-    {
-        $resourceType = $this->getResourceType($type);
-
-        return $resourceType ? $this->getValidatorsByResourceType($resourceType) : null;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getValidatorsByResourceType($resourceType)
-    {
-        return $this->resolve('Validators', $resourceType);
-    }
-
-    /**
-     * Convert the provided unit name and resource type into a fully qualified namespace.
-     *
-     * @param $unit
-     * @param $resourceType
-     * @return string
+     * @inheritDoc
      */
     protected function resolve($unit, $resourceType)
     {
@@ -250,25 +105,9 @@ class NamespaceResolver implements ResolverInterface
      */
     protected function append($string)
     {
-        return sprintf('%s\%s', rtrim($this->rootNamespace, '\\'), $string);
+        $namespace = rtrim($this->rootNamespace, '\\');
+
+        return "{$namespace}\\{$string}";
     }
 
-    /**
-     * Key the resource array by domain record type.
-     *
-     * @param array $resources
-     * @return array
-     */
-    private function flip(array $resources)
-    {
-        $all = [];
-
-        foreach ($resources as $resourceType => $types) {
-            foreach ((array) $types as $type) {
-                $all[$type] = $resourceType;
-            }
-        }
-
-        return $all;
-    }
 }

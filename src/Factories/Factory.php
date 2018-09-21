@@ -22,6 +22,8 @@ use CloudCreativity\LaravelJsonApi\Api\LinkGenerator;
 use CloudCreativity\LaravelJsonApi\Api\ResourceProvider;
 use CloudCreativity\LaravelJsonApi\Api\Url;
 use CloudCreativity\LaravelJsonApi\Api\UrlGenerator;
+use CloudCreativity\LaravelJsonApi\Client\ClientSerializer;
+use CloudCreativity\LaravelJsonApi\Client\GuzzleClient;
 use CloudCreativity\LaravelJsonApi\Container;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Encoder\SerializerInterface;
@@ -31,18 +33,17 @@ use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\QueryValidatorInterface;
 use CloudCreativity\LaravelJsonApi\Encoder\Encoder;
+use CloudCreativity\LaravelJsonApi\Encoder\Parameters\EncodingParameters;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
-use CloudCreativity\LaravelJsonApi\Http\Client\GuzzleClient;
 use CloudCreativity\LaravelJsonApi\Http\Headers\RestrictiveHeadersChecker;
 use CloudCreativity\LaravelJsonApi\Http\Query\ValidationQueryChecker;
 use CloudCreativity\LaravelJsonApi\Http\Responses\ErrorResponse;
-use CloudCreativity\LaravelJsonApi\Http\Responses\Response;
 use CloudCreativity\LaravelJsonApi\Http\Responses\Responses;
 use CloudCreativity\LaravelJsonApi\Object\Document;
 use CloudCreativity\LaravelJsonApi\Pagination\Page;
 use CloudCreativity\LaravelJsonApi\Repositories\CodecMatcherRepository;
 use CloudCreativity\LaravelJsonApi\Repositories\ErrorRepository;
-use CloudCreativity\LaravelJsonApi\Resolver\NamespaceResolver;
+use CloudCreativity\LaravelJsonApi\Resolver\ResolverFactory;
 use CloudCreativity\LaravelJsonApi\Store\Store;
 use CloudCreativity\LaravelJsonApi\Utils\Replacer;
 use CloudCreativity\LaravelJsonApi\Validators\ValidatorErrorFactory;
@@ -87,11 +88,32 @@ class Factory extends BaseFactory implements FactoryInterface
     }
 
     /**
-     * @inheritdoc
+     * Create a resolver.
+
+     * @param string $apiName
+     * @param array $config
+     * @return ResolverInterface
      */
-    public function createResolver($rootNamespace, array $resources, $byResource, $withType = true)
+    public function createResolver($apiName, array $config)
     {
-        return new NamespaceResolver($rootNamespace, $resources, $byResource, $withType);
+        $factoryName = isset($config['resolver']) ? $config['resolver'] : ResolverFactory::class;
+        $factory = $this->container->make($factoryName);
+
+        if ($factory instanceof ResolverInterface) {
+            return $factory;
+        }
+
+        if (!is_callable($factory)) {
+            throw new RuntimeException("Factory {$factoryName} cannot be invoked.");
+        }
+
+        $resolver = $factory($apiName, $config);
+
+        if (!$resolver instanceof ResolverInterface) {
+            throw new RuntimeException("Factory {$factoryName} did not create a resolver instance.");
+        }
+
+        return $resolver;
     }
 
     /**
@@ -132,14 +154,6 @@ class Factory extends BaseFactory implements FactoryInterface
     /**
      * @inheritDoc
      */
-    public function createResponse(PsrRequest $request, PsrResponse $response)
-    {
-        return new Response($response, $this->createDocumentObject($request, $response));
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function createErrorResponse($errors, $defaultHttpCode, array $headers = [])
     {
         return new ErrorResponse($errors, $defaultHttpCode, $headers);
@@ -162,7 +176,11 @@ class Factory extends BaseFactory implements FactoryInterface
      */
     public function createClient($httpClient, SchemaContainerInterface $container, SerializerInterface $encoder)
     {
-        return new GuzzleClient($this, $httpClient, $container, $encoder);
+        return new GuzzleClient(
+            $httpClient,
+            $container,
+            new ClientSerializer($encoder, $this)
+        );
     }
 
     /**
@@ -310,6 +328,27 @@ class Factory extends BaseFactory implements FactoryInterface
         $generator = $this->container->make(IlluminateUrlGenerator::class);
 
         return new LinkGenerator($this, $urls, $generator);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function createQueryParameters(
+        $includePaths = null,
+        array $fieldSets = null,
+        $sortParameters = null,
+        array $pagingParameters = null,
+        array $filteringParameters = null,
+        array $unrecognizedParams = null
+    ) {
+        return new EncodingParameters(
+            $includePaths,
+            $fieldSets,
+            $sortParameters,
+            $pagingParameters,
+            $filteringParameters,
+            $unrecognizedParams
+        );
     }
 
     /**

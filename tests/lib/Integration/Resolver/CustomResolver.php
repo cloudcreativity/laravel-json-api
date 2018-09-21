@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Copyright 2018 Cloud Creativity Limited
  *
@@ -16,28 +15,21 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\LaravelJsonApi\Contracts\Http\Responses;
+namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Resolver;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Object\DocumentInterface;
-use Psr\Http\Message\ResponseInterface as PsrResponse;
+use CloudCreativity\LaravelJsonApi\Resolver\AbstractResolver;
 
-/**
- * Interface ResponseInterface
- *
- * @package CloudCreativity\LaravelJsonApi
- */
-interface ResponseInterface
+class CustomResolver extends AbstractResolver
 {
 
     /**
-     * @return PsrResponse
+     * @inheritdoc
      */
-    public function getPsrResponse();
+    protected function resolve($unit, $resourceType)
+    {
+        $units = str_plural(strtolower($unit));
 
-    /**
-     * The parsed response document, if the response has body content.
-     *
-     * @return DocumentInterface|null
-     */
-    public function getDocument();
+        return "{$units}:{$resourceType}";
+    }
+
 }

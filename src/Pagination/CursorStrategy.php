@@ -1,0 +1,336 @@
+<?php
+/**
+ * Copyright 2018 Cloud Creativity Limited
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+namespace CloudCreativity\LaravelJsonApi\Pagination;
+
+use CloudCreativity\LaravelJsonApi\Contracts\Factories\FactoryInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PagingStrategyInterface;
+use CloudCreativity\LaravelJsonApi\Utils\Arr;
+use Neomerx\JsonApi\Contracts\Document\LinkInterface;
+use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
+use Neomerx\JsonApi\Contracts\Http\Query\QueryParametersParserInterface;
+
+/**
+ * Class CursorStrategy
+ *
+ * @package CloudCreativity\LaravelJsonApi
+ */
+class CursorStrategy implements PagingStrategyInterface
+{
+
+    /**
+     * @var FactoryInterface
+     */
+    private $factory;
+
+    /**
+     * @var string
+     */
+    private $before = 'before';
+
+    /**
+     * @var string
+     */
+    private $after = 'after';
+
+    /**
+     * @var string
+     */
+    private $limit = 'limit';
+
+    /**
+     * @var string|null
+     */
+    private $meta = QueryParametersParserInterface::PARAM_PAGE;
+
+    /**
+     * @var bool
+     */
+    private $underscoredMeta = false;
+
+    /**
+     * @var bool
+     */
+    private $descending = true;
+
+    /**
+     * @var string|null
+     */
+    private $column;
+
+    /**
+     * @var string|null
+     */
+    private $identifier;
+
+    /**
+     * @var mixed|null
+     */
+    private $columns;
+
+    /**
+     * CursorStrategy constructor.
+     *
+     * @param FactoryInterface $factory
+     */
+    public function __construct(FactoryInterface $factory)
+    {
+        $this->factory = $factory;
+    }
+
+    /**
+     * @param $key
+     * @return $this
+     */
+    public function withAfterKey($key)
+    {
+        $this->after = $key;
+
+        return $this;
+    }
+
+    /**
+     * @param $key
+     * @return $this
+     */
+    public function withBeforeKey($key)
+    {
+        $this->before = $key;
+
+        return $this;
+    }
+
+    /**
+     * @param $key
+     * @return $this
+     */
+    public function withLimitKey($key)
+    {
+        $this->limit = $key;
+
+        return $this;
+    }
+
+    /**
+     * @param $key
+     * @return $this
+     */
+    public function withMetaKey($key)
+    {
+        $this->meta = $key;
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function withUnderscoredMetaKeys()
+    {
+        $this->underscoredMeta = true;
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function withAscending()
+    {
+        $this->descending = false;
+
+        return $this;
+    }
+
+    /**
+     * Set the cursor column.
+     *
+     * @param $column
+     * @return $this
+     */
+    public function withColumn($column)
+    {
+        $this->column = $column;
+
+        return $this;
+    }
+
+    /**
+     * Set the column for the before/after identifiers.
+     *
+     * @param string|null $column
+     * @return $this
+     */
+    public function withIdentifierColumn($column)
+    {
+        $this->identifier = $column;
+
+        return $this;
+    }
+
+    /**
+     * @param $cols
+     * @return $this
+     */
+    public function withColumns($cols)
+    {
+        $this->columns = $cols;
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function paginate($query, EncodingParametersInterface $parameters)
+    {
+        $paginator = $this->query($query)->paginate(
+            $this->cursor($parameters),
+            $this->columns ?: ['*']
+        );
+
+        $parameters = $this->buildParams($parameters);
+
+        return $this->factory->createPage(
+            $paginator->getItems(),
+            $this->createFirstLink($paginator, $parameters),
+            $this->createPrevLink($paginator, $parameters),
+            $this->createNextLink($paginator, $parameters),
+            null,
+            $this->createMeta($paginator),
+            $this->meta
+        );
+    }
+
+    /**
+     * Create a new cursor query.
+     *
+     * @param $query
+     * @return CursorBuilder
+     */
+    protected function query($query)
+    {
+        return new CursorBuilder(
+            $query,
+            $this->column,
+            $this->identifier,
+            $this->descending
+        );
+    }
+
+    /**
+     * Extract the cursor from the provided paging parameters.
+     *
+     * @param EncodingParametersInterface $parameters
+     * @return Cursor
+     */
+    protected function cursor(EncodingParametersInterface $parameters)
+    {
+        return Cursor::create(
+            (array) $parameters->getPaginationParameters(),
+            $this->before,
+            $this->after,
+            $this->limit
+        );
+    }
+
+    /**
+     * @param CursorPaginator $paginator
+     * @param array $parameters
+     * @return LinkInterface
+     */
+    protected function createFirstLink(CursorPaginator $paginator, array $parameters = [])
+    {
+        return $this->createLink([
+            $this->limit => $paginator->getPerPage(),
+        ], $parameters);
+    }
+
+    /**
+     * @param CursorPaginator $paginator
+     * @param array $parameters
+     * @return LinkInterface
+     */
+    protected function createNextLink(CursorPaginator $paginator, array $parameters = [])
+    {
+        if ($paginator->hasNoMore()) {
+            return null;
+        }
+
+        return $this->createLink([
+            $this->after => $paginator->lastItem(),
+            $this->limit => $paginator->getPerPage(),
+        ], $parameters);
+    }
+
+    /**
+     * @param CursorPaginator $paginator
+     * @param array $parameters
+     * @return LinkInterface
+     */
+    protected function createPrevLink(CursorPaginator $paginator, array $parameters = [])
+    {
+        return $this->createLink([
+            $this->before => $paginator->firstItem(),
+            $this->limit => $paginator->getPerPage(),
+        ], $parameters);
+    }
+
+    /**
+     * @param array $page
+     * @param array $parameters
+     * @param array|object|null $meta
+     * @return LinkInterface
+     */
+    protected function createLink(array $page, array $parameters = [], $meta = null)
+    {
+        $parameters[QueryParametersParserInterface::PARAM_PAGE] = $page;
+
+        return json_api()->links()->current($meta, $parameters);
+    }
+
+    /**
+     * Build parameters that are to be included with pagination links.
+     *
+     * @param EncodingParametersInterface $parameters
+     * @return array
+     */
+    protected function buildParams(EncodingParametersInterface $parameters)
+    {
+        return array_filter([
+            QueryParametersParserInterface::PARAM_FILTER =>
+                $parameters->getFilteringParameters(),
+        ]);
+    }
+
+    /**
+     * @param CursorPaginator $paginator
+     * @return array
+     */
+    protected function createMeta(CursorPaginator $paginator)
+    {
+        $meta = [
+            'per-page' => $paginator->getPerPage(),
+            'from' => (string) $paginator->firstItem(),
+            'to' => (string) $paginator->lastItem(),
+            'has-more' => $paginator->hasMore(),
+        ];
+
+        return $this->underscoredMeta ? Arr::underscore($meta) : $meta;
+    }
+
+}
