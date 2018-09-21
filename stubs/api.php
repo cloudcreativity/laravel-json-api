@@ -4,6 +4,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Resolver
+    |--------------------------------------------------------------------------
+    |
+    | The API's resolver is the class that works out the fully qualified
+    | class name of adapters, schemas, authorizers and validators for your
+    | resource types. We recommend using our default implementation but you
+    | can override it here if desired.
+    */
+    'resolver' => \CloudCreativity\LaravelJsonApi\Resolver\ResolverFactory::class,
+
+    /*
+    |--------------------------------------------------------------------------
     | Root Namespace
     |--------------------------------------------------------------------------
     |
@@ -23,15 +35,9 @@ return [
     |   - e.g. App\JsonApi\Schemas\{PostSchema, CommentSchema}
     |   - e.g. App\JsonApi\Validators\{PostValidator, CommentValidator}
     |
-    | If you do not want to use our namespace resolution, write your own logic
-    | in a class that implements
-    | `CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface`.
-    | Then set the `resolver` option to the container binding that returns your
-    | implementation.
     */
     'namespace' => null,
     'by-resource' => true,
-    'resolver' => null,
 
     /*
     |--------------------------------------------------------------------------

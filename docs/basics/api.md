@@ -42,6 +42,13 @@ Will create the `json-api-v1.php` file.
 
 ## Namespacing
 
+This package expects your JSON API classes (schemas, adapters, etc) to be namespaced in a predictable way. This
+means we cannot automatically create them via the service container without you provided verbose configuration.
+Your `namespace` and `by-resource` configuration options control how we resolve fully-qualified class names.
+
+> If you do not want to use our namespacing convention, check out the [Resolvers](../features/resolvers.md)
+chapter for how to write your own implementation.
+
 ### Root Namespace
 
 Your API's config file contains a `namespace` option that controls the namespace in which JSON API classes are held.
@@ -85,7 +92,7 @@ App\JsonApi
     - CommentValidator
 ```
 
-You must stick to whatever pattern you choose to use. This is because we use the structure to automatically detect
+You must stick to whatever pattern you choose to use because we use the structure to automatically detect
 JSON API classes.
 
 ### Container Bindings

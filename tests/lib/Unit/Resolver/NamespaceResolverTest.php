@@ -268,6 +268,15 @@ class NamespaceResolverTest extends TestCase
         $this->assertSame($expected, $resolver->getAuthorizerByName($name));
     }
 
+    public function testTrimsNamespace()
+    {
+        $resolver = new NamespaceResolver('App\JsonApi\\', [
+            'posts' => 'App\Post',
+        ]);
+
+        $this->assertSame('App\JsonApi\Posts\Adapter', $resolver->getAdapterByResourceType('posts'));
+    }
+
     /**
      * @param bool $byResource
      * @param bool $withType
