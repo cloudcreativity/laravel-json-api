@@ -18,8 +18,16 @@
 namespace CloudCreativity\LaravelJsonApi\Eloquent\Concerns;
 
 use CloudCreativity\LaravelJsonApi\Utils\Str;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
+use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
+/**
+ * Trait IncludesModels
+ *
+ * @package CloudCreativity\LaravelJsonApi
+ */
 trait IncludesModels
 {
 
@@ -70,6 +78,39 @@ trait IncludesModels
      * @var array
      */
     protected $includePaths = [];
+
+    /**
+     * Add eager loading to the query.
+     *
+     * @param Builder $query
+     * @param EncodingParametersInterface $parameters
+     * @return void
+     */
+    protected function with($query, EncodingParametersInterface $parameters)
+    {
+        $query->with($this->getRelationshipPaths(
+            (array) $parameters->getIncludePaths()
+        ));
+    }
+
+    /**
+     * Add eager loading to a record.
+     *
+     * @param Model $record
+     * @param EncodingParametersInterface $parameters
+     */
+    protected function load($record, EncodingParametersInterface $parameters)
+    {
+        $relationshipPaths = $this->getRelationshipPaths($parameters->getIncludePaths());
+
+        /** Eager load anything that needs to be loaded. */
+        if (method_exists($record, 'loadMissing')) {
+            $record->loadMissing($relationshipPaths);
+        } else {
+            /** @todo remove this when dropping support for Laravel 5.4 */
+            $record->load($relationshipPaths);
+        }
+    }
 
     /**
      * Get the relationship paths to eager load.

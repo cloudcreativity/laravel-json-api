@@ -26,16 +26,14 @@ use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PageInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PagingStrategyInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
-use CloudCreativity\LaravelJsonApi\Utils\Str;
+use CloudCreativity\LaravelJsonApi\Pagination\CursorStrategy;
 use CloudCreativity\Utils\Object\StandardObjectInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations;
 use Illuminate\Support\Collection;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
-use Neomerx\JsonApi\Contracts\Encoder\Parameters\SortParameterInterface;
 use Neomerx\JsonApi\Encoder\Parameters\EncodingParameters;
-use Neomerx\JsonApi\Encoder\Parameters\SortParameter;
 
 /**
  * Class AbstractAdapter
@@ -46,7 +44,8 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
 {
 
     use Concerns\DeserializesAttributes,
-        Concerns\IncludesModels;
+        Concerns\IncludesModels,
+        Concerns\SortsModels;
 
     /**
      * @var Model
@@ -99,43 +98,6 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     protected $with = null;
 
     /**
-     * The default sorting to use if no sort parameters have been provided.
-     *
-     * Used when the client does not provide any sort parameters. Use
-     * either a string for a single default sort field, or an array
-     * of strings for multiple default sort fields.
-     *
-     * As per the JSON API convention, sort parameters prefixed with
-     * a `-` denoted descending order.
-     *
-     * For example, if `name` ascending is the default:
-     *
-     * ```
-     * protected $defaultSort = 'name';
-     * ```
-     *
-     * Or if `created-at` descending, then `name` ascending is the default:
-     *
-     * ```
-     * protected $defaultSort = ['-created-at`, 'name'];
-     * ```
-     *
-     * @var string|string[]
-     */
-    protected $defaultSort = [];
-
-    /**
-     * A mapping of sort parameters to columns.
-     *
-     * Use this to map any parameters to columns where the two are not identical. E.g. if
-     * your sort param is called `category` but the column to use is `type`, then set this
-     * property to `['category' => 'type']`.
-     *
-     * @var array
-     */
-    protected $sortColumns = [];
-
-    /**
      * Apply the supplied filters to the builder instance.
      *
      * @param Builder $query
@@ -165,6 +127,8 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      */
     public function query(EncodingParametersInterface $parameters)
     {
+        $parameters = $this->getQueryParameters($parameters);
+
         return $this->queryAllOrOne($this->newQuery(), $parameters);
     }
 
@@ -181,9 +145,10 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      */
     public function queryToMany($relation, EncodingParametersInterface $parameters)
     {
-        $query = $relation->newQuery();
-
-        return $this->queryAllOrOne($query, $parameters);
+        return $this->queryAllOrOne(
+            $relation->newQuery(),
+            $this->getQueryParameters($parameters)
+        );
     }
 
     /**
@@ -198,9 +163,10 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      */
     public function queryToOne($relation, EncodingParametersInterface $parameters)
     {
-        $query = $relation->newQuery();
-
-        return $this->queryOne($query, $parameters);
+        return $this->queryOne(
+            $relation->newQuery(),
+            $this->getQueryParameters($parameters)
+        );
     }
 
     /**
@@ -219,9 +185,9 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      */
     public function read($resourceId, EncodingParametersInterface $parameters)
     {
-        $filters = $this->extractFilters($parameters);
+        $parameters = $this->getQueryParameters($parameters);
 
-        if ($filters->isNotEmpty()) {
+        if (!empty($parameters->getFilteringParameters())) {
             return $this->readWithFilters($resourceId, $parameters);
         }
 
@@ -236,6 +202,8 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      */
     public function update($record, ResourceObjectInterface $resource, EncodingParametersInterface $parameters)
     {
+        $parameters = $this->getQueryParameters($parameters);
+
         /** @var Model $record */
         $record = parent::update($record, $resource, $parameters);
         $this->load($record, $parameters);
@@ -287,38 +255,6 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     protected function newQuery()
     {
         return $this->model->newQuery();
-    }
-
-    /**
-     * Add eager loading to the query.
-     *
-     * @param Builder $query
-     * @param Collection $includePaths
-     *      the paths for resources that will be included.
-     * @return void
-     */
-    protected function with($query, Collection $includePaths)
-    {
-        $query->with($this->getRelationshipPaths($includePaths));
-    }
-
-    /**
-     * Add eager loading to a record.
-     *
-     * @param $record
-     * @param EncodingParametersInterface $parameters
-     */
-    protected function load($record, EncodingParametersInterface $parameters)
-    {
-        $relationshipPaths = $this->getRelationshipPaths($this->extractIncludePaths($parameters));
-
-        /** Eager load anything that needs to be loaded. */
-        if (method_exists($record, 'loadMissing')) {
-            $record->loadMissing($relationshipPaths);
-        } else {
-            /** @todo remove this when dropping support for Laravel 5.4 */
-            $record->load($relationshipPaths);
-        }
     }
 
     /**
@@ -542,6 +478,15 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      */
     protected function paginate($query, EncodingParametersInterface $parameters)
     {
+        if (!$this->paging) {
+            throw new RuntimeException('Paging is not supported on adapter: ' . get_class($this));
+        }
+
+        /** If using the cursor strategy, we need to set the key name for the cursor. */
+        if ($this->paging instanceof CursorStrategy) {
+            $this->paging->withIdentifierColumn($this->getKeyName());
+        }
+
         return $this->paging->paginate($query, $parameters);
     }
 
@@ -557,15 +502,18 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
 
     /**
      * @return string
+     * @todo on Laravel >=5.5 can use `qualifyColumn` method.
      */
     protected function getQualifiedKeyName()
     {
-        return sprintf('%s.%s', $this->model->getTable(), $this->getKeyName());
+        return $this->model->getTable() . '.' . $this->getKeyName();
     }
 
     /**
      * @param EncodingParametersInterface $parameters
      * @return Collection
+     * @deprecated 1.0.0
+     *      overload the `getQueryParameters` method as needed.
      */
     protected function extractIncludePaths(EncodingParametersInterface $parameters)
     {
@@ -575,6 +523,8 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     /**
      * @param EncodingParametersInterface $parameters
      * @return Collection
+     * @deprecated 1.0.0
+     *      overload the `getQueryParameters` method as needed.
      */
     protected function extractFilters(EncodingParametersInterface $parameters)
     {
@@ -584,6 +534,8 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     /**
      * @param EncodingParametersInterface $parameters
      * @return Collection
+     * @deprecated 1.0.0
+     *      overload the `getQueryParameters` method as needed.
      */
     protected function extractPagination(EncodingParametersInterface $parameters)
     {
@@ -593,102 +545,13 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     }
 
     /**
+     * Get pagination parameters to use when the client has not provided paging parameters.
+     *
      * @return array
      */
     protected function defaultPagination()
     {
         return (array) $this->defaultPagination;
-    }
-
-    /**
-     * @return bool
-     */
-    protected function hasPaging()
-    {
-        return $this->paging instanceof PagingStrategyInterface;
-    }
-
-    /**
-     * Apply sort parameters to the query.
-     *
-     * @param Builder $query
-     * @param SortParameterInterface[] $sortBy
-     * @return void
-     */
-    protected function sort($query, array $sortBy)
-    {
-        if (empty($sortBy)) {
-            $this->defaultSort($query);
-            return;
-        }
-
-        /** @var SortParameterInterface $param */
-        foreach ($sortBy as $param) {
-            $this->sortBy($query, $param);
-        }
-    }
-
-    /**
-     * Apply a default sort order if the client has not requested any sort order.
-     *
-     * @param Builder $query
-     * @return void
-     */
-    protected function defaultSort($query)
-    {
-        collect($this->defaultSort)->map(function ($param) {
-            $desc = ($param[0] === '-');
-            $field = ltrim($param, '-');
-
-            return new SortParameter($field, !$desc);
-        })->each(function (SortParameter $param) use ($query) {
-            $this->sortBy($query, $param);
-        });
-    }
-
-    /**
-     * @param Builder $query
-     * @param SortParameterInterface $param
-     */
-    protected function sortBy($query, SortParameterInterface $param)
-    {
-        $column = $this->getQualifiedSortColumn($query, $param->getField());
-        $order = $param->isAscending() ? 'asc' : 'desc';
-
-        $query->orderBy($column, $order);
-    }
-
-    /**
-     * @param Builder $query
-     * @param string $field
-     * @return string
-     */
-    protected function getQualifiedSortColumn($query, $field)
-    {
-        $key = $this->columnForField($field, $query->getModel());
-
-        if (!str_contains($key, '.')) {
-            $key = sprintf('%s.%s', $query->getModel()->getTable(), $key);
-        }
-
-        return $key;
-    }
-
-    /**
-     * Get the table column to use for the specified search field.
-     *
-     * @param string $field
-     * @param Model $model
-     * @return string
-     */
-    protected function columnForField($field, Model $model)
-    {
-        /** If there is a custom mapping, return that */
-        if (isset($this->sortColumns[$field])) {
-            return $this->sortColumns[$field];
-        }
-
-        return $model::$snakeAttributes ? Str::underscore($field) : Str::camelize($field);
     }
 
     /**
@@ -781,25 +644,20 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     protected function queryAll($query, EncodingParametersInterface $parameters)
     {
         /** Apply eager loading */
-        $this->with($query, $this->extractIncludePaths($parameters));
+        $this->with($query, $parameters);
 
         /** Filter */
-        $filters = $this->extractFilters($parameters);
-        $this->applyFilters($query, $filters);
+        $this->applyFilters($query, collect($parameters->getFilteringParameters()));
 
         /** Sort */
-        $this->sort($query, (array) $parameters->getSortParameters());
+        $this->sort($query, $parameters->getSortParameters());
 
         /** Paginate results if needed. */
-        $pagination = $this->extractPagination($parameters);
-
-        if (!$pagination->isEmpty() && !$this->hasPaging()) {
-            throw new RuntimeException('Paging parameters exist but paging is not supported.');
-        }
+        $pagination = collect($parameters->getPaginationParameters());
 
         return $pagination->isEmpty() ?
             $this->all($query) :
-            $this->paginate($query, $this->normalizeParameters($parameters, $pagination));
+            $this->paginate($query, $parameters);
     }
 
     /**
@@ -809,17 +667,39 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      */
     protected function queryOne($query, EncodingParametersInterface $parameters)
     {
+        $parameters = $this->getQueryParameters($parameters);
+
         /** Apply eager loading */
-        $this->with($query, $this->extractIncludePaths($parameters));
+        $this->with($query, $parameters);
 
         /** Filter */
-        $filters = $this->extractFilters($parameters);
-        $this->applyFilters($query, $filters);
+        $this->applyFilters($query, collect($parameters->getFilteringParameters()));
 
         /** Sort */
-        $this->sort($query, (array) $parameters->getSortParameters());
+        $this->sort($query, $parameters->getSortParameters());
 
         return $this->searchOne($query);
+    }
+
+    /**
+     * Get JSON API parameters to use when constructing an Eloquent query.
+     *
+     * This method is used to push in any default parameter values that should
+     * be used if the client has not provided any.
+     *
+     * @param EncodingParametersInterface $parameters
+     * @return EncodingParametersInterface
+     */
+    protected function getQueryParameters(EncodingParametersInterface $parameters)
+    {
+        return new EncodingParameters(
+            $this->extractIncludePaths($parameters)->all(),
+            $parameters->getFieldSets(),
+            $parameters->getSortParameters() ?: $this->defaultSort(),
+            $this->extractPagination($parameters)->all(),
+            $this->extractFilters($parameters)->all(),
+            $parameters->getUnrecognizedParameters()
+        );
     }
 
     /**
@@ -830,28 +710,6 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
         list($one, $two, $caller) = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3);
 
         return $caller['function'];
-    }
-
-    /**
-     * Normalize parameters for pagination.
-     *
-     * This is a temporary solution for Issue #131 in the v0.11/v0.12 series.
-     *
-     * @param EncodingParametersInterface $parameters
-     * @param Collection $extractedPagination
-     * @return EncodingParameters
-     * @see https://github.com/cloudcreativity/laravel-json-api/issues/131
-     */
-    private function normalizeParameters(EncodingParametersInterface $parameters, Collection $extractedPagination)
-    {
-        return new EncodingParameters(
-            $parameters->getIncludePaths(),
-            $parameters->getFieldSets(),
-            $parameters->getSortParameters(),
-            $extractedPagination->all(),
-            $parameters->getFilteringParameters(),
-            $parameters->getUnrecognizedParameters()
-        );
     }
 
 }

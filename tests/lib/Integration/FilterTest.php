@@ -17,6 +17,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration;
 
+use Carbon\Carbon;
 use DummyApp\Comment;
 use DummyApp\Post;
 use DummyApp\User;
@@ -56,17 +57,19 @@ class FilterTest extends TestCase
 
     public function testIdWithPaging()
     {
-        $comments = factory(Comment::class, 3)->create();
+        $comments = factory(Comment::class, 3)->create([
+            'created_at' => Carbon::now(),
+        ])->sortByDesc('id')->values();
 
         $this->resourceType = 'comments';
         $this->actingAsUser()
-            ->doSearchById($comments, ['page' => ['number' => 1, 'size' => 2]])
+            ->doSearchById($comments, ['page' => ['limit' => 2]])
             ->assertSearchedIds([$comments[0], $comments[1]])
             ->assertJson([
                 'meta' => [
                     'page' => [
-                        'current-page' => 1,
                         'per-page' => 2,
+                        'has-more' => true,
                     ],
                 ],
             ]);

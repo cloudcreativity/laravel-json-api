@@ -337,11 +337,11 @@ class Adapter extends AbstractAdapter
 
 #### Has-Many-Through
 
-The JSON API `hasMany` relation can be used for an Eloquent `hasManyThrough` relation. The important thing to note
-about this relationship is it is **read-only**. This is because the relationship can be modified in your API by
-modifying the intermediary model. For example, a `countries` resource might have many `posts` resources through an
-intermediate `users` resource. The relationship is effectively modified by creating and deleting posts and/or a user
-changing which country they are associated to.
+The JSON API `hasManyThrough` relation can be used for an Eloquent `hasManyThrough` relation. The important thing
+to note about this relationship is it is **read-only**. This is because the relationship can be modified in your API
+by modifying the intermediary model. For example, a `countries` resource might have many `posts` resources through
+an intermediate `users` resource. The relationship is effectively modified by creating and deleting posts and/or a
+user changing which country they are associated to.
 
 Define a has-many-through relationship on an adapter as follows:
 
@@ -395,8 +395,8 @@ class Adapter extends AbstractAdapter
 }
 ```
 
-> The `morphMany` implementation currently has some limitations that we are hoping to resolve during our alpha
-and beta releases. If you have problems using it, please create an issue as this will help us out.
+> The `morphMany` implementation currently has some limitations that we are hoping to resolve during our
+beta releases. If you have problems using it, please create an issue as this will help us out.
 
 #### Queries-One and Queries-Many
 

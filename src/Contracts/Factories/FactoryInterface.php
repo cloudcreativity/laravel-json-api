@@ -18,10 +18,9 @@
 
 namespace CloudCreativity\LaravelJsonApi\Contracts\Factories;
 
+use CloudCreativity\LaravelJsonApi\Contracts\Client\ClientInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Encoder\SerializerInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Http\Client\ClientInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Http\Responses\ResponseInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Object\DocumentInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PageInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Repositories\ErrorRepositoryInterface;
@@ -50,16 +49,6 @@ interface FactoryInterface extends BaseFactoryInterface
 {
 
     /**
-     * @param string $rootNamespace
-     * @param array $resources
-     * @param bool $byResource
-     * @param bool $withType
-     *      if by resource, whether the type should be appended to the class name.
-     * @return ResolverInterface
-     */
-    public function createResolver($rootNamespace, array $resources, $byResource, $withType = true);
-
-    /**
      * @param ResolverInterface $resolver
      * @return mixed
      */
@@ -71,15 +60,6 @@ interface FactoryInterface extends BaseFactoryInterface
      * @return SerializerInterface
      */
     public function createSerializer(SchemaContainerInterface $container, EncoderOptions $encoderOptions = null);
-
-    /**
-     * Create a JSON API response object from a PSR response.
-     *
-     * @param PsrRequest $request
-     * @param PsrResponse $response
-     * @return ResponseInterface
-     */
-    public function createResponse(PsrRequest $request, PsrResponse $response);
 
     /**
      * Create an error response object.

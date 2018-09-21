@@ -49,6 +49,12 @@ class GeneratorsTest extends TestCase
     protected function setUp()
     {
         parent::setUp();
+
+        // required for tests to work in Laravel 5.7
+        if (method_exists($this, 'withoutMockingConsoleOutput')) {
+            $this->withoutMockingConsoleOutput();
+        }
+
         $this->app->setBasePath($this->path = __DIR__ . '/../../dummy');
         $this->files = new Filesystem();
     }

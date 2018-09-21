@@ -42,6 +42,21 @@ class Url
     private $name;
 
     /**
+     * Create a URL from an array.
+     *
+     * @param array $url
+     * @return Url
+     */
+    public static function fromArray(array $url)
+    {
+        return new self(
+            isset($url['host']) ? $url['host'] : '',
+            isset($url['namespace']) ? $url['namespace'] : '',
+            isset($url['name']) ? $url['name'] : ''
+        );
+    }
+
+    /**
      * Url constructor.
      *
      * @param string $host
@@ -60,7 +75,27 @@ class Url
      */
     public function __toString()
     {
-        return $this->host . $this->namespace;
+        return $this->toString();
+    }
+
+    /**
+     * @return string
+     */
+    public function toString()
+    {
+        return rtrim($this->host . $this->namespace, '/');
+    }
+
+    /**
+     * @param $host
+     * @return Url
+     */
+    public function withHost($host)
+    {
+        $copy = clone $this;
+        $copy->host = rtrim($host, '/');
+
+        return $copy;
     }
 
     /**
@@ -85,6 +120,14 @@ class Url
     public function getName()
     {
         return $this->name;
+    }
+
+    /**
+     * @return string
+     */
+    public function getBaseUri()
+    {
+        return $this->toString() . '/';
     }
 
 
