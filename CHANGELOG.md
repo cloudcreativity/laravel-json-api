@@ -20,6 +20,12 @@ resolver instance.
 ### Changed
 - Extract model sorting from the Eloquent adapter into a `SortsModels` trait.
 
+### Fixed
+- [#222](https://github.com/cloudcreativity/laravel-json-api/issues/222)
+Adding related resources to a has-many relationship now does not add duplicates. The JSON API
+spec states that duplicates must not be added, but the default Laravel behaviour does add duplicates.
+The `HasMany` relationship now takes care of this by filtering out duplicates before adding them.
+
 ### Deprecated
 - The following methods on the Eloquent adapter will be removed in `1.0.0` as they are no longer required:
   - `extractIncludePaths`
