@@ -2,22 +2,22 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
-## Unreleased
+## [1.0.0-beta.3] - 2018-09-21
 
 ### Added
 - New cursor-based paging strategy, refer to the [Pagination docs](./docs/fetching/pagination.md) for
 details.
 - Refactored the client interface and implementation, improving record serializing and adding missing
 relationship request methods.
-- [#144](https://github.com/cloudcreativity/laravel-json-api/issues/144)
-Improved the helper method that creates new client instances so that it automatically adds a base
-URI for the client if one is not provided.
 - [#123](https://github.com/cloudcreativity/laravel-json-api/issues/123)
 Can now use a custom resolver if wanting to override the default namespace resolution provided by
 this package. This is documented in the [Resolvers chapter.](./docs/features/resolvers.md)
 
 ### Changed
 - Extract model sorting from the Eloquent adapter into a `SortsModels` trait.
+- [#144](https://github.com/cloudcreativity/laravel-json-api/issues/144)
+Improved the helper method that creates new client instances so that it automatically adds a base
+URI for the client if one is not provided.
 
 ### Fixed
 - [#222](https://github.com/cloudcreativity/laravel-json-api/issues/222)

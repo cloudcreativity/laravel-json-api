@@ -11,6 +11,10 @@ so this will not result in a major breaking change before `1.0.0`.
 
 ## 1.0.0-beta.2 to 1.0.0-beta.3
 
+With the exception of the client feature, we have not made any changes that we believe will be
+breaking unless you are overriding the internals of the package. The majority of applications
+should therefore be able to upgrade without any changes.
+
 ### Clients
 
 We have updated the client implementation to add the following:
