@@ -1,6 +1,21 @@
 <?php
+/**
+ * Copyright 2018 Cloud Creativity Limited
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-namespace CloudCreativity\LaravelJsonApi\Validation\Document;
+namespace CloudCreativity\LaravelJsonApi\Validation;
 
 use Illuminate\Http\Response;
 use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
@@ -96,7 +111,7 @@ class ErrorFactory
      * @param string $path
      * @return ErrorInterface
      */
-    public function resourceTypeNotSupported($actual, $path = '/data/type')
+    public function resourceTypeNotSupported($actual, $path = '/data')
     {
         return new Error(
             null,
@@ -105,7 +120,27 @@ class ErrorFactory
             null,
             'Not Supported',
             "Resource type '{$actual}' is not supported by this endpoint.",
-            $this->pointer($path)
+            $this->pointer($path, 'type')
+        );
+    }
+
+    /**
+     * Create an error for when a resource type is not recognised.
+     *
+     * @param $actual
+     * @param string $path
+     * @return ErrorInterface
+     */
+    public function resourceTypeNotRecognised($actual, $path = '/data')
+    {
+        return new Error(
+            null,
+            null,
+            Response::HTTP_BAD_REQUEST,
+            null,
+            'Not Supported',
+            "Resource type '{$actual}' is not recognised.",
+            $this->pointer($path, 'type')
         );
     }
 
@@ -116,7 +151,7 @@ class ErrorFactory
      * @param string $path
      * @return ErrorInterface
      */
-    public function resourceIdNotSupported($actual, $path = '/data/id')
+    public function resourceIdNotSupported($actual, $path = '/data')
     {
         return new Error(
             null,
@@ -125,7 +160,7 @@ class ErrorFactory
             null,
             'Not Supported',
             "Resource id '{$actual}' is not supported by this endpoint.",
-            $this->pointer($path)
+            $this->pointer($path, 'id')
         );
     }
 

@@ -24,14 +24,14 @@ class RelationshipValidationTest extends TestCase
                     'title' => 'Required Member',
                     'detail' => "The member 'data' is required.",
                     'status' => 400,
-                    'source' => ['pointer' => '/data'],
+                    'source' => ['pointer' => '/'],
                 ],
             ],
             'data:not object' => [
                 ['data' => false],
                 [
-                    'title' => 'Relationship Expected',
-                    'detail' => "The member 'data' must be a relationship object.",
+                    'title' => 'Object Expected',
+                    'detail' => "The member 'data' must be an object.",
                     'status' => 400,
                     'source' => ['pointer' => '/data'],
                 ],
@@ -60,7 +60,7 @@ class RelationshipValidationTest extends TestCase
                     'title' => 'String Expected',
                     'detail' => "The member 'type' must be a string.",
                     'status' => 400,
-                    'source' => ['pointer' => '/data'], // @todo should be /data/type
+                    'source' => ['pointer' => '/data/type'],
                 ],
             ],
             'data.type:empty' => [
@@ -74,20 +74,6 @@ class RelationshipValidationTest extends TestCase
                     'title' => 'Value Expected',
                     'detail' => "The member 'type' cannot be empty.",
                     'status' => 400,
-                    'source' => ['pointer' => '/data'], // @todo should be /data/type
-                ],
-            ],
-            'data.type:not supported' => [
-                [
-                    'data' => [
-                        'type' => 'tags',
-                        'id' => '1',
-                    ],
-                ],
-                [
-                    'title' => 'Invalid Relationship',
-                    'detail' => "Resource 'tags' is not among the type(s) supported by this relationship. Expecting only 'users' resources.",
-                    'status' => 400,
                     'source' => ['pointer' => '/data/type'],
                 ],
             ],
@@ -99,7 +85,7 @@ class RelationshipValidationTest extends TestCase
                     ],
                 ],
                 [
-                    'title' => 'Invalid Relationship',
+                    'title' => 'Not Supported',
                     'detail' => "Resource type 'foobar' is not recognised.",
                     'status' => 400,
                     'source' => ['pointer' => '/data/type'],
@@ -129,7 +115,7 @@ class RelationshipValidationTest extends TestCase
                     'title' => 'String Expected',
                     'detail' => "The member 'id' must be a string.",
                     'status' => 400,
-                    'source' => ['pointer' => '/data'], // @todo should be /data/id
+                    'source' => ['pointer' => '/data/id'],
                 ],
             ],
             'data.id:integer' => [
@@ -143,7 +129,7 @@ class RelationshipValidationTest extends TestCase
                     'title' => 'String Expected',
                     'detail' => "The member 'id' must be a string.",
                     'status' => 400,
-                    'source' => ['pointer' => '/data'], // @todo should be /data/id
+                    'source' => ['pointer' => '/data/id'],
                 ],
             ],
             'data.id:empty' => [
@@ -157,7 +143,7 @@ class RelationshipValidationTest extends TestCase
                     'title' => 'Value Expected',
                     'detail' => "The member 'id' cannot be empty.",
                     'status' => 400,
-                    'source' => ['pointer' => '/data'], // @todo should be /data/id
+                    'source' => ['pointer' => '/data/id'],
                 ],
             ],
             'data:does not exist' => [
@@ -189,16 +175,7 @@ class RelationshipValidationTest extends TestCase
                     'title' => 'Required Member',
                     'detail' => "The member 'data' is required.",
                     'status' => 400,
-                    'source' => ['pointer' => '/data'],
-                ],
-            ],
-            'data:not object' => [
-                ['data' => false],
-                [
-                    'title' => 'Relationship Expected',
-                    'detail' => "The member 'data' must be a relationship object.",
-                    'status' => 400,
-                    'source' => ['pointer' => '/data'],
+                    'source' => ['pointer' => '/'],
                 ],
             ],
             'data.type:required' => [
@@ -211,7 +188,7 @@ class RelationshipValidationTest extends TestCase
                     'title' => 'Required Member',
                     'detail' => "The member 'type' is required.",
                     'status' => 400,
-                    'source' => ['pointer' => '/data'], // @todo should be /data/0
+                    'source' => ['pointer' => '/data/0'],
                 ],
             ],
             'data.type:not string' => [
@@ -224,7 +201,7 @@ class RelationshipValidationTest extends TestCase
                     'title' => 'String Expected',
                     'detail' => "The member 'type' must be a string.",
                     'status' => 400,
-                    'source' => ['pointer' => '/data'], // @todo should be /data/0/type
+                    'source' => ['pointer' => '/data/0/type'],
                 ],
             ],
             'data.type:empty' => [
@@ -237,20 +214,7 @@ class RelationshipValidationTest extends TestCase
                     'title' => 'Value Expected',
                     'detail' => "The member 'type' cannot be empty.",
                     'status' => 400,
-                    'source' => ['pointer' => '/data'], // @todo should be /data/0/type
-                ],
-            ],
-            'data.type:not supported' => [
-                [
-                    'data' => [
-                        ['type' => 'users', 'id' => '1'],
-                    ],
-                ],
-                [
-                    'title' => 'Invalid Relationship',
-                    'detail' => "Resource 'users' is not among the type(s) supported by this relationship. Expecting only 'tags' resources.",
-                    'status' => 400,
-                    'source' => ['pointer' => '/data/type'], // @todo should be /data/0/type
+                    'source' => ['pointer' => '/data/0/type'],
                 ],
             ],
             'data.type:not recognised' => [
@@ -260,10 +224,10 @@ class RelationshipValidationTest extends TestCase
                     ],
                 ],
                 [
-                    'title' => 'Invalid Relationship',
+                    'title' => 'Not Supported',
                     'detail' => "Resource type 'foobar' is not recognised.",
                     'status' => 400,
-                    'source' => ['pointer' => '/data/type'], // @todo should be /data/0/type
+                    'source' => ['pointer' => '/data/0/type'],
                 ],
             ],
             'data.id:required' => [
@@ -276,7 +240,7 @@ class RelationshipValidationTest extends TestCase
                     'title' => 'Required Member',
                     'detail' => "The member 'id' is required.",
                     'status' => 400,
-                    'source' => ['pointer' => '/data'], // @todo should be /data/0
+                    'source' => ['pointer' => '/data/0'],
                 ],
             ],
             'data.id:not string' => [
@@ -289,7 +253,7 @@ class RelationshipValidationTest extends TestCase
                     'title' => 'String Expected',
                     'detail' => "The member 'id' must be a string.",
                     'status' => 400,
-                    'source' => ['pointer' => '/data'], // @todo should be /data/0/id
+                    'source' => ['pointer' => '/data/0/id'],
                 ],
             ],
             'data.id:integer' => [
@@ -302,7 +266,7 @@ class RelationshipValidationTest extends TestCase
                     'title' => 'String Expected',
                     'detail' => "The member 'id' must be a string.",
                     'status' => 400,
-                    'source' => ['pointer' => '/data'], // @todo should be /data/0/id
+                    'source' => ['pointer' => '/data/0/id'],
                 ],
             ],
             'data.id:empty' => [
@@ -315,7 +279,7 @@ class RelationshipValidationTest extends TestCase
                     'title' => 'Value Expected',
                     'detail' => "The member 'id' cannot be empty.",
                     'status' => 400,
-                    'source' => ['pointer' => '/data'], // @todo should be /data/0/id
+                    'source' => ['pointer' => '/data/0/id'],
                 ],
             ],
             'data:does not exist' => [
@@ -328,7 +292,7 @@ class RelationshipValidationTest extends TestCase
                     'title' => 'Invalid Relationship',
                     'detail' => 'The related resource does not exist.',
                     'status' => 404,
-                    'source' => ['pointer' => '/data'], // @todo should be /data/0
+                    'source' => ['pointer' => '/data/0'],
                 ],
             ],
         ];

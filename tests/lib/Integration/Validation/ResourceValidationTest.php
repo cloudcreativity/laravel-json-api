@@ -80,13 +80,13 @@ class ResourceValidationTest extends TestCase
             'data.type:not supported' => [
                 [
                     'data' => [
-                        'type' => 'people',
+                        'type' => 'users',
                         'attributes' => ['name' => 'John Doe'],
                     ],
                 ],
                 [
                     'title' => 'Not Supported',
-                    'detail' => "Resource type 'people' is not supported by this endpoint.",
+                    'detail' => "Resource type 'users' is not supported by this endpoint.",
                     'status' => 409,
                     'source' => ['pointer' => '/data/type'],
                 ],

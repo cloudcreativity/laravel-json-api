@@ -1,16 +1,28 @@
 <?php
+/**
+ * Copyright 2018 Cloud Creativity Limited
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-namespace CloudCreativity\LaravelJsonApi\Validation\Document;
+namespace CloudCreativity\LaravelJsonApi\Validation\Spec;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreAwareInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\InvalidArgumentException;
-use CloudCreativity\LaravelJsonApi\Object\ResourceIdentifier;
-use CloudCreativity\LaravelJsonApi\Store\StoreAwareTrait;
+use CloudCreativity\LaravelJsonApi\Validation\ErrorFactory;
 
-class ResourceValidator extends AbstractValidator implements StoreAwareInterface
+class ResourceValidator extends AbstractValidator
 {
-
-    use StoreAwareTrait;
 
     /**
      * The expected JSON API type.
@@ -29,12 +41,14 @@ class ResourceValidator extends AbstractValidator implements StoreAwareInterface
     /**
      * ResourceValidator constructor.
      *
+     * @param StoreInterface $store
      * @param ErrorFactory $errorFactory
      * @param object $document
      * @param string $expectedType
      * @param string|null $expectedId
      */
     public function __construct(
+        StoreInterface $store,
         ErrorFactory $errorFactory,
         $document,
         $expectedType,
@@ -48,7 +62,7 @@ class ResourceValidator extends AbstractValidator implements StoreAwareInterface
             throw new InvalidArgumentException('Expecting id to be null or a non-empty string.');
         }
 
-        parent::__construct($errorFactory, $document);
+        parent::__construct($store, $errorFactory, $document);
         $this->expectedType = $expectedType;
         $this->expectedId = $expectedId;
     }
@@ -159,83 +173,6 @@ class ResourceValidator extends AbstractValidator implements StoreAwareInterface
             $this->resourceIdNotSupported($value);
             return false;
         }
-    }
-
-    /**
-     * Validate the value of a type member.
-     *
-     * @param mixed $value
-     * @param string $path
-     * @return bool
-     */
-    protected function validateTypeMember($value, $path)
-    {
-        if (!is_string($value)) {
-            $this->memberNotString($path, 'type');
-            return false;
-        }
-
-        if (empty($value)) {
-            $this->memberEmpty($path, 'type');
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * Validate an identifier object.
-     *
-     * @param mixed $value
-     * @param string $path
-     * @param string $member
-     * @return bool
-     */
-    protected function validateIdentifier($value, $path, $member = 'data')
-    {
-        if (!is_object($value)) {
-            $this->memberNotObject($path, $member);
-            return false;
-        }
-
-        $path .= "/{$member}";
-        $valid = true;
-
-        if (!property_exists($value, 'type')) {
-            $this->memberRequired($path, 'type');
-            $valid = false;
-        } else if (!$this->validateTypeMember($value->type, $path)) {
-            $valid = false;
-        }
-
-        if (!property_exists($value, 'id')) {
-            $this->memberRequired($path, 'id');
-            $valid = false;
-        } else if (!$this->validateIdMember($value->id, $path)) {
-            $valid = false;
-        }
-
-        return $valid;
-    }
-
-    /**
-     * Validate the value of an id member.
-     *
-     * @param mixed $value
-     * @param string $path
-     * @return bool
-     */
-    protected function validateIdMember($value, $path)
-    {
-        if (!is_string($value)) {
-            $this->memberNotString($path, 'id');
-            return false;
-        }
-
-        if (empty($value)) {
-            $this->memberEmpty($path, 'id');
-            return false;
-        }
 
         return true;
     }
@@ -274,84 +211,7 @@ class ResourceValidator extends AbstractValidator implements StoreAwareInterface
         $valid = true;
 
         foreach ($relationships as $field => $relation) {
-            if (!$this->validateRelationship($field, $relation)) {
-                $valid = false;
-            }
-        }
-
-        return $valid;
-    }
-
-    /**
-     * Validate a resource relationship.
-     *
-     * @param $field
-     * @param $relation
-     * @return bool
-     */
-    protected function validateRelationship($field, $relation)
-    {
-        if (!is_object($relation)) {
-            $this->memberNotObject('/data/relationships', $field);
-            return false;
-        }
-
-        if (!property_exists($relation, 'data')) {
-            $this->memberRequired("/data/relationships/{$field}", 'data');
-            return false;
-        }
-
-        $data = $relation->data;
-
-        if (is_array($data)) {
-            return $this->validateToMany($field, $data);
-        }
-
-        return $this->validateToOne($field, $data);
-    }
-
-
-    /**
-     * Validate a to-one relation.
-     *
-     * @param string $field
-     * @param mixed $value
-     * @return bool
-     */
-    protected function validateToOne($field, $value)
-    {
-        if (is_null($value)) {
-            return true;
-        }
-
-        $path = "/data/relationships/{$field}";
-
-        if (!$this->validateIdentifier($value, $path)) {
-            return false;
-        }
-
-        if (!$this->getStore()->exists(new ResourceIdentifier($value))) {
-            $this->resourceDoesNotExist($path);
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * Validate a to-many relation.
-     *
-     * @param $field
-     * @param array $value
-     * @return bool
-     */
-    protected function validateToMany($field, array $value)
-    {
-        $path = "/data/relationships/{$field}/data";
-        $valid = true;
-
-        foreach ($value as $index => $item) {
-            if (!$this->validateIdentifier($item, $path, $index)) {
+            if (!$this->validateRelationship($relation, $field)) {
                 $valid = false;
             }
         }
