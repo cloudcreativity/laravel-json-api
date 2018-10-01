@@ -85,8 +85,8 @@ class ResourceValidationTest extends TestCase
                     ],
                 ],
                 [
-                    'title' => 'Unsupported Resource',
-                    'detail' => "Resource 'people' is not among the type(s) supported by this endpoint. Expecting only 'posts' resources.",
+                    'title' => 'Not Supported',
+                    'detail' => "Resource type 'people' is not supported by this endpoint.",
                     'status' => 409,
                     'source' => ['pointer' => '/data/type'],
                 ],
@@ -185,10 +185,10 @@ class ResourceValidationTest extends TestCase
                     ],
                 ],
                 [
-                    'title' => 'Relationship Expected',
-                    'detail' => "The member 'data' must be a relationship object.",
+                    'title' => 'Object Expected',
+                    'detail' => "The member 'data' must be an object.",
                     'status' => 400,
-                    'source' => ['pointer' => '/data/relationships/author'],
+                    'source' => ['pointer' => '/data/relationships/author/data'],
                 ],
             ],
             'data.relationships.*.data:resource does not exist' => [
@@ -217,31 +217,31 @@ class ResourceValidationTest extends TestCase
                     'source' => ['pointer' => '/data/relationships/author'],
                 ],
             ],
-//            'data.relationships.*.data.*:not object' => [
-//                [
-//                    'data' => [
-//                        'type' => 'posts',
-//                        'attributes' => [
-//                            'title' => 'Hello World',
-//                            'content' => '...',
-//                            'slug' => 'hello-world',
-//                        ],
-//                        'relationships' => [
-//                            'tags' => [
-//                                'data' => [
-//                                    [],
-//                                ],
-//                            ],
-//                        ],
-//                    ],
-//                ],
-//                [
-//                    'title' => 'Object Expected',
-//                    'detail' => "The member '0' must be an object.",
-//                    'status' => 400,
-//                    'source' => ['pointer' => '/data/relationships/tags/data'],
-//                ],
-//            ],
+            'data.relationships.*.data.*:not object' => [
+                [
+                    'data' => [
+                        'type' => 'posts',
+                        'attributes' => [
+                            'title' => 'Hello World',
+                            'content' => '...',
+                            'slug' => 'hello-world',
+                        ],
+                        'relationships' => [
+                            'tags' => [
+                                'data' => [
+                                    [],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+                [
+                    'title' => 'Object Expected',
+                    'detail' => "The member '0' must be an object.",
+                    'status' => 400,
+                    'source' => ['pointer' => '/data/relationships/tags/data'],
+                ],
+            ],
             'data.relationships.*.data.*.type:required' => [
                 [
                     'data' => [
@@ -266,7 +266,7 @@ class ResourceValidationTest extends TestCase
                     'title' => 'Required Member',
                     'detail' => "The member 'type' is required.",
                     'status' => 400,
-                    'source' => ['pointer' => '/data/relationships/tags/data'], // @todo should be 'tags/data/0'
+                    'source' => ['pointer' => '/data/relationships/tags/data/0'],
                 ],
             ],
         ];
@@ -346,8 +346,8 @@ class ResourceValidationTest extends TestCase
                     ],
                 ],
                 [
-                    'title' => 'Unsupported Resource',
-                    'detail' => "Resource id '10' is not supported by this endpoint. Expecting only resource '1'.",
+                    'title' => 'Not Supported',
+                    'detail' => "Resource id '10' is not supported by this endpoint.",
                     'status' => 409,
                     'source' => ['pointer' => '/data/id'],
                 ],

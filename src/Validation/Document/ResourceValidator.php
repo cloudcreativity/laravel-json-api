@@ -1,11 +1,16 @@
 <?php
 
-namespace CloudCreativity\JsonApi\Validation\Document;
+namespace CloudCreativity\LaravelJsonApi\Validation\Document;
 
+use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreAwareInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\InvalidArgumentException;
+use CloudCreativity\LaravelJsonApi\Object\ResourceIdentifier;
+use CloudCreativity\LaravelJsonApi\Store\StoreAwareTrait;
 
-class ResourceValidator extends AbstractValidator
+class ResourceValidator extends AbstractValidator implements StoreAwareInterface
 {
+
+    use StoreAwareTrait;
 
     /**
      * The expected JSON API type.
@@ -24,12 +29,17 @@ class ResourceValidator extends AbstractValidator
     /**
      * ResourceValidator constructor.
      *
+     * @param ErrorFactory $errorFactory
      * @param object $document
      * @param string $expectedType
      * @param string|null $expectedId
      */
-    public function __construct($document, $expectedType, $expectedId = null)
-    {
+    public function __construct(
+        ErrorFactory $errorFactory,
+        $document,
+        $expectedType,
+        $expectedId = null
+    ) {
         if (!is_string($expectedType) || empty($expectedType)) {
             throw new InvalidArgumentException('Expecting type to be a non-empty string.');
         }
@@ -38,7 +48,7 @@ class ResourceValidator extends AbstractValidator
             throw new InvalidArgumentException('Expecting id to be null or a non-empty string.');
         }
 
-        parent::__construct($document);
+        parent::__construct($errorFactory, $document);
         $this->expectedType = $expectedType;
         $this->expectedId = $expectedId;
     }
@@ -59,14 +69,14 @@ class ResourceValidator extends AbstractValidator
     protected function validate()
     {
         if (!property_exists($this->document, 'data')) {
-            $this->dataRequired();
+            $this->memberRequired('/', 'data');
             return false;
         }
 
         $data = $this->document->data;
 
         if (!is_object($data)) {
-            $this->dataNotObject();
+            $this->memberNotObject('/', 'data');
             return false;
         }
 
@@ -85,14 +95,14 @@ class ResourceValidator extends AbstractValidator
         $idExists = property_exists($resource, 'id');
 
         if (!property_exists($resource, 'type')) {
-            $this->dataTypeRequired();
+            $this->memberRequired('/data', 'type');
             $valid = false;
         } elseif (!$this->validateType()) {
             $valid = false;
         }
 
         if ($this->expectsId() && !$idExists) {
-            $this->dataIdRequired();
+            $this->memberRequired('/data', 'id');
             $valid = false;
         }
 
@@ -118,20 +128,14 @@ class ResourceValidator extends AbstractValidator
      */
     protected function validateType()
     {
-        $type = $this->document->data->type;
+        $value = $this->document->data->type;
 
-        if (!is_string($type)) {
-            $this->dataTypeNotString();
+        if (!$this->validateTypeMember($value, '/data')) {
             return false;
         }
 
-        if (empty($type)) {
-            $this->dataTypeEmpty();
-            return false;
-        }
-
-        if ($this->expectedType !== $type) {
-            $this->addDataTypeNotSupported();
+        if ($this->expectedType !== $value) {
+            $this->resourceTypeNotSupported($value);
             return false;
         }
 
@@ -145,20 +149,91 @@ class ResourceValidator extends AbstractValidator
      */
     protected function validateId()
     {
-        $id = $this->document->data->id;
+        $value = $this->document->data->id;
 
-        if (!is_string($id)) {
-            $this->dataIdNotString();
+        if (!$this->validateIdMember($value, '/data')) {
             return false;
         }
 
-        if (empty($id)) {
-            $this->dataIdEmpty();
+        if ($this->expectedId && $this->expectedId !== $value) {
+            $this->resourceIdNotSupported($value);
+            return false;
+        }
+    }
+
+    /**
+     * Validate the value of a type member.
+     *
+     * @param mixed $value
+     * @param string $path
+     * @return bool
+     */
+    protected function validateTypeMember($value, $path)
+    {
+        if (!is_string($value)) {
+            $this->memberNotString($path, 'type');
             return false;
         }
 
-        if ($this->expectedId && $this->expectedId !== $id) {
-            $this->dataIdNotSupported();
+        if (empty($value)) {
+            $this->memberEmpty($path, 'type');
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Validate an identifier object.
+     *
+     * @param mixed $value
+     * @param string $path
+     * @param string $member
+     * @return bool
+     */
+    protected function validateIdentifier($value, $path, $member = 'data')
+    {
+        if (!is_object($value)) {
+            $this->memberNotObject($path, $member);
+            return false;
+        }
+
+        $path .= "/{$member}";
+        $valid = true;
+
+        if (!property_exists($value, 'type')) {
+            $this->memberRequired($path, 'type');
+            $valid = false;
+        } else if (!$this->validateTypeMember($value->type, $path)) {
+            $valid = false;
+        }
+
+        if (!property_exists($value, 'id')) {
+            $this->memberRequired($path, 'id');
+            $valid = false;
+        } else if (!$this->validateIdMember($value->id, $path)) {
+            $valid = false;
+        }
+
+        return $valid;
+    }
+
+    /**
+     * Validate the value of an id member.
+     *
+     * @param mixed $value
+     * @param string $path
+     * @return bool
+     */
+    protected function validateIdMember($value, $path)
+    {
+        if (!is_string($value)) {
+            $this->memberNotString($path, 'id');
+            return false;
+        }
+
+        if (empty($value)) {
+            $this->memberEmpty($path, 'id');
             return false;
         }
 
@@ -175,7 +250,7 @@ class ResourceValidator extends AbstractValidator
         $attrs = $this->document->data->attributes;
 
         if (!is_object($attrs)) {
-            $this->dataAttributesNotObject();
+            $this->memberNotObject('/data', 'attributes');
             return false;
         }
 
@@ -192,7 +267,71 @@ class ResourceValidator extends AbstractValidator
         $relationships = $this->document->data->relationships;
 
         if (!is_object($relationships)) {
-            $this->dataRelationshipsNotObject();
+            $this->memberNotObject('/data', 'relationships');
+            return false;
+        }
+
+        $valid = true;
+
+        foreach ($relationships as $field => $relation) {
+            if (!$this->validateRelationship($field, $relation)) {
+                $valid = false;
+            }
+        }
+
+        return $valid;
+    }
+
+    /**
+     * Validate a resource relationship.
+     *
+     * @param $field
+     * @param $relation
+     * @return bool
+     */
+    protected function validateRelationship($field, $relation)
+    {
+        if (!is_object($relation)) {
+            $this->memberNotObject('/data/relationships', $field);
+            return false;
+        }
+
+        if (!property_exists($relation, 'data')) {
+            $this->memberRequired("/data/relationships/{$field}", 'data');
+            return false;
+        }
+
+        $data = $relation->data;
+
+        if (is_array($data)) {
+            return $this->validateToMany($field, $data);
+        }
+
+        return $this->validateToOne($field, $data);
+    }
+
+
+    /**
+     * Validate a to-one relation.
+     *
+     * @param string $field
+     * @param mixed $value
+     * @return bool
+     */
+    protected function validateToOne($field, $value)
+    {
+        if (is_null($value)) {
+            return true;
+        }
+
+        $path = "/data/relationships/{$field}";
+
+        if (!$this->validateIdentifier($value, $path)) {
+            return false;
+        }
+
+        if (!$this->getStore()->exists(new ResourceIdentifier($value))) {
+            $this->resourceDoesNotExist($path);
             return false;
         }
 
@@ -200,171 +339,24 @@ class ResourceValidator extends AbstractValidator
     }
 
     /**
-     * Add a data required error.
+     * Validate a to-many relation.
      *
-     * @return void
+     * @param $field
+     * @param array $value
+     * @return bool
      */
-    protected function dataRequired()
+    protected function validateToMany($field, array $value)
     {
-         $this->errors->addDataError(
-             'Required Member',
-             "Member 'data' is required.",
-             400
-         );
-    }
+        $path = "/data/relationships/{$field}/data";
+        $valid = true;
 
-    /**
-     * Add an object expected error.
-     *
-     * @return void
-     */
-    protected function dataNotObject()
-    {
-        $this->errors->addDataError(
-            'Object Expected',
-            "Member 'data' must be an object.",
-            400
-        );
-    }
+        foreach ($value as $index => $item) {
+            if (!$this->validateIdentifier($item, $path, $index)) {
+                $valid = false;
+            }
+        }
 
-    /**
-     * Add a data.type required error.
-     *
-     * @return void
-     */
-    protected function dataTypeRequired()
-    {
-        $this->errors->addDataTypeError(
-            'Required Member',
-            "Member 'type' is required.",
-            400
-        );
-    }
-
-    /**
-     * Add an error for data.type not being a string.
-     *
-     * @return void
-     */
-    protected function dataTypeNotString()
-    {
-        $this->errors->addDataTypeError(
-            'String Expected',
-            "Member 'type' must be a string.",
-            400
-        );
-    }
-
-    /**
-     * Add an error for data.type being an empty string.
-     *
-     * @return void
-     */
-    protected function dataTypeEmpty()
-    {
-        $this->errors->addDataTypeError(
-            'Value Expected',
-            "Member 'type' must have a value.",
-            400
-        );
-    }
-
-    /**
-     * Add an error when the data.type is not the type expected.
-     *
-     * @return void
-     */
-    protected function addDataTypeNotSupported()
-    {
-        $this->errors->addDataTypeError(
-            'Not Supported',
-            "Resource type '{$this->document->data->type}' is not supported by this endpoint.",
-            409
-        );
-    }
-
-    /**
-     * Add a data.id required error.
-     *
-     * @return void
-     */
-    protected function dataIdRequired()
-    {
-        $this->errors->addDataIdError(
-            'Required Member',
-            "Member 'id' is required.",
-            400
-        );
-    }
-
-    /**
-     * Add an error for data.id not being a string.
-     *
-     * @return void
-     */
-    protected function dataIdNotString()
-    {
-        $this->errors->addDataIdError(
-            'String Expected',
-            "Member 'id' must be a string.",
-            400
-        );
-    }
-
-    /**
-     * Add an error for data.id being an empty string.
-     *
-     * @return void
-     */
-    protected function dataIdEmpty()
-    {
-        $this->errors->addDataIdError(
-            'Value Expected',
-            "Member 'id' must have a value.",
-            400
-        );
-    }
-
-    /**
-     * Add an error for data.id not being the expected id.
-     *
-     * @return void
-     */
-    protected function dataIdNotSupported()
-    {
-        $this->errors->addDataIdError(
-            'Not Supported',
-            "Resource id '{$this->document->data->id}' is not supported by this endpoint.",
-            409
-        );
-    }
-
-    /**
-     * Add an error for data.attributes not being an object.
-     *
-     * @return void
-     */
-    protected function dataAttributesNotObject()
-    {
-        $this->errors->addAttributesError(
-            'Object Expected',
-            "The member 'attributes' is expected to be an object.",
-            400
-        );
-    }
-
-    /**
-     * Add an error for data.relationships not being an object.
-     *
-     * @return void
-     */
-    protected function dataRelationshipsNotObject()
-    {
-        $this->errors->addRelationshipsError(
-            'Object Expected',
-            "The member 'relationships' is expected to be an object",
-            400
-        );
+        return $valid;
     }
 
 }

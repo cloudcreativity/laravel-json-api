@@ -1,6 +1,6 @@
 <?php
 
-namespace CloudCreativity\JsonApi\Validation\Document;
+namespace CloudCreativity\LaravelJsonApi\Validation\Document;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreAwareInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
