@@ -37,8 +37,6 @@ use RuntimeException;
 trait MakesJsonApiRequests
 {
 
-    use MakesHttpRequests;
-
     /**
      * Visit the given URI with a JSON API request.
      *
