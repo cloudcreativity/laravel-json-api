@@ -1,0 +1,88 @@
+<?php
+/**
+ * Copyright 2018 Cloud Creativity Limited
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+namespace CloudCreativity\LaravelJsonApi\Http\Requests;
+
+use CloudCreativity\LaravelJsonApi\Exceptions\DocumentRequiredException;
+use CloudCreativity\LaravelJsonApi\Exceptions\ValidationException;
+use CloudCreativity\LaravelJsonApi\Object\Document;
+
+/**
+ * Class UpdateResource
+ *
+ * @package CloudCreativity\LaravelJsonApi
+ */
+class UpdateResource extends ValidatedRequest
+{
+
+    /**
+     * @inheritDoc
+     */
+    protected function authorize()
+    {
+        if (!$authorizer = $this->getAuthorizer()) {
+            return;
+        }
+
+        $authorizer->update($this->getRecord(), $this->request);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function validateQuery()
+    {
+        if (!$validators = $this->getValidators()) {
+            return;
+        }
+
+        $validators->resourceQueryChecker()->checkQuery($this->getParameters());
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function validateDocument()
+    {
+        if (!$document = $this->decode()) {
+            throw new DocumentRequiredException();
+        }
+
+        /** Check the document is compliant with the JSON API spec. */
+        $spec = $this->factory->resourceDocument(
+            $document,
+            $this->getResourceType(),
+            $this->getResourceId()
+        );
+
+        if ($spec->fails()) {
+            throw new ValidationException($spec->getErrors());
+        }
+
+        /** Check the document is logically correct. */
+        if (!$validators = $this->getValidators()) {
+            return;
+        }
+
+        $validator = $validators->updateResource($this->getResourceId(), $this->getRecord());
+
+        if (!$validator->isValid(new Document($document))) {
+            throw new ValidationException($validator->getErrors());
+        }
+    }
+
+}

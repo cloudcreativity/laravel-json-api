@@ -90,11 +90,7 @@ class ResourceObject implements Arrayable, \IteratorAggregate
         $this->relationships = $relationships;
         $this->meta = $meta;
         $this->links = $links;
-
-        $this->fields = collect($attributes)->merge($this->getRelations())->merge([
-            'type' => $this->type,
-            'id' => $this->id,
-        ])->sortKeys();
+        $this->fields = $this->normalizeFields();
     }
 
     /**
@@ -274,6 +270,23 @@ class ResourceObject implements Arrayable, \IteratorAggregate
             'links' => $this->links,
             'meta' => $this->meta,
         ])->filter()->all();
+    }
+
+    /**
+     * @return Collection
+     */
+    private function normalizeFields()
+    {
+        $fields = collect($this->attributes)->merge($this->getRelations())->merge([
+            'type' => $this->type,
+            'id' => $this->id,
+        ]);
+
+        /** Can use `sortKeys()` on collection when Laravel >= 5.6 */
+        $all = $fields->all();
+        ksort($all);
+
+        return collect($all);
     }
 
 }
