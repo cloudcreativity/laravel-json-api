@@ -19,6 +19,7 @@ namespace CloudCreativity\LaravelJsonApi\Contracts;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\ResourceAdapterInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Auth\AuthorizerInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorProviderInterface;
 use Neomerx\JsonApi\Contracts\Schema\ContainerInterface as BaseContainerInterface;
 
@@ -59,7 +60,7 @@ interface ContainerInterface extends BaseContainerInterface
      * Get a validator provider for a domain record.
      *
      * @param object $record
-     * @return ValidatorProviderInterface|null
+     * @return ValidatorProviderInterface|ValidatorFactoryInterface|null
      *      the validator provider, if there is one.
      */
     public function getValidators($record);
@@ -68,7 +69,7 @@ interface ContainerInterface extends BaseContainerInterface
      * Get a validator provider by domain record type.
      *
      * @param string $type
-     * @return ValidatorProviderInterface|null
+     * @return ValidatorProviderInterface|ValidatorFactoryInterface|null
      *      the validator provider, if there is one.
      */
     public function getValidatorsByType($type);
@@ -77,7 +78,7 @@ interface ContainerInterface extends BaseContainerInterface
      * Get a validator provider by JSON API type.
      *
      * @param $resourceType
-     * @return ValidatorProviderInterface|null
+     * @return ValidatorProviderInterface|ValidatorFactoryInterface|null
      *      the validator provider, if there is one.
      */
     public function getValidatorsByResourceType($resourceType);

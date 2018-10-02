@@ -49,7 +49,7 @@ interface DocumentValidatorInterface
     public function getDocument();
 
     /**
-     * Get the JSON API errors objects.
+     * Get the JSON API error objects.
      *
      * @return ErrorCollection
      */

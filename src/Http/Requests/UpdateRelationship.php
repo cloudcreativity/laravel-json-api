@@ -2,6 +2,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Http\Requests;
 
+use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorProviderInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\DocumentRequiredException;
 use CloudCreativity\LaravelJsonApi\Exceptions\ValidationException;
 use CloudCreativity\LaravelJsonApi\Object\Document;
@@ -34,7 +35,15 @@ class UpdateRelationship extends ValidatedRequest
             return;
         }
 
-        $validators->relationshipQueryChecker()->checkQuery($this->getParameters());
+        /** Pre-1.0 validators */
+        if ($validators instanceof ValidatorProviderInterface) {
+            $validators->relationshipQueryChecker()->checkQuery($this->getEncodingParameters());
+            return;
+        }
+
+        /** 1.0 validators */
+        $validators->modifyRelationshipQueryChecker($this->getQueryParameters())
+            ->checkQuery($this->getEncodingParameters());
     }
 
     /**
@@ -58,6 +67,31 @@ class UpdateRelationship extends ValidatedRequest
             return;
         }
 
+        /** Pre-1.0 validators */
+        if ($validators instanceof ValidatorProviderInterface) {
+            $this->validateDocumentWithProvider($validators, $document);
+            return;
+        }
+
+        /** 1.0 validators */
+        $validator = $validators->modifyRelationship(
+            $this->getRecord(),
+            $this->getRelationshipName(),
+            $this->all()
+        );
+
+        if ($validator->fails()) {
+            throw new ValidationException($validator->getErrors());
+        }
+    }
+
+    /**
+     * @param ValidatorProviderInterface $validators
+     * @param $document
+     * @deprecated 2.0.0
+     */
+    protected function validateDocumentWithProvider(ValidatorProviderInterface $validators, $document)
+    {
         $validator = $validators->modifyRelationship(
             $this->getResourceId(),
             $this->getRelationshipName(),

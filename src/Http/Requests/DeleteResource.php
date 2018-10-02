@@ -17,6 +17,8 @@
 
 namespace CloudCreativity\LaravelJsonApi\Http\Requests;
 
+use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorProviderInterface;
+
 /**
  * Class DeleteResource
  *
@@ -46,15 +48,15 @@ class DeleteResource extends ValidatedRequest
             return;
         }
 
-        $validators->resourceQueryChecker()->checkQuery($this->getParameters());
-    }
+        /** Pre-1.0 validators */
+        if ($validators instanceof ValidatorProviderInterface) {
+            $validators->resourceQueryChecker()->checkQuery($this->getEncodingParameters());
+            return;
+        }
 
-    /**
-     * @inheritDoc
-     */
-    protected function validateDocument()
-    {
-        // no-op
+        /** 1.0 validators */
+        $validators->modifyQueryChecker($this->getQueryParameters())
+            ->checkQuery($this->getEncodingParameters());
     }
 
 }

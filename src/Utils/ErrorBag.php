@@ -20,6 +20,7 @@ namespace CloudCreativity\LaravelJsonApi\Utils;
 
 use Closure;
 use CloudCreativity\LaravelJsonApi\Document\Error;
+use CloudCreativity\LaravelJsonApi\Document\ResourceObject;
 use CloudCreativity\LaravelJsonApi\Exceptions\InvalidArgumentException;
 use Illuminate\Contracts\Support\MessageBag;
 use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
@@ -53,7 +54,7 @@ class ErrorBag extends AbstractErrorBag
     private $dasherize;
 
     /**
-     * @var array|Closure
+     * @var array|Closure|ResourceObject
      */
     private $keyMap;
 
@@ -204,13 +205,13 @@ class ErrorBag extends AbstractErrorBag
     }
 
     /**
-     * @param array|Closure $map
+     * @param array|Closure|ResourceObject $map
      * @return self
      */
     public function withKeyMap($map)
     {
-        if (!is_array($map) && !$map instanceof Closure) {
-            throw new InvalidArgumentException('Expecting an array or closure.');
+        if (!is_array($map) && !$map instanceof Closure && !$map instanceof ResourceObject) {
+            throw new InvalidArgumentException('Expecting an array, closure or resource object.');
         }
 
         $copy = clone $this;
@@ -244,6 +245,10 @@ class ErrorBag extends AbstractErrorBag
      */
     protected function createSourcePointer($key)
     {
+        if ($this->keyMap instanceof ResourceObject) {
+            return $this->keyMap->pointer($key);
+        }
+
         $key = $this->normalizeKey($key, '/');
 
         return $this->sourcePrefix ? sprintf('%s/%s', $this->sourcePrefix, $key) : $key;

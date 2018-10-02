@@ -21,6 +21,7 @@ use CloudCreativity\LaravelJsonApi\Contracts\Adapter\ResourceAdapterInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Auth\AuthorizerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorProviderInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use Illuminate\Contracts\Container\Container as IlluminateContainer;
@@ -362,7 +363,7 @@ class Container implements ContainerInterface
 
     /**
      * @param string $resourceType
-     * @return ValidatorProviderInterface|null
+     * @return ValidatorProviderInterface|ValidatorFactoryInterface|null
      */
     protected function getCreatedValidators($resourceType)
     {
@@ -371,24 +372,26 @@ class Container implements ContainerInterface
 
     /**
      * @param string $resourceType
-     * @param ValidatorProviderInterface|null $validators
+     * @param ValidatorProviderInterface|ValidatorFactoryInterface|null $validators
      * @return void
      */
-    protected function setCreatedValidators($resourceType, ValidatorProviderInterface $validators = null)
+    protected function setCreatedValidators($resourceType, $validators = null)
     {
         $this->createdValidators[$resourceType] = $validators;
     }
 
     /**
      * @param $className
-     * @return ValidatorProviderInterface|null
+     * @return ValidatorProviderInterface|ValidatorFactoryInterface|null
      */
     protected function createValidatorsFromClassName($className)
     {
-        $validators = $this->create($className);
+        if (!$validators = $this->create($className)) {
+            return null;
+        }
 
-        if (!is_null($validators) && !$validators instanceof ValidatorProviderInterface) {
-            throw new RuntimeException("Class [$className] is not a resource validator provider.");
+        if (!$validators instanceof ValidatorProviderInterface && !$validators instanceof ValidatorFactoryInterface) {
+            throw new RuntimeException("Class [$className] is not a resource validator factory.");
         }
 
         return $validators;

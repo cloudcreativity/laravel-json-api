@@ -17,6 +17,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Http\Requests;
 
+use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorProviderInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\DocumentRequiredException;
 use CloudCreativity\LaravelJsonApi\Exceptions\ValidationException;
 use CloudCreativity\LaravelJsonApi\Object\Document;
@@ -50,7 +51,15 @@ class UpdateResource extends ValidatedRequest
             return;
         }
 
-        $validators->resourceQueryChecker()->checkQuery($this->getParameters());
+        /** Pre-1.0 validators */
+        if ($validators instanceof ValidatorProviderInterface) {
+            $validators->resourceQueryChecker()->checkQuery($this->getEncodingParameters());
+            return;
+        }
+
+        /** 1.0 validators */
+        $validators->modifyQueryChecker($this->getQueryParameters())
+            ->checkQuery($this->getEncodingParameters());
     }
 
     /**
@@ -78,6 +87,27 @@ class UpdateResource extends ValidatedRequest
             return;
         }
 
+        /** Pre-1.0 validators */
+        if ($validators instanceof ValidatorProviderInterface) {
+            $this->validateDocumentWithProvider($validators, $document);
+            return;
+        }
+
+        /** 1.0 validators */
+        $validator = $validators->updateResource($this->getRecord(), $this->all());
+
+        if ($validator->fails()) {
+            throw new ValidationException($validator->getErrors());
+        }
+    }
+
+    /**
+     * @param ValidatorProviderInterface $validators
+     * @param $document
+     * @deprecated 2.0.0
+     */
+    protected function validateDocumentWithProvider(ValidatorProviderInterface $validators, $document)
+    {
         $validator = $validators->updateResource($this->getResourceId(), $this->getRecord());
 
         if (!$validator->isValid(new Document($document))) {

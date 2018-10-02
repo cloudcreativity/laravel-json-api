@@ -21,8 +21,10 @@ use CloudCreativity\LaravelJsonApi\Contracts\Auth\AuthorizerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Object\DocumentInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\DocumentValidatorInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorProviderInterface;
+use CloudCreativity\LaravelJsonApi\Encoder\Parameters\EncodingParameters;
 use CloudCreativity\LaravelJsonApi\Exceptions\DocumentRequiredException;
 use CloudCreativity\LaravelJsonApi\Exceptions\ValidationException;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
@@ -74,14 +76,6 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
      * @throws JsonApiException
      */
     abstract protected function validateQuery();
-
-    /**
-     * Validate the JSON API document.
-     *
-     * @return void
-     * @throws JsonApiException
-     */
-    abstract protected function validateDocument();
 
     /**
      * ValidatedRequest constructor.
@@ -191,11 +185,30 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
     }
 
     /**
+     * Get parsed query parameters.
+     *
+     * @return array
+     */
+    public function getQueryParameters()
+    {
+        return EncodingParameters::cast($this->getEncodingParameters())->toArray();
+    }
+
+    /**
      * Get the JSON API encoding parameters.
      *
      * @return EncodingParametersInterface
+     * @deprecated 2.0.0 use `getEncodingParameters`
      */
     public function getParameters()
+    {
+        return $this->getEncodingParameters();
+    }
+
+    /**
+     * @return EncodingParametersInterface
+     */
+    public function getEncodingParameters()
     {
         return $this->jsonApiRequest->getParameters();
     }
@@ -224,6 +237,18 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
     }
 
     /**
+     * Validate the JSON API document.
+     *
+     * @return void
+     * @throws JsonApiException
+     */
+    protected function validateDocument()
+    {
+        // no-op
+    }
+
+
+    /**
      * @return AuthorizerInterface|null
      */
     protected function getAuthorizer()
@@ -234,7 +259,7 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
     /**
      * Get the resource validators.
      *
-     * @return ValidatorProviderInterface|null
+     * @return ValidatorFactoryInterface|ValidatorProviderInterface|null
      */
     protected function getValidators()
     {
@@ -244,7 +269,7 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
     /**
      * Get the inverse resource validators.
      *
-     * @return ValidatorProviderInterface|null
+     * @return ValidatorFactoryInterface|ValidatorProviderInterface|null
      */
     protected function getInverseValidators()
     {

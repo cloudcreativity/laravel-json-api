@@ -17,6 +17,8 @@
 
 namespace CloudCreativity\LaravelJsonApi\Http\Requests;
 
+use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorProviderInterface;
+
 /**
  * Class FetchRelated
  *
@@ -34,7 +36,15 @@ class FetchRelationship extends FetchRelated
             return;
         }
 
-        $validators->relationshipQueryChecker()->checkQuery($this->getParameters());
+        /** Pre-1.0 validators */
+        if ($validators instanceof ValidatorProviderInterface) {
+            $validators->resourceQueryChecker()->checkQuery($this->getEncodingParameters());
+            return;
+        }
+
+        /** 1.0 validators */
+        $validators->fetchRelationshipQueryChecker($this->getQueryParameters())
+            ->checkQuery($this->getEncodingParameters());
     }
 
 }
