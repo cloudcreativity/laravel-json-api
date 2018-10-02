@@ -4,8 +4,12 @@ As we are currently on pre-1.0 releases, when you upgrade you will also need to 
 dependencies need to be upgraded. Use the following command:
 
 ```bash
-$ composer require cloudcreativity/laravel-json-api:^0.12 --update-with-dependencies
+$ composer require cloudcreativity/laravel-json-api:^0.13 --update-with-dependencies
 ```
+
+## Upgrading to 0.13 from 0.12
+
+No changes are required, this release adds support for Laravel 5.7.
 
 ## Upgrading to 0.12 from 0.11
 

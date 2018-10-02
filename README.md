@@ -27,9 +27,10 @@ A demo application is available at [here](https://github.com/cloudcreativity/dem
 
 | Laravel | This Package |
 | --- | --- |
-| 5.4.* | ^0.12 |
-| 5.5.* | ^0.12 |
-| 5.6.* | ^0.12 |
+| 5.4.* | ^0.13 |
+| 5.5.* | ^0.13 |
+| 5.6.* | ^0.13 |
+| 5.7.* | ^0.13 |
 
 Make sure you consult the [Upgrade Guide](http://laravel-json-api.readthedocs.io/en/latest/upgrade/) when upgrading.
 
