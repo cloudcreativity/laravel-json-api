@@ -47,7 +47,7 @@ class UpdateRelationship extends ValidatedRequest
         }
 
         /** Check the document is compliant with the JSON API spec. */
-        $spec = $this->factory->relationshipDocument($document);
+        $spec = $this->factory->createRelationshipDocumentValidator($document);
 
         if ($spec->fails()) {
             throw new ValidationException($spec->getErrors());

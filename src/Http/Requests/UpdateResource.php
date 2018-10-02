@@ -63,7 +63,7 @@ class UpdateResource extends ValidatedRequest
         }
 
         /** Check the document is compliant with the JSON API spec. */
-        $spec = $this->factory->resourceDocument(
+        $spec = $this->factory->createResourceDocumentValidator(
             $document,
             $this->getResourceType(),
             $this->getResourceId()

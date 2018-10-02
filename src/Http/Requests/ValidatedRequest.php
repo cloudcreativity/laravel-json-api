@@ -25,8 +25,8 @@ use CloudCreativity\LaravelJsonApi\Contracts\Validators\DocumentValidatorInterfa
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorProviderInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\DocumentRequiredException;
 use CloudCreativity\LaravelJsonApi\Exceptions\ValidationException;
+use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use CloudCreativity\LaravelJsonApi\Object\Document;
-use CloudCreativity\LaravelJsonApi\Validation\ValidatorFactory;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Validation\ValidatesWhenResolved;
@@ -44,7 +44,7 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
     protected $request;
 
     /**
-     * @var ValidatorFactory
+     * @var Factory
      */
     protected $factory;
 
@@ -88,13 +88,13 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
      *
      * @param Request $httpRequest
      * @param ContainerInterface $container
-     * @param ValidatorFactory $factory
+     * @param Factory $factory
      * @param RequestInterface $jsonApiRequest
      */
     public function __construct(
         Request $httpRequest,
         ContainerInterface $container,
-        ValidatorFactory $factory,
+        Factory $factory,
         RequestInterface $jsonApiRequest
     ) {
         $this->request = $httpRequest;

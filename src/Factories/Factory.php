@@ -31,6 +31,7 @@ use CloudCreativity\LaravelJsonApi\Contracts\Factories\FactoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Repositories\ErrorRepositoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Validation\DocumentValidatorInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\QueryValidatorInterface;
 use CloudCreativity\LaravelJsonApi\Encoder\Encoder;
 use CloudCreativity\LaravelJsonApi\Encoder\Parameters\EncodingParameters;
@@ -46,6 +47,9 @@ use CloudCreativity\LaravelJsonApi\Repositories\ErrorRepository;
 use CloudCreativity\LaravelJsonApi\Resolver\ResolverFactory;
 use CloudCreativity\LaravelJsonApi\Store\Store;
 use CloudCreativity\LaravelJsonApi\Utils\Replacer;
+use CloudCreativity\LaravelJsonApi\Validation\ErrorFactory;
+use CloudCreativity\LaravelJsonApi\Validation\Spec\RelationValidator;
+use CloudCreativity\LaravelJsonApi\Validation\Spec\ResourceValidator;
 use CloudCreativity\LaravelJsonApi\Validators\ValidatorErrorFactory;
 use CloudCreativity\LaravelJsonApi\Validators\ValidatorFactory;
 use Illuminate\Contracts\Container\Container as IlluminateContainer;
@@ -348,6 +352,42 @@ class Factory extends BaseFactory implements FactoryInterface
             $pagingParameters,
             $filteringParameters,
             $unrecognizedParams
+        );
+    }
+
+    /**
+     * Create a validator to check that a resource document complies with the JSON API specification.
+     *
+     * @param object $document
+     * @param string $expectedType
+     *      the expected resource type.
+     * @param string|null $expectedId
+     *      the expected resource id if updating an existing resource.
+     * @return DocumentValidatorInterface
+     */
+    public function createResourceDocumentValidator($document, $expectedType, $expectedId = null)
+    {
+        return new ResourceValidator(
+            $this->container->make(StoreInterface::class),
+            $this->container->make(ErrorFactory::class),
+            $document,
+            $expectedType,
+            $expectedId
+        );
+    }
+
+    /**
+     * Create a validator to check that a relationship document complies with the JSON API specification.
+     *
+     * @param object $document
+     * @return DocumentValidatorInterface
+     */
+    public function createRelationshipDocumentValidator($document)
+    {
+        return new RelationValidator(
+            $this->container->make(StoreInterface::class),
+            $this->container->make(ErrorFactory::class),
+            $document
         );
     }
 

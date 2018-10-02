@@ -48,7 +48,7 @@ class CreateResource extends ValidatedRequest
         }
 
         /** Check the document is compliant with the JSON API spec. */
-        $spec = $this->factory->resourceDocument($document, $this->getResourceType());
+        $spec = $this->factory->createResourceDocumentValidator($document, $this->getResourceType());
 
         if ($spec->fails()) {
             throw new ValidationException($spec->getErrors());
