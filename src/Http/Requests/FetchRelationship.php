@@ -38,7 +38,7 @@ class FetchRelationship extends FetchRelated
 
         /** Pre-1.0 validators */
         if ($validators instanceof ValidatorProviderInterface) {
-            $validators->resourceQueryChecker()->checkQuery($this->getEncodingParameters());
+            $validators->relationshipQueryChecker()->checkQuery($this->getEncodingParameters());
             return;
         }
 

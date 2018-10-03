@@ -35,13 +35,13 @@ class CreateResourceValidator extends AbstractValidator
      * CreateResourceValidator constructor.
      *
      * @param StoreInterface $store
-     * @param ErrorTranslator $errorFactory
+     * @param ErrorTranslator $translator
      * @param object $document
      * @param string $expectedType
      */
     public function __construct(
         StoreInterface $store,
-        ErrorTranslator $errorFactory,
+        ErrorTranslator $translator,
         $document,
         $expectedType
     ) {
@@ -49,7 +49,7 @@ class CreateResourceValidator extends AbstractValidator
             throw new InvalidArgumentException('Expecting type to be a non-empty string.');
         }
 
-        parent::__construct($store, $errorFactory, $document);
+        parent::__construct($store, $translator, $document);
         $this->expectedType = $expectedType;
     }
 

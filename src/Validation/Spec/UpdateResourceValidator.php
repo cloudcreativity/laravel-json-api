@@ -35,14 +35,14 @@ class UpdateResourceValidator extends CreateResourceValidator
      * UpdateResourceValidator constructor.
      *
      * @param StoreInterface $store
-     * @param ErrorTranslator $errorFactory
+     * @param ErrorTranslator $translator
      * @param object $document
      * @param string $expectedType
      * @param string $expectedId
      */
     public function __construct(
         StoreInterface $store,
-        ErrorTranslator $errorFactory,
+        ErrorTranslator $translator,
         $document,
         $expectedType,
         $expectedId
@@ -51,7 +51,7 @@ class UpdateResourceValidator extends CreateResourceValidator
             throw new InvalidArgumentException('Expecting id to be null or a non-empty string.');
         }
 
-        parent::__construct($store, $errorFactory, $document, $expectedType);
+        parent::__construct($store, $translator, $document, $expectedType);
         $this->expectedId = $expectedId;
     }
 

@@ -40,7 +40,7 @@ abstract class AbstractValidator implements DocumentValidatorInterface
     /**
      * @var ErrorTranslator
      */
-    protected $errorFactory;
+    protected $translator;
 
     /**
      * @var ErrorCollection
@@ -61,10 +61,10 @@ abstract class AbstractValidator implements DocumentValidatorInterface
      * AbstractValidator constructor.
      *
      * @param StoreInterface $store
-     * @param ErrorTranslator $factory
+     * @param ErrorTranslator $translator
      * @param $document
      */
-    public function __construct(StoreInterface $store, ErrorTranslator $factory, $document)
+    public function __construct(StoreInterface $store, ErrorTranslator $translator, $document)
     {
         if (!is_object($document)) {
             throw new InvalidArgumentException('Expecting JSON API document to be an object.');
@@ -72,7 +72,7 @@ abstract class AbstractValidator implements DocumentValidatorInterface
 
         $this->store = $store;
         $this->document = $document;
-        $this->errorFactory = $factory;
+        $this->translator = $translator;
         $this->errors = new ErrorCollection();
     }
 
@@ -342,7 +342,7 @@ abstract class AbstractValidator implements DocumentValidatorInterface
      */
     protected function memberRequired($path, $member)
     {
-        $this->errors->add($this->errorFactory->memberRequired($path, $member));
+        $this->errors->add($this->translator->memberRequired($path, $member));
     }
 
     /**
@@ -354,7 +354,7 @@ abstract class AbstractValidator implements DocumentValidatorInterface
      */
     protected function memberNotObject($path, $member)
     {
-        $this->errors->add($this->errorFactory->memberNotObject($path, $member));
+        $this->errors->add($this->translator->memberNotObject($path, $member));
     }
 
     /**
@@ -366,7 +366,7 @@ abstract class AbstractValidator implements DocumentValidatorInterface
      */
     protected function memberNotString($path, $member)
     {
-        $this->errors->add($this->errorFactory->memberNotString($path, $member));
+        $this->errors->add($this->translator->memberNotString($path, $member));
     }
 
     /**
@@ -378,7 +378,7 @@ abstract class AbstractValidator implements DocumentValidatorInterface
      */
     protected function memberEmpty($path, $member)
     {
-        $this->errors->add($this->errorFactory->memberEmpty($path, $member));
+        $this->errors->add($this->translator->memberEmpty($path, $member));
     }
 
     /**
@@ -390,7 +390,7 @@ abstract class AbstractValidator implements DocumentValidatorInterface
      */
     protected function resourceTypeNotSupported($actual, $path = '/data')
     {
-        $this->errors->add($this->errorFactory->resourceTypeNotSupported($actual, $path));
+        $this->errors->add($this->translator->resourceTypeNotSupported($actual, $path));
     }
 
     /**
@@ -402,7 +402,7 @@ abstract class AbstractValidator implements DocumentValidatorInterface
      */
     protected function resourceTypeNotRecognised($actual, $path = '/data')
     {
-        $this->errors->add($this->errorFactory->resourceTypeNotRecognised($actual, $path));
+        $this->errors->add($this->translator->resourceTypeNotRecognised($actual, $path));
     }
 
     /**
@@ -414,7 +414,7 @@ abstract class AbstractValidator implements DocumentValidatorInterface
      */
     protected function resourceIdNotSupported($actual, $path = '/data')
     {
-        $this->errors->add($this->errorFactory->resourceIdNotSupported($actual, $path));
+        $this->errors->add($this->translator->resourceIdNotSupported($actual, $path));
     }
 
     /**
@@ -426,7 +426,7 @@ abstract class AbstractValidator implements DocumentValidatorInterface
      */
     protected function resourceExists($type, $id, $path = '/data')
     {
-        $this->errors->add($this->errorFactory->resourceExists($type, $id, $path));
+        $this->errors->add($this->translator->resourceExists($type, $id, $path));
     }
 
     /**
@@ -437,7 +437,7 @@ abstract class AbstractValidator implements DocumentValidatorInterface
      */
     protected function resourceDoesNotExist($path)
     {
-        $this->errors->add($this->errorFactory->resourceDoesNotExist($path));
+        $this->errors->add($this->translator->resourceDoesNotExist($path));
     }
 
 }

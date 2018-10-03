@@ -95,10 +95,20 @@ interface ValidatorFactoryInterface
     public function modifyQueryChecker(array $params);
 
     /**
+     * Get a query checker for the resource when it appears as a related resource.
+     *
+     * E.g. a `GET /posts/1/comments` request, this method will be
+     * invoked on the validators for the `comments` resource.
+     *
+     * @param array $params
+     * @return QueryCheckerInterface
+     */
+    public function fetchRelatedQueryChecker(array $params);
+
+    /**
      * Get a query checker for the resource when it appears in a relationship.
      *
-     * E.g. a `GET /posts/1/comments` request or a
-     * `GET /posts/1/relationships/comments` request, this method will be
+     * E.g. a `GET /posts/1/relationships/comments` request, this method will be
      * invoked on the validators for the `comments` resource.
      *
      * @param array $params

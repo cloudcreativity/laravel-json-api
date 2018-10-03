@@ -7,6 +7,7 @@ use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorFactoryInterfac
 use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorInterface;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use Illuminate\Support\Collection;
+use Neomerx\JsonApi\Contracts\Http\Query\QueryCheckerInterface;
 
 /**
  * Class AbstractValidators
@@ -250,7 +251,7 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
     /**
      * @inheritDoc
      */
-    public function fetchRelationshipQueryChecker(array $params)
+    public function fetchRelatedQueryChecker(array $params)
     {
         return $this->fetchManyQueryChecker($params);
     }
@@ -258,9 +259,28 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
     /**
      * @inheritDoc
      */
+    public function fetchRelationshipQueryChecker(array $params)
+    {
+        $validator = $this->queryValidator($params);
+
+        /** As we are only getting resource identifiers, include and fieldsets are not supported. */
+        return $this->factory->createValidationQueryChecker(
+            $validator,
+            $this->allowUnrecognizedParameters(),
+            [],
+            [],
+            $this->allowedSortParameters(),
+            $this->allowedPagingParameters(),
+            $this->allowedFilteringParameters()
+        );
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function modifyRelationshipQueryChecker(array $params)
     {
-        return $this->modifyQueryChecker($params);
+        return $this->fetchRelationshipQueryChecker($params);
     }
 
     /**
