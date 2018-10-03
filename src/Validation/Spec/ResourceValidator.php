@@ -19,7 +19,7 @@ namespace CloudCreativity\LaravelJsonApi\Validation\Spec;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\InvalidArgumentException;
-use CloudCreativity\LaravelJsonApi\Validation\ErrorFactory;
+use CloudCreativity\LaravelJsonApi\Validation\ErrorTranslator;
 
 class ResourceValidator extends AbstractValidator
 {
@@ -42,14 +42,14 @@ class ResourceValidator extends AbstractValidator
      * ResourceValidator constructor.
      *
      * @param StoreInterface $store
-     * @param ErrorFactory $errorFactory
+     * @param ErrorTranslator $errorFactory
      * @param object $document
      * @param string $expectedType
      * @param string|null $expectedId
      */
     public function __construct(
         StoreInterface $store,
-        ErrorFactory $errorFactory,
+        ErrorTranslator $errorFactory,
         $document,
         $expectedType,
         $expectedId = null

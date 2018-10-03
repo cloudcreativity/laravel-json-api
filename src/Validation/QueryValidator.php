@@ -2,38 +2,20 @@
 
 namespace CloudCreativity\LaravelJsonApi\Validation;
 
-use CloudCreativity\LaravelJsonApi\Utils\ErrorBag;
-use Illuminate\Contracts\Validation\Validator as ValidatorContract;
-use Illuminate\Http\Response;
-use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
-use Neomerx\JsonApi\Document\Error;
-
-class QueryValidator extends Validator
+/**
+ * Class QueryValidator
+ *
+ * @package CloudCreativity\LaravelJsonApi
+ */
+class QueryValidator extends AbstractValidator
 {
 
     /**
-     * @var Error
+     * @inheritDoc
      */
-    private $prototype;
-
-    /**
-     * QueryValidator constructor.
-     *
-     * @param ValidatorContract $validator
-     * @param ErrorInterface|null $prototype
-     */
-    public function __construct(ValidatorContract $validator, ErrorInterface $prototype = null)
+    protected function createError($key, $detail)
     {
-        parent::__construct($validator);
-        $this->prototype = $prototype ?: new Error(null, null, Response::HTTP_BAD_REQUEST);
+        return $this->errors->invalidQueryParameter($key, $detail);
     }
 
-    /**
-     * @return ErrorBag
-     */
-    public function getErrorBag()
-    {
-        return ErrorBag::create($this->getMessageBag())
-            ->withParameters();
-    }
 }

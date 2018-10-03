@@ -3,25 +3,45 @@
 namespace CloudCreativity\LaravelJsonApi\Validation;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorInterface;
-use CloudCreativity\LaravelJsonApi\Utils\ErrorBag;
 use Illuminate\Contracts\Validation\Validator as ValidatorContract;
+use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
+use Neomerx\JsonApi\Exceptions\ErrorCollection;
 
-class Validator implements ValidatorInterface
+/**
+ * Class AbstractValidator
+ *
+ * @package CloudCreativity\LaravelJsonApi
+ */
+abstract class AbstractValidator implements ValidatorInterface
 {
 
     /**
      * @var ValidatorContract
      */
-    private $validator;
+    protected $validator;
+
+    /**
+     * @var ErrorTranslator
+     */
+    protected $errors;
+
+    /**
+     * @param $key
+     * @param $detail
+     * @return ErrorInterface
+     */
+    abstract protected function createError($key, $detail);
 
     /**
      * Validator constructor.
      *
      * @param ValidatorContract $validator
+     * @param ErrorTranslator $errors
      */
-    public function __construct(ValidatorContract $validator)
+    public function __construct(ValidatorContract $validator, ErrorTranslator $errors)
     {
         $this->validator = $validator;
+        $this->errors = $errors;
     }
 
     /**
@@ -81,19 +101,19 @@ class Validator implements ValidatorInterface
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function getErrors()
     {
-        return $this->getErrorBag()->getErrors();
-    }
+        $errors = new ErrorCollection();
 
-    /**
-     * @return ErrorBag
-     */
-    public function getErrorBag()
-    {
-        return ErrorBag::create($this->getMessageBag());
+        foreach ($this->getMessageBag()->toArray() as $key => $messages) {
+            foreach ($messages as $detail) {
+                $errors->add($this->createError($key, $detail));
+            }
+        }
+
+        return $errors;
     }
 
 }

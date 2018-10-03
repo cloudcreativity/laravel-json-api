@@ -21,7 +21,7 @@ use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validation\DocumentValidatorInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\InvalidArgumentException;
 use CloudCreativity\LaravelJsonApi\Object\ResourceIdentifier;
-use CloudCreativity\LaravelJsonApi\Validation\ErrorFactory;
+use CloudCreativity\LaravelJsonApi\Validation\ErrorTranslator;
 use Neomerx\JsonApi\Exceptions\ErrorCollection;
 
 abstract class AbstractValidator implements DocumentValidatorInterface
@@ -38,7 +38,7 @@ abstract class AbstractValidator implements DocumentValidatorInterface
     protected $store;
 
     /**
-     * @var ErrorFactory
+     * @var ErrorTranslator
      */
     protected $errorFactory;
 
@@ -61,10 +61,10 @@ abstract class AbstractValidator implements DocumentValidatorInterface
      * AbstractValidator constructor.
      *
      * @param StoreInterface $store
-     * @param ErrorFactory $factory
+     * @param ErrorTranslator $factory
      * @param $document
      */
-    public function __construct(StoreInterface $store, ErrorFactory $factory, $document)
+    public function __construct(StoreInterface $store, ErrorTranslator $factory, $document)
     {
         if (!is_object($document)) {
             throw new InvalidArgumentException('Expecting JSON API document to be an object.');

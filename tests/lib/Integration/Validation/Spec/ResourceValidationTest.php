@@ -39,7 +39,7 @@ class ResourceValidationTest extends TestCase
                 [
                     'title' => 'Required Member',
                     'detail' => "The member 'data' is required.",
-                    'status' => 400,
+                    'status' => '400',
                     'source' => ['pointer' => '/'],
                 ],
             ],
@@ -48,7 +48,7 @@ class ResourceValidationTest extends TestCase
                 [
                     'title' => 'Object Expected',
                     'detail' => "The member 'data' must be an object.",
-                    'status' => 400,
+                    'status' => '400',
                     'source' => ['pointer' => '/data'],
                 ],
             ],
@@ -61,7 +61,7 @@ class ResourceValidationTest extends TestCase
                 [
                     'title' => 'Required Member',
                     'detail' => "The member 'type' is required.",
-                    'status' => 400,
+                    'status' => '400',
                     'source' => ['pointer' => '/data'],
                 ],
             ],
@@ -75,7 +75,7 @@ class ResourceValidationTest extends TestCase
                 [
                     'title' => 'String Expected',
                     'detail' => "The member 'type' must be a string.",
-                    'status' => 400,
+                    'status' => '400',
                     'source' => ['pointer' => '/data/type'],
                 ],
             ],
@@ -89,7 +89,7 @@ class ResourceValidationTest extends TestCase
                 [
                     'title' => 'Value Expected',
                     'detail' => "The member 'type' cannot be empty.",
-                    'status' => 400,
+                    'status' => '400',
                     'source' => ['pointer' => '/data/type'],
                 ],
             ],
@@ -103,7 +103,7 @@ class ResourceValidationTest extends TestCase
                 [
                     'title' => 'Not Supported',
                     'detail' => "Resource type 'users' is not supported by this endpoint.",
-                    'status' => 409,
+                    'status' => '409',
                     'source' => ['pointer' => '/data/type'],
                 ],
             ],
@@ -117,7 +117,7 @@ class ResourceValidationTest extends TestCase
                 [
                     'title' => 'Object Expected',
                     'detail' => "The member 'attributes' must be an object.",
-                    'status' => 400,
+                    'status' => '400',
                     'source' => ['pointer' => '/data/attributes'],
                 ],
             ],
@@ -136,7 +136,7 @@ class ResourceValidationTest extends TestCase
                 [
                     'title' => 'Object Expected',
                     'detail' => "The member 'relationships' must be an object.",
-                    'status' => 400,
+                    'status' => '400',
                     'source' => ['pointer' => '/data/relationships'],
                 ],
             ],
@@ -157,7 +157,7 @@ class ResourceValidationTest extends TestCase
                 [
                     'title' => 'Object Expected',
                     'detail' => "The member 'author' must be an object.",
-                    'status' => 400,
+                    'status' => '400',
                     'source' => ['pointer' => '/data/relationships/author'],
                 ],
             ],
@@ -180,7 +180,7 @@ class ResourceValidationTest extends TestCase
                 [
                     'title' => 'Required Member',
                     'detail' => "The member 'data' is required.",
-                    'status' => 400,
+                    'status' => '400',
                     'source' => ['pointer' => '/data/relationships/author'],
                 ],
             ],
@@ -203,7 +203,7 @@ class ResourceValidationTest extends TestCase
                 [
                     'title' => 'Object Expected',
                     'detail' => "The member 'data' must be an object.",
-                    'status' => 400,
+                    'status' => '400',
                     'source' => ['pointer' => '/data/relationships/author/data'],
                 ],
             ],
@@ -229,7 +229,7 @@ class ResourceValidationTest extends TestCase
                 [
                     'title' => 'Invalid Relationship',
                     'detail' => 'The related resource does not exist.',
-                    'status' => 404,
+                    'status' => '404',
                     'source' => ['pointer' => '/data/relationships/author'],
                 ],
             ],
@@ -254,7 +254,7 @@ class ResourceValidationTest extends TestCase
                 [
                     'title' => 'Object Expected',
                     'detail' => "The member '0' must be an object.",
-                    'status' => 400,
+                    'status' => '400',
                     'source' => ['pointer' => '/data/relationships/tags/data'],
                 ],
             ],
@@ -281,7 +281,7 @@ class ResourceValidationTest extends TestCase
                 [
                     'title' => 'Required Member',
                     'detail' => "The member 'type' is required.",
-                    'status' => 400,
+                    'status' => '400',
                     'source' => ['pointer' => '/data/relationships/tags/data/0'],
                 ],
             ],
@@ -304,7 +304,7 @@ class ResourceValidationTest extends TestCase
                 [
                     'title' => 'Required Member',
                     'detail' => "The member 'id' is required.",
-                    'status' => 400,
+                    'status' => '400',
                     'source' => ['pointer' => '/data'],
                 ],
             ],
@@ -319,7 +319,7 @@ class ResourceValidationTest extends TestCase
                 [
                     'title' => 'String Expected',
                     'detail' => "The member 'id' must be a string.",
-                    'status' => 400,
+                    'status' => '400',
                     'source' => ['pointer' => '/data/id'],
                 ],
             ],
@@ -334,7 +334,7 @@ class ResourceValidationTest extends TestCase
                 [
                     'title' => 'String Expected',
                     'detail' => "The member 'id' must be a string.",
-                    'status' => 400,
+                    'status' => '400',
                     'source' => ['pointer' => '/data/id'],
                 ],
             ],
@@ -349,7 +349,7 @@ class ResourceValidationTest extends TestCase
                 [
                     'title' => 'Value Expected',
                     'detail' => "The member 'id' cannot be empty.",
-                    'status' => 400,
+                    'status' => '400',
                     'source' => ['pointer' => '/data/id'],
                 ],
             ],
@@ -364,7 +364,7 @@ class ResourceValidationTest extends TestCase
                 [
                     'title' => 'Not Supported',
                     'detail' => "Resource id '10' is not supported by this endpoint.",
-                    'status' => 409,
+                    'status' => '409',
                     'source' => ['pointer' => '/data/id'],
                 ],
             ],
@@ -379,8 +379,8 @@ class ResourceValidationTest extends TestCase
     public function testPost($data, array $error)
     {
         $this->doInvalidRequest('/api/v1/posts', $data)
-            ->assertStatus($error['status'])
-            ->assertJson(['errors' => [$error]]);
+            ->assertStatus((int) $error['status'])
+            ->assertExactJson(['errors' => [$error]]);
     }
 
     /**
@@ -397,8 +397,8 @@ class ResourceValidationTest extends TestCase
         }
 
         $this->doInvalidRequest("/api/v1/posts/{$post->getKey()}", $data, 'PATCH')
-            ->assertStatus($error['status'])
-            ->assertJson(['errors' => [$error]]);
+            ->assertStatus((int) $error['status'])
+            ->assertExactJson(['errors' => [$error]]);
     }
 
     /**

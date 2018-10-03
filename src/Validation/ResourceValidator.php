@@ -3,13 +3,9 @@
 namespace CloudCreativity\LaravelJsonApi\Validation;
 
 use CloudCreativity\LaravelJsonApi\Document\ResourceObject;
-use CloudCreativity\LaravelJsonApi\Utils\ErrorBag;
-use Illuminate\Http\Response;
-use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
-use Neomerx\JsonApi\Document\Error;
 use Illuminate\Contracts\Validation\Validator as ValidatorContract;
 
-class ResourceValidator extends Validator
+class ResourceValidator extends AbstractValidator
 {
 
     /**
@@ -18,34 +14,30 @@ class ResourceValidator extends Validator
     protected $resource;
 
     /**
-     * @var ErrorInterface
-     */
-    protected $prototype;
-
-    /**
      * ResourceValidator constructor.
      *
      * @param ValidatorContract $validator
+     * @param ErrorTranslator $errors
      * @param ResourceObject $resource
-     * @param ErrorInterface|null $prototype
      */
     public function __construct(
         ValidatorContract $validator,
-        ResourceObject $resource,
-        ErrorInterface $prototype = null
+        ErrorTranslator $errors,
+        ResourceObject $resource
     ) {
-        parent::__construct($validator);
+        parent::__construct($validator, $errors);
         $this->resource = $resource;
-        $this->prototype = $prototype ?: new Error(null, null, Response::HTTP_UNPROCESSABLE_ENTITY);
     }
 
     /**
      * @inheritDoc
      */
-    public function getErrorBag()
+    protected function createError($key, $detail)
     {
-        return ErrorBag::create($this->getMessageBag(), $this->prototype)
-            ->withKeyMap($this->resource);
+        return $this->errors->invalidResource(
+            $this->resource->pointer($key),
+            $detail
+        );
     }
 
 }

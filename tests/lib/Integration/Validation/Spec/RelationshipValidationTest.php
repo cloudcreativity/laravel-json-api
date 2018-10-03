@@ -38,7 +38,7 @@ class RelationshipValidationTest extends TestCase
                 [
                     'title' => 'Required Member',
                     'detail' => "The member 'data' is required.",
-                    'status' => 400,
+                    'status' => '400',
                     'source' => ['pointer' => '/'],
                 ],
             ],
@@ -47,7 +47,7 @@ class RelationshipValidationTest extends TestCase
                 [
                     'title' => 'Object Expected',
                     'detail' => "The member 'data' must be an object.",
-                    'status' => 400,
+                    'status' => '400',
                     'source' => ['pointer' => '/data'],
                 ],
             ],
@@ -60,7 +60,7 @@ class RelationshipValidationTest extends TestCase
                 [
                     'title' => 'Required Member',
                     'detail' => "The member 'type' is required.",
-                    'status' => 400,
+                    'status' => '400',
                     'source' => ['pointer' => '/data'],
                 ],
             ],
@@ -74,7 +74,7 @@ class RelationshipValidationTest extends TestCase
                 [
                     'title' => 'String Expected',
                     'detail' => "The member 'type' must be a string.",
-                    'status' => 400,
+                    'status' => '400',
                     'source' => ['pointer' => '/data/type'],
                 ],
             ],
@@ -88,7 +88,7 @@ class RelationshipValidationTest extends TestCase
                 [
                     'title' => 'Value Expected',
                     'detail' => "The member 'type' cannot be empty.",
-                    'status' => 400,
+                    'status' => '400',
                     'source' => ['pointer' => '/data/type'],
                 ],
             ],
@@ -102,7 +102,7 @@ class RelationshipValidationTest extends TestCase
                 [
                     'title' => 'Not Supported',
                     'detail' => "Resource type 'foobar' is not recognised.",
-                    'status' => 400,
+                    'status' => '400',
                     'source' => ['pointer' => '/data/type'],
                 ],
             ],
@@ -115,7 +115,7 @@ class RelationshipValidationTest extends TestCase
                 [
                     'title' => 'Required Member',
                     'detail' => "The member 'id' is required.",
-                    'status' => 400,
+                    'status' => '400',
                     'source' => ['pointer' => '/data'],
                 ],
             ],
@@ -129,7 +129,7 @@ class RelationshipValidationTest extends TestCase
                 [
                     'title' => 'String Expected',
                     'detail' => "The member 'id' must be a string.",
-                    'status' => 400,
+                    'status' => '400',
                     'source' => ['pointer' => '/data/id'],
                 ],
             ],
@@ -143,7 +143,7 @@ class RelationshipValidationTest extends TestCase
                 [
                     'title' => 'String Expected',
                     'detail' => "The member 'id' must be a string.",
-                    'status' => 400,
+                    'status' => '400',
                     'source' => ['pointer' => '/data/id'],
                 ],
             ],
@@ -157,7 +157,7 @@ class RelationshipValidationTest extends TestCase
                 [
                     'title' => 'Value Expected',
                     'detail' => "The member 'id' cannot be empty.",
-                    'status' => 400,
+                    'status' => '400',
                     'source' => ['pointer' => '/data/id'],
                 ],
             ],
@@ -171,7 +171,7 @@ class RelationshipValidationTest extends TestCase
                 [
                     'title' => 'Invalid Relationship',
                     'detail' => 'The related resource does not exist.',
-                    'status' => 404,
+                    'status' => '404',
                     'source' => ['pointer' => '/data'],
                 ],
             ],
@@ -189,7 +189,7 @@ class RelationshipValidationTest extends TestCase
                 [
                     'title' => 'Required Member',
                     'detail' => "The member 'data' is required.",
-                    'status' => 400,
+                    'status' => '400',
                     'source' => ['pointer' => '/'],
                 ],
             ],
@@ -202,7 +202,7 @@ class RelationshipValidationTest extends TestCase
                 [
                     'title' => 'Required Member',
                     'detail' => "The member 'type' is required.",
-                    'status' => 400,
+                    'status' => '400',
                     'source' => ['pointer' => '/data/0'],
                 ],
             ],
@@ -215,7 +215,7 @@ class RelationshipValidationTest extends TestCase
                 [
                     'title' => 'String Expected',
                     'detail' => "The member 'type' must be a string.",
-                    'status' => 400,
+                    'status' => '400',
                     'source' => ['pointer' => '/data/0/type'],
                 ],
             ],
@@ -228,7 +228,7 @@ class RelationshipValidationTest extends TestCase
                 [
                     'title' => 'Value Expected',
                     'detail' => "The member 'type' cannot be empty.",
-                    'status' => 400,
+                    'status' => '400',
                     'source' => ['pointer' => '/data/0/type'],
                 ],
             ],
@@ -241,7 +241,7 @@ class RelationshipValidationTest extends TestCase
                 [
                     'title' => 'Not Supported',
                     'detail' => "Resource type 'foobar' is not recognised.",
-                    'status' => 400,
+                    'status' => '400',
                     'source' => ['pointer' => '/data/0/type'],
                 ],
             ],
@@ -254,7 +254,7 @@ class RelationshipValidationTest extends TestCase
                 [
                     'title' => 'Required Member',
                     'detail' => "The member 'id' is required.",
-                    'status' => 400,
+                    'status' => '400',
                     'source' => ['pointer' => '/data/0'],
                 ],
             ],
@@ -267,7 +267,7 @@ class RelationshipValidationTest extends TestCase
                 [
                     'title' => 'String Expected',
                     'detail' => "The member 'id' must be a string.",
-                    'status' => 400,
+                    'status' => '400',
                     'source' => ['pointer' => '/data/0/id'],
                 ],
             ],
@@ -280,7 +280,7 @@ class RelationshipValidationTest extends TestCase
                 [
                     'title' => 'String Expected',
                     'detail' => "The member 'id' must be a string.",
-                    'status' => 400,
+                    'status' => '400',
                     'source' => ['pointer' => '/data/0/id'],
                 ],
             ],
@@ -293,7 +293,7 @@ class RelationshipValidationTest extends TestCase
                 [
                     'title' => 'Value Expected',
                     'detail' => "The member 'id' cannot be empty.",
-                    'status' => 400,
+                    'status' => '400',
                     'source' => ['pointer' => '/data/0/id'],
                 ],
             ],
@@ -306,7 +306,7 @@ class RelationshipValidationTest extends TestCase
                 [
                     'title' => 'Invalid Relationship',
                     'detail' => 'The related resource does not exist.',
-                    'status' => 404,
+                    'status' => '404',
                     'source' => ['pointer' => '/data/0'],
                 ],
             ],
@@ -323,10 +323,8 @@ class RelationshipValidationTest extends TestCase
         $post = factory(Post::class)->create();
 
         $this->doInvalidRequest("/api/v1/posts/{$post->getKey()}/relationships/author", $data, 'PATCH')
-            ->assertStatus($error['status'])
-            ->assertJson([
-                'errors' => [$error],
-            ]);
+            ->assertStatus((int) $error['status'])
+            ->assertExactJson(['errors' => [$error]]);
     }
 
     /**
@@ -339,9 +337,7 @@ class RelationshipValidationTest extends TestCase
         $post = factory(Post::class)->create();
 
         $this->doInvalidRequest("/api/v1/posts/{$post->getKey()}/relationships/tags", $data, 'PATCH')
-            ->assertStatus($error['status'])
-            ->assertJson([
-                'errors' => [$error],
-            ]);
+            ->assertStatus((int) $error['status'])
+            ->assertExactJson(['errors' => [$error]]);
     }
 }

@@ -50,11 +50,12 @@ use CloudCreativity\LaravelJsonApi\Resolver\ResolverFactory;
 use CloudCreativity\LaravelJsonApi\Store\Store;
 use CloudCreativity\LaravelJsonApi\Utils\Replacer;
 use CloudCreativity\LaravelJsonApi\Validation;
-use CloudCreativity\LaravelJsonApi\Validation\ErrorFactory;
+use CloudCreativity\LaravelJsonApi\Validation\ErrorTranslator;
 use CloudCreativity\LaravelJsonApi\Validators\ValidatorErrorFactory;
 use CloudCreativity\LaravelJsonApi\Validators\ValidatorFactory;
 use Illuminate\Contracts\Container\Container as IlluminateContainer;
 use Illuminate\Contracts\Routing\UrlGenerator as IlluminateUrlGenerator;
+use Illuminate\Contracts\Translation\Translator;
 use Illuminate\Contracts\Validation\Factory as ValidatorFactoryContract;
 use Illuminate\Contracts\Validation\Validator;
 use Neomerx\JsonApi\Contracts\Codec\CodecMatcherInterface;
@@ -373,7 +374,7 @@ class Factory extends BaseFactory implements FactoryInterface
     {
         return new Validation\Spec\ResourceValidator(
             $this->container->make(StoreInterface::class),
-            $this->container->make(ErrorFactory::class),
+            $this->createErrorFactory(),
             $document,
             $expectedType,
             $expectedId
@@ -390,28 +391,20 @@ class Factory extends BaseFactory implements FactoryInterface
     {
         return new Validation\Spec\RelationValidator(
             $this->container->make(StoreInterface::class),
-            $this->container->make(ErrorFactory::class),
+            $this->createErrorFactory(),
             $document
         );
     }
 
     /**
-     * Create a validator.
+     * Create an error factory.
      *
-     * @param array $data
-     * @param array $rules
-     * @param array $messages
-     * @param array $customAttributes
-     * @return ValidatorInterface
+     * @return ErrorTranslator
      */
-    public function createValidator(
-        array $data,
-        array $rules,
-        array $messages = [],
-        array $customAttributes = []
-    ) {
-        return new Validation\Validator(
-            $this->makeValidator($data, $rules, $messages, $customAttributes)
+    public function createErrorFactory()
+    {
+        return new ErrorTranslator(
+            $this->container->make(Translator::class)
         );
     }
 
@@ -434,6 +427,7 @@ class Factory extends BaseFactory implements FactoryInterface
 
         return new Validation\ResourceValidator(
             $this->makeValidator($resource->all(), $rules, $messages, $customAttributes),
+            $this->createErrorFactory(),
             $resource
         );
     }
@@ -454,7 +448,8 @@ class Factory extends BaseFactory implements FactoryInterface
         array $customAttributes = []
     ) {
         return new Validation\QueryValidator(
-            $this->makeValidator($data, $rules, $messages, $customAttributes)
+            $this->makeValidator($data, $rules, $messages, $customAttributes),
+            $this->createErrorFactory()
         );
     }
 
