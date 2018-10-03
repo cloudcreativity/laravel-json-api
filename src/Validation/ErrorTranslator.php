@@ -189,6 +189,29 @@ class ErrorTranslator
     }
 
     /**
+     * Create an error for a resource already existing.
+     *
+     * @param string $type
+     *      the resource type
+     * @param string $id
+     *      the resource id
+     * @param string $path
+     * @return Error
+     */
+    public function resourceExists($type, $id, $path = '/data')
+    {
+        return new Error(
+            null,
+            null,
+            Response::HTTP_CONFLICT,
+            $this->trans('resource_exists', 'code'),
+            $this->trans('resource_exists', 'title'),
+            $this->trans('resource_exists', 'detail', compact('type', 'id')),
+            $this->pointer($path)
+        );
+    }
+
+    /**
      * Create an error for a resource identifier that does not exist.
      *
      * @param string $path

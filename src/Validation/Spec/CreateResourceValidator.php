@@ -21,7 +21,7 @@ use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\InvalidArgumentException;
 use CloudCreativity\LaravelJsonApi\Validation\ErrorTranslator;
 
-class ResourceValidator extends AbstractValidator
+class CreateResourceValidator extends AbstractValidator
 {
 
     /**
@@ -32,55 +32,61 @@ class ResourceValidator extends AbstractValidator
     private $expectedType;
 
     /**
-     * The expected resource ID.
-     *
-     * @var string|null
-     */
-    private $expectedId;
-
-    /**
-     * ResourceValidator constructor.
+     * CreateResourceValidator constructor.
      *
      * @param StoreInterface $store
      * @param ErrorTranslator $errorFactory
      * @param object $document
      * @param string $expectedType
-     * @param string|null $expectedId
      */
     public function __construct(
         StoreInterface $store,
         ErrorTranslator $errorFactory,
         $document,
-        $expectedType,
-        $expectedId = null
+        $expectedType
     ) {
         if (!is_string($expectedType) || empty($expectedType)) {
             throw new InvalidArgumentException('Expecting type to be a non-empty string.');
         }
 
-        if (!is_null($expectedId) && (!is_string($expectedId) || empty($expectedId))) {
-            throw new InvalidArgumentException('Expecting id to be null or a non-empty string.');
-        }
-
         parent::__construct($store, $errorFactory, $document);
         $this->expectedType = $expectedType;
-        $this->expectedId = $expectedId;
-    }
-
-    /**
-     * Is a resource ID expected in the document?
-     *
-     * @return bool
-     */
-    protected function expectsId()
-    {
-        return !is_null($this->expectedId);
     }
 
     /**
      * @inheritDoc
      */
     protected function validate()
+    {
+        /** If the data is not valid, we cannot validate the resource. */
+        if (!$this->validateData()) {
+            return false;
+        }
+
+        /** Validate the resource... */
+        $valid = true;
+
+        if (!$this->validateTypeAndId()) {
+            $valid = false;
+        }
+
+        if ($this->dataHas('attributes') && !$this->validateAttributes()) {
+            $valid = false;
+        }
+
+        if ($this->dataHas('relationships') && !$this->validateRelationships()) {
+            $valid = false;
+        }
+
+        return $valid;
+    }
+
+    /**
+     * Validate that the top-level `data` member is acceptable.
+     *
+     * @return bool
+     */
+    protected function validateData()
     {
         if (!property_exists($this->document, 'data')) {
             $this->memberRequired('/', 'data');
@@ -94,45 +100,29 @@ class ResourceValidator extends AbstractValidator
             return false;
         }
 
-        return $this->validateResourceObject();
+        return true;
     }
 
     /**
-     * Validate the resource object.
+     * Validate the resource type and id.
      *
      * @return bool
      */
-    protected function validateResourceObject()
+    protected function validateTypeAndId()
     {
-        $resource = $this->document->data;
-        $valid = true;
-        $idExists = property_exists($resource, 'id');
-
-        if (!property_exists($resource, 'type')) {
-            $this->memberRequired('/data', 'type');
-            $valid = false;
-        } elseif (!$this->validateType()) {
-            $valid = false;
+        if (!($this->validateType() && $this->validateId())) {
+            return false;
         }
 
-        if ($this->expectsId() && !$idExists) {
-            $this->memberRequired('/data', 'id');
-            $valid = false;
+        $type = $this->dataGet('type');
+        $id = $this->dataGet('id');
+
+        if ($id && !$this->isNotFound($type, $id)) {
+            $this->resourceExists($type, $id);
+            return false;
         }
 
-        if ($idExists && !$this->validateId()) {
-            $valid = false;
-        }
-
-        if (property_exists($resource, 'attributes') && !$this->validateAttributes()) {
-            $valid = false;
-        }
-
-        if (property_exists($resource, 'relationships') && !$this->validateRelationships()) {
-            $valid = false;
-        }
-
-        return $valid;
+        return true;
     }
 
     /**
@@ -142,7 +132,12 @@ class ResourceValidator extends AbstractValidator
      */
     protected function validateType()
     {
-        $value = $this->document->data->type;
+        if (!$this->dataHas('type')) {
+            $this->memberRequired('/data', 'type');
+            return false;
+        }
+
+        $value = $this->dataGet('type');
 
         if (!$this->validateTypeMember($value, '/data')) {
             return false;
@@ -163,18 +158,11 @@ class ResourceValidator extends AbstractValidator
      */
     protected function validateId()
     {
-        $value = $this->document->data->id;
-
-        if (!$this->validateIdMember($value, '/data')) {
-            return false;
+        if (!$this->dataHas('id')) {
+            return true;
         }
 
-        if ($this->expectedId && $this->expectedId !== $value) {
-            $this->resourceIdNotSupported($value);
-            return false;
-        }
-
-        return true;
+        return $this->validateIdMember($this->dataGet('id'), '/data');
     }
 
     /**
@@ -184,7 +172,7 @@ class ResourceValidator extends AbstractValidator
      */
     protected function validateAttributes()
     {
-        $attrs = $this->document->data->attributes;
+        $attrs = $this->dataGet('attributes');
 
         if (!is_object($attrs)) {
             $this->memberNotObject('/data', 'attributes');
@@ -201,7 +189,7 @@ class ResourceValidator extends AbstractValidator
      */
     protected function validateRelationships()
     {
-        $relationships = $this->document->data->relationships;
+        $relationships = $this->dataGet('relationships');
 
         if (!is_object($relationships)) {
             $this->memberNotObject('/data', 'relationships');

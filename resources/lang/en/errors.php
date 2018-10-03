@@ -61,6 +61,12 @@ return [
         'code' => '',
     ],
 
+    'resource_exists' => [
+        'title' => 'Conflict',
+        'detail' => "Resource ':id' already exists.",
+        'code' => '',
+    ],
+
     'resource_not_found' => [
         'title' => 'Invalid Relationship',
         'detail' => "The related resource does not exist.",

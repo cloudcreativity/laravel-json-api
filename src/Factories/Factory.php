@@ -372,13 +372,20 @@ class Factory extends BaseFactory implements FactoryInterface
      */
     public function createResourceDocumentValidator($document, $expectedType, $expectedId = null)
     {
-        return new Validation\Spec\ResourceValidator(
-            $this->container->make(StoreInterface::class),
-            $this->createErrorFactory(),
-            $document,
-            $expectedType,
-            $expectedId
-        );
+        $store = $this->container->make(StoreInterface::class);
+        $errors = $this->createErrorTranslator();
+
+        if ($expectedId) {
+            return new Validation\Spec\UpdateResourceValidator(
+                $store,
+                $errors,
+                $document,
+                $expectedType,
+                $expectedId
+            );
+        }
+
+        return new Validation\Spec\CreateResourceValidator($store, $errors, $document, $expectedType);
     }
 
     /**
@@ -391,17 +398,17 @@ class Factory extends BaseFactory implements FactoryInterface
     {
         return new Validation\Spec\RelationValidator(
             $this->container->make(StoreInterface::class),
-            $this->createErrorFactory(),
+            $this->createErrorTranslator(),
             $document
         );
     }
 
     /**
-     * Create an error factory.
+     * Create an error translator.
      *
      * @return ErrorTranslator
      */
-    public function createErrorFactory()
+    public function createErrorTranslator()
     {
         return new ErrorTranslator(
             $this->container->make(Translator::class)
@@ -427,7 +434,7 @@ class Factory extends BaseFactory implements FactoryInterface
 
         return new Validation\ResourceValidator(
             $this->makeValidator($resource->all(), $rules, $messages, $customAttributes),
-            $this->createErrorFactory(),
+            $this->createErrorTranslator(),
             $resource
         );
     }
@@ -449,7 +456,7 @@ class Factory extends BaseFactory implements FactoryInterface
     ) {
         return new Validation\QueryValidator(
             $this->makeValidator($data, $rules, $messages, $customAttributes),
-            $this->createErrorFactory()
+            $this->createErrorTranslator()
         );
     }
 

@@ -101,7 +101,7 @@ abstract class AbstractValidator implements DocumentValidatorInterface
      */
     public function getDocument()
     {
-        return $this->document;
+        return clone $this->document;
     }
 
     /**
@@ -282,13 +282,55 @@ abstract class AbstractValidator implements DocumentValidatorInterface
                 continue;
             }
 
-            if (!$this->store->exists(new ResourceIdentifier($item))) {
+            if ($this->isNotFound($item->type, $item->id)) {
                 $this->resourceDoesNotExist("{$path}/{$index}");
                 $valid = false;
             }
         }
 
         return $valid;
+    }
+
+    /**
+     * Does the key exist in document data object?
+     *
+     * @param $key
+     * @return bool
+     */
+    protected function dataHas($key)
+    {
+        if (!isset($this->document->data)) {
+            return false;
+        }
+
+        return property_exists($this->document->data, $key);
+    }
+
+    /**
+     * Get a value from the document data object use dot notation.
+     *
+     * @param $key
+     * @return mixed|null
+     */
+    protected function dataGet($key)
+    {
+        if (!isset($this->document->data)) {
+            return null;
+        }
+
+        return data_get($this->document->data, $key);
+    }
+
+    /**
+     * Check if the resource is not found.
+     *
+     * @param $type
+     * @param $id
+     * @return bool
+     */
+    protected function isNotFound($type, $id)
+    {
+        return !$this->store->exists(ResourceIdentifier::create($type, $id));
     }
 
     /**
@@ -373,6 +415,18 @@ abstract class AbstractValidator implements DocumentValidatorInterface
     protected function resourceIdNotSupported($actual, $path = '/data')
     {
         $this->errors->add($this->errorFactory->resourceIdNotSupported($actual, $path));
+    }
+
+    /**
+     * Add an error for when a resource already exists.
+     *
+     * @param string $type
+     * @param string $id
+     * @param string $path
+     */
+    protected function resourceExists($type, $id, $path = '/data')
+    {
+        $this->errors->add($this->errorFactory->resourceExists($type, $id, $path));
     }
 
     /**

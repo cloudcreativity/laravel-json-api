@@ -17,16 +17,11 @@
 
 namespace DummyApp\JsonApi\Videos;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Validators\RelationshipsValidatorInterface;
-use CloudCreativity\LaravelJsonApi\Validators\AbstractValidatorProvider;
+use CloudCreativity\LaravelJsonApi\Validation\AbstractValidators;
+use Ramsey\Uuid\Uuid;
 
-class Validators extends AbstractValidatorProvider
+class Validators extends AbstractValidators
 {
-
-    /**
-     * @var string
-     */
-    protected $resourceType = 'videos';
 
     /**
      * @var array
@@ -34,39 +29,16 @@ class Validators extends AbstractValidatorProvider
     protected $allowedIncludePaths = ['uploaded-by'];
 
     /**
-     * Get the validation rules for the resource attributes.
-     *
-     * @param object|null $record
-     *      the record being updated, or null if it is a create request.
-     * @return array
+     * @inheritDoc
      */
-    protected function attributeRules($record = null)
+    protected function rules($record = null)
     {
-        $required = $record ? 'filled' : 'required';
-
-        $rules = [
-            'title' => "$required|string",
-            'description' => "$required|string",
+        return [
+            'id' => 'required|regex:/' . Uuid::VALID_PATTERN . '/',
+            'title' => "required|string",
+            'description' => "required|string",
+            'url' => 'required|url',
         ];
-
-        if (!$record) {
-            $rules['url'] = 'required|url';
-        }
-
-        return $rules;
-    }
-
-    /**
-     * Define the validation rules for the resource relationships.
-     *
-     * @param RelationshipsValidatorInterface $relationships
-     * @param object|null $record
-     *      the record being updated, or null if it is a create request.
-     * @return void
-     */
-    protected function relationshipRules(RelationshipsValidatorInterface $relationships, $record = null)
-    {
-        //
     }
 
 }
