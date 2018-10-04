@@ -62,7 +62,6 @@ use Neomerx\JsonApi\Contracts\Codec\CodecMatcherInterface;
 use Neomerx\JsonApi\Contracts\Document\LinkInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use Neomerx\JsonApi\Contracts\Http\Headers\SupportedExtensionsInterface;
-use Neomerx\JsonApi\Contracts\Http\Query\QueryCheckerInterface;
 use Neomerx\JsonApi\Contracts\Schema\ContainerInterface as SchemaContainerInterface;
 use Neomerx\JsonApi\Encoder\EncoderOptions;
 use Neomerx\JsonApi\Factories\Factory as BaseFactory;
@@ -461,41 +460,9 @@ class Factory extends BaseFactory implements FactoryInterface
     }
 
     /**
-     * Create a query checker that also validates the query.
-     *
-     * @param ValidatorInterface $validator
-     * @param bool $allowUnrecognized
-     * @param array|null $includePaths
-     * @param array|null $fieldSetTypes
-     * @param array|null $sortParameters
-     * @param array|null $pagingParameters
-     * @param array|null $filteringParameters
-     * @return QueryCheckerInterface
-     */
-    public function createValidationQueryChecker(
-        ValidatorInterface $validator,
-        $allowUnrecognized = false,
-        array $includePaths = null,
-        array $fieldSetTypes = null,
-        array $sortParameters = null,
-        array $pagingParameters = null,
-        array $filteringParameters = null
-    ) {
-        $checker = $this->createQueryChecker(
-            $allowUnrecognized,
-            $includePaths,
-            $fieldSetTypes,
-            $sortParameters,
-            $pagingParameters,
-            $filteringParameters
-        );
-
-        return new Validation\QueryChecker($checker, $validator);
-    }
-
-    /**
      * @param ErrorRepositoryInterface $errors
      * @return ValidatorErrorFactory
+     * @deprecated 2.0.0
      */
     protected function createValidatorErrorFactory(ErrorRepositoryInterface $errors)
     {

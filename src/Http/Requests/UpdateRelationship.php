@@ -42,8 +42,9 @@ class UpdateRelationship extends ValidatedRequest
         }
 
         /** 1.0 validators */
-        $validators->modifyRelationshipQueryChecker($this->getQueryParameters())
-            ->checkQuery($this->getEncodingParameters());
+        $this->passes(
+            $validators->modifyRelationshipQuery($this->query())
+        );
     }
 
     /**
@@ -55,17 +56,7 @@ class UpdateRelationship extends ValidatedRequest
             throw new DocumentRequiredException();
         }
 
-        /** Check the document is compliant with the JSON API spec. */
-        $spec = $this->factory->createRelationshipDocumentValidator($document);
-
-        if ($spec->fails()) {
-            throw new ValidationException($spec->getErrors());
-        }
-
-        /** Check the document is logically correct. */
-        if (!$validators = $this->getValidators()) {
-            return;
-        }
+        $validators = $this->getValidators();
 
         /** Pre-1.0 validators */
         if ($validators instanceof ValidatorProviderInterface) {
@@ -73,15 +64,18 @@ class UpdateRelationship extends ValidatedRequest
             return;
         }
 
-        /** 1.0 validators */
-        $validator = $validators->modifyRelationship(
-            $this->getRecord(),
-            $this->getRelationshipName(),
-            $this->all()
+        /** Check the document is compliant with the JSON API spec. */
+        $this->passes(
+            $this->factory->createRelationshipDocumentValidator($document)
         );
 
-        if ($validator->fails()) {
-            throw new ValidationException($validator->getErrors());
+        /** Check the document is logically correct. */
+        if ($validators) {
+            $this->passes($validators->modifyRelationship(
+                $this->getRecord(),
+                $this->getRelationshipName(),
+                $this->all()
+            ));
         }
     }
 

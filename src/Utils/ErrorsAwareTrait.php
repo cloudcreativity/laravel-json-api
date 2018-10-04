@@ -26,6 +26,7 @@ use Neomerx\JsonApi\Exceptions\ErrorCollection;
  * Class ErrorsAwareTrait
  *
  * @package CloudCreativity\LaravelJsonApi
+ * @deprecated 2.0.0
  */
 trait ErrorsAwareTrait
 {

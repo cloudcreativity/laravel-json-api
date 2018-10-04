@@ -43,8 +43,9 @@ class CreateResource extends ValidatedRequest
         }
 
         /** 1.0 validators */
-        $validators->modifyQueryChecker($this->getQueryParameters())
-            ->checkQuery($this->getEncodingParameters());
+        $this->passes(
+            $validators->modifyQuery($this->query())
+        );
     }
 
     /**
@@ -56,17 +57,7 @@ class CreateResource extends ValidatedRequest
             throw new DocumentRequiredException();
         }
 
-        /** Check the document is compliant with the JSON API spec. */
-        $spec = $this->factory->createResourceDocumentValidator($document, $this->getResourceType());
-
-        if ($spec->fails()) {
-            throw new ValidationException($spec->getErrors());
-        }
-
-        /** Check the document is logically correct. */
-        if (!$validators = $this->getValidators()) {
-            return;
-        }
+        $validators = $this->getValidators();
 
         /** Pre-1.0 validators */
         if ($validators instanceof ValidatorProviderInterface) {
@@ -74,11 +65,14 @@ class CreateResource extends ValidatedRequest
             return;
         }
 
-        /** 1.0 validators */
-        $validator = $validators->createResource($this->all());
+        /** Check the document is compliant with the JSON API spec. */
+        $this->passes(
+            $this->factory->createResourceDocumentValidator($document, $this->getResourceType())
+        );
 
-        if ($validator->fails()) {
-            throw new ValidationException($validator->getErrors());
+        /** Check the document is logically correct. */
+        if ($validators) {
+            $this->passes($validators->create($this->all()));
         }
     }
 

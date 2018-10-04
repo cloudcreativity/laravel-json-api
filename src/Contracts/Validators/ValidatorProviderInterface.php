@@ -24,6 +24,7 @@ use Neomerx\JsonApi\Contracts\Http\Query\QueryCheckerInterface;
  * Interface ValidatorProviderInterface
  *
  * @package CloudCreativity\LaravelJsonApi
+ * @deprecated 2.0.0 use classes in the `Validation` namespace instead.
  */
 interface ValidatorProviderInterface
 {

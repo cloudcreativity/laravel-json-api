@@ -25,6 +25,7 @@ use InvalidArgumentException;
  * Class Replacer
  *
  * @package CloudCreativity\LaravelJsonApi
+ * @deprecated 2.0.0
  */
 class Replacer implements ReplacerInterface
 {

@@ -58,7 +58,7 @@ class UpdateResourceValidator extends CreateResourceValidator
     /**
      * @inheritdoc
      */
-    protected function validateId()
+    protected function validateId(): bool
     {
         if (!$this->dataHas('id')) {
             $this->memberRequired('/data', 'id');
@@ -82,7 +82,7 @@ class UpdateResourceValidator extends CreateResourceValidator
     /**
      * @inheritdoc
      */
-    protected function validateTypeAndId()
+    protected function validateTypeAndId(): bool
     {
         return $this->validateType() && $this->validateId();
     }

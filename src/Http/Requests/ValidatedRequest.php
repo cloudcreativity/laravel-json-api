@@ -21,11 +21,11 @@ use CloudCreativity\LaravelJsonApi\Contracts\Auth\AuthorizerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Object\DocumentInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Validation\DocumentValidatorInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorFactoryInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Validators\DocumentValidatorInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorProviderInterface;
 use CloudCreativity\LaravelJsonApi\Encoder\Parameters\EncodingParameters;
-use CloudCreativity\LaravelJsonApi\Exceptions\DocumentRequiredException;
 use CloudCreativity\LaravelJsonApi\Exceptions\ValidationException;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use CloudCreativity\LaravelJsonApi\Object\Document;
@@ -34,7 +34,6 @@ use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Validation\ValidatesWhenResolved;
 use Illuminate\Http\Request;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
-use Neomerx\JsonApi\Contracts\Http\Query\QueryCheckerInterface;
 use Neomerx\JsonApi\Exceptions\JsonApiException;
 
 abstract class ValidatedRequest implements ValidatesWhenResolved
@@ -120,6 +119,16 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
     }
 
     /**
+     * Get parsed query parameters.
+     *
+     * @return array
+     */
+    public function query()
+    {
+        return $this->request->query();
+    }
+
+    /**
      * Get the JSON API document as an object.
      *
      * @return object|null
@@ -185,16 +194,6 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
     }
 
     /**
-     * Get parsed query parameters.
-     *
-     * @return array
-     */
-    public function getQueryParameters()
-    {
-        return EncodingParameters::cast($this->getEncodingParameters())->toArray();
-    }
-
-    /**
      * Get the JSON API encoding parameters.
      *
      * @return EncodingParametersInterface
@@ -247,6 +246,27 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
         // no-op
     }
 
+    /**
+     * Run the validation and throw an exception if it fails.
+     *
+     * @param DocumentValidatorInterface|ValidatorInterface $validator
+     * @throws ValidationException
+     */
+    protected function passes($validator)
+    {
+        if ($validator->fails()) {
+            $this->failedValidation($validator);
+        }
+    }
+
+    /**
+     * @param DocumentValidatorInterface|ValidatorInterface $validator
+     * @throws ValidationException
+     */
+    protected function failedValidation($validator)
+    {
+        throw new ValidationException($validator->getErrors());
+    }
 
     /**
      * @return AuthorizerInterface|null
@@ -276,115 +296,6 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
         return $this->container->getValidatorsByResourceType(
             $this->jsonApiRequest->getInverseResourceType()
         );
-    }
-
-    /**
-     * Validate the inbound request query parameters and JSON API document.
-     *
-     * JSON API query parameters are checked using the primary resource's validators
-     * if it is not a related resource request, or against the related resource's
-     * validators if it is a relationship request. This is because the query parameters
-     * for a relationship request actually relate to the related resource that will
-     * be returned in the encoded response.
-     *
-     * So for a request to `GET /posts/1`, the `posts` validators are provided as
-     * `$resource` and the query parameters are checked using this set of validators.
-     * For a request to `GET /posts/1/comments` the query parameters are checked
-     * against the `comments` validators, which are provided as `$related`.
-     *
-     * The JSON API document is always checked against the primary resource validators
-     * (`$resource`) because the inbound document always relates to this primary
-     * resource, even if modifying a relationship.
-     *
-     * @param ValidatorProviderInterface $resource
-     *      validators for the primary resource.
-     * @param ValidatorProviderInterface|null $related
-     *      validators for the related resource, if the request is for a relationship.
-     * @return void
-     * @throws JsonApiException
-     */
-    private function validateRequest(ValidatorProviderInterface $resource, ValidatorProviderInterface $related = null)
-    {
-        /** Check the JSON API query parameters */
-        if (!$this->jsonApiRequest->getRelationshipName()) {
-            $this->checkQueryParameters($resource);
-        } elseif ($related) {
-            $this->checkQueryParameters($related);
-        }
-
-        /** Check the JSON API document is acceptable */
-        $this->checkDocumentIsAcceptable($resource);
-    }
-
-    /**
-     * @param ValidatorProviderInterface $validators
-     * @throws JsonApiException
-     */
-    private function checkQueryParameters(ValidatorProviderInterface $validators)
-    {
-        $checker = $this->queryChecker($validators);
-        $checker->checkQuery($this->jsonApiRequest->getParameters());
-    }
-
-    /**
-     * @param ValidatorProviderInterface $validators
-     * @throws JsonApiException
-     */
-    private function checkDocumentIsAcceptable(ValidatorProviderInterface $validators)
-    {
-        if (!$validator = $this->documentAcceptanceValidator($validators)) {
-            return;
-        }
-
-        $document = $this->getDocument();
-
-        if (!$document) {
-            throw new DocumentRequiredException();
-        }
-
-        if (!$validator->isValid($document, $this->getRecord())) {
-            throw new ValidationException($validator->getErrors());
-        }
-    }
-
-    /**
-     * @param ValidatorProviderInterface $validators
-     * @return DocumentValidatorInterface|null
-     */
-    private function documentAcceptanceValidator(ValidatorProviderInterface $validators)
-    {
-        $resourceId = $this->jsonApiRequest->getResourceId();
-        $relationshipName = $this->jsonApiRequest->getRelationshipName();
-
-        /** Create Resource */
-        if ($this->jsonApiRequest->isCreateResource()) {
-            return $validators->createResource();
-        } /** Update Resource */
-        elseif ($this->jsonApiRequest->isUpdateResource()) {
-            return $validators->updateResource($resourceId, $this->getRecord());
-        } /** Replace Relationship */
-        elseif ($this->jsonApiRequest->isModifyRelationship()) {
-            return $validators->modifyRelationship($resourceId, $relationshipName, $this->getRecord());
-        }
-
-        return null;
-    }
-
-    /**
-     * @param ValidatorProviderInterface $validators
-     * @return QueryCheckerInterface
-     */
-    private function queryChecker(ValidatorProviderInterface $validators)
-    {
-        if ($this->jsonApiRequest->isIndex()) {
-            return $validators->searchQueryChecker();
-        } elseif ($this->jsonApiRequest->isReadRelatedResource()) {
-            return $validators->relatedQueryChecker();
-        } elseif ($this->jsonApiRequest->hasRelationships()) {
-            return $validators->relationshipQueryChecker();
-        }
-
-        return $validators->resourceQueryChecker();
     }
 
 }

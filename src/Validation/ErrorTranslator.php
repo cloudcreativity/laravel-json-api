@@ -52,7 +52,7 @@ class ErrorTranslator
      * @param string $member
      * @return ErrorInterface
      */
-    public function memberRequired($path, $member)
+    public function memberRequired($path, $member): ErrorInterface
     {
         return new Error(
             null,
@@ -72,7 +72,7 @@ class ErrorTranslator
      * @param string $member
      * @return ErrorInterface
      */
-    public function memberNotObject($path, $member)
+    public function memberNotObject($path, $member): ErrorInterface
     {
         return new Error(
             null,
@@ -92,7 +92,7 @@ class ErrorTranslator
      * @param string $member
      * @return ErrorInterface
      */
-    public function memberNotString($path, $member)
+    public function memberNotString($path, $member): ErrorInterface
     {
         return new Error(
             null,
@@ -112,7 +112,7 @@ class ErrorTranslator
      * @param $member
      * @return ErrorInterface
      */
-    public function memberEmpty($path, $member)
+    public function memberEmpty($path, $member): ErrorInterface
     {
         return new Error(
             null,
@@ -133,7 +133,7 @@ class ErrorTranslator
      * @param string $path
      * @return ErrorInterface
      */
-    public function resourceTypeNotSupported($type, $path = '/data')
+    public function resourceTypeNotSupported($type, $path = '/data'): ErrorInterface
     {
         return new Error(
             null,
@@ -154,7 +154,7 @@ class ErrorTranslator
      * @param string $path
      * @return ErrorInterface
      */
-    public function resourceTypeNotRecognised($type, $path = '/data')
+    public function resourceTypeNotRecognised($type, $path = '/data'): ErrorInterface
     {
         return new Error(
             null,
@@ -175,7 +175,7 @@ class ErrorTranslator
      * @param string $path
      * @return ErrorInterface
      */
-    public function resourceIdNotSupported($id, $path = '/data')
+    public function resourceIdNotSupported($id, $path = '/data'): ErrorInterface
     {
         return new Error(
             null,
@@ -196,9 +196,9 @@ class ErrorTranslator
      * @param string $id
      *      the resource id
      * @param string $path
-     * @return Error
+     * @return ErrorInterface
      */
-    public function resourceExists($type, $id, $path = '/data')
+    public function resourceExists($type, $id, $path = '/data'): ErrorInterface
     {
         return new Error(
             null,
@@ -215,9 +215,9 @@ class ErrorTranslator
      * Create an error for a resource identifier that does not exist.
      *
      * @param string $path
-     * @return Error
+     * @return ErrorInterface
      */
-    public function resourceDoesNotExist($path)
+    public function resourceDoesNotExist($path): ErrorInterface
     {
         return new Error(
             null,
@@ -238,7 +238,7 @@ class ErrorTranslator
      *      the validation message (already translated).
      * @return ErrorInterface
      */
-    public function invalidResource($path, $detail = null)
+    public function invalidResource($path, $detail = null): ErrorInterface
     {
         return new Error(
             null,
@@ -259,7 +259,7 @@ class ErrorTranslator
      *      the validation message (already translated).
      * @return ErrorInterface
      */
-    public function invalidQueryParameter($param, $detail = null)
+    public function invalidQueryParameter($param, $detail = null): ErrorInterface
     {
         return new Error(
             null,
@@ -299,7 +299,7 @@ class ErrorTranslator
      * @param string|null $member
      * @return array
      */
-    protected function pointer($path, $member = null)
+    protected function pointer($path, $member = null): array
     {
         if (!$member) {
             $pointer = $path;

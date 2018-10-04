@@ -25,6 +25,7 @@ use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectInterface;
  * Class RelationshipValidator
  *
  * @package CloudCreativity\LaravelJsonApi
+ * @deprecated 2.0.0 use classes in the `Validation` namespace instead.
  */
 class RelationshipValidator extends AbstractRelationshipValidator
 {

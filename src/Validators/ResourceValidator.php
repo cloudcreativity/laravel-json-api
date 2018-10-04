@@ -30,6 +30,7 @@ use CloudCreativity\LaravelJsonApi\Utils\Pointer as P;
  * Class ResourceValidator
  *
  * @package CloudCreativity\LaravelJsonApi
+ * @deprecated 2.0.0 use classes in the `Validation` namespace instead.
  */
 class ResourceValidator implements ResourceValidatorInterface
 {

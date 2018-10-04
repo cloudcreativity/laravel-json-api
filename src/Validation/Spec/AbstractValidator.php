@@ -55,7 +55,7 @@ abstract class AbstractValidator implements DocumentValidatorInterface
     /**
      * @return bool
      */
-    abstract protected function validate();
+    abstract protected function validate(): bool;
 
     /**
      * AbstractValidator constructor.
@@ -79,15 +79,15 @@ abstract class AbstractValidator implements DocumentValidatorInterface
     /**
      * @inheritDoc
      */
-    public function fails()
+    public function fails(): bool
     {
         return !$this->passes();
     }
 
     /**
-     * @inheritDoc
+     * @return bool
      */
-    public function passes()
+    public function passes(): bool
     {
         if (is_bool($this->valid)) {
             return $this->valid;
@@ -107,7 +107,7 @@ abstract class AbstractValidator implements DocumentValidatorInterface
     /**
      * @inheritDoc
      */
-    public function getErrors()
+    public function getErrors(): ErrorCollection
     {
         return clone $this->errors;
     }
@@ -119,7 +119,7 @@ abstract class AbstractValidator implements DocumentValidatorInterface
      * @param string $path
      * @return bool
      */
-    protected function validateTypeMember($value, $path)
+    protected function validateTypeMember($value, string $path): bool
     {
         if (!is_string($value)) {
             $this->memberNotString($path, 'type');
@@ -146,7 +146,7 @@ abstract class AbstractValidator implements DocumentValidatorInterface
      * @param string $path
      * @return bool
      */
-    protected function validateIdMember($value, $path)
+    protected function validateIdMember($value, $path): bool
     {
         if (!is_string($value)) {
             $this->memberNotString($path, 'id');
@@ -207,7 +207,7 @@ abstract class AbstractValidator implements DocumentValidatorInterface
      * @param string|null $field
      * @return bool
      */
-    protected function validateRelationship($relation, $field = null)
+    protected function validateRelationship($relation, $field = null): bool
     {
         $path = $field ? '/data/relationships' : '/';
         $member = $field ?: 'data';
@@ -242,7 +242,7 @@ abstract class AbstractValidator implements DocumentValidatorInterface
      *      the relationship field name.
      * @return bool
      */
-    protected function validateToOne($value, $field = null)
+    protected function validateToOne($value, $field = null): bool
     {
         if (is_null($value)) {
             return true;
@@ -271,7 +271,7 @@ abstract class AbstractValidator implements DocumentValidatorInterface
      *      the relationship field name.
      * @return bool
      */
-    protected function validateToMany(array $value, $field = null)
+    protected function validateToMany(array $value, $field = null): bool
     {
         $path = $field ? "/data/relationships/{$field}/data" : "/data";
         $valid = true;
@@ -297,7 +297,7 @@ abstract class AbstractValidator implements DocumentValidatorInterface
      * @param $key
      * @return bool
      */
-    protected function dataHas($key)
+    protected function dataHas($key): bool
     {
         if (!isset($this->document->data)) {
             return false;
@@ -328,7 +328,7 @@ abstract class AbstractValidator implements DocumentValidatorInterface
      * @param $id
      * @return bool
      */
-    protected function isNotFound($type, $id)
+    protected function isNotFound($type, $id): bool
     {
         return !$this->store->exists(ResourceIdentifier::create($type, $id));
     }

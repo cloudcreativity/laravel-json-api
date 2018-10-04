@@ -6,8 +6,14 @@ use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorInterface;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
+use CloudCreativity\LaravelJsonApi\Rules\AllowedFieldSets;
+use CloudCreativity\LaravelJsonApi\Rules\AllowedFilterParameters;
+use CloudCreativity\LaravelJsonApi\Rules\AllowedIncludePaths;
+use CloudCreativity\LaravelJsonApi\Rules\AllowedPageParameters;
+use CloudCreativity\LaravelJsonApi\Rules\AllowedSortParameters;
+use CloudCreativity\LaravelJsonApi\Rules\DisallowedParameter;
+use DemeterChain\A;
 use Illuminate\Support\Collection;
-use Neomerx\JsonApi\Contracts\Http\Query\QueryCheckerInterface;
 
 /**
  * Class AbstractValidators
@@ -53,13 +59,6 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
     protected $queryAttributes = [];
 
     /**
-     * Whether unrecognized query parameters should be allowed.
-     *
-     * @var bool
-     */
-    protected $allowUnrecognizedParameters = false;
-
-    /**
      * What include paths the client is allowed to request.
      *
      * Empty array = clients are not allowed to specify include paths.
@@ -68,19 +67,6 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
      * @var string[]|null
      */
     protected $allowedIncludePaths = [];
-
-    /**
-     * What field sets the client is allowed to request per JSON API resource object type.
-     *
-     * Null = the client can specify any fields for any resource object type.
-     * Empty array = the client cannot specify any fields for any resource object type (i.e. all denied.)
-     * Non-empty array = configuration per JSON API resource object type. The key should be the type, the value should
-     * be either null (all fields allowed for that type), empty array (no fields allowed for that type) or an array
-     * of string values listing the allowed fields for that type.
-     *
-     * @var array|null
-     */
-    protected $allowedFieldSetTypes;
 
     /**
      * What sort field names can be sent by the client.
@@ -119,6 +105,19 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
     protected $allowedPagingParameters = null;
 
     /**
+     * What field sets the client is allowed to request per JSON API resource object type.
+     *
+     * Null = the client can specify any fields for any resource object type.
+     * Empty array = the client cannot specify any fields for any resource object type (i.e. all denied.)
+     * Non-empty array = configuration per JSON API resource object type. The key should be the type, the value should
+     * be either null (all fields allowed for that type), empty array (no fields allowed for that type) or an array
+     * of string values listing the allowed fields for that type.
+     *
+     * @return AllowedFieldSets
+     */
+    protected $allowedFieldSets = null;
+
+    /**
      * @var Factory
      */
     private $factory;
@@ -152,7 +151,7 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
     /**
      * @inheritDoc
      */
-    public function createResource(array $document)
+    public function create(array $document): ValidatorInterface
     {
         return $this->createResourceValidator(
             $this->createData($document),
@@ -165,7 +164,7 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
     /**
      * @inheritDoc
      */
-    public function updateResource($record, array $document)
+    public function update($record, array $document): ValidatorInterface
     {
         return $this->createResourceValidator(
             $this->updateData($record, $document),
@@ -178,7 +177,7 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
     /**
      * @inheritDoc
      */
-    public function modifyRelationship($record, $field, array $document)
+    public function modifyRelationship($record, string $field, array $document): ValidatorInterface
     {
         return $this->factory->createResourceValidator(
             $this->relationshipData($record, $field, $document),
@@ -191,96 +190,62 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
     /**
      * @inheritDoc
      */
-    public function fetchManyQueryChecker(array $params)
+    public function fetchManyQuery(array $params): ValidatorInterface
     {
-        $validator = $this->queryValidator($params);
-
-        return $this->factory->createValidationQueryChecker(
-            $validator,
-            $this->allowUnrecognizedParameters(),
-            $this->allowedIncludePaths(),
-            $this->allowedFieldSetTypes(),
-            $this->allowedSortParameters(),
-            $this->allowedPagingParameters(),
-            $this->allowedFilteringParameters()
-        );
+        return $this->queryValidator($params);
     }
 
     /**
      * @inheritDoc
      */
-    public function fetchQueryChecker(array $params)
+    public function fetchQuery(array $params): ValidatorInterface
     {
         /**
          * Allow filter params, but not sort and page, for a resource GET.
+         * Do not allow the `id` filter as it does not make sense as the request
+         * is already limited by id.
          *
          * @see https://github.com/cloudcreativity/laravel-json-api/issues/218
          */
-        $validator = $this->queryValidatorWithoutSortAndPage($params);
-
-        return $this->factory->createValidationQueryChecker(
-            $validator,
-            $this->allowUnrecognizedParameters(),
-            $this->allowedIncludePaths(),
-            $this->allowedFieldSetTypes(),
-            [],
-            [],
-            $this->allowedFilteringParametersWithoutId()
+        return $this->createQueryValidator(
+            $params,
+            $this->queryRulesExcludingFilterId('sort', 'page'),
+            $this->queryMessages(),
+            $this->queryAttributes()
         );
     }
 
     /**
      * @inheritDoc
      */
-    public function modifyQueryChecker(array $params)
+    public function modifyQuery(array $params): ValidatorInterface
     {
         /** For modify resource requests, do not allow filter, sort and page. */
-        $validator = $this->queryValidatorWithoutFilterSortAndPage($params);
-
-        return $this->factory->createValidationQueryChecker(
-            $validator,
-            $this->allowUnrecognizedParameters(),
-            $this->allowedIncludePaths(),
-            $this->allowedFieldSetTypes(),
-            [],
-            [],
-            []
-        );
+        return $this->queryValidator($params, ['filter', 'sort', 'page']);
     }
 
     /**
      * @inheritDoc
      */
-    public function fetchRelatedQueryChecker(array $params)
+    public function fetchRelatedQuery(array $params): ValidatorInterface
     {
-        return $this->fetchManyQueryChecker($params);
+        return $this->fetchManyQuery($params);
     }
 
     /**
      * @inheritDoc
      */
-    public function fetchRelationshipQueryChecker(array $params)
+    public function fetchRelationshipQuery(array $params): ValidatorInterface
     {
-        $validator = $this->queryValidator($params);
-
-        /** As we are only getting resource identifiers, include and fieldsets are not supported. */
-        return $this->factory->createValidationQueryChecker(
-            $validator,
-            $this->allowUnrecognizedParameters(),
-            [],
-            [],
-            $this->allowedSortParameters(),
-            $this->allowedPagingParameters(),
-            $this->allowedFilteringParameters()
-        );
+        return $this->queryValidator($params);
     }
 
     /**
      * @inheritDoc
      */
-    public function modifyRelationshipQueryChecker(array $params)
+    public function modifyRelationshipQuery(array $params): ValidatorInterface
     {
-        return $this->fetchRelationshipQueryChecker($params);
+        return $this->fetchRelationshipQuery($params);
     }
 
     /**
@@ -288,7 +253,7 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
      *
      * @return array
      */
-    protected function messages()
+    protected function messages(): array
     {
         return $this->messages;
     }
@@ -298,7 +263,7 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
      *
      * @return array
      */
-    protected function attributes()
+    protected function attributes(): array
     {
         return $this->attributes;
     }
@@ -309,7 +274,7 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
      * @param array $document
      * @return array
      */
-    protected function createData(array $document)
+    protected function createData(array $document): array
     {
         return $document['data'];
     }
@@ -334,7 +299,7 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
      *      the JSON API document to validate.
      * @return array
      */
-    protected function updateData($record, array $document)
+    protected function updateData($record, array $document): array
     {
         $resource = $document['data'];
 
@@ -353,7 +318,7 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
      * @param array $new
      * @return Collection
      */
-    protected function extractAttributes($record, array $new)
+    protected function extractAttributes($record, array $new): Collection
     {
         return $this->currentAttributeValues($record)->merge($new);
     }
@@ -364,7 +329,7 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
      * @param $record
      * @return Collection
      */
-    protected function currentAttributeValues($record)
+    protected function currentAttributeValues($record): Collection
     {
         return collect($this->container->getSchema($record)->getAttributes($record));
     }
@@ -377,7 +342,7 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
      * @param array $document
      * @return array
      */
-    protected function relationshipData($record, $field, array $document)
+    protected function relationshipData($record, $field, array $document): array
     {
         $schema = $this->container->getSchema($record);
 
@@ -399,7 +364,7 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
      * @param $field
      * @return array
      */
-    protected function relationshipRules($record, $field)
+    protected function relationshipRules($record, $field): array
     {
         return collect($this->rules($record))->filter(function ($v, $key) use ($field) {
             return starts_with($key, $field);
@@ -418,7 +383,7 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
         array $rules,
         array $messages = [],
         array $customAttributes = []
-    ) {
+    ): ValidatorInterface {
         return $this->factory->createResourceValidator(
             $data,
             $rules,
@@ -430,39 +395,101 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
     /**
      * @return array
      */
-    protected function queryRules()
+    protected function queryRules(): array
     {
-        return $this->queryRules;
+        return collect($this->defaultQueryRules())
+            ->merge($this->queryRules)
+            ->all();
     }
 
     /**
-     * Get the validation rules for query parameters, excluding filter, sort and page.
+     * @return array
+     */
+    protected function defaultQueryRules(): array
+    {
+        return [
+            'fields' => [
+                'bail',
+                'array',
+                $this->allowedFieldSets(),
+            ],
+            'fields.*' => [
+                'filled',
+                'string',
+            ],
+            'filter' => [
+                'bail',
+                'array',
+                $this->allowedFilteringParameters(),
+            ],
+            'include' => [
+                'bail',
+                'string',
+                $this->allowedIncludePaths(),
+            ],
+            'page' => [
+                'bail',
+                'array',
+                $this->allowedSortParameters(),
+            ],
+            'sort' => [
+                'bail',
+                'string',
+                $this->allowedSortParameters(),
+            ],
+        ];
+    }
+
+    /**
+     * Get rules to disallow the provided keys.
      *
-     * @return array
+     * @param string ...$keys
+     * @return Collection
      */
-    protected function queryRulesWithoutFilterSortAndPage()
+    protected function excluded(string ...$keys): Collection
     {
-        return collect($this->queryRules())->reject(function ($value, $key) {
-            return starts_with($key, ['filter.', 'sort.', 'page.']);
-        })->all();
+        return collect($keys)->mapWithKeys(function ($key) {
+            return [$key => new DisallowedParameter($key)];
+        });
     }
 
     /**
-     * Get the validation rules for query parameters excluding sort and page.
-     *
+     * @param string ...$keys
      * @return array
      */
-    protected function queryRulesWithoutSortAndPage()
+    protected function queryRulesWithout(string ...$keys): array
     {
-        return collect($this->queryRules())->reject(function ($value, $key) {
-            return starts_with($key, ['sort.', 'page.']);
-        })->all();
+        if (empty($keys)) {
+            return $this->queryRules();
+        }
+
+        return collect($this->queryRules())->reject(function ($value, $key) use ($keys) {
+            return starts_with($key, $keys);
+        })->merge($this->excluded(...$keys))->all();
+    }
+
+    /**
+     * @param string ...$without
+     * @return array
+     */
+    protected function queryRulesExcludingFilterId(string ...$without): array
+    {
+        $without[] = 'filter.id';
+        $rules = $this->queryRulesWithout(...$without);
+
+        $rules['filter'] = [
+            'bail',
+            'array',
+            $this->allowedFilteringParameters()->forget('id')
+        ];
+
+        return $rules;
     }
 
     /**
      * @return array
      */
-    protected function queryMessages()
+    protected function queryMessages(): array
     {
         return $this->queryMessages;
     }
@@ -470,7 +497,7 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
     /**
      * @return array
      */
-    protected function queryAttributes()
+    protected function queryAttributes(): array
     {
         return $this->queryAttributes;
     }
@@ -487,149 +514,77 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
         array $rules,
         array $messages = [],
         array $customAttributes = []
-    ) {
+    ): ValidatorInterface {
         return $this->factory->createQueryValidator($data, $rules, $messages, $customAttributes);
     }
-
 
     /**
      * Get a validator for all query parameters.
      *
      * @param array $params
+     * @param array|string|null $without
      * @return ValidatorInterface
      */
-    protected function queryValidator(array $params)
+    protected function queryValidator(array $params, $without = null): ValidatorInterface
     {
+        $without = (array) $without;
+
         return $this->createQueryValidator(
             $params,
-            $this->queryRules(),
+            $this->queryRulesWithout(...$without),
             $this->queryMessages(),
             $this->queryAttributes()
         );
     }
 
     /**
-     * Get a validator for query parameters excluding filter, sort and page rules.
+     * Get a rule for the allowed include paths.
      *
-     * @param array $params
-     * @return ValidatorInterface
+     * @return AllowedIncludePaths
      */
-    protected function queryValidatorWithoutFilterSortAndPage(array $params)
+    protected function allowedIncludePaths(): AllowedIncludePaths
     {
-        return $this->createQueryValidator(
-            $params,
-            $this->queryRulesWithoutFilterSortAndPage(),
-            $this->queryMessages(),
-            $this->queryAttributes()
-        );
+        return new AllowedIncludePaths($this->allowedIncludePaths);
     }
 
     /**
-     * Get a validator for query parameters excluding sort and page rules.
+     * Get a rule for the allowed field sets.
      *
-     * @param array $params
-     * @return ValidatorInterface
+     * @return AllowedFieldSets
      */
-    protected function queryValidatorWithoutSortAndPage(array $params)
+    protected function allowedFieldSets(): AllowedFieldSets
     {
-        return $this->createQueryValidator(
-            $params,
-            $this->queryRulesWithoutSortAndPage(),
-            $this->queryMessages(),
-            $this->queryAttributes()
-        );
+        return new AllowedFieldSets($this->allowedFieldSets);
     }
 
     /**
-     * Whether unrecognized parameters should be allowed.
+     * Get a rule for the allowed sort parameters.
      *
-     * @return bool
+     * @return AllowedSortParameters
      */
-    protected function allowUnrecognizedParameters()
+    protected function allowedSortParameters(): AllowedSortParameters
     {
-        return (bool) $this->allowUnrecognizedParameters;
+        return new AllowedSortParameters($this->allowedSortParameters);
     }
 
     /**
-     * What include paths the client is allowed to request.
+     * Get a rule for the allowed page parameters.
      *
-     * Empty array = clients are not allowed to specify include paths.
-     * Null = all paths are allowed.
-     *
-     * @return string[]|null
+     * @return AllowedPageParameters
      */
-    protected function allowedIncludePaths()
+    protected function allowedPagingParameters(): AllowedPageParameters
     {
-        return $this->allowedIncludePaths;
+        return new AllowedPageParameters($this->allowedPagingParameters);
     }
 
     /**
-     * What field sets the client is allowed to request per JSON API resource object type.
+     * Get a rule for the allowed filtering parameters.
      *
-     * Null = the client can specify any fields for any resource object type.
-     * Empty array = the client cannot specify any fields for any resource object type (i.e. all denied.)
-     * Non-empty array = configuration per JSON API resource object type. The key should be the type, the value should
-     * be either null (all fields allowed for that type), empty array (no fields allowed for that type) or an array
-     * of string values listing the allowed fields for that type.
-     *
-     * @return array|null
+     * @return AllowedFilterParameters
      */
-    protected function allowedFieldSetTypes()
+    protected function allowedFilteringParameters(): AllowedFilterParameters
     {
-        return $this->allowedFieldSetTypes;
-    }
-
-    /**
-     * What sort field names can be sent by the client.
-     *
-     * Empty array = clients are not allowed to specify sort fields.
-     * Null = clients can specify any sort fields.
-     *
-     * @return string[]|null
-     */
-    protected function allowedSortParameters()
-    {
-        return $this->allowedSortParameters;
-    }
-
-    /**
-     * What paging fields can be sent by the client.
-     *
-     * Empty array = clients are not allowed to request paging.
-     * Null = clients can specify any paging fields they want.
-     *
-     * @return string[]|null
-     */
-    protected function allowedPagingParameters()
-    {
-        return $this->allowedPagingParameters;
-    }
-
-    /**
-     * What filtering fields can be sent by the client.
-     *
-     * Empty array = clients are not allowed to request filtering.
-     * Null = clients can specify any filtering fields they want.
-     *
-     * @return string[]|null
-     */
-    protected function allowedFilteringParameters()
-    {
-        return $this->allowedFilteringParameters;
-    }
-
-    /**
-     * @return array
-     */
-    protected function allowedFilteringParametersWithoutId()
-    {
-        $allowed = $this->allowedFilteringParameters();
-
-        if (is_null($allowed)) {
-            return $allowed;
-        }
-
-        return collect($this->allowedFilteringParameters())->reject('id')->values()->all();
+        return new AllowedFilterParameters($this->allowedFilteringParameters);
     }
 
 }

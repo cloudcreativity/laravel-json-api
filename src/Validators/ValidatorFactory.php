@@ -32,6 +32,7 @@ use Illuminate\Contracts\Validation\Factory;
  * Class ValidatorFactory
  *
  * @package CloudCreativity\LaravelJsonApi
+ * @deprecated 2.0.0 use classes in the `Validation` namespace instead.
  */
 class ValidatorFactory implements ValidatorFactoryInterface
 {

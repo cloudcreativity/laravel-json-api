@@ -24,6 +24,7 @@ use Neomerx\JsonApi\Exceptions\ErrorCollection;
  * Interface ErrorsAwareInterface
  *
  * @package CloudCreativity\LaravelJsonApi
+ * @deprecated 2.0.0
  */
 interface ErrorsAwareInterface
 {

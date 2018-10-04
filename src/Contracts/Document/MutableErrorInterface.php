@@ -26,6 +26,7 @@ use Neomerx\JsonApi\Contracts\Document\LinkInterface;
  * Interface MutableErrorInterface
  *
  * @package CloudCreativity\LaravelJsonApi
+ * @deprecated 2.0.0 use the neomerx/jsonapi error interface instead.
  */
 interface MutableErrorInterface extends ErrorInterface
 {

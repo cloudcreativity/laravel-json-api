@@ -56,7 +56,7 @@ class CreateResourceValidator extends AbstractValidator
     /**
      * @inheritDoc
      */
-    protected function validate()
+    protected function validate(): bool
     {
         /** If the data is not valid, we cannot validate the resource. */
         if (!$this->validateData()) {
@@ -86,7 +86,7 @@ class CreateResourceValidator extends AbstractValidator
      *
      * @return bool
      */
-    protected function validateData()
+    protected function validateData(): bool
     {
         if (!property_exists($this->document, 'data')) {
             $this->memberRequired('/', 'data');
@@ -108,7 +108,7 @@ class CreateResourceValidator extends AbstractValidator
      *
      * @return bool
      */
-    protected function validateTypeAndId()
+    protected function validateTypeAndId(): bool
     {
         if (!($this->validateType() && $this->validateId())) {
             return false;
@@ -130,7 +130,7 @@ class CreateResourceValidator extends AbstractValidator
      *
      * @return bool
      */
-    protected function validateType()
+    protected function validateType(): bool
     {
         if (!$this->dataHas('type')) {
             $this->memberRequired('/data', 'type');
@@ -156,7 +156,7 @@ class CreateResourceValidator extends AbstractValidator
      *
      * @return bool
      */
-    protected function validateId()
+    protected function validateId(): bool
     {
         if (!$this->dataHas('id')) {
             return true;
@@ -170,7 +170,7 @@ class CreateResourceValidator extends AbstractValidator
      *
      * @return bool
      */
-    protected function validateAttributes()
+    protected function validateAttributes(): bool
     {
         $attrs = $this->dataGet('attributes');
 
@@ -187,7 +187,7 @@ class CreateResourceValidator extends AbstractValidator
      *
      * @return bool
      */
-    protected function validateRelationships()
+    protected function validateRelationships(): bool
     {
         $relationships = $this->dataGet('relationships');
 

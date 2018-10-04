@@ -4,6 +4,7 @@ namespace CloudCreativity\LaravelJsonApi\Validation;
 
 use CloudCreativity\LaravelJsonApi\Document\ResourceObject;
 use Illuminate\Contracts\Validation\Validator as ValidatorContract;
+use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
 
 class ResourceValidator extends AbstractValidator
 {
@@ -32,7 +33,7 @@ class ResourceValidator extends AbstractValidator
     /**
      * @inheritDoc
      */
-    protected function createError($key, $detail)
+    protected function createError($key, $detail): ErrorInterface
     {
         return $this->errors->invalidResource(
             $this->resource->pointer($key),

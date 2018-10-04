@@ -8,7 +8,7 @@ class RelationValidator extends AbstractValidator
     /**
      * @inheritDoc
      */
-    protected function validate()
+    protected function validate(): bool
     {
         return $this->validateRelationship($this->document);
     }

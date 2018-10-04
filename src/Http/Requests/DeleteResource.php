@@ -55,8 +55,9 @@ class DeleteResource extends ValidatedRequest
         }
 
         /** 1.0 validators */
-        $validators->modifyQueryChecker($this->getQueryParameters())
-            ->checkQuery($this->getEncodingParameters());
+        $this->passes(
+            $validators->modifyQuery($this->query())
+        );
     }
 
 }

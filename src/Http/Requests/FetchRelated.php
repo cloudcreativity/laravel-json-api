@@ -59,8 +59,9 @@ class FetchRelated extends ValidatedRequest
         }
 
         /** 1.0 validators */
-        $validators->fetchRelatedQueryChecker($this->getQueryParameters())
-            ->checkQuery($this->getEncodingParameters());
+        $this->passes(
+            $validators->fetchRelatedQuery($this->query())
+        );
     }
 
 }

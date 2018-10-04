@@ -27,6 +27,7 @@ use CloudCreativity\LaravelJsonApi\Object\ResourceIdentifier;
  * Class AcceptImmutableRelationship
  *
  * @package CloudCreativity\LaravelJsonApi
+ * @deprecated 2.0.0 use classes in the `Validation` namespace instead.
  */
 class AcceptImmutableRelationship implements AcceptRelatedResourceInterface
 {

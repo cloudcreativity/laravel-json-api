@@ -32,14 +32,7 @@ interface DocumentValidatorInterface
      *
      * @return bool
      */
-    public function fails();
-
-    /**
-     * Does the document meet the JSON API specification?
-     *
-     * @return bool
-     */
-    public function passes();
+    public function fails(): bool;
 
     /**
      * Get the document that is subject of validation.
@@ -53,6 +46,6 @@ interface DocumentValidatorInterface
      *
      * @return ErrorCollection
      */
-    public function getErrors();
+    public function getErrors(): ErrorCollection;
 
 }

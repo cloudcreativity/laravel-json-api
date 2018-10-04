@@ -43,8 +43,9 @@ class FetchRelationship extends FetchRelated
         }
 
         /** 1.0 validators */
-        $validators->fetchRelationshipQueryChecker($this->getQueryParameters())
-            ->checkQuery($this->getEncodingParameters());
+        $this->passes(
+            $validators->fetchRelationshipQuery($this->query())
+        );
     }
 
 }

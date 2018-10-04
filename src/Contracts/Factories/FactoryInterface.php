@@ -41,16 +41,16 @@ use Psr\Http\Message\RequestInterface as PsrRequest;
 use Psr\Http\Message\ResponseInterface as PsrResponse;
 
 /**
- * Interface ExtensionInterface
+ * Interface FactoryInterface
  *
- * @package CloudCreativity\LaravelJsonApi\Contracts\Factories
+ * @package CloudCreativity\LaravelJsonApi
  */
 interface FactoryInterface extends BaseFactoryInterface
 {
 
     /**
      * @param ResolverInterface $resolver
-     * @return mixed
+     * @return ContainerInterface
      */
     public function createExtendedContainer(ResolverInterface $resolver);
 
@@ -110,11 +110,13 @@ interface FactoryInterface extends BaseFactoryInterface
     /**
      * @param array $errors
      * @return ErrorRepositoryInterface $errors
+     * @deprecated 2.0.0
      */
     public function createErrorRepository(array $errors);
 
     /**
      * @return ReplacerInterface
+     * @deprecated 2.0.0
      */
     public function createReplacer();
 
@@ -124,6 +126,7 @@ interface FactoryInterface extends BaseFactoryInterface
      * @param ErrorRepositoryInterface $errors
      * @param StoreInterface $store
      * @return ValidatorFactoryInterface
+     * @deprecated 2.0.0
      */
     public function createValidatorFactory(ErrorRepositoryInterface $errors, StoreInterface $store);
 
@@ -138,6 +141,7 @@ interface FactoryInterface extends BaseFactoryInterface
      * @param array|null $filteringParameters
      * @param QueryValidatorInterface|null $validator
      * @return QueryCheckerInterface
+     * @deprecated 2.0.0
      */
     public function createExtendedQueryChecker(
         $allowUnrecognized = false,

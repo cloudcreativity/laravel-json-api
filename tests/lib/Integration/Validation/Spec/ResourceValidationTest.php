@@ -427,10 +427,9 @@ class ResourceValidationTest extends TestCase
             ],
         ];
 
-        $this->actingAsUser()->doCreate($data)->assertStatus(400)->assertExactJson([
+        $this->actingAsUser()->doCreate($data)->assertStatus(400)->assertJson([
             'errors' => [
                 [
-                    'title' => 'Not Supported',
                     'detail' => "Resource type 'post' is not recognised.",
                     'status' => '400',
                     'source' => [

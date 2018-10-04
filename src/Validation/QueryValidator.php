@@ -2,6 +2,8 @@
 
 namespace CloudCreativity\LaravelJsonApi\Validation;
 
+use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
+
 /**
  * Class QueryValidator
  *
@@ -13,7 +15,7 @@ class QueryValidator extends AbstractValidator
     /**
      * @inheritDoc
      */
-    protected function createError($key, $detail)
+    protected function createError($key, $detail): ErrorInterface
     {
         return $this->errors->invalidQueryParameter($key, $detail);
     }

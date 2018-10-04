@@ -30,7 +30,7 @@ abstract class AbstractValidator implements ValidatorInterface
      * @param $detail
      * @return ErrorInterface
      */
-    abstract protected function createError($key, $detail);
+    abstract protected function createError($key, $detail): ErrorInterface;
 
     /**
      * Validator constructor.
@@ -103,7 +103,7 @@ abstract class AbstractValidator implements ValidatorInterface
     /**
      * @inheritdoc
      */
-    public function getErrors()
+    public function getErrors(): ErrorCollection
     {
         $errors = new ErrorCollection();
 

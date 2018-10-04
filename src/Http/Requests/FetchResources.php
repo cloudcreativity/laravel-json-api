@@ -40,8 +40,9 @@ class FetchResources extends ValidatedRequest
         }
 
         /** 1.0 validators */
-        $validators->fetchManyQueryChecker($this->getQueryParameters())
-            ->checkQuery($this->getEncodingParameters());
+        $this->passes(
+            $validators->fetchManyQuery($this->query())
+        );
     }
 
 }

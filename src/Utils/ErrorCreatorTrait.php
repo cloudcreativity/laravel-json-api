@@ -28,6 +28,7 @@ use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
  * Class ErrorCreatorTrait
  *
  * @package CloudCreativity\LaravelJsonApi
+ * @deprecated 2.0.0
  */
 trait ErrorCreatorTrait
 {

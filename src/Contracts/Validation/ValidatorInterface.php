@@ -5,6 +5,11 @@ namespace CloudCreativity\LaravelJsonApi\Contracts\Validation;
 use Illuminate\Contracts\Validation\Validator;
 use Neomerx\JsonApi\Exceptions\ErrorCollection;
 
+/**
+ * Interface ValidatorInterface
+ *
+ * @package CloudCreativity\LaravelJsonApi
+ */
 interface ValidatorInterface extends Validator
 {
 
@@ -13,5 +18,5 @@ interface ValidatorInterface extends Validator
      *
      * @return ErrorCollection
      */
-    public function getErrors();
+    public function getErrors(): ErrorCollection;
 }
