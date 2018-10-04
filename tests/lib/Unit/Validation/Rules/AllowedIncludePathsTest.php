@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Validation\Rules;
+namespace CloudCreativity\LaravelJsonApi\Tests\Unit\Validation\Rules;
 
 use CloudCreativity\LaravelJsonApi\Rules\AllowedIncludePaths;
-use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
+use PHPUnit\Framework\TestCase;
 
 class AllowedIncludePathsTest extends TestCase
 {
@@ -48,10 +48,4 @@ class AllowedIncludePathsTest extends TestCase
         $this->assertTrue($rule->passes('include', 'foo,bar,baz,bat'));
     }
 
-    public function testMessage()
-    {
-        $rule = new AllowedIncludePaths();
-
-        $this->assertSame('Include paths must contain only allowed ones.', $rule->message());
-    }
 }

@@ -1,9 +1,9 @@
 <?php
 
-namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Validation\Rules;
+namespace CloudCreativity\LaravelJsonApi\Tests\Unit\Validation\Rules;
 
 use CloudCreativity\LaravelJsonApi\Rules\AllowedFilterParameters;
-use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
+use PHPUnit\Framework\TestCase;
 
 class AllowedFilterParametersTest extends TestCase
 {
@@ -36,10 +36,4 @@ class AllowedFilterParametersTest extends TestCase
         ]));
     }
 
-    public function testMessage()
-    {
-        $rule = new AllowedFilterParameters();
-
-        $this->assertSame('Filter parameters must contain only allowed ones.', $rule->message());
-    }
 }

@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Validation\Rules;
+namespace CloudCreativity\LaravelJsonApi\Tests\Unit\Validation\Rules;
 
 use CloudCreativity\LaravelJsonApi\Rules\AllowedSortParameters;
-use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
+use PHPUnit\Framework\TestCase;
 
 class AllowedSortParametersTest extends TestCase
 {
@@ -51,10 +51,4 @@ class AllowedSortParametersTest extends TestCase
         $this->assertTrue($rule->passes('sort', 'foo,-bar,baz,-bat'));
     }
 
-    public function testMessage()
-    {
-        $rule = new AllowedSortParameters();
-
-        $this->assertSame('Sort parameters must contain only allowed ones.', $rule->message());
-    }
 }

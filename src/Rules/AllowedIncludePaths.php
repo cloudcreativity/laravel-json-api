@@ -15,14 +15,6 @@ class AllowedIncludePaths extends AbstractAllowedRule
     /**
      * @inheritDoc
      */
-    public function message()
-    {
-        return trans('jsonapi::validation.allowed_include_paths');
-    }
-
-    /**
-     * @inheritDoc
-     */
     protected function extract($value): Collection
     {
         $paths = is_string($value) ? explode(',', $value) : [];

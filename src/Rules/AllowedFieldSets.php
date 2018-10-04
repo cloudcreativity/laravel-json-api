@@ -24,6 +24,13 @@ class AllowedFieldSets implements Rule
     private $allowed;
 
     /**
+     * The last value that was validated.
+     *
+     * @var array|null
+     */
+    private $value;
+
+    /**
      * AllowedFieldSets constructor.
      *
      * @param array|null $allowed
@@ -85,6 +92,8 @@ class AllowedFieldSets implements Rule
      */
     public function passes($attribute, $value)
     {
+        $this->value = $value;
+
         if ($this->all) {
             return true;
         }
@@ -103,32 +112,76 @@ class AllowedFieldSets implements Rule
      */
     public function message()
     {
-        return trans('jsonapi::validation.allowed_field_sets');
+        $invalid = $this->invalid();
+
+        if ($invalid->isEmpty()) {
+            $key = 'default';
+        } else {
+            $key = (1 === $invalid->count()) ? 'singular' : 'plural';
+        }
+
+        return trans("jsonapi::validation.allowed_field_sets.{$key}", [
+            'values' => $invalid->implode(', '),
+        ]);
     }
 
     /**
      * Are the fields allowed for the specified resource type?
      *
-     * @param $resourceType
+     * @param string $resourceType
      * @param string $fields
      * @return bool
      */
-    protected function allowed($resourceType, string $fields): bool
+    protected function allowed(string $resourceType, string $fields): bool
     {
+        return $this->notAllowed($resourceType, $fields)->isEmpty();
+    }
+
+    /**
+     * Get the invalid fields for the resource type.
+     *
+     * @param string $resourceType
+     * @param string $fields
+     * @return Collection
+     */
+    protected function notAllowed(string $resourceType, string $fields): Collection
+    {
+        $fields = collect(explode(',', $fields));
+
         if (!$this->allowed->has($resourceType)) {
-            return false;
+            return $fields;
         }
 
         $allowed = $this->allowed->get($resourceType);
 
         if (is_null($allowed)) {
-            return true;
+            return collect();
         }
 
         $allowed = collect((array) $allowed);
 
-        return collect(explode(',', $fields))->every(function ($value) use ($allowed) {
+        return $fields->reject(function ($value) use ($allowed) {
             return $allowed->contains($value);
+        });
+    }
+
+    /**
+     * Get the fields that are invalid.
+     *
+     * @return Collection
+     */
+    protected function invalid(): Collection
+    {
+        if (!is_array($this->value)) {
+            return collect();
+        }
+
+        return collect($this->value)->map(function ($value, $key) {
+            return $this->notAllowed($key, $value);
+        })->flatMap(function (Collection $fields, $type) {
+            return $fields->map(function ($field) use ($type) {
+                return "{$type}.{$field}";
+            });
         });
     }
 

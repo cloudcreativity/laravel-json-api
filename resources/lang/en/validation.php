@@ -27,10 +27,35 @@ return [
     |
     */
 
-    'allowed_field_sets' => 'Sparse field sets must contain only allowed ones.',
-    'allowed_filter_parameters' => 'Filter parameters must contain only allowed ones.',
-    'allowed_include_paths' => 'Include paths must contain only allowed ones.',
-    'allowed_sort_parameters' => 'Sort parameters must contain only allowed ones.',
-    'allowed_page_parameters' => 'Page parameters must contain only allowed ones.',
+    'allowed_field_sets' => [
+        'default' => 'Sparse field sets must contain only allowed ones.',
+        'singular' => 'Sparse field set :values is not allowed.',
+        'plural' => 'Sparse field sets :values are not allowed.',
+    ],
+
+    'allowed_filter_parameters' => [
+        'default' => 'Filter parameters must contain only allowed ones.',
+        'singular' => 'Filter parameter :values is not allowed.',
+        'plural' => 'Filter parameters :values are not allowed.',
+    ],
+
+    'allowed_include_paths' => [
+        'default' => 'Include paths must contain only allowed ones.',
+        'singular' => 'Include path :values is not allowed.',
+        'plural' => 'Include paths :values are not allowed.',
+    ],
+
+    'allowed_sort_parameters' => [
+        'default' => 'Sort parameters must contain only allowed ones.',
+        'singular' => 'Sort parameter :values is not allowed.',
+        'plural' => 'Sort parameters :values are not allowed.',
+    ],
+
+    'allowed_page_parameters' => [
+        'default' => 'Page parameters must contain only allowed ones.',
+        'singular' => 'Page parameter :values is not allowed.',
+        'plural' => 'Page parameters :values are not allowed.',
+    ],
+
     'disallowed_parameter' => 'Parameter :name is not allowed.',
 ];

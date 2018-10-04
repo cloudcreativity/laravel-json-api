@@ -1,9 +1,9 @@
 <?php
 
-namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Validation\Rules;
+namespace CloudCreativity\LaravelJsonApi\Tests\Unit\Validation\Rules;
 
 use CloudCreativity\LaravelJsonApi\Rules\AllowedFieldSets;
-use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
+use PHPUnit\Framework\TestCase;
 
 class AllowedFieldSetsTest extends TestCase
 {
@@ -72,10 +72,4 @@ class AllowedFieldSetsTest extends TestCase
         ]));
     }
 
-    public function testMessage()
-    {
-        $rule = new AllowedFieldSets();
-
-        $this->assertSame('Sparse field sets must contain only allowed ones.', $rule->message());
-    }
 }

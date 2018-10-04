@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Validation\Rules;
+namespace CloudCreativity\LaravelJsonApi\Tests\Unit\Validation\Rules;
 
 use CloudCreativity\LaravelJsonApi\Rules\AllowedPageParameters;
-use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
+use PHPUnit\Framework\TestCase;
 
 class AllowedPageParametersTest extends TestCase
 {
@@ -51,10 +51,4 @@ class AllowedPageParametersTest extends TestCase
         ]));
     }
 
-    public function testMessage()
-    {
-        $rule = new AllowedPageParameters();
-
-        $this->assertSame('Page parameters must contain only allowed ones.', $rule->message());
-    }
 }

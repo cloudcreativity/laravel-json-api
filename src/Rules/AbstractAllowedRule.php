@@ -19,6 +19,13 @@ abstract class AbstractAllowedRule implements Rule
     private $allowed;
 
     /**
+     * The last value that was validated.
+     *
+     * @var string|null
+     */
+    private $value;
+
+    /**
      * Extract parameters from the value.
      *
      * @param mixed $value
@@ -72,6 +79,8 @@ abstract class AbstractAllowedRule implements Rule
      */
     public function passes($attribute, $value)
     {
+        $this->value = $value;
+
         if ($this->all) {
             return true;
         }
@@ -79,6 +88,25 @@ abstract class AbstractAllowedRule implements Rule
         return $this->extract($value)->every(function ($key) {
             return $this->allowed($key);
         });
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function message()
+    {
+        $name = snake_case(class_basename($this));
+        $invalid = $this->invalid();
+
+        if ($invalid->isEmpty()) {
+            $key = 'default';
+        } else {
+            $key = (1 === $invalid->count()) ? 'singular' : 'plural';
+        }
+
+        return trans("jsonapi::validation.{$name}.{$key}", [
+            'values' => $params = $invalid->implode(', '),
+        ]);
     }
 
     /**
@@ -90,6 +118,16 @@ abstract class AbstractAllowedRule implements Rule
     protected function allowed(string $param): bool
     {
         return $this->allowed->has($param);
+    }
+
+    /**
+     * @return Collection
+     */
+    protected function invalid()
+    {
+        return $this->extract($this->value)->reject(function ($value) {
+            return $this->allowed($value);
+        });
     }
 
 }
