@@ -471,9 +471,8 @@ class GeneratorsTest extends TestCase
         $this->assertFileExists($file);
         $content = $this->files->get($file);
 
-        $this->assertContains("protected \$resourceType = 'companies';", $content);
         $this->assertNotContains('use DummyApp\Company;', $content);
-        $this->assertContains('@param $record', $content);
+        $this->assertContains('@param mixed|null $record', $content);
 
         if ($this->byResource) {
             $this->assertContains('namespace DummyApp\JsonApi\Companies;', $content);

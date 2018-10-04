@@ -59,22 +59,18 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
     protected $queryAttributes = [];
 
     /**
-     * What include paths the client is allowed to request.
-     *
-     * Empty array = clients are not allowed to specify include paths.
-     * Null = all paths are allowed.
+     * The include paths a client is allowed to request.
      *
      * @var string[]|null
+     *      the allowed paths, an empty array for none allowed, or null to allow all paths.
      */
     protected $allowedIncludePaths = [];
 
     /**
-     * What sort field names can be sent by the client.
-     *
-     * Empty array = clients are not allowed to specify sort fields.
-     * Null = clients can specify any sort fields.
+     * The sort field names a client is allowed send.
      *
      * @var string[]|null
+     *      the allowed fields, an empty array for none allowed, or null to allow all fields.
      */
     protected $allowedSortParameters = [];
 
