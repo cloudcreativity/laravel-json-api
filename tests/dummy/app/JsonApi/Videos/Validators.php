@@ -31,7 +31,7 @@ class Validators extends AbstractValidators
     /**
      * @inheritDoc
      */
-    protected function rules($record = null)
+    protected function rules($record = null): array
     {
         return [
             'id' => 'required|regex:/' . Uuid::VALID_PATTERN . '/',
@@ -39,6 +39,14 @@ class Validators extends AbstractValidators
             'description' => "required|string",
             'url' => 'required|url',
         ];
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function queryRules(): array
+    {
+        return [];
     }
 
 }

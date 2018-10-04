@@ -8,13 +8,6 @@ class DummyClass extends AbstractValidators
 {
 
     /**
-     * Validation rules for query parameters.
-     *
-     * @var array
-     */
-    protected $queryRules = [];
-
-    /**
      * The include paths a client is allowed to request.
      *
      * @var string[]|null
@@ -37,7 +30,19 @@ class DummyClass extends AbstractValidators
      *      the record being updated, or null if creating a resource.
      * @return mixed
      */
-    protected function rules($record = null)
+    protected function rules($record = null): array
+    {
+        return [
+            //
+        ];
+    }
+
+    /**
+     * Get query parameter validation rules.
+     *
+     * @return array
+     */
+    protected function queryRules(): array
     {
         return [
             //

@@ -18,54 +18,61 @@ class QueryValidationTest extends TestCase
     public function searchProvider()
     {
         return [
+            'fields:not allowed' => [
+                ['fields' => ['posts' => 'title,foo']],
+                'fields',
+                'Sparse field sets must contain only allowed ones.',
+            ],
             'filter:invalid' => [
                 ['filter' => ['title' => '']],
-                [
-                    'title' => 'Bad Request',
-                    'status' => '400',
-                    'detail' => 'The filter.title field must have a value.',
-                    'source' => ['parameter' => "filter.title"],
-                ],
+                'filter.title',
+                'The filter.title field must have a value.',
             ],
-            'page:invalid' => [
-                ['page' => ['number' => 0, 'size' => 10]],
-                [
-                    'title' => 'Bad Request',
-                    'status' => '400',
-                    'detail' => 'The page.number must be at least 1.',
-                    'source' => ['parameter' => 'page.number'],
-                ],
+            'filter:not allowed' => [
+                ['filter' => ['foo' => 'bar']],
+                'filter',
+                'Filter parameters must contain only allowed ones.',
             ],
             'include:not allowed' => [
                 ['include' => 'foo'],
-                [
-                    'title' => 'Bad Request',
-                    'status' => '400',
-                    'detail' => 'Include paths must contain only allowed ones.',
-                    'source' => ['parameter' => 'include'],
-                ],
+                'include',
+                'Include paths must contain only allowed ones.',
+            ],
+            'page:invalid' => [
+                ['page' => ['number' => 0, 'size' => 10]],
+                'page.number',
+                'The page.number must be at least 1.',
+            ],
+            'page:not allowed' => [
+                ['page' => ['foo' => 'bar']],
+                'page',
+                'Page parameters must contain only allowed ones.',
             ],
             'sort:not allowed' => [
                 ['sort' => 'title,foo'],
-                [
-                    'title' => 'Bad Request',
-                    'status' => '400',
-                    'detail' => 'Sort parameters must contain only allowed ones.',
-                    'source' => ['parameter' => 'sort'],
-                ],
+                'sort',
+                'Sort parameters must contain only allowed ones.',
             ],
         ];
     }
 
     /**
      * @param array $params
-     * @param array $error
+     * @param string $param
+     * @param string $detail
      * @dataProvider searchProvider
      */
-    public function testSearch(array $params, array $error)
+    public function testSearch(array $params, string $param, string $detail)
     {
+        $expected = [
+            'title' => 'Invalid Query Parameter',
+            'status' => "400",
+            'detail' => $detail,
+            'source' => ['parameter' => $param],
+        ];
+
         $this->doSearch($params)
-            ->assertStatus((int) $error['status'])
-            ->assertExactJson(['errors' => [$error]]);
+            ->assertStatus(400)
+            ->assertExactJson(['errors' => [$expected]]);
     }
 }

@@ -11,17 +11,6 @@ class Validators extends AbstractValidators
     /**
      * @var array
      */
-    protected $queryRules = [
-        'filter.title' => 'filled|string',
-        'filter.slug' => 'filled|alpha_dash',
-        'filter.published' => 'boolean',
-        'page.number' => 'integer|min:1',
-        'page.size' => 'integer|between:1,50',
-    ];
-
-    /**
-     * @var array
-     */
     protected $allowedSortParameters = [
         'created-at',
         'updated-at',
@@ -50,10 +39,28 @@ class Validators extends AbstractValidators
     ];
 
     /**
+     * @var array
+     */
+    protected $allowedFieldSets = [
+        'posts' => ['title', 'content', 'slug', 'author', 'tags'],
+    ];
+
+    /**
+     * @var array
+     */
+    protected $allowedPagingParameters = [
+        'number',
+        'size',
+        // these are used as custom keys in a test...
+        'page',
+        'limit',
+    ];
+
+    /**
      * @param Post|null $record
      * @return array|mixed
      */
-    protected function rules($record = null)
+    protected function rules($record = null): array
     {
         $slugUnique = 'unique:posts,slug';
 
@@ -67,6 +74,20 @@ class Validators extends AbstractValidators
             'slug' => "required|alpha_dash|$slugUnique",
             'author.type' => 'in:users',
             'tags.*.type' => 'in:tags',
+        ];
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function queryRules(): array
+    {
+        return [
+            'filter.title' => 'filled|string',
+            'filter.slug' => 'filled|alpha_dash',
+            'filter.published' => 'boolean',
+            'page.number' => 'integer|min:1',
+            'page.size' => 'integer|between:1,50',
         ];
     }
 

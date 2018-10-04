@@ -35,25 +35,25 @@ return [
     */
 
     'member_required' => [
-        'title' => 'Required Member',
+        'title' => 'Non-Compliant JSON API Document',
         'detail' => "The member ':member' is required.",
         'code' => '',
     ],
 
     'member_object_expected' => [
-        'title' => 'Object Expected',
+        'title' => 'Non-Compliant JSON API Document',
         'detail' => "The member ':member' must be an object.",
         'code' => '',
     ],
 
     'member_string_expected' => [
-        'title' => 'String Expected',
+        'title' => 'Non-Compliant JSON API Document',
         'detail' => "The member ':member' must be a string.",
         'code' => '',
     ],
 
     'member_empty' => [
-        'title' => 'Value Expected',
+        'title' => 'Non-Compliant JSON API Document',
         'detail' => "The member ':member' cannot be empty.",
         'code' => '',
     ],
@@ -83,19 +83,19 @@ return [
     ],
 
     'resource_not_found' => [
-        'title' => 'Invalid Relationship',
+        'title' => 'Not Found',
         'detail' => "The related resource does not exist.",
         'code' => '',
     ],
 
     'resource_invalid' => [
         'title' => 'Unprocessable Entity',
-        'detail' => 'The request was well-formed but contains semantic errors.',
+        'detail' => 'The document was well-formed but contains semantic errors.',
         'code' => '',
     ],
 
     'query_invalid' => [
-        'title' => 'Bad Request',
+        'title' => 'Invalid Query Parameter',
         'detail' => 'The request query parameters are invalid.',
         'code' => '',
     ],

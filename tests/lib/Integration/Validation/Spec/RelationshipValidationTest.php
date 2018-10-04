@@ -36,7 +36,7 @@ class RelationshipValidationTest extends TestCase
             'data:required' => [
                 new \stdClass(),
                 [
-                    'title' => 'Required Member',
+                    'title' => 'Non-Compliant JSON API Document',
                     'detail' => "The member 'data' is required.",
                     'status' => '400',
                     'source' => ['pointer' => '/'],
@@ -45,7 +45,7 @@ class RelationshipValidationTest extends TestCase
             'data:not object' => [
                 ['data' => false],
                 [
-                    'title' => 'Object Expected',
+                    'title' => 'Non-Compliant JSON API Document',
                     'detail' => "The member 'data' must be an object.",
                     'status' => '400',
                     'source' => ['pointer' => '/data'],
@@ -58,7 +58,7 @@ class RelationshipValidationTest extends TestCase
                     ],
                 ],
                 [
-                    'title' => 'Required Member',
+                    'title' => 'Non-Compliant JSON API Document',
                     'detail' => "The member 'type' is required.",
                     'status' => '400',
                     'source' => ['pointer' => '/data'],
@@ -72,7 +72,7 @@ class RelationshipValidationTest extends TestCase
                     ],
                 ],
                 [
-                    'title' => 'String Expected',
+                    'title' => 'Non-Compliant JSON API Document',
                     'detail' => "The member 'type' must be a string.",
                     'status' => '400',
                     'source' => ['pointer' => '/data/type'],
@@ -86,7 +86,7 @@ class RelationshipValidationTest extends TestCase
                     ],
                 ],
                 [
-                    'title' => 'Value Expected',
+                    'title' => 'Non-Compliant JSON API Document',
                     'detail' => "The member 'type' cannot be empty.",
                     'status' => '400',
                     'source' => ['pointer' => '/data/type'],
@@ -113,7 +113,7 @@ class RelationshipValidationTest extends TestCase
                     ],
                 ],
                 [
-                    'title' => 'Required Member',
+                    'title' => 'Non-Compliant JSON API Document',
                     'detail' => "The member 'id' is required.",
                     'status' => '400',
                     'source' => ['pointer' => '/data'],
@@ -127,7 +127,7 @@ class RelationshipValidationTest extends TestCase
                     ],
                 ],
                 [
-                    'title' => 'String Expected',
+                    'title' => 'Non-Compliant JSON API Document',
                     'detail' => "The member 'id' must be a string.",
                     'status' => '400',
                     'source' => ['pointer' => '/data/id'],
@@ -141,7 +141,7 @@ class RelationshipValidationTest extends TestCase
                     ],
                 ],
                 [
-                    'title' => 'String Expected',
+                    'title' => 'Non-Compliant JSON API Document',
                     'detail' => "The member 'id' must be a string.",
                     'status' => '400',
                     'source' => ['pointer' => '/data/id'],
@@ -155,7 +155,7 @@ class RelationshipValidationTest extends TestCase
                     ],
                 ],
                 [
-                    'title' => 'Value Expected',
+                    'title' => 'Non-Compliant JSON API Document',
                     'detail' => "The member 'id' cannot be empty.",
                     'status' => '400',
                     'source' => ['pointer' => '/data/id'],
@@ -169,7 +169,7 @@ class RelationshipValidationTest extends TestCase
                     ],
                 ],
                 [
-                    'title' => 'Invalid Relationship',
+                    'title' => 'Not Found',
                     'detail' => 'The related resource does not exist.',
                     'status' => '404',
                     'source' => ['pointer' => '/data'],
@@ -187,7 +187,7 @@ class RelationshipValidationTest extends TestCase
             'data:required' => [
                 new \stdClass(),
                 [
-                    'title' => 'Required Member',
+                    'title' => 'Non-Compliant JSON API Document',
                     'detail' => "The member 'data' is required.",
                     'status' => '400',
                     'source' => ['pointer' => '/'],
@@ -200,7 +200,7 @@ class RelationshipValidationTest extends TestCase
                     ],
                 ],
                 [
-                    'title' => 'Required Member',
+                    'title' => 'Non-Compliant JSON API Document',
                     'detail' => "The member 'type' is required.",
                     'status' => '400',
                     'source' => ['pointer' => '/data/0'],
@@ -213,7 +213,7 @@ class RelationshipValidationTest extends TestCase
                     ],
                 ],
                 [
-                    'title' => 'String Expected',
+                    'title' => 'Non-Compliant JSON API Document',
                     'detail' => "The member 'type' must be a string.",
                     'status' => '400',
                     'source' => ['pointer' => '/data/0/type'],
@@ -226,7 +226,7 @@ class RelationshipValidationTest extends TestCase
                     ],
                 ],
                 [
-                    'title' => 'Value Expected',
+                    'title' => 'Non-Compliant JSON API Document',
                     'detail' => "The member 'type' cannot be empty.",
                     'status' => '400',
                     'source' => ['pointer' => '/data/0/type'],
@@ -252,7 +252,7 @@ class RelationshipValidationTest extends TestCase
                     ],
                 ],
                 [
-                    'title' => 'Required Member',
+                    'title' => 'Non-Compliant JSON API Document',
                     'detail' => "The member 'id' is required.",
                     'status' => '400',
                     'source' => ['pointer' => '/data/0'],
@@ -265,7 +265,7 @@ class RelationshipValidationTest extends TestCase
                     ],
                 ],
                 [
-                    'title' => 'String Expected',
+                    'title' => 'Non-Compliant JSON API Document',
                     'detail' => "The member 'id' must be a string.",
                     'status' => '400',
                     'source' => ['pointer' => '/data/0/id'],
@@ -278,7 +278,7 @@ class RelationshipValidationTest extends TestCase
                     ],
                 ],
                 [
-                    'title' => 'String Expected',
+                    'title' => 'Non-Compliant JSON API Document',
                     'detail' => "The member 'id' must be a string.",
                     'status' => '400',
                     'source' => ['pointer' => '/data/0/id'],
@@ -291,7 +291,7 @@ class RelationshipValidationTest extends TestCase
                     ],
                 ],
                 [
-                    'title' => 'Value Expected',
+                    'title' => 'Non-Compliant JSON API Document',
                     'detail' => "The member 'id' cannot be empty.",
                     'status' => '400',
                     'source' => ['pointer' => '/data/0/id'],
@@ -304,7 +304,7 @@ class RelationshipValidationTest extends TestCase
                     ],
                 ],
                 [
-                    'title' => 'Invalid Relationship',
+                    'title' => 'Not Found',
                     'detail' => 'The related resource does not exist.',
                     'status' => '404',
                     'source' => ['pointer' => '/data/0'],

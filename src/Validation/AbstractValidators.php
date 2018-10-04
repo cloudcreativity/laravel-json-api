@@ -12,7 +12,6 @@ use CloudCreativity\LaravelJsonApi\Rules\AllowedIncludePaths;
 use CloudCreativity\LaravelJsonApi\Rules\AllowedPageParameters;
 use CloudCreativity\LaravelJsonApi\Rules\AllowedSortParameters;
 use CloudCreativity\LaravelJsonApi\Rules\DisallowedParameter;
-use DemeterChain\A;
 use Illuminate\Support\Collection;
 
 /**
@@ -36,13 +35,6 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
      * @var array
      */
     protected $attributes = [];
-
-    /**
-     * Validation rules for query parameters.
-     *
-     * @var array
-     */
-    protected $queryRules = [];
 
     /**
      * Custom messages for the query parameters validator.
@@ -130,7 +122,14 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
      *      the record being updated, or null if creating a resource.
      * @return mixed
      */
-    abstract protected function rules($record = null);
+    abstract protected function rules($record = null): array;
+
+    /**
+     * Get query parameter validation rules.
+     *
+     * @return array
+     */
+    abstract protected function queryRules(): array;
 
     /**
      * AbstractValidators constructor.
@@ -391,10 +390,10 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
     /**
      * @return array
      */
-    protected function queryRules(): array
+    protected function allQueryRules(): array
     {
         return collect($this->defaultQueryRules())
-            ->merge($this->queryRules)
+            ->merge($this->queryRules())
             ->all();
     }
 
@@ -426,7 +425,7 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
             'page' => [
                 'bail',
                 'array',
-                $this->allowedSortParameters(),
+                $this->allowedPagingParameters(),
             ],
             'sort' => [
                 'bail',
@@ -456,10 +455,10 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
     protected function queryRulesWithout(string ...$keys): array
     {
         if (empty($keys)) {
-            return $this->queryRules();
+            return $this->allQueryRules();
         }
 
-        return collect($this->queryRules())->reject(function ($value, $key) use ($keys) {
+        return collect($this->allQueryRules())->reject(function ($value, $key) use ($keys) {
             return starts_with($key, $keys);
         })->merge($this->excluded(...$keys))->all();
     }
