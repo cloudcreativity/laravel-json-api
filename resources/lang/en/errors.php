@@ -36,49 +36,49 @@ return [
 
     'member_required' => [
         'title' => 'Non-Compliant JSON API Document',
-        'detail' => "The member ':member' is required.",
+        'detail' => "The member :member is required.",
         'code' => '',
     ],
 
     'member_object_expected' => [
         'title' => 'Non-Compliant JSON API Document',
-        'detail' => "The member ':member' must be an object.",
+        'detail' => "The member :member must be an object.",
         'code' => '',
     ],
 
     'member_string_expected' => [
         'title' => 'Non-Compliant JSON API Document',
-        'detail' => "The member ':member' must be a string.",
+        'detail' => "The member :member must be a string.",
         'code' => '',
     ],
 
     'member_empty' => [
         'title' => 'Non-Compliant JSON API Document',
-        'detail' => "The member ':member' cannot be empty.",
+        'detail' => "The member :member cannot be empty.",
         'code' => '',
     ],
 
     'resource_type_not_supported' => [
         'title' => 'Not Supported',
-        'detail' => "Resource type ':type' is not supported by this endpoint.",
+        'detail' => "Resource type :type is not supported by this endpoint.",
         'code' => '',
     ],
 
     'resource_type_not_recognised' => [
         'title' => 'Not Supported',
-        'detail' => "Resource type ':type' is not recognised.",
+        'detail' => "Resource type :type is not recognised.",
         'code' => '',
     ],
 
     'resource_id_not_supported' => [
         'title' => 'Not Supported',
-        'detail' => "Resource id ':id' is not supported by this endpoint.",
+        'detail' => "Resource id :id is not supported by this endpoint.",
         'code' => '',
     ],
 
     'resource_exists' => [
         'title' => 'Conflict',
-        'detail' => "Resource ':id' already exists.",
+        'detail' => "Resource :id already exists.",
         'code' => '',
     ],
 

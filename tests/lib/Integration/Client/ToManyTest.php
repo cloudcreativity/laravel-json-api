@@ -17,7 +17,6 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Client;
 
-use CloudCreativity\LaravelJsonApi\Encoder\Parameters\EncodingParameters;
 use DummyApp\Post;
 use DummyApp\Tag;
 

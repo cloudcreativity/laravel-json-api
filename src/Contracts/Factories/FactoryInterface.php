@@ -44,6 +44,7 @@ use Psr\Http\Message\ResponseInterface as PsrResponse;
  * Interface FactoryInterface
  *
  * @package CloudCreativity\LaravelJsonApi
+ * @deprecated type-hint `Factories\Factory` instead.
  */
 interface FactoryInterface extends BaseFactoryInterface
 {

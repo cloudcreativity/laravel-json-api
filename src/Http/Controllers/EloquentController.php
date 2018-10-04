@@ -22,7 +22,7 @@ namespace CloudCreativity\LaravelJsonApi\Http\Controllers;
  * Class EloquentController
  *
  * @package CloudCreativity\LaravelJsonApi
- * @deprecated extend `JsonApiController` directly.
+ * @deprecated 1.0.0 extend `JsonApiController` directly.
  */
 class EloquentController extends JsonApiController
 {

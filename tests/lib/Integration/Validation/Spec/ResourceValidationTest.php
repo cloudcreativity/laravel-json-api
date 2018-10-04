@@ -38,7 +38,7 @@ class ResourceValidationTest extends TestCase
                 new \stdClass(),
                 [
                     'title' => 'Non-Compliant JSON API Document',
-                    'detail' => "The member 'data' is required.",
+                    'detail' => "The member data is required.",
                     'status' => '400',
                     'source' => ['pointer' => '/'],
                 ],
@@ -47,7 +47,7 @@ class ResourceValidationTest extends TestCase
                 ['data' => []],
                 [
                     'title' => 'Non-Compliant JSON API Document',
-                    'detail' => "The member 'data' must be an object.",
+                    'detail' => "The member data must be an object.",
                     'status' => '400',
                     'source' => ['pointer' => '/data'],
                 ],
@@ -60,7 +60,7 @@ class ResourceValidationTest extends TestCase
                 ],
                 [
                     'title' => 'Non-Compliant JSON API Document',
-                    'detail' => "The member 'type' is required.",
+                    'detail' => "The member type is required.",
                     'status' => '400',
                     'source' => ['pointer' => '/data'],
                 ],
@@ -74,7 +74,7 @@ class ResourceValidationTest extends TestCase
                 ],
                 [
                     'title' => 'Non-Compliant JSON API Document',
-                    'detail' => "The member 'type' must be a string.",
+                    'detail' => "The member type must be a string.",
                     'status' => '400',
                     'source' => ['pointer' => '/data/type'],
                 ],
@@ -88,7 +88,7 @@ class ResourceValidationTest extends TestCase
                 ],
                 [
                     'title' => 'Non-Compliant JSON API Document',
-                    'detail' => "The member 'type' cannot be empty.",
+                    'detail' => "The member type cannot be empty.",
                     'status' => '400',
                     'source' => ['pointer' => '/data/type'],
                 ],
@@ -102,7 +102,7 @@ class ResourceValidationTest extends TestCase
                 ],
                 [
                     'title' => 'Not Supported',
-                    'detail' => "Resource type 'users' is not supported by this endpoint.",
+                    'detail' => "Resource type users is not supported by this endpoint.",
                     'status' => '409',
                     'source' => ['pointer' => '/data/type'],
                 ],
@@ -116,7 +116,7 @@ class ResourceValidationTest extends TestCase
                 ],
                 [
                     'title' => 'Non-Compliant JSON API Document',
-                    'detail' => "The member 'attributes' must be an object.",
+                    'detail' => "The member attributes must be an object.",
                     'status' => '400',
                     'source' => ['pointer' => '/data/attributes'],
                 ],
@@ -135,7 +135,7 @@ class ResourceValidationTest extends TestCase
                 ],
                 [
                     'title' => 'Non-Compliant JSON API Document',
-                    'detail' => "The member 'relationships' must be an object.",
+                    'detail' => "The member relationships must be an object.",
                     'status' => '400',
                     'source' => ['pointer' => '/data/relationships'],
                 ],
@@ -156,7 +156,7 @@ class ResourceValidationTest extends TestCase
                 ],
                 [
                     'title' => 'Non-Compliant JSON API Document',
-                    'detail' => "The member 'author' must be an object.",
+                    'detail' => "The member author must be an object.",
                     'status' => '400',
                     'source' => ['pointer' => '/data/relationships/author'],
                 ],
@@ -179,7 +179,7 @@ class ResourceValidationTest extends TestCase
                 ],
                 [
                     'title' => 'Non-Compliant JSON API Document',
-                    'detail' => "The member 'data' is required.",
+                    'detail' => "The member data is required.",
                     'status' => '400',
                     'source' => ['pointer' => '/data/relationships/author'],
                 ],
@@ -202,7 +202,7 @@ class ResourceValidationTest extends TestCase
                 ],
                 [
                     'title' => 'Non-Compliant JSON API Document',
-                    'detail' => "The member 'data' must be an object.",
+                    'detail' => "The member data must be an object.",
                     'status' => '400',
                     'source' => ['pointer' => '/data/relationships/author/data'],
                 ],
@@ -253,7 +253,7 @@ class ResourceValidationTest extends TestCase
                 ],
                 [
                     'title' => 'Non-Compliant JSON API Document',
-                    'detail' => "The member '0' must be an object.",
+                    'detail' => "The member 0 must be an object.",
                     'status' => '400',
                     'source' => ['pointer' => '/data/relationships/tags/data'],
                 ],
@@ -280,7 +280,7 @@ class ResourceValidationTest extends TestCase
                 ],
                 [
                     'title' => 'Non-Compliant JSON API Document',
-                    'detail' => "The member 'type' is required.",
+                    'detail' => "The member type is required.",
                     'status' => '400',
                     'source' => ['pointer' => '/data/relationships/tags/data/0'],
                 ],
@@ -303,7 +303,7 @@ class ResourceValidationTest extends TestCase
                 ],
                 [
                     'title' => 'Non-Compliant JSON API Document',
-                    'detail' => "The member 'id' is required.",
+                    'detail' => "The member id is required.",
                     'status' => '400',
                     'source' => ['pointer' => '/data'],
                 ],
@@ -318,7 +318,7 @@ class ResourceValidationTest extends TestCase
                 ],
                 [
                     'title' => 'Non-Compliant JSON API Document',
-                    'detail' => "The member 'id' must be a string.",
+                    'detail' => "The member id must be a string.",
                     'status' => '400',
                     'source' => ['pointer' => '/data/id'],
                 ],
@@ -333,7 +333,7 @@ class ResourceValidationTest extends TestCase
                 ],
                 [
                     'title' => 'Non-Compliant JSON API Document',
-                    'detail' => "The member 'id' must be a string.",
+                    'detail' => "The member id must be a string.",
                     'status' => '400',
                     'source' => ['pointer' => '/data/id'],
                 ],
@@ -348,7 +348,7 @@ class ResourceValidationTest extends TestCase
                 ],
                 [
                     'title' => 'Non-Compliant JSON API Document',
-                    'detail' => "The member 'id' cannot be empty.",
+                    'detail' => "The member id cannot be empty.",
                     'status' => '400',
                     'source' => ['pointer' => '/data/id'],
                 ],
@@ -363,7 +363,7 @@ class ResourceValidationTest extends TestCase
                 ],
                 [
                     'title' => 'Not Supported',
-                    'detail' => "Resource id '10' is not supported by this endpoint.",
+                    'detail' => "Resource id 10 is not supported by this endpoint.",
                     'status' => '409',
                     'source' => ['pointer' => '/data/id'],
                 ],

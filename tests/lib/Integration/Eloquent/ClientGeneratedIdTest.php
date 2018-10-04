@@ -130,7 +130,7 @@ class ClientGeneratedIdTest extends TestCase
 
         $error = [
             'title' => 'Conflict',
-            'detail' => "Resource '{$video->getKey()}' already exists.",
+            'detail' => "Resource {$video->getKey()} already exists.",
             'status' => '409',
             'source' => ['pointer' => '/data'],
         ];

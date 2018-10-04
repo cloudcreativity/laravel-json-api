@@ -164,8 +164,8 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
         return $this->createResourceValidator(
             $this->updateData($record, $document),
             $this->rules($record),
-            $this->messages(),
-            $this->attributes()
+            $this->messages($record),
+            $this->attributes($record)
         );
     }
 
@@ -244,21 +244,23 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
     }
 
     /**
-     * Get custom messages for a resource validator.
+     * Get custom messages for a resource object validator.
      *
+     * @param mixed|null $record
      * @return array
      */
-    protected function messages(): array
+    protected function messages($record = null): array
     {
         return $this->messages;
     }
 
     /**
-     * Get custom attributes for a resource validator.
+     * Get custom attributes for a resource object validator.
      *
+     * @param mixed|null $record
      * @return array
      */
-    protected function attributes(): array
+    protected function attributes($record = null): array
     {
         return $this->attributes;
     }
@@ -315,16 +317,16 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
      */
     protected function extractAttributes($record, array $new): Collection
     {
-        return $this->currentAttributeValues($record)->merge($new);
+        return $this->existingValues($record)->merge($new);
     }
 
     /**
-     * Get the current attribute values for the provided record.
+     * Get any existing values for the provided record.
      *
      * @param $record
      * @return Collection
      */
-    protected function currentAttributeValues($record): Collection
+    protected function existingValues($record): Collection
     {
         return collect($this->container->getSchema($record)->getAttributes($record));
     }

@@ -37,7 +37,7 @@ class RelationshipValidationTest extends TestCase
                 new \stdClass(),
                 [
                     'title' => 'Non-Compliant JSON API Document',
-                    'detail' => "The member 'data' is required.",
+                    'detail' => "The member data is required.",
                     'status' => '400',
                     'source' => ['pointer' => '/'],
                 ],
@@ -46,7 +46,7 @@ class RelationshipValidationTest extends TestCase
                 ['data' => false],
                 [
                     'title' => 'Non-Compliant JSON API Document',
-                    'detail' => "The member 'data' must be an object.",
+                    'detail' => "The member data must be an object.",
                     'status' => '400',
                     'source' => ['pointer' => '/data'],
                 ],
@@ -59,7 +59,7 @@ class RelationshipValidationTest extends TestCase
                 ],
                 [
                     'title' => 'Non-Compliant JSON API Document',
-                    'detail' => "The member 'type' is required.",
+                    'detail' => "The member type is required.",
                     'status' => '400',
                     'source' => ['pointer' => '/data'],
                 ],
@@ -73,7 +73,7 @@ class RelationshipValidationTest extends TestCase
                 ],
                 [
                     'title' => 'Non-Compliant JSON API Document',
-                    'detail' => "The member 'type' must be a string.",
+                    'detail' => "The member type must be a string.",
                     'status' => '400',
                     'source' => ['pointer' => '/data/type'],
                 ],
@@ -87,7 +87,7 @@ class RelationshipValidationTest extends TestCase
                 ],
                 [
                     'title' => 'Non-Compliant JSON API Document',
-                    'detail' => "The member 'type' cannot be empty.",
+                    'detail' => "The member type cannot be empty.",
                     'status' => '400',
                     'source' => ['pointer' => '/data/type'],
                 ],
@@ -101,7 +101,7 @@ class RelationshipValidationTest extends TestCase
                 ],
                 [
                     'title' => 'Not Supported',
-                    'detail' => "Resource type 'foobar' is not recognised.",
+                    'detail' => "Resource type foobar is not recognised.",
                     'status' => '400',
                     'source' => ['pointer' => '/data/type'],
                 ],
@@ -114,7 +114,7 @@ class RelationshipValidationTest extends TestCase
                 ],
                 [
                     'title' => 'Non-Compliant JSON API Document',
-                    'detail' => "The member 'id' is required.",
+                    'detail' => "The member id is required.",
                     'status' => '400',
                     'source' => ['pointer' => '/data'],
                 ],
@@ -128,7 +128,7 @@ class RelationshipValidationTest extends TestCase
                 ],
                 [
                     'title' => 'Non-Compliant JSON API Document',
-                    'detail' => "The member 'id' must be a string.",
+                    'detail' => "The member id must be a string.",
                     'status' => '400',
                     'source' => ['pointer' => '/data/id'],
                 ],
@@ -142,7 +142,7 @@ class RelationshipValidationTest extends TestCase
                 ],
                 [
                     'title' => 'Non-Compliant JSON API Document',
-                    'detail' => "The member 'id' must be a string.",
+                    'detail' => "The member id must be a string.",
                     'status' => '400',
                     'source' => ['pointer' => '/data/id'],
                 ],
@@ -156,7 +156,7 @@ class RelationshipValidationTest extends TestCase
                 ],
                 [
                     'title' => 'Non-Compliant JSON API Document',
-                    'detail' => "The member 'id' cannot be empty.",
+                    'detail' => "The member id cannot be empty.",
                     'status' => '400',
                     'source' => ['pointer' => '/data/id'],
                 ],
@@ -188,7 +188,7 @@ class RelationshipValidationTest extends TestCase
                 new \stdClass(),
                 [
                     'title' => 'Non-Compliant JSON API Document',
-                    'detail' => "The member 'data' is required.",
+                    'detail' => "The member data is required.",
                     'status' => '400',
                     'source' => ['pointer' => '/'],
                 ],
@@ -201,7 +201,7 @@ class RelationshipValidationTest extends TestCase
                 ],
                 [
                     'title' => 'Non-Compliant JSON API Document',
-                    'detail' => "The member 'type' is required.",
+                    'detail' => "The member type is required.",
                     'status' => '400',
                     'source' => ['pointer' => '/data/0'],
                 ],
@@ -214,7 +214,7 @@ class RelationshipValidationTest extends TestCase
                 ],
                 [
                     'title' => 'Non-Compliant JSON API Document',
-                    'detail' => "The member 'type' must be a string.",
+                    'detail' => "The member type must be a string.",
                     'status' => '400',
                     'source' => ['pointer' => '/data/0/type'],
                 ],
@@ -227,7 +227,7 @@ class RelationshipValidationTest extends TestCase
                 ],
                 [
                     'title' => 'Non-Compliant JSON API Document',
-                    'detail' => "The member 'type' cannot be empty.",
+                    'detail' => "The member type cannot be empty.",
                     'status' => '400',
                     'source' => ['pointer' => '/data/0/type'],
                 ],
@@ -240,7 +240,7 @@ class RelationshipValidationTest extends TestCase
                 ],
                 [
                     'title' => 'Not Supported',
-                    'detail' => "Resource type 'foobar' is not recognised.",
+                    'detail' => "Resource type foobar is not recognised.",
                     'status' => '400',
                     'source' => ['pointer' => '/data/0/type'],
                 ],
@@ -253,7 +253,7 @@ class RelationshipValidationTest extends TestCase
                 ],
                 [
                     'title' => 'Non-Compliant JSON API Document',
-                    'detail' => "The member 'id' is required.",
+                    'detail' => "The member id is required.",
                     'status' => '400',
                     'source' => ['pointer' => '/data/0'],
                 ],
@@ -266,7 +266,7 @@ class RelationshipValidationTest extends TestCase
                 ],
                 [
                     'title' => 'Non-Compliant JSON API Document',
-                    'detail' => "The member 'id' must be a string.",
+                    'detail' => "The member id must be a string.",
                     'status' => '400',
                     'source' => ['pointer' => '/data/0/id'],
                 ],
@@ -279,7 +279,7 @@ class RelationshipValidationTest extends TestCase
                 ],
                 [
                     'title' => 'Non-Compliant JSON API Document',
-                    'detail' => "The member 'id' must be a string.",
+                    'detail' => "The member id must be a string.",
                     'status' => '400',
                     'source' => ['pointer' => '/data/0/id'],
                 ],
@@ -292,7 +292,7 @@ class RelationshipValidationTest extends TestCase
                 ],
                 [
                     'title' => 'Non-Compliant JSON API Document',
-                    'detail' => "The member 'id' cannot be empty.",
+                    'detail' => "The member id cannot be empty.",
                     'status' => '400',
                     'source' => ['pointer' => '/data/0/id'],
                 ],
