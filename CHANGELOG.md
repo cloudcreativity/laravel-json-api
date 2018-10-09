@@ -12,7 +12,7 @@ translated via Laravel's translator. This means consuming applications can chang
 by overriding the default translations provided by this package.
 
 ### Changed
-- Minimum PHP version is now `7.0`.
+- Minimum PHP version is now `7.1`.
 - Minimum Laravel version is now `5.5`.
 - The validated request object is now abstract, with a concrete implementation for each type
 of request.

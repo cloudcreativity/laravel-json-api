@@ -7,7 +7,7 @@ fix remaining issues, most of which relate to validation.
 
 ## 1.0.0-beta.3 to 1.0.0-beta.4
 
-The minimum PHP version is now `7.0` and the minimum Laravel version is `5.5`.
+The minimum PHP version is now `7.1` and the minimum Laravel version is `5.5`.
 
 ### Validation
 

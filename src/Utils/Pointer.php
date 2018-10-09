@@ -24,7 +24,7 @@ use Neomerx\JsonApi\Contracts\Document\DocumentInterface as Keys;
  * Class PointerUtils
  *
  * @package CloudCreativity\LaravelJsonApi
- * @deprecate 2.0.0
+ * @deprecated 2.0.0
  */
 class Pointer
 {
