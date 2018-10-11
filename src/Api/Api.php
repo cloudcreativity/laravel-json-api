@@ -21,7 +21,6 @@ namespace CloudCreativity\LaravelJsonApi\Api;
 use CloudCreativity\LaravelJsonApi\Contracts\Client\ClientInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Encoder\SerializerInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Http\Responses\ErrorResponseInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Repositories\ErrorRepositoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
@@ -67,6 +66,7 @@ class Api
 
     /**
      * @var array
+     * @deprecated 2.0.0
      */
     private $errors;
 
@@ -101,7 +101,8 @@ class Api
     private $codecMatcher;
 
     /**
-     * @var ErrorResponseInterface|null
+     * @var ErrorRepositoryInterface|null
+     * @deprecated 2.0.0
      */
     private $errorRepository;
 
@@ -244,6 +245,7 @@ class Api
 
     /**
      * @return ErrorRepositoryInterface
+     * @deprecated 2.0.0
      */
     public function getErrors()
     {
@@ -359,6 +361,7 @@ class Api
 
     /**
      * @return ValidatorFactoryInterface
+     * @deprecated 2.0.0
      */
     public function validators()
     {

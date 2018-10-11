@@ -37,6 +37,7 @@ use Neomerx\JsonApi\Contracts\Http\Query\QueryCheckerInterface;
  * Class AbstractValidatorProvider
  *
  * @package CloudCreativity\LaravelJsonApi
+ * @deprecated 2.0.0 extend `Validation\AbstractValidators` instead.
  */
 abstract class AbstractValidatorProvider implements ValidatorProviderInterface
 {
@@ -243,7 +244,6 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
      */
     public function relatedQueryChecker()
     {
-        // TODO: Implement searchRelatedQueryChecker() method.
         return $this->queryChecker();
     }
 
@@ -252,7 +252,6 @@ abstract class AbstractValidatorProvider implements ValidatorProviderInterface
      */
     public function relationshipQueryChecker()
     {
-        // TODO: Implement searchRelationshipQueryChecker() method.
         return $this->queryChecker();
     }
 

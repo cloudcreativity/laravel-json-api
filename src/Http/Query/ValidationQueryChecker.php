@@ -27,6 +27,7 @@ use Neomerx\JsonApi\Contracts\Http\Query\QueryCheckerInterface;
  * Class ExtendedQueryChecker
  *
  * @package CloudCreativity\LaravelJsonApi
+ * @deprecated 2.0.0
  */
 class ValidationQueryChecker implements QueryCheckerInterface
 {

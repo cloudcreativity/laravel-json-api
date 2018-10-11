@@ -23,9 +23,10 @@ use CloudCreativity\LaravelJsonApi\Contracts\Validators\QueryValidatorInterface;
 use Neomerx\JsonApi\Contracts\Http\Query\QueryCheckerInterface;
 
 /**
- * Class ChecksQueryParameters
+ * Trait ChecksQueryParameters
  *
  * @package CloudCreativity\LaravelJsonApi
+ * @deprecated 2.0.0
  */
 trait ChecksQueryParameters
 {

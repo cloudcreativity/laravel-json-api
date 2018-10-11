@@ -2,13 +2,73 @@
 
 ## Introduction
 
-Each resource can have a validators class that defines the validation rules for resource create and update
-operations. It also validates query parameters for a JSON API request.
+This package automatically checks both request query parameters and content for compliance with the JSON
+API specification. Any non-compliant requests will receive a `4xx` HTTP response containing JSON API
+[error objects](http://jsonapi.org/format/#errors) describing how the request is not compliant.
 
-> We are planning to improve validators before the final `1.0.0` release, so this chapter provides a brief
-explanation of the current implementation.
+In addition, each resource can have a validators class that defines your application-specific 
+validation rules for requests.
 
-## Generating Validators
+## Compliance Validation
+
+JSON API requests to the controller actions provided by this package are automatically checked for compliance
+with the JSON API specification. 
+
+As an example, this request:
+
+```http
+PATCH /api/posts/123 HTTP/1.1
+Content-Type: application/vnd.api+json
+Accept: application/vnd.api+json
+
+{
+  "data": {
+    "type": "posts",
+    "id": 123,
+    "attributes": {
+      "title": "Hello World"
+    }
+  }
+}
+```
+
+Will be rejected because the specification states that resource ids *must* be strings. This package
+will result in the following response:
+
+```http
+HTTP/1.1 400 Bad Request
+Content-Type: application/vnd.api+json
+
+{
+  "errors": [
+    [
+      "title": "Non-Compliant JSON API Document",
+      "status": "400",
+      "detail": "The member id must be a string.",
+      "source": {
+        "pointer": "/data/id"
+      }
+    ]
+  ]
+}
+```
+
+The response may contain multiple error objects if there are a number of non-compliance problems with
+the request.
+
+## Application Specific Validation
+
+This package allows you to define application-specific validation rules for each resource type. This
+is implemented on a `Validators` class. The validators allow you to define both rules for the resource
+object for create and update requests, plus rules for the query parameters.
+
+Application-specific validation rules are run **after** validation against the JSON API specification,
+and will not run unless the request passes the specification checks.
+
+Validators are optional. If you do not define one for your resource type, only the JSON API compliance
+validation will be run.
+
+### Generating Validators
 
 To generate validators for a resource type, use the following command:
 
@@ -21,27 +81,39 @@ $ php artisan make:json-api:validators <resource-type> [<api>]
 This will generate the following:
 
 ```php
+<?php
+
 namespace App\JsonApi\Posts;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Validators\RelationshipsValidatorInterface;
-use CloudCreativity\LaravelJsonApi\Validators\AbstractValidatorProvider;
+use CloudCreativity\LaravelJsonApi\Validation\AbstractValidators;
 
-class Validators extends AbstractValidatorProvider
+class Validators extends AbstractValidators
 {
 
     /**
-     * @var string
+     * The include paths a client is allowed to request.
+     *
+     * @var string[]|null
+     *      the allowed paths, an empty array for none allowed, or null to allow all paths.
      */
-    protected $resourceType = 'posts';
+    protected $allowedIncludePaths = [];
 
     /**
-     * Get the validation rules for the resource attributes.
+     * The sort field names a client is allowed send.
      *
-     * @param object|null $record
-     *      the record being updated, or null if it is a create request.
-     * @return array
+     * @var string[]|null
+     *      the allowed fields, an empty array for none allowed, or null to allow all fields.
      */
-    protected function attributeRules($record = null)
+    protected $allowedSortParameters = [];
+
+    /**
+     * Get resource validation rules.
+     *
+     * @param mixed|null $record
+     *      the record being updated, or null if creating a resource.
+     * @return mixed
+     */
+    protected function rules($record = null): array
     {
         return [
             //
@@ -49,66 +121,202 @@ class Validators extends AbstractValidatorProvider
     }
 
     /**
-     * Define the validation rules for the resource relationships.
+     * Get query parameter validation rules.
      *
-     * @param RelationshipsValidatorInterface $relationships
-     * @param object|null $record
-     *      the record being updated, or null if it is a create request.
-     * @return void
+     * @return array
      */
-    protected function relationshipRules(RelationshipsValidatorInterface $relationships, $record = null)
+    protected function queryRules(): array
     {
-        //
-    }
-
-}
-```
-
-> The `Validators` class also validates query parameters in requests for the resource type that it relates
-to. Validating query parameters is explained in the [Pagination](../fetching/pagination.md),
-[Filtering](../fetching/filtering.md), [Sorting](../fetching/sorting.md), 
-[Including Related Resources](../fetching/inclusion.md) and [Sparse Fieldsets](../fetching/sparse-fieldsets.md)
-chapters.
-
-## Attributes
-
-Attributes are validated using [Laravel validations](https://laravel.com/docs/validation). If any attributes
-fail the validation rules, a `422 Unprocessable Entity` response will be sent. JSON API errors will be included
-containing the Laravel validation messages and each error will have its pointer set to the correct attribute.
-
-### Rules 
-
-Laravel validation rules for attributes are returned from your `attributeRules` method. 
-This method receives either the record being updated, or `null` for a create request. For example:
-
-```php
-class Validators extends AbstractValidatorProvider
-{
-    // ...
-
-    protected function attributeRules($record = null)
-    {
-        $required = $record ? 'filled' : 'required';
-    
         return [
-            'title' => "$required|string|min:3",
-            'content' => "$required|string",
+            //
         ];
     }
 
 }
 ```
 
-The JSON API spec defines that an update request must interpret the omission of any resource attributes as if
-they were included with their current values. We therefore use the 
-[filled rule](https://laravel.com/docs/validation#rule-filled) for any required attributes on an update request.
+## Resource Object Validation
+
+Resource objects are validated using [Laravel validations](https://laravel.com/docs/validation). If any field
+fails the validation rules, a `422 Unprocessable Entity` response will be sent. JSON API errors will be included
+containing the Laravel validation messages in the `detail` member of the error object. Each error will also 
+have a JSON source point set identifying the location in the request content of the validation failure.
+
+### Creating Resources
+
+Validators are provided with the [resource fields](http://jsonapi.org/format/#document-resource-object-fields)
+that were submitted by the client. Collectively these are the `type`, `id`, `attributes` and `relationships`
+of the resource. To make it easier to write validation rules, we set the value of relationship fields to the
+`data` member of the relationship.
+
+This is best illustrated with an example. Given this request:
+
+```http
+POST /api/posts HTTP/1.1
+Content-Type: application/vnd.api+json
+Accept: application/vnd.api+json
+
+{
+  "data": {
+    "type": "posts",
+    "attributes": {
+      "title": "Hello World",
+      "content": "..."
+    },
+    "relationships": {
+      "author": {
+        "data": {
+          "type": "users",
+          "id": "123"
+        }
+      },
+      "tags": {
+        "data": [
+          {
+            "type": "tags",
+            "id": "1"
+          },
+          {
+            "type": "tags",
+            "id": "3"
+          }
+        ]
+      }
+    }
+  }
+}
+```
+
+Your validator will be provided with the following array of data:
+
+```php
+[
+    "type" => "posts",
+    "id" => null,
+    "title" => "Hello World",
+    "content" => "...",
+    "author" => ["type" => "users", "id" => "123"],
+    "tags" => [
+        ["type" => "tags", "id" => "1"],
+        ["type" => "tags", "id" => "3"],
+    ],
+];
+```
+
+### Updating Resources
+
+When updating resources, the JSON API specification says:
+
+> If a request does not include all of the attributes for a resource, the server MUST interpret
+the missing attributes as if they were included with their current values.
+The server MUST NOT interpret missing attributes as null values.
+
+As Laravel provides validation rules that allow you to compare values that are being validated (e.g.
+a date that must be `before` another value), we take the existing attributes of your resource and merge
+the attributes provided by the client over the top.
+
+For example, given this request:
+
+
+```http
+PATCH /api/posts/1 HTTP/1.1
+Content-Type: application/vnd.api+json
+Accept: application/vnd.api+json
+
+{
+  "data": {
+    "type": "posts",
+    "id": "1",
+    "attributes": {
+      "title": "Hello World"
+    },
+    "relationships": {
+      "tags": {
+        "data": [
+          {
+            "type": "tags",
+            "id": "1"
+          }
+        ]
+      }
+    }
+  }
+}
+```
+
+If your `posts` resource had a `content` and `published` attributes that were not provided by
+the client, your validator will be provided with the following array of data:
+
+```php
+[
+    "type" => "posts",
+    "id" => "1",
+    "title" => "Hello World",
+    "content" => "...",
+    "published" => true,
+    "tags" => [
+        ["type" => "tags", "id" => "1"],
+    ],
+];
+```
+
+> We use your resource schema's `getAttributes` method to obtain the existing attribute values.
+
+There is no reliable way for us to work out the existing values of any relationships that were missing in
+the request document. If you need to add any existing values, you can do this as follows:
+
+```php
+class Validators extends AbstractValidators
+{
+    // ...
+
+    /**
+     * @param \App\Post $record
+     * @return \Illuminate\Support\Collection
+     */
+    protected function existingValues($record): Collection
+    {
+        return parent::existingValues($record)
+            ->put('author', ['type' => 'users', 'id' => $record->user_id]);
+    }
+}
+```
+
+### Defining Rules 
+
+Define resource object validation rules in your validators `rules` method. 
+This method receives either the record being updated, or `null` for a create request. For example:
+
+```php
+class Validators extends AbstractValidators
+{
+    // ...
+
+    protected function rules($record = null): array
+    {
+        return [
+            'title' => "required|string|min:3",
+            'content' => "required|string",
+            'author.type' => 'in:users',
+        ];
+    }
+
+}
+```
+
+> When validating the request document for compliance with the JSON API spec, we check that all
+relationships contain identifiers for resources that exist in your API. This means that when writing
+rules for fields that are relationships, you do not need to check if the `id` provided exists. However
+you must validate the `type` of a related resource to ensure it is the expected resource type for
+the relationship. As shown in the above example, the related `author` is checked to ensure that it is
+a `users` resource.
 
 ### Custom Error Messages
 
-To add any custom error messages for your attribute rules, define them on the `$messages` property:
+To add any custom error messages for your resource object rules, define them on the `$messages` property:
 
 ```php
-class Validators extends AbstractValidatorProvider
+class Validators extends AbstractValidators
 {
     // ...
 
@@ -119,145 +327,215 @@ class Validators extends AbstractValidatorProvider
 }
 ```
 
-Alternatively you can overload the `attributeMessages` method. Like the `attributeRules` method, this receives the
+Alternatively you can overload the `messages` method. Like the `rules` method, this receives the
 record being updated or `null` for a create request.
 
 ### Custom Attribute Names
 
-To define any custom attribute names, add them to the `$customAttributes` property on your validators:
+To define any custom attribute names, add them to the `$attributes` property on your validators:
 
 ```php
-class Validators extends AbstractValidatorProvider
+class Validators extends AbstractValidators
 {
     // ...
 
-    protected $customAttributes = [
+    protected $attributes = [
         'email' => 'email address',
     ];
 
 }
 ```
 
-Alternatively you can overload the `attributeCustomAttributes` method.
+Alternatively you can overload the `attributes` method. Like the `rules` method, this receives the
+record being updated or `null` for a create request.
 
 ### Conditionally Adding Rules
 
 If you need to [conditionally add rules](https://laravel.com/docs/validation#conditionally-adding-rules), you can
-do this in the `conditionalAttributes` method. This receives the Laravel validator instance as its first argument,
-and the record being updated (or `null` for a create request) as its second argument:
+do this by overloading either the `create` or `update` methods. For example:
 
 ```php
-use Illuminate\Contracts\Validation\Validator;
-
-class Validators extends AbstractValidatorProvider
+class Validators extends AbstractValidators
 {
     // ...
-
-    protected function conditionalAttributes(Validator $validator, $record = null)
-    {
-        $required = $record ? 'filled' : 'required';
     
-        $validator->sometimes('reason', "$required|max:500", function ($input) {
+    /**
+     * @param array $document
+     * @return \CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorInterface
+     */
+    public function create(array $document): ValidatorInterface
+    {
+        $validator = parent::create($document);
+    
+        $validator->sometimes('reason', "required|max:500", function ($input) {
             return $input->games >= 100;
         });
+        
+        return $validator;
     }
 
 }
 ```
 
-Note that the input passed to the closure will be the content of the `attributes` member of the JSON API resource.
+## Relationship Validation
 
-### Extracting Attributes
+The JSON API specification provides relationship endpoints for modifying resource relations. To-one and to-many
+relationships can be replaced using a `PATCH` request. For to-many relationships, resources can be added
+to the relationship via a `POST` request or removed using a `DELETE` request.
 
-By default the validators class will run the attributes validation against all attributes in the JSON API resource
-submitted by the client. However this can be overridden if needed.
+### Validation Data and Rules
 
-A common use case for overriding this behaviour is for validating update operations. As the JSON API spec states
-that the server must interpret any missing attributes as if they were included with their current value, you
-may need to include the current value for validation purposes.
+Given this request:
 
-As an example, if you have an `events` resource that had a `starts-at` and `ends-at` attribute with the following
-validation rules:
+```http
+PATCH /api/posts/1/relationships/tags HTTP/1.1
+Content-Type: application/vnd.api+json
+Accept: application/vnd.api+json
+
+{
+  "data": [
+    {
+      "type": "tags",
+      "id": "1"
+    },
+    {
+      "type": "tags",
+      "id": "6"
+    }
+  ]
+}
+```
+
+Your validator will be provided with the following array of data:
 
 ```php
-class Validators extends AbstractValidatorProvider
+[
+    "type" => "posts",
+    "id" => "1",
+    "tags" => [
+        ["type" => "tags", "id" => "1"],
+        ["type" => "tags", "id" => "3"],
+    ],
+];
+```
+
+This data will be passed to a validator that only receives any rules that are for the `tags` field. I.e.
+we filter the resource rules returned from your `rules()` method to only include rules that have a key
+starting with `tags`.
+
+> If you need to customise the rules used to validate relationships, overload the `relationshipRules()`
+method on your validators class.
+
+Custom validation messages (on the `$messages` property) and attribute names (on the `$attribtues` property)
+are also passed to your validator.
+
+## Query Validation
+
+In addition to defining rules for validating the JSON API document sent by a client, your validators
+class also holds rules for validating query parameters. This allows you to:
+
+- Whitelist expected `filter`, `include`, `page`, `sort` and `fields` parameters.
+- Validate `filter`, `page` and non-JSON API query parameters using Laravel validation rules.
+
+### Relationship Query Parameters
+
+One important thing to note with query parameter validation is that when fetching relationships, the
+validators class for the related resource will be used. As an example, when a client submits
+this request:
+
+```http
+GET /api/posts/1/relationships/tags HTTP/1.1
+Accept: application/vnd.api+json
+```
+
+The query parameters are validated using the `tags` validators class, because the response will contain
+`tags` resources, not `posts` resources. Filters, pagination, etc all therefore need to be valid for `tags`.
+
+For this to work, we need to know the inverse resource type when you specify relationship routes. By default
+we assume that the inverse resource type is the pluralised form of the relationship name. E.g. for an
+`author` relationship we assume the inverse resource type is `authors`. If it was actually `users`, you
+need to specify this when defining the relationship route. For example:
+
+```php
+JsonApi::register('default', ['namespace' => 'Api'], function ($api, $router) {
+    $api->resource('posts', [
+        'has-one' => [
+            'author' => ['inverse' => 'users'],
+        ],
+    ]);
+});
+```
+
+### Whitelisting Parameters
+
+Expected parameters can be defined using any of the following properties on your validators class:
+
+- `$allowedFilteringParameters`
+- `$allowedIncludePaths`
+- `$allowedPagingParameters`
+- `$allowedSortParameters`
+- `$allowedFieldSets`
+
+The default values for each of these and how to customise them is discussed in the 
+[Filtering](../fetching/filtering.md), [Inclusion](../fetching/inclusion.md), 
+[Pagination](../fetching/pagination.md), [Sorting](../fetching/sorting.md) and
+[Sparse Fieldsets](../fetching/sparse-fieldsets.md) chapters.
+
+### Defining Rules
+
+In addition to whitelisting parameters you can also use Laravel validation rules for the query
+parameters. To define these, add them to your `queryRules()` method. For example:
+
+```php
+class Validators extends AbstractValidators
 {
     // ...
 
-    protected function attributeRules($record = null)
+    protected function queryRules(): array
     {
-        $required = $record ? 'filled' : 'required';
-    
         return [
-            'starts-at' => "$required|date|before:ends-at",
-            'ends-at' => "$required|date|after:starts-at",
+            'filter.author' => 'exists:users',
+            'page.number' => 'integer|min:1',
+            'page.size' => 'integer|between:1,100',
+            'foobar' => 'in:baz,bat',
         ];
     }
+
 }
 ```
 
-This validation will only work if both the `starts-at` and `ends-at` values are provided, but for an update operation
-the spec defines that the current value is to be used if the client omits either.
+### Custom Error Messages
 
-To solve this we push the current values into the attributes prior to validation using the `extractAttributes`
-method:
+To add any custom error messages for your query parameter rules, define them on the `$queryMessages` property:
 
 ```php
-use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectInterface;
-
-class Validators extends AbstractValidatorProvider
+class Validators extends AbstractValidators
 {
     // ...
 
-    /**
-     * Extract attributes for validation from the supplied resource.
-     *
-     * @param ResourceObjectInterface $resource
-     * @param object|null $record
-     * @return array
-     */
-    protected function extractAttributes(ResourceObjectInterface $resource, $record = null)
-    {
-        return $resource
-            ->getAttributes()
-            // add only pushes a value into the attributes if it is not already present.
-            ->add('starts-at', $record ? $record->starts_at->toDateTimeString() : null)
-            ->add('ends-at', $record ? $record->ends_at->toDateTimeString() : null)
-            ->toArray();
-    }
+    protected $queryMessages = [
+        'fitler.author.exists' => 'The author does not exist.',
+    ];
+
 }
 ```
 
-## Relationships
+Alternatively you can overload the `queryMessages` method.
 
-We do not use Laravel validators for resource relationships. This is because the JSON API spec defines different
-statuses and errors that must be returned for relationships, and we cannot detect these scenarios if we used
-Laravel validators.
+### Custom Attribute Names
 
-All relationships sent by a client are validated to check that the related resources actually exist. In 
-addition, you can define validation rules for specific relationships in your `relationshipRules` method.
-For example:
+To define any custom attribute names, add them to the `$queryAttributes` property on your validators:
 
 ```php
-use CloudCreativity\LaravelJsonApi\Contracts\Validators\RelationshipsValidatorInterface;
-
-class Validators extends AbstractValidatorProvider
+class Validators extends AbstractValidators
 {
     // ...
 
-    protected function relationshipRules(RelationshipsValidatorInterface $relationships, $record = null)
-    {
-        $relationships->hasOne('author', 'users', is_null($record), true);
-        $relationships->hasMany('tags', 'tags', false, true);
-    }
+    protected $queryAttributes = [
+        'filter.author' => "the post's author",
+    ];
+
 }
 ```
 
-As with the attribute methods, `$record` will either be the record being updated or `null` for a create request.
-
-The method signature for both the `hasOne` and `hasMany` methods is as follows:
-`hasOne($relationshipName, $expectedResourceType, $required, $allowEmpty)`.
-
-> The above implementation will meet most use-cases but we appreciate it is not ideal for more complex uses cases.
-We are planning to improve relationship validation and if you have any particular requirements please create a
-Github issue describing your use-case.
+Alternatively you can overload the `queryAttributes` method.

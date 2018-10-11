@@ -26,6 +26,7 @@ use CloudCreativity\LaravelJsonApi\Contracts\Validators\AcceptRelatedResourceInt
  * Class AcceptRelatedResourceCallback
  *
  * @package CloudCreativity\LaravelJsonApi
+ * @deprecated 2.0.0 use classes in the `Validation` namespace instead.
  */
 class AcceptRelatedResourceCallback implements AcceptRelatedResourceInterface
 {

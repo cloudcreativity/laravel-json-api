@@ -22,6 +22,22 @@ you can write your own paging strategies.
 shown in the examples below. If you have a custom adapter, you can still use the strategies provided by
 this package but you will need to invoke them yourself.
 
+## Disallowing Pagination
+
+If your resource does not support pagination, you should reject any request that contains the `page`
+parameter. You can do this by disallowing page parameters on your [Validators](../basics/validators.md)
+class as follows:
+
+```php
+class Validators extends AbstractValidators
+{
+    // ...
+    
+    protected $allowedPagingParameters = [];
+
+}
+```
+
 ## Page-Based Pagination
 
 The page-based strategy provided by this package is implemented as the `StandardStrategy` class, because
@@ -154,14 +170,16 @@ total resources available.
 ### Validation
 
 You should always validate page parameters that are sent from a client, and this is supported on your resource's
-`Validators` class. It is highly recommended that you validate the page-based parameters to ensure the values
-are numbers and the page size is within an acceptable range.
+[Validators](../basics/validators.md) class. It is highly recommended that you validate the page-based
+parameters to ensure the values are numbers and the page size is within an acceptable range.
 
 For example on your validators class:
 
 ```php
-class Validators extends AbstractValidatorProvider
+class Validators extends AbstractValidators
 {
+
+    protected $allowedPagingParameters = ['number', 'size'];
 
     protected $queryRules = [
         'page.number' => 'filled|numeric|min:1',
@@ -325,19 +343,21 @@ column to, this will mean the client needs to provide the value of that column f
 ### Validation
 
 You should always validate page parameters that are sent from a client, and this is supported on your resource's 
-`Validators` class. You **must** validate that the identifier provided by the client for the `after` and `before`
-parameters are valid identifiers, because invalid identifiers cause an error in the cursor. It is also 
-recommended that you validate the `limit` so that it is within an acceptable range.
+[Validators](../basics/validators.md) class. You **must** validate that the identifier provided by the client
+for the `after` and `before` parameters are valid identifiers, because invalid identifiers cause an error
+in the cursor. It is also recommended that you validate the `limit` so that it is within an acceptable range.
 
 As the cursor relies on the list being in a fixed order (that it controls), you **must** also disable
 sort parameters. This can also be done on your resource's `Validators` class. For example:
 
 ```php
-class Validators extends AbstractValidatorProvider
+class Validators extends AbstractValidators
 {
 
-    // empty array disables all sort parameters.
+    // disable all sort parameters.
     protected $allowedSortParameters = [];
+    
+    protected $allowedPagingParameters = ['limit', 'after', 'before'];
 
     protected $queryRules = [
         'page.limit' => 'filled|numeric|between:1,100',

@@ -17,9 +17,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Exceptions;
 
-use CloudCreativity\LaravelJsonApi\Document\Error;
 use Exception;
-use Neomerx\JsonApi\Exceptions\JsonApiException;
 
 /**
  * Class DocumentRequiredException

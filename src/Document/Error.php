@@ -29,6 +29,7 @@ use Neomerx\JsonApi\Exceptions\ErrorCollection;
  * Class Error
  *
  * @package CloudCreativity\LaravelJsonApi
+ * @deprecated 2.0.0 use the neomerx/jsonapi error instead.
  */
 class Error implements MutableErrorInterface
 {

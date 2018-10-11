@@ -27,6 +27,7 @@ use Neomerx\JsonApi\Exceptions\ErrorCollection;
  * Interface AcceptRelatedResourceInterface
  *
  * @package CloudCreativity\LaravelJsonApi
+ * @deprecated 2.0.0 use classes in the `Validation` namespace instead.
  */
 interface AcceptRelatedResourceInterface
 {

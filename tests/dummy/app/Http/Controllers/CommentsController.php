@@ -35,8 +35,8 @@ class CommentsController extends EloquentController
     {
         $data = $request->get("data.relationships.commentable.data");
 
-        if ($data && 'posts' === $data->type) {
-            $this->can('comment', Post::find($data->id));
+        if ($data && 'posts' === $data['type']) {
+            $this->can('comment', Post::find($data['id']));
         }
     }
 }

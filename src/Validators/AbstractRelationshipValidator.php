@@ -33,6 +33,7 @@ use CloudCreativity\LaravelJsonApi\Utils\Pointer as P;
  * Class AbstractRelationshipValidator
  *
  * @package CloudCreativity\LaravelJsonApi
+ * @deprecated 2.0.0 use classes in the `Validation` namespace instead.
  */
 abstract class AbstractRelationshipValidator implements RelationshipValidatorInterface
 {

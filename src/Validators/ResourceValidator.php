@@ -30,6 +30,7 @@ use CloudCreativity\LaravelJsonApi\Utils\Pointer as P;
  * Class ResourceValidator
  *
  * @package CloudCreativity\LaravelJsonApi
+ * @deprecated 2.0.0 use classes in the `Validation` namespace instead.
  */
 class ResourceValidator implements ResourceValidatorInterface
 {
@@ -100,7 +101,12 @@ class ResourceValidator implements ResourceValidatorInterface
     {
         $this->reset();
 
-        $valid = $this->validateType($resource);
+        // if the type is not valid, we cannot run any other rules as they apply to the expected type.
+        if (!$this->validateType($resource)) {
+            return false;
+        }
+
+        $valid = true;
 
         if (!$this->validateId($resource)) {
             $valid = false;

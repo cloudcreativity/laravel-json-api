@@ -26,6 +26,7 @@ use Illuminate\Contracts\Validation\Validator;
  * Class AbstractValidator
  *
  * @package CloudCreativity\LaravelJsonApi
+ * @deprecated 2.0.0 use classes in the `Validation` namespace instead.
  */
 abstract class AbstractValidator
 {

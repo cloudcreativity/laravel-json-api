@@ -35,6 +35,7 @@ pages:
     - Errors: features/errors.md
     - Helpers: features/helpers.md
     - HTTP Clients: features/http-clients.md
+    - Localization: features/localization.md
     - Packages: features/packages.md
     - Resolvers: features/resolvers.md
     - Responses: features/responses.md

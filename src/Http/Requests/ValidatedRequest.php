@@ -17,32 +17,36 @@
 
 namespace CloudCreativity\LaravelJsonApi\Http\Requests;
 
-use CloudCreativity\LaravelJsonApi\Auth\HandlesAuthorizers;
+use CloudCreativity\LaravelJsonApi\Contracts\Auth\AuthorizerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Object\DocumentInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Validators\DocumentValidatorInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Validation\DocumentValidatorInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorFactoryInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorProviderInterface;
-use CloudCreativity\LaravelJsonApi\Exceptions\DocumentRequiredException;
 use CloudCreativity\LaravelJsonApi\Exceptions\ValidationException;
+use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use CloudCreativity\LaravelJsonApi\Object\Document;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Validation\ValidatesWhenResolved;
+use Illuminate\Http\Request;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
-use Neomerx\JsonApi\Contracts\Http\Query\QueryCheckerInterface;
 use Neomerx\JsonApi\Exceptions\JsonApiException;
 
-class ValidatedRequest implements ValidatesWhenResolved
+abstract class ValidatedRequest implements ValidatesWhenResolved
 {
 
-    use HandlesAuthorizers;
+    /**
+     * @var Request
+     */
+    protected $request;
 
     /**
-     * @var RequestInterface
+     * @var Factory
      */
-    private $request;
+    protected $factory;
 
     /**
      * @var ContainerInterface
@@ -50,22 +54,45 @@ class ValidatedRequest implements ValidatesWhenResolved
     private $container;
 
     /**
-     * @var StoreInterface
+     * @var RequestInterface
      */
-    private $store;
+    private $jsonApiRequest;
 
     /**
-     * ServerRequest constructor.
+     * Authorize the request.
      *
-     * @param RequestInterface $request
-     * @param StoreInterface $store
-     * @param ContainerInterface $container
+     * @return void
+     * @throws AuthenticationException
+     * @throws AuthorizationException
      */
-    public function __construct(RequestInterface $request, StoreInterface $store, ContainerInterface $container)
-    {
-        $this->request = $request;
-        $this->store = $store;
+    abstract protected function authorize();
+
+    /**
+     * Validate the query parameters.
+     *
+     * @return void
+     * @throws JsonApiException
+     */
+    abstract protected function validateQuery();
+
+    /**
+     * ValidatedRequest constructor.
+     *
+     * @param Request $httpRequest
+     * @param ContainerInterface $container
+     * @param Factory $factory
+     * @param RequestInterface $jsonApiRequest
+     */
+    public function __construct(
+        Request $httpRequest,
+        ContainerInterface $container,
+        Factory $factory,
+        RequestInterface $jsonApiRequest
+    ) {
+        $this->request = $httpRequest;
+        $this->factory = $factory;
         $this->container = $container;
+        $this->jsonApiRequest = $jsonApiRequest;
     }
 
     /**
@@ -77,7 +104,7 @@ class ValidatedRequest implements ValidatesWhenResolved
      */
     public function get($key, $default = null)
     {
-        return data_get($this->request->getDocument(), $key, $default);
+        return $this->request->json($key, $default);
     }
 
     /**
@@ -87,9 +114,27 @@ class ValidatedRequest implements ValidatesWhenResolved
      */
     public function all()
     {
-        $document = $this->getDocument();
+        return $this->request->json()->all();
+    }
 
-        return $document ? $document->toArray() : [];
+    /**
+     * Get parsed query parameters.
+     *
+     * @return array
+     */
+    public function query()
+    {
+        return $this->request->query();
+    }
+
+    /**
+     * Get the JSON API document as an object.
+     *
+     * @return object|null
+     */
+    public function decode()
+    {
+        return $this->jsonApiRequest->getDocument();
     }
 
     /**
@@ -99,7 +144,7 @@ class ValidatedRequest implements ValidatesWhenResolved
      */
     public function getResourceType()
     {
-        return $this->request->getResourceType();
+        return $this->jsonApiRequest->getResourceType();
     }
 
     /**
@@ -109,7 +154,7 @@ class ValidatedRequest implements ValidatesWhenResolved
      */
     public function getResourceId()
     {
-        return $this->request->getResourceId();
+        return $this->jsonApiRequest->getResourceId();
     }
 
     /**
@@ -119,7 +164,7 @@ class ValidatedRequest implements ValidatesWhenResolved
      */
     public function getRelationshipName()
     {
-        return $this->request->getRelationshipName();
+        return $this->jsonApiRequest->getRelationshipName();
     }
 
     /**
@@ -129,17 +174,18 @@ class ValidatedRequest implements ValidatesWhenResolved
      */
     public function getRecord()
     {
-        return $this->request->getResource();
+        return $this->jsonApiRequest->getResource();
     }
 
     /**
      * Get the validated JSON API document, if there is one.
      *
      * @return DocumentInterface|null
+     * @deprecated
      */
     public function getDocument()
     {
-        if (!$document = $this->request->getDocument()) {
+        if (!$document = $this->jsonApiRequest->getDocument()) {
             return null;
         }
 
@@ -147,13 +193,22 @@ class ValidatedRequest implements ValidatesWhenResolved
     }
 
     /**
-     * Get the validated JSON API encoding parameters.
+     * Get the JSON API encoding parameters.
      *
      * @return EncodingParametersInterface
+     * @deprecated 2.0.0 use `getEncodingParameters`
      */
     public function getParameters()
     {
-        return $this->request->getParameters();
+        return $this->getEncodingParameters();
+    }
+
+    /**
+     * @return EncodingParametersInterface
+     */
+    public function getEncodingParameters()
+    {
+        return $this->jsonApiRequest->getParameters();
     }
 
     /**
@@ -175,144 +230,71 @@ class ValidatedRequest implements ValidatesWhenResolved
     public function validateResolved()
     {
         $this->authorize();
+        $this->validateQuery();
+        $this->validateDocument();
+    }
 
-        $inverse = $this->request->getInverseResourceType();
+    /**
+     * Validate the JSON API document.
+     *
+     * @return void
+     * @throws JsonApiException
+     */
+    protected function validateDocument()
+    {
+        // no-op
+    }
 
-        $resourceValidators = $this->container->getValidatorsByResourceType(
-            $this->request->getResourceType()
+    /**
+     * Run the validation and throw an exception if it fails.
+     *
+     * @param DocumentValidatorInterface|ValidatorInterface $validator
+     * @throws ValidationException
+     */
+    protected function passes($validator)
+    {
+        if ($validator->fails()) {
+            $this->failedValidation($validator);
+        }
+    }
+
+    /**
+     * @param DocumentValidatorInterface|ValidatorInterface $validator
+     * @throws ValidationException
+     */
+    protected function failedValidation($validator)
+    {
+        throw new ValidationException($validator->getErrors());
+    }
+
+    /**
+     * @return AuthorizerInterface|null
+     */
+    protected function getAuthorizer()
+    {
+        return $this->container->getAuthorizerByResourceType($this->getResourceType());
+    }
+
+    /**
+     * Get the resource validators.
+     *
+     * @return ValidatorFactoryInterface|ValidatorProviderInterface|null
+     */
+    protected function getValidators()
+    {
+        return $this->container->getValidatorsByResourceType($this->getResourceType());
+    }
+
+    /**
+     * Get the inverse resource validators.
+     *
+     * @return ValidatorFactoryInterface|ValidatorProviderInterface|null
+     */
+    protected function getInverseValidators()
+    {
+        return $this->container->getValidatorsByResourceType(
+            $this->jsonApiRequest->getInverseResourceType()
         );
-
-        if ($resourceValidators) {
-            $this->validateRequest(
-                $resourceValidators,
-                $inverse ? $this->container->getValidatorsByResourceType($inverse) : null
-            );
-        }
-    }
-
-    /**
-     * Authorize the request.
-     *
-     * @return void
-     * @throws AuthenticationException
-     * @throws AuthorizationException
-     */
-    protected function authorize()
-    {
-        $authorizer = $this->container->getAuthorizerByResourceType($this->getResourceType());
-
-        if ($authorizer) {
-            $this->authorizeRequest($authorizer, $this->request, request());
-        }
-    }
-
-    /**
-     * Validate the inbound request query parameters and JSON API document.
-     *
-     * JSON API query parameters are checked using the primary resource's validators
-     * if it is not a related resource request, or against the related resource's
-     * validators if it is a relationship request. This is because the query parameters
-     * for a relationship request actually relate to the related resource that will
-     * be returned in the encoded response.
-     *
-     * So for a request to `GET /posts/1`, the `posts` validators are provided as
-     * `$resource` and the query parameters are checked using this set of validators.
-     * For a request to `GET /posts/1/comments` the query parameters are checked
-     * against the `comments` validators, which are provided as `$related`.
-     *
-     * The JSON API document is always checked against the primary resource validators
-     * (`$resource`) because the inbound document always relates to this primary
-     * resource, even if modifying a relationship.
-     *
-     * @param ValidatorProviderInterface $resource
-     *      validators for the primary resource.
-     * @param ValidatorProviderInterface|null $related
-     *      validators for the related resource, if the request is for a relationship.
-     * @return void
-     * @throws JsonApiException
-     */
-    protected function validateRequest(ValidatorProviderInterface $resource, ValidatorProviderInterface $related = null)
-    {
-        /** Check the JSON API query parameters */
-        if (!$this->request->getRelationshipName()) {
-            $this->checkQueryParameters($resource);
-        } elseif ($related) {
-            $this->checkQueryParameters($related);
-        }
-
-        /** Check the JSON API document is acceptable */
-        $this->checkDocumentIsAcceptable($resource);
-    }
-
-    /**
-     * @param ValidatorProviderInterface $validators
-     * @throws JsonApiException
-     */
-    protected function checkQueryParameters(ValidatorProviderInterface $validators)
-    {
-        $checker = $this->queryChecker($validators);
-        $checker->checkQuery($this->request->getParameters());
-    }
-
-    /**
-     * @param ValidatorProviderInterface $validators
-     * @throws JsonApiException
-     */
-    protected function checkDocumentIsAcceptable(ValidatorProviderInterface $validators)
-    {
-        if (!$validator = $this->documentAcceptanceValidator($validators)) {
-            return;
-        }
-
-        $document = $this->getDocument();
-
-        if (!$document) {
-            throw new DocumentRequiredException();
-        }
-
-        if (!$validator->isValid($document, $this->getRecord())) {
-            throw new ValidationException($validator->getErrors());
-        }
-    }
-
-    /**
-     * @param ValidatorProviderInterface $validators
-     * @return DocumentValidatorInterface|null
-     */
-    protected function documentAcceptanceValidator(ValidatorProviderInterface $validators)
-    {
-        $resourceId = $this->request->getResourceId();
-        $relationshipName = $this->request->getRelationshipName();
-
-        /** Create Resource */
-        if ($this->request->isCreateResource()) {
-            return $validators->createResource();
-        } /** Update Resource */
-        elseif ($this->request->isUpdateResource()) {
-            return $validators->updateResource($resourceId, $this->getRecord());
-        } /** Replace Relationship */
-        elseif ($this->request->isModifyRelationship()) {
-            return $validators->modifyRelationship($resourceId, $relationshipName, $this->getRecord());
-        }
-
-        return null;
-    }
-
-    /**
-     * @param ValidatorProviderInterface $validators
-     * @return QueryCheckerInterface
-     */
-    protected function queryChecker(ValidatorProviderInterface $validators)
-    {
-        if ($this->request->isIndex()) {
-            return $validators->searchQueryChecker();
-        } elseif ($this->request->isReadRelatedResource()) {
-            return $validators->relatedQueryChecker();
-        } elseif ($this->request->hasRelationships()) {
-            return $validators->relationshipQueryChecker();
-        }
-
-        return $validators->resourceQueryChecker();
     }
 
 }

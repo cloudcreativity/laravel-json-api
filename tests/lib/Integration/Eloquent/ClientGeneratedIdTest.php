@@ -27,7 +27,7 @@ class ClientGeneratedIdTest extends TestCase
      */
     protected $resourceType = 'videos';
 
-    public function testCreateWithClientId()
+    public function testCreate()
     {
         $video = factory(Video::class)->make();
 
@@ -56,12 +56,114 @@ class ClientGeneratedIdTest extends TestCase
         $this->doCreate($data, ['include' => 'uploaded-by'])
             ->assertCreated($expected);
 
-        $this->assertModelCreated($video, $video->getKey());
+        $this->assertDatabaseHas('videos', ['uuid' => $video->getKey()]);
     }
 
-    public function testCreateWithInvalidClientId()
+    public function testCreateWithMissingId()
     {
-        $this->markTestIncomplete('@todo when it is possible to validate client ids.');
+        $video = factory(Video::class)->make();
+
+        $data = [
+            'type' => 'videos',
+            'attributes' => [
+                'url' => $video->url,
+                'title' => $video->title,
+                'description' => $video->description,
+            ],
+        ];
+
+        $error = [
+            'title' => 'Unprocessable Entity',
+            'detail' => 'The id field is required.',
+            'status' => '422',
+            'source' => ['pointer' => '/data/id'],
+        ];
+
+        $this->actingAs($video->user);
+
+        $this->doCreate($data)
+            ->assertStatus((int) $error['status'])
+            ->assertJson(['errors' => [$error]]);
+    }
+
+    public function testCreateWithInvalidId()
+    {
+        $video = factory(Video::class)->make();
+
+        $data = [
+            'type' => 'videos',
+            'id' => 'foo',
+            'attributes' => [
+                'url' => $video->url,
+                'title' => $video->title,
+                'description' => $video->description,
+            ],
+        ];
+
+        $error = [
+            'title' => 'Unprocessable Entity',
+            'detail' => 'The id format is invalid.',
+            'status' => '422',
+            'source' => ['pointer' => '/data/id'],
+        ];
+
+        $this->actingAs($video->user);
+
+        $this->doCreate($data)
+            ->assertStatus((int) $error['status'])
+            ->assertJson(['errors' => [$error]]);
+    }
+
+    public function testCreateWithConflict()
+    {
+        $video = factory(Video::class)->create();
+
+        $data = [
+            'type' => 'videos',
+            'id' => $video->getKey(),
+            'attributes' => [
+                'url' => $video->url,
+                'title' => $video->title,
+                'description' => $video->description,
+            ],
+        ];
+
+        $error = [
+            'title' => 'Conflict',
+            'detail' => "Resource {$video->getKey()} already exists.",
+            'status' => '409',
+            'source' => ['pointer' => '/data'],
+        ];
+
+        $this->actingAs($video->user);
+
+        $this->doCreate($data)
+            ->assertStatus((int) $error['status'])
+            ->assertJson(['errors' => [$error]]);
+    }
+
+    public function testUpdated()
+    {
+        $video = factory(Video::class)->create();
+
+        $data = [
+            'type' => 'videos',
+            'id' => $video->getKey(),
+            'attributes' => [
+                'title' => 'A Video',
+            ],
+        ];
+
+        $expected = $data;
+
+        $this->actingAs($video->user);
+
+        $this->doUpdate($data)->assertUpdated($expected);
+
+        $this->assertDatabaseHas('videos', [
+            'uuid' => $video->getKey(),
+            'title' => 'A Video',
+        ]);
     }
 
 }

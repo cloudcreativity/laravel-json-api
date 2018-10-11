@@ -31,7 +31,10 @@ use CloudCreativity\LaravelJsonApi\Contracts\Factories\FactoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Repositories\ErrorRepositoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Validation\DocumentValidatorInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\QueryValidatorInterface;
+use CloudCreativity\LaravelJsonApi\Document\ResourceObject;
 use CloudCreativity\LaravelJsonApi\Encoder\Encoder;
 use CloudCreativity\LaravelJsonApi\Encoder\Parameters\EncodingParameters;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
@@ -46,11 +49,15 @@ use CloudCreativity\LaravelJsonApi\Repositories\ErrorRepository;
 use CloudCreativity\LaravelJsonApi\Resolver\ResolverFactory;
 use CloudCreativity\LaravelJsonApi\Store\Store;
 use CloudCreativity\LaravelJsonApi\Utils\Replacer;
+use CloudCreativity\LaravelJsonApi\Validation;
+use CloudCreativity\LaravelJsonApi\Validation\ErrorTranslator;
 use CloudCreativity\LaravelJsonApi\Validators\ValidatorErrorFactory;
 use CloudCreativity\LaravelJsonApi\Validators\ValidatorFactory;
 use Illuminate\Contracts\Container\Container as IlluminateContainer;
 use Illuminate\Contracts\Routing\UrlGenerator as IlluminateUrlGenerator;
+use Illuminate\Contracts\Translation\Translator;
 use Illuminate\Contracts\Validation\Factory as ValidatorFactoryContract;
+use Illuminate\Contracts\Validation\Validator;
 use Neomerx\JsonApi\Contracts\Codec\CodecMatcherInterface;
 use Neomerx\JsonApi\Contracts\Document\LinkInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
@@ -247,6 +254,7 @@ class Factory extends BaseFactory implements FactoryInterface
 
         return new ValidationQueryChecker($checker, $validator);
     }
+
     /**
      * @inheritDoc
      */
@@ -352,11 +360,130 @@ class Factory extends BaseFactory implements FactoryInterface
     }
 
     /**
+     * Create a validator to check that a resource document complies with the JSON API specification.
+     *
+     * @param object $document
+     * @param string $expectedType
+     *      the expected resource type.
+     * @param string|null $expectedId
+     *      the expected resource id if updating an existing resource.
+     * @return DocumentValidatorInterface
+     */
+    public function createResourceDocumentValidator($document, $expectedType, $expectedId = null)
+    {
+        $store = $this->container->make(StoreInterface::class);
+        $errors = $this->createErrorTranslator();
+
+        if ($expectedId) {
+            return new Validation\Spec\UpdateResourceValidator(
+                $store,
+                $errors,
+                $document,
+                $expectedType,
+                $expectedId
+            );
+        }
+
+        return new Validation\Spec\CreateResourceValidator($store, $errors, $document, $expectedType);
+    }
+
+    /**
+     * Create a validator to check that a relationship document complies with the JSON API specification.
+     *
+     * @param object $document
+     * @return DocumentValidatorInterface
+     */
+    public function createRelationshipDocumentValidator($document)
+    {
+        return new Validation\Spec\RelationValidator(
+            $this->container->make(StoreInterface::class),
+            $this->createErrorTranslator(),
+            $document
+        );
+    }
+
+    /**
+     * Create an error translator.
+     *
+     * @return ErrorTranslator
+     */
+    public function createErrorTranslator()
+    {
+        return new ErrorTranslator(
+            $this->container->make(Translator::class)
+        );
+    }
+
+    /**
+     * Create a resource validator.
+     *
+     * @param array $data
+     * @param array $rules
+     * @param array $messages
+     * @param array $customAttributes
+     * @return ValidatorInterface
+     */
+    public function createResourceValidator(
+        array $data,
+        array $rules,
+        array $messages = [],
+        array $customAttributes = []
+    ) {
+        $resource = ResourceObject::create($data);
+
+        return new Validation\ResourceValidator(
+            $this->makeValidator($resource->all(), $rules, $messages, $customAttributes),
+            $this->createErrorTranslator(),
+            $resource
+        );
+    }
+
+    /**
+     * Create a query validator.
+     *
+     * @param array $data
+     * @param array $rules
+     * @param array $messages
+     * @param array $customAttributes
+     * @return ValidatorInterface
+     */
+    public function createQueryValidator(
+        array $data,
+        array $rules,
+        array $messages = [],
+        array $customAttributes = []
+    ) {
+        return new Validation\QueryValidator(
+            $this->makeValidator($data, $rules, $messages, $customAttributes),
+            $this->createErrorTranslator()
+        );
+    }
+
+    /**
      * @param ErrorRepositoryInterface $errors
      * @return ValidatorErrorFactory
+     * @deprecated 2.0.0
      */
     protected function createValidatorErrorFactory(ErrorRepositoryInterface $errors)
     {
         return new ValidatorErrorFactory($errors);
+    }
+
+    /**
+     * @param array $data
+     * @param array $rules
+     * @param array $messages
+     * @param array $customAttributes
+     * @return Validator
+     */
+    protected function makeValidator(
+        array $data,
+        array $rules,
+        array $messages = [],
+        array $customAttributes = []
+    ) {
+        return $this->container
+            ->make(ValidatorFactoryContract::class)
+            ->make($data, $rules, $messages, $customAttributes);
     }
 }
