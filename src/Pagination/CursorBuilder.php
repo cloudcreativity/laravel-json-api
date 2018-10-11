@@ -341,7 +341,7 @@ class CursorBuilder
     private function guessKey()
     {
         if ($this->query instanceof EloquentBuilder || $this->query instanceof Relation) {
-            return $this->query->getModel()->getKeyName();
+            return $this->query->getModel()->getRouteKeyName();
         }
 
         return 'id';
