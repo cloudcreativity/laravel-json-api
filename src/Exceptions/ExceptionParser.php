@@ -228,7 +228,7 @@ class ExceptionParser implements ExceptionParserInterface
      */
     protected function getHeaders(Exception $e)
     {
-        return [];
+        return $e instanceof HttpException ? $e->getHeaders() : [];
     }
 
     /**

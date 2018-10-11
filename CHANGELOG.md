@@ -10,12 +10,16 @@ All notable changes to this project will be documented in this file. This projec
 - Errors for the new validation implementation now have their `title`, `detail` and `code` members
 translated via Laravel's translator. This means consuming applications can change the messages
 by overriding the default translations provided by this package.
+- [#234](https://github.com/cloudcreativity/laravel-json-api/issues/234)
+HTTP exception headers are now added to the JSON API response when converting to JSON API errors.
 
 ### Changed
 - Minimum PHP version is now `7.1`.
 - Minimum Laravel version is now `5.5`.
 - The validated request object is now abstract, with a concrete implementation for each type
 of request.
+- [#237](https://github.com/cloudcreativity/laravel-json-api/issues/237)
+The route key name is now used as the default cursor key name.
 
 ### Removed
 - The `Auth\HandlesAuthorizers` trait was removed and its logic moved into the `Authorize` middleware.

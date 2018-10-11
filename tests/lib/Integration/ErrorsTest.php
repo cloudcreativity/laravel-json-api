@@ -28,6 +28,7 @@ use Illuminate\Session\TokenMismatchException;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\MessageBag;
 use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class ErrorsTest extends TestCase
 {
@@ -286,6 +287,30 @@ class ErrorsTest extends TestCase
                         'detail' => $detail,
                         'meta' => ['key' => 'email'],
                     ],
+                ],
+            ]);
+    }
+
+    public function testHttpException()
+    {
+        $ex = new HttpException(
+            418,
+            "I think I might be a teapot.",
+            null,
+            ['X-Teapot' => 'True']
+        );
+
+        $this->request($ex)
+            ->assertStatus(418)
+            ->assertHeader('X-Teapot', 'True')
+            ->assertHeader('Content-Type', 'application/vnd.api+json')
+            ->assertExactJson([
+                'errors' => [
+                    [
+                        'title' => "I'm a teapot",
+                        'detail' => 'I think I might be a teapot.',
+                        'status' => '418',
+                    ]
                 ],
             ]);
     }
