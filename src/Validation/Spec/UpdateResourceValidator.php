@@ -21,13 +21,18 @@ use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\InvalidArgumentException;
 use CloudCreativity\LaravelJsonApi\Validation\ErrorTranslator;
 
+/**
+ * Class UpdateResourceValidator
+ *
+ * @package CloudCreativity\LaravelJsonApi
+ */
 class UpdateResourceValidator extends CreateResourceValidator
 {
 
     /**
      * The expected resource ID.
      *
-     * @var string|null
+     * @var string
      */
     private $expectedId;
 
@@ -44,11 +49,11 @@ class UpdateResourceValidator extends CreateResourceValidator
         StoreInterface $store,
         ErrorTranslator $translator,
         $document,
-        $expectedType,
-        $expectedId
+        string $expectedType,
+        string $expectedId
     ) {
-        if (!is_string($expectedId) || empty($expectedId)) {
-            throw new InvalidArgumentException('Expecting id to be null or a non-empty string.');
+        if (empty($expectedId)) {
+            throw new InvalidArgumentException('Expecting id to be a non-empty string.');
         }
 
         parent::__construct($store, $translator, $document, $expectedType);

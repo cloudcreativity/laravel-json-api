@@ -52,7 +52,7 @@ class ErrorTranslator
      * @param string $member
      * @return ErrorInterface
      */
-    public function memberRequired($path, $member): ErrorInterface
+    public function memberRequired(string $path, string $member): ErrorInterface
     {
         return new Error(
             null,
@@ -72,7 +72,7 @@ class ErrorTranslator
      * @param string $member
      * @return ErrorInterface
      */
-    public function memberNotObject($path, $member): ErrorInterface
+    public function memberNotObject(string $path, string $member): ErrorInterface
     {
         return new Error(
             null,
@@ -92,7 +92,7 @@ class ErrorTranslator
      * @param string $member
      * @return ErrorInterface
      */
-    public function memberNotString($path, $member): ErrorInterface
+    public function memberNotString(string $path, string $member): ErrorInterface
     {
         return new Error(
             null,
@@ -108,11 +108,11 @@ class ErrorTranslator
     /**
      * Create an error for a member that cannot be an empty value.
      *
-     * @param $path
-     * @param $member
+     * @param string $path
+     * @param string $member
      * @return ErrorInterface
      */
-    public function memberEmpty($path, $member): ErrorInterface
+    public function memberEmpty(string $path, string $member): ErrorInterface
     {
         return new Error(
             null,
@@ -128,12 +128,12 @@ class ErrorTranslator
     /**
      * Create an error for when the resource type is not supported by the endpoint.
      *
-     * @param $type
+     * @param string $type
      *      the resource type that is not supported.
      * @param string $path
      * @return ErrorInterface
      */
-    public function resourceTypeNotSupported($type, $path = '/data'): ErrorInterface
+    public function resourceTypeNotSupported(string $type, string $path = '/data'): ErrorInterface
     {
         return new Error(
             null,
@@ -149,12 +149,12 @@ class ErrorTranslator
     /**
      * Create an error for when a resource type is not recognised.
      *
-     * @param $type
+     * @param string $type
      *      the resource type that is not recognised.
      * @param string $path
      * @return ErrorInterface
      */
-    public function resourceTypeNotRecognised($type, $path = '/data'): ErrorInterface
+    public function resourceTypeNotRecognised(string $type, string $path = '/data'): ErrorInterface
     {
         return new Error(
             null,
@@ -170,12 +170,12 @@ class ErrorTranslator
     /**
      * Create an error for when the resource id is not supported by the endpoint.
      *
-     * @param $id
+     * @param string $id
      *      the resource id that is not supported.
      * @param string $path
      * @return ErrorInterface
      */
-    public function resourceIdNotSupported($id, $path = '/data'): ErrorInterface
+    public function resourceIdNotSupported(string $id, string $path = '/data'): ErrorInterface
     {
         return new Error(
             null,
@@ -198,7 +198,7 @@ class ErrorTranslator
      * @param string $path
      * @return ErrorInterface
      */
-    public function resourceExists($type, $id, $path = '/data'): ErrorInterface
+    public function resourceExists(string $type, string $id, string $path = '/data'): ErrorInterface
     {
         return new Error(
             null,
@@ -217,7 +217,7 @@ class ErrorTranslator
      * @param string $path
      * @return ErrorInterface
      */
-    public function resourceDoesNotExist($path): ErrorInterface
+    public function resourceDoesNotExist(string $path): ErrorInterface
     {
         return new Error(
             null,
@@ -238,7 +238,7 @@ class ErrorTranslator
      *      the validation message (already translated).
      * @return ErrorInterface
      */
-    public function invalidResource($path, $detail = null): ErrorInterface
+    public function invalidResource(string $path, ?string $detail = null): ErrorInterface
     {
         return new Error(
             null,
@@ -259,7 +259,7 @@ class ErrorTranslator
      *      the validation message (already translated).
      * @return ErrorInterface
      */
-    public function invalidQueryParameter($param, $detail = null): ErrorInterface
+    public function invalidQueryParameter(string $param, ?string $detail = null): ErrorInterface
     {
         return new Error(
             null,
@@ -283,7 +283,7 @@ class ErrorTranslator
      * @param string|null $locale
      * @return string|null
      */
-    protected function trans($key, $member, array $replace = [], $locale = null)
+    protected function trans(string $key, string $member, array $replace = [], ?string $locale = null)
     {
         return $this->translator->trans(
             "jsonapi::errors.{$key}.{$member}",
@@ -299,7 +299,7 @@ class ErrorTranslator
      * @param string|null $member
      * @return array
      */
-    protected function pointer($path, $member = null): array
+    protected function pointer(string $path, ?string $member = null): array
     {
         if (!$member) {
             $pointer = $path;

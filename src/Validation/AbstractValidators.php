@@ -1,4 +1,19 @@
 <?php
+/**
+ * Copyright 2018 Cloud Creativity Limited
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 namespace CloudCreativity\LaravelJsonApi\Validation;
 
@@ -13,6 +28,7 @@ use CloudCreativity\LaravelJsonApi\Rules\AllowedPageParameters;
 use CloudCreativity\LaravelJsonApi\Rules\AllowedSortParameters;
 use CloudCreativity\LaravelJsonApi\Rules\DisallowedParameter;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 
 /**
  * Class AbstractValidators
@@ -334,12 +350,12 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
     /**
      * Get validation data for modifying a relationship.
      *
-     * @param $record
-     * @param $field
+     * @param mixed $record
+     * @param string $field
      * @param array $document
      * @return array
      */
-    protected function relationshipData($record, $field, array $document): array
+    protected function relationshipData($record, string $field, array $document): array
     {
         $schema = $this->container->getSchema($record);
 
@@ -357,14 +373,14 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
     /**
      * Get validation rules for a specified relationship field.
      *
-     * @param $record
-     * @param $field
+     * @param mixed $record
+     * @param string $field
      * @return array
      */
-    protected function relationshipRules($record, $field): array
+    protected function relationshipRules($record, string $field): array
     {
         return collect($this->rules($record))->filter(function ($v, $key) use ($field) {
-            return starts_with($key, $field);
+            return Str::startsWith($key, $field);
         })->all();
     }
 
@@ -461,7 +477,7 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
         }
 
         return collect($this->allQueryRules())->reject(function ($value, $key) use ($keys) {
-            return starts_with($key, $keys);
+            return Str::startsWith($key, $keys);
         })->merge($this->excluded(...$keys))->all();
     }
 

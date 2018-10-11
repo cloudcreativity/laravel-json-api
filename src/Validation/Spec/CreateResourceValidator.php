@@ -21,6 +21,11 @@ use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\InvalidArgumentException;
 use CloudCreativity\LaravelJsonApi\Validation\ErrorTranslator;
 
+/**
+ * Class CreateResourceValidator
+ *
+ * @package CloudCreativity\LaravelJsonApi
+ */
 class CreateResourceValidator extends AbstractValidator
 {
 
@@ -43,9 +48,9 @@ class CreateResourceValidator extends AbstractValidator
         StoreInterface $store,
         ErrorTranslator $translator,
         $document,
-        $expectedType
+        string $expectedType
     ) {
-        if (!is_string($expectedType) || empty($expectedType)) {
+        if (empty($expectedType)) {
             throw new InvalidArgumentException('Expecting type to be a non-empty string.');
         }
 

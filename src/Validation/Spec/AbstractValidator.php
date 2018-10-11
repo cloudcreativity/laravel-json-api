@@ -24,6 +24,11 @@ use CloudCreativity\LaravelJsonApi\Object\ResourceIdentifier;
 use CloudCreativity\LaravelJsonApi\Validation\ErrorTranslator;
 use Neomerx\JsonApi\Exceptions\ErrorCollection;
 
+/**
+ * Class AbstractValidator
+ *
+ * @package CloudCreativity\LaravelJsonApi
+ */
 abstract class AbstractValidator implements DocumentValidatorInterface
 {
 
@@ -62,7 +67,7 @@ abstract class AbstractValidator implements DocumentValidatorInterface
      *
      * @param StoreInterface $store
      * @param ErrorTranslator $translator
-     * @param $document
+     * @param object $document
      */
     public function __construct(StoreInterface $store, ErrorTranslator $translator, $document)
     {
@@ -146,7 +151,7 @@ abstract class AbstractValidator implements DocumentValidatorInterface
      * @param string $path
      * @return bool
      */
-    protected function validateIdMember($value, $path): bool
+    protected function validateIdMember($value, string $path): bool
     {
         if (!is_string($value)) {
             $this->memberNotString($path, 'id');
@@ -171,7 +176,7 @@ abstract class AbstractValidator implements DocumentValidatorInterface
      *      the index for the identifier, if in a collection.
      * @return bool
      */
-    protected function validateIdentifier($value, $dataPath, $index = null)
+    protected function validateIdentifier($value, string $dataPath, ?int $index = null): bool
     {
         $member = is_int($index) ? (string) $index : 'data';
 
@@ -207,7 +212,7 @@ abstract class AbstractValidator implements DocumentValidatorInterface
      * @param string|null $field
      * @return bool
      */
-    protected function validateRelationship($relation, $field = null): bool
+    protected function validateRelationship($relation, ?string $field = null): bool
     {
         $path = $field ? '/data/relationships' : '/';
         $member = $field ?: 'data';
@@ -242,7 +247,7 @@ abstract class AbstractValidator implements DocumentValidatorInterface
      *      the relationship field name.
      * @return bool
      */
-    protected function validateToOne($value, $field = null): bool
+    protected function validateToOne($value, ?string $field = null): bool
     {
         if (is_null($value)) {
             return true;
@@ -271,7 +276,7 @@ abstract class AbstractValidator implements DocumentValidatorInterface
      *      the relationship field name.
      * @return bool
      */
-    protected function validateToMany(array $value, $field = null): bool
+    protected function validateToMany(array $value, ?string $field = null): bool
     {
         $path = $field ? "/data/relationships/{$field}/data" : "/data";
         $valid = true;
@@ -309,7 +314,7 @@ abstract class AbstractValidator implements DocumentValidatorInterface
     /**
      * Get a value from the document data object use dot notation.
      *
-     * @param $key
+     * @param string|array $key
      * @return mixed|null
      */
     protected function dataGet($key)
@@ -324,11 +329,11 @@ abstract class AbstractValidator implements DocumentValidatorInterface
     /**
      * Check if the resource is not found.
      *
-     * @param $type
-     * @param $id
+     * @param string $type
+     * @param string $id
      * @return bool
      */
-    protected function isNotFound($type, $id): bool
+    protected function isNotFound(string $type, string $id): bool
     {
         return !$this->store->exists(ResourceIdentifier::create($type, $id));
     }
@@ -340,7 +345,7 @@ abstract class AbstractValidator implements DocumentValidatorInterface
      * @param string $member
      * @return void
      */
-    protected function memberRequired($path, $member)
+    protected function memberRequired(string $path, string $member): void
     {
         $this->errors->add($this->translator->memberRequired($path, $member));
     }
@@ -352,7 +357,7 @@ abstract class AbstractValidator implements DocumentValidatorInterface
      * @param string $member
      * @return void
      */
-    protected function memberNotObject($path, $member)
+    protected function memberNotObject(string $path, string $member): void
     {
         $this->errors->add($this->translator->memberNotObject($path, $member));
     }
@@ -364,7 +369,7 @@ abstract class AbstractValidator implements DocumentValidatorInterface
      * @param string $member
      * @return void
      */
-    protected function memberNotString($path, $member)
+    protected function memberNotString(string $path, string $member): void
     {
         $this->errors->add($this->translator->memberNotString($path, $member));
     }
@@ -372,11 +377,11 @@ abstract class AbstractValidator implements DocumentValidatorInterface
     /**
      * Add an error for a member that cannot be an empty value.
      *
-     * @param $path
-     * @param $member
+     * @param string $path
+     * @param string $member
      * @return void
      */
-    protected function memberEmpty($path, $member)
+    protected function memberEmpty(string $path, string $member): void
     {
         $this->errors->add($this->translator->memberEmpty($path, $member));
     }
@@ -388,7 +393,7 @@ abstract class AbstractValidator implements DocumentValidatorInterface
      * @param string $path
      * @return void
      */
-    protected function resourceTypeNotSupported($actual, $path = '/data')
+    protected function resourceTypeNotSupported(string $actual, string $path = '/data'): void
     {
         $this->errors->add($this->translator->resourceTypeNotSupported($actual, $path));
     }
@@ -400,7 +405,7 @@ abstract class AbstractValidator implements DocumentValidatorInterface
      * @param string $path
      * @return void
      */
-    protected function resourceTypeNotRecognised($actual, $path = '/data')
+    protected function resourceTypeNotRecognised(string $actual, string $path = '/data'): void
     {
         $this->errors->add($this->translator->resourceTypeNotRecognised($actual, $path));
     }
@@ -412,7 +417,7 @@ abstract class AbstractValidator implements DocumentValidatorInterface
      * @param string $path
      * @return void
      */
-    protected function resourceIdNotSupported($actual, $path = '/data')
+    protected function resourceIdNotSupported(string $actual, string $path = '/data'): void
     {
         $this->errors->add($this->translator->resourceIdNotSupported($actual, $path));
     }
@@ -423,8 +428,9 @@ abstract class AbstractValidator implements DocumentValidatorInterface
      * @param string $type
      * @param string $id
      * @param string $path
+     * @return void
      */
-    protected function resourceExists($type, $id, $path = '/data')
+    protected function resourceExists(string $type, string $id, string $path = '/data'): void
     {
         $this->errors->add($this->translator->resourceExists($type, $id, $path));
     }
@@ -432,10 +438,10 @@ abstract class AbstractValidator implements DocumentValidatorInterface
     /**
      * Add an error for when a resource identifier does not exist.
      *
-     * @param $path
+     * @param string $path
      * @return void
      */
-    protected function resourceDoesNotExist($path)
+    protected function resourceDoesNotExist(string $path): void
     {
         $this->errors->add($this->translator->resourceDoesNotExist($path));
     }

@@ -19,6 +19,7 @@
 namespace CloudCreativity\LaravelJsonApi\Testing;
 
 use CloudCreativity\LaravelJsonApi\Api\Api;
+use CloudCreativity\LaravelJsonApi\Utils\Arr;
 use Illuminate\Contracts\Routing\UrlRoutable;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Collection;
@@ -197,12 +198,12 @@ trait MakesJsonApiRequests
     }
 
     /**
-     * @param array $data
+     * @param array|Arrayable $data
      * @param array $params
      * @param array $headers
      * @return TestResponse
      */
-    protected function doCreate(array $data, array $params = [], array $headers = [])
+    protected function doCreate($data, array $params = [], array $headers = [])
     {
         $params = $this->addDefaultRouteParams($params);
         $uri = $this->api()->url()->create($this->resourceType(), $params);
@@ -261,16 +262,18 @@ trait MakesJsonApiRequests
     }
 
     /**
-     * @param array $data
+     * @param array|Arrayable $data
      * @param array $params
      * @param array $headers
      * @return TestResponse
      */
-    protected function doUpdate(array $data, array $params = [], array $headers = [])
+    protected function doUpdate($data, array $params = [], array $headers = [])
     {
-        $id = isset($data[Keys::KEYWORD_ID]) ? $data[Keys::KEYWORD_ID] : null;
+        if ($data instanceof Arrayable) {
+            $data = $data->toArray();
+        }
 
-        if (empty($id)) {
+        if (!$id = $data[Keys::KEYWORD_ID] ?? null) {
             throw new InvalidArgumentException('Expecting provided data to contain a resource id.');
         }
 
@@ -411,7 +414,7 @@ trait MakesJsonApiRequests
     /**
      * @param mixed $resourceId
      * @param string $relationshipName
-     * @param array|null $data
+     * @param array|Arrayable|null $data
      * @param array $params
      * @param array $headers
      * @return TestResponse
@@ -423,6 +426,10 @@ trait MakesJsonApiRequests
         array $params = [],
         array $headers = []
     ) {
+        if ($data instanceof Arrayable) {
+            $data = $data->toArray();
+        }
+
         $params = $this->addDefaultRouteParams($params);
         $uri = $this->api()->url()->replaceRelationship(
             $this->resourceType(),
@@ -461,7 +468,7 @@ trait MakesJsonApiRequests
     /**
      * @param mixed $resourceId
      * @param string $relationshipName
-     * @param array $data
+     * @param array|Arrayable $data
      * @param array $params
      * @param array $headers
      * @return TestResponse
@@ -469,10 +476,14 @@ trait MakesJsonApiRequests
     protected function doAddToRelationship(
         $resourceId,
         $relationshipName,
-        array $data,
+        $data,
         array $params = [],
         array $headers = []
     ) {
+        if ($data instanceof Arrayable) {
+            $data = $data->toArray();
+        }
+
         $params = $this->addDefaultRouteParams($params);
         $uri = $this->api()->url()->addRelationship(
             $this->resourceType(),
@@ -511,7 +522,7 @@ trait MakesJsonApiRequests
     /**
      * @param mixed $resourceId
      * @param string $relationshipName
-     * @param array|null $data
+     * @param array|Arrayable $data
      * @param array $params
      * @param array $headers
      * @return TestResponse
@@ -523,6 +534,10 @@ trait MakesJsonApiRequests
         array $params = [],
         array $headers = []
     ) {
+        if ($data instanceof Arrayable) {
+            $data = $data->toArray();
+        }
+
         $params = $this->addDefaultRouteParams($params);
         $uri = $this->api()->url()->removeRelationship(
             $this->resourceType(),
