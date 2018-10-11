@@ -225,7 +225,8 @@ Accept: application/vnd.api+json
 
 {
   "data": {
-    "type": "1",
+    "type": "posts",
+    "id": "1",
     "attributes": {
       "title": "Hello World"
     },
@@ -296,11 +297,19 @@ class Validators extends AbstractValidators
         return [
             'title' => "required|string|min:3",
             'content' => "required|string",
+            'author.type' => 'in:users',
         ];
     }
 
 }
 ```
+
+> When validating the request document for compliance with the JSON API spec, we check that all
+relationships contain identifiers for resources that exist in your API. This means that when writing
+rules for fields that are relationships, you do not need to check if the `id` provided exists. However
+you must validate the `type` of a related resource to ensure it is the expected resource type for
+the relationship. As shown in the above example, the related `author` is checked to ensure that it is
+a `users` resource.
 
 ### Custom Error Messages
 
@@ -346,7 +355,7 @@ If you need to [conditionally add rules](https://laravel.com/docs/validation#con
 do this by overloading either the `create` or `update` methods. For example:
 
 ```php
-class Validators extends AbstractValidatorProvider
+class Validators extends AbstractValidators
 {
     // ...
     
@@ -370,4 +379,163 @@ class Validators extends AbstractValidatorProvider
 
 ## Relationship Validation
 
+The JSON API specification provides relationship endpoints for modifying resource relations. To-one and to-many
+relationships can be replaced using a `PATCH` request. For to-many relationships, resources can be added
+to the relationship via a `POST` request or removed using a `DELETE` request.
+
+### Validation Data and Rules
+
+Given this request:
+
+```http
+PATCH /api/posts/1/relationships/tags HTTP/1.1
+Content-Type: application/vnd.api+json
+Accept: application/vnd.api+json
+
+{
+  "data": [
+    {
+      "type": "tags",
+      "id": "1"
+    },
+    {
+      "type": "tags",
+      "id": "6"
+    }
+  ]
+}
+```
+
+Your validator will be provided with the following array of data:
+
+```php
+[
+    "type" => "posts",
+    "id" => "1",
+    "tags" => [
+        ["type" => "tags", "id" => "1"],
+        ["type" => "tags", "id" => "3"],
+    ],
+];
+```
+
+This data will be passed to a validator that only receives any rules that are for the `tags` field. I.e.
+we filter the resource rules returned from your `rules()` method to only include rules that have a key
+starting with `tags`.
+
+> If you need to customise the rules used to validate relationships, overload the `relationshipRules()`
+method on your validators class.
+
+Custom validation messages (on the `$messages` property) and attribute names (on the `$attribtues` property)
+are also passed to your validator.
+
 ## Query Validation
+
+In addition to defining rules for validating the JSON API document sent by a client, your validators
+class also holds rules for validating query parameters. This allows you to:
+
+- Whitelist expected `filter`, `include`, `page`, `sort` and `fields` parameters.
+- Validate `filter`, `page` and non-JSON API query parameters using Laravel validation rules.
+
+### Relationship Query Parameters
+
+One important thing to note with query parameter validation is that when fetching relationships, the
+validators class for the related resource will be used. As an example, when a client submits
+this request:
+
+```http
+GET /api/posts/1/relationships/tags HTTP/1.1
+Accept: application/vnd.api+json
+```
+
+The query parameters are validated using the `tags` validators class, because the response will contain
+`tags` resources, not `posts` resources. Filters, pagination, etc all therefore need to be valid for `tags`.
+
+For this to work, we need to know the inverse resource type when you specify relationship routes. By default
+we assume that the inverse resource type is the pluralised form of the relationship name. E.g. for an
+`author` relationship we assume the inverse resource type is `authors`. If it was actually `users`, you
+need to specify this when defining the relationship route. For example:
+
+```php
+JsonApi::register('default', ['namespace' => 'Api'], function ($api, $router) {
+    $api->resource('posts', [
+        'has-one' => [
+            'author' => ['inverse' => 'users'],
+        ],
+    ]);
+});
+```
+
+### Whitelisting Parameters
+
+Expected parameters can be defined using any of the following properties on your validators class:
+
+- `$allowedFilteringParameters`
+- `$allowedIncludePaths`
+- `$allowedPagingParameters`
+- `$allowedSortParameters`
+- `$allowedFieldSets`
+
+The default values for each of these and how to customise them is discussed in the 
+[Filtering](../fetching/filtering.md), [Inclusion](../fetching/inclusion.md), 
+[Pagination](../fetching/pagination.md), [Sorting](../fetching/sorting.md) and
+[Sparse Fieldsets](../fetching/sparse-fieldsets.md) chapters.
+
+### Defining Rules
+
+In addition to whitelisting parameters you can also use Laravel validation rules for the query
+parameters. To define these, add them to your `queryRules()` method. For example:
+
+```php
+class Validators extends AbstractValidators
+{
+    // ...
+
+    protected function queryRules(): array
+    {
+        return [
+            'filter.author' => 'exists:users',
+            'page.number' => 'integer|min:1',
+            'page.size' => 'integer|between:1,100',
+            'foobar' => 'in:baz,bat',
+        ];
+    }
+
+}
+```
+
+### Custom Error Messages
+
+To add any custom error messages for your query parameter rules, define them on the `$queryMessages` property:
+
+```php
+class Validators extends AbstractValidators
+{
+    // ...
+
+    protected $queryMessages = [
+        'fitler.author.exists' => 'The author does not exist.',
+    ];
+
+}
+```
+
+Alternatively you can overload the `queryMessages` method.
+
+### Custom Attribute Names
+
+To define any custom attribute names, add them to the `$queryAttributes` property on your validators:
+
+```php
+class Validators extends AbstractValidators
+{
+    // ...
+
+    protected $queryAttributes = [
+        'filter.author' => "the post's author",
+    ];
+
+}
+```
+
+Alternatively you can overload the `queryAttributes` method.
