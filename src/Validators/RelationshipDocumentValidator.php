@@ -28,6 +28,7 @@ use CloudCreativity\LaravelJsonApi\Utils\ErrorsAwareTrait;
  * Class RelationshipDocumentValidator
  *
  * @package CloudCreativity\LaravelJsonApi
+ * @deprecated 2.0.0 use classes in the `Validation` namespace instead.
  */
 class RelationshipDocumentValidator implements DocumentValidatorInterface
 {

@@ -20,6 +20,7 @@ namespace CloudCreativity\LaravelJsonApi\Testing;
 
 use CloudCreativity\LaravelJsonApi\Api\Api;
 use Illuminate\Contracts\Routing\UrlRoutable;
+use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
 use Neomerx\JsonApi\Contracts\Document\DocumentInterface as Keys;
@@ -37,16 +38,55 @@ trait MakesJsonApiRequests
 {
 
     /**
+     * The API to test, if empty uses the default API.
+     *
+     * @var string
+     */
+    protected $api = '';
+
+    /**
+     * The resource type to test.
+     *
+     * @var string
+     */
+    protected $resourceType = '';
+
+    /**
+     * The test request Accept header media type.
+     *
+     * @var string
+     */
+    protected $acceptMediaType = MediaTypeInterface::JSON_API_MEDIA_TYPE;
+
+    /**
+     * The test request content type.
+     *
+     * @var string
+     */
+    protected $contentMediaType = MediaTypeInterface::JSON_API_MEDIA_TYPE;
+
+    /**
+     * The expected response media type.
+     *
+     * @var string
+     */
+    protected $responseMediaType = MediaTypeInterface::JSON_API_MEDIA_TYPE;
+
+    /**
      * Visit the given URI with a JSON API request.
      *
      * @param $method
      * @param LinkInterface|string $uri
-     * @param array|string $data
+     * @param array|Arrayable $data
      * @param array $headers
      * @return TestResponse
      */
-    protected function jsonApi($method, $uri, array $data = [], array $headers = [])
+    protected function jsonApi($method, $uri, $data = [], array $headers = [])
     {
+        if ($data instanceof Arrayable) {
+            $data = $data->toArray();
+        }
+
         if ($uri instanceof LinkInterface) {
             $uri = $uri->getSubHref();
         }
@@ -56,7 +96,7 @@ trait MakesJsonApiRequests
 
     /**
      * @param $uri
-     * @param array|string $data
+     * @param array|Arrayable $data
      * @param array $headers
      * @return TestResponse
      */
@@ -67,7 +107,7 @@ trait MakesJsonApiRequests
 
     /**
      * @param $uri
-     * @param array|string $data
+     * @param array|Arrayable $data
      * @param array $headers
      * @return TestResponse
      */
@@ -78,7 +118,7 @@ trait MakesJsonApiRequests
 
     /**
      * @param $uri
-     * @param array|string $data
+     * @param array|Arrayable $data
      * @param array $headers
      * @return TestResponse
      */
@@ -89,7 +129,7 @@ trait MakesJsonApiRequests
 
     /**
      * @param $uri
-     * @param array|string $data
+     * @param array|Arrayable $data
      * @param array $headers
      * @return TestResponse
      */
@@ -99,26 +139,12 @@ trait MakesJsonApiRequests
     }
 
     /**
-     * @param array $headers
-     * @return array
-     */
-    protected function normalizeHeaders(array $headers)
-    {
-        return array_merge([
-            'Accept' => $this->acceptMediaType(),
-            'CONTENT_TYPE' => $this->contentMediaType(),
-        ], $headers);
-    }
-
-    /**
      * @param $response
      * @return TestResponse
      */
     protected function createTestResponse($response)
     {
-        $resourceType = property_exists($this, 'resourceType') ? $this->resourceType : null;
-
-        return new TestResponse($response, $resourceType, $this->expectedMediaType());
+        return new TestResponse($response, $this->expectedResourceType(), $this->expectedMediaType());
     }
 
     /**
@@ -171,12 +197,12 @@ trait MakesJsonApiRequests
     }
 
     /**
-     * @param array $data
+     * @param array|Arrayable $data
      * @param array $params
      * @param array $headers
      * @return TestResponse
      */
-    protected function doCreate(array $data, array $params = [], array $headers = [])
+    protected function doCreate($data, array $params = [], array $headers = [])
     {
         $params = $this->addDefaultRouteParams($params);
         $uri = $this->api()->url()->create($this->resourceType(), $params);
@@ -235,16 +261,18 @@ trait MakesJsonApiRequests
     }
 
     /**
-     * @param array $data
+     * @param array|Arrayable $data
      * @param array $params
      * @param array $headers
      * @return TestResponse
      */
-    protected function doUpdate(array $data, array $params = [], array $headers = [])
+    protected function doUpdate($data, array $params = [], array $headers = [])
     {
-        $id = isset($data[Keys::KEYWORD_ID]) ? $data[Keys::KEYWORD_ID] : null;
+        if ($data instanceof Arrayable) {
+            $data = $data->toArray();
+        }
 
-        if (empty($id)) {
+        if (!$id = $data[Keys::KEYWORD_ID] ?? null) {
             throw new InvalidArgumentException('Expecting provided data to contain a resource id.');
         }
 
@@ -385,7 +413,7 @@ trait MakesJsonApiRequests
     /**
      * @param mixed $resourceId
      * @param string $relationshipName
-     * @param array|null $data
+     * @param array|Arrayable|null $data
      * @param array $params
      * @param array $headers
      * @return TestResponse
@@ -397,6 +425,10 @@ trait MakesJsonApiRequests
         array $params = [],
         array $headers = []
     ) {
+        if ($data instanceof Arrayable) {
+            $data = $data->toArray();
+        }
+
         $params = $this->addDefaultRouteParams($params);
         $uri = $this->api()->url()->replaceRelationship(
             $this->resourceType(),
@@ -435,7 +467,7 @@ trait MakesJsonApiRequests
     /**
      * @param mixed $resourceId
      * @param string $relationshipName
-     * @param array $data
+     * @param array|Arrayable $data
      * @param array $params
      * @param array $headers
      * @return TestResponse
@@ -443,10 +475,14 @@ trait MakesJsonApiRequests
     protected function doAddToRelationship(
         $resourceId,
         $relationshipName,
-        array $data,
+        $data,
         array $params = [],
         array $headers = []
     ) {
+        if ($data instanceof Arrayable) {
+            $data = $data->toArray();
+        }
+
         $params = $this->addDefaultRouteParams($params);
         $uri = $this->api()->url()->addRelationship(
             $this->resourceType(),
@@ -485,7 +521,7 @@ trait MakesJsonApiRequests
     /**
      * @param mixed $resourceId
      * @param string $relationshipName
-     * @param array|null $data
+     * @param array|Arrayable $data
      * @param array $params
      * @param array $headers
      * @return TestResponse
@@ -497,6 +533,10 @@ trait MakesJsonApiRequests
         array $params = [],
         array $headers = []
     ) {
+        if ($data instanceof Arrayable) {
+            $data = $data->toArray();
+        }
+
         $params = $this->addDefaultRouteParams($params);
         $uri = $this->api()->url()->removeRelationship(
             $this->resourceType(),
@@ -557,17 +597,43 @@ trait MakesJsonApiRequests
     }
 
     /**
-     * @return mixed
+     * Set the resource type to test.
+     *
+     * @param string $resourceType
+     * @return MakesJsonApiRequests
      */
-    protected function resourceType()
+    protected function withResourceType(string $resourceType): self
     {
-        $resourceType = property_exists($this, 'resourceType') ? $this->resourceType : null;
+        $this->resourceType = $resourceType;
 
-        if (!$resourceType) {
+        return $this;
+    }
+
+    /**
+     * Get the resource type that is being tested.
+     *
+     * @return string
+     */
+    protected function resourceType(): string
+    {
+        if (empty($this->resourceType)) {
             throw new RuntimeException('You must set a resource type property on your test case.');
         }
 
-        return $resourceType;
+        return $this->resourceType;
+    }
+
+    /**
+     * Set the Accept header media type for test requests.
+     *
+     * @param string $mediaType
+     * @return MakesJsonApiRequests
+     */
+    protected function withAcceptMediaType(string $mediaType): self
+    {
+        $this->acceptMediaType = $mediaType;
+
+        return $this;
     }
 
     /**
@@ -577,9 +643,20 @@ trait MakesJsonApiRequests
      */
     protected function acceptMediaType()
     {
-        $mediaType = property_exists($this, 'acceptMediaType') ? $this->acceptMediaType : null;
+        return $this->acceptMediaType;
+    }
 
-        return $mediaType ?: MediaTypeInterface::JSON_API_MEDIA_TYPE;
+    /**
+     * Set the Content-Type header media type for test requests.
+     *
+     * @param string $mediaType
+     * @return MakesJsonApiRequests
+     */
+    protected function withContentMediaType(string $mediaType): self
+    {
+        $this->contentMediaType = $mediaType;
+
+        return $this;
     }
 
     /**
@@ -589,9 +666,17 @@ trait MakesJsonApiRequests
      */
     protected function contentMediaType()
     {
-        $mediaType = property_exists($this, 'contentMediaType') ? $this->contentMediaType : null;
+        return $this->contentMediaType;
+    }
 
-        return $mediaType ?: $this->acceptMediaType();
+    /**
+     * Get the resource type that is expected in the response.
+     *
+     * @return string|null
+     */
+    protected function expectedResourceType()
+    {
+        return $this->resourceType ?: null;
     }
 
     /**
@@ -601,9 +686,7 @@ trait MakesJsonApiRequests
      */
     protected function expectedMediaType()
     {
-        $mediaType = property_exists($this, 'responseMediaType') ? $this->responseMediaType : null;
-
-        return $mediaType ?: $this->acceptMediaType();
+        return $this->responseMediaType;
     }
 
     /**
@@ -611,9 +694,7 @@ trait MakesJsonApiRequests
      */
     protected function api()
     {
-        $api = property_exists($this, 'api') ? $this->api : null;
-
-        return json_api($api);
+        return json_api($this->api ?: null);
     }
 
     /**
@@ -656,6 +737,18 @@ trait MakesJsonApiRequests
     protected function normalizeId($id)
     {
         return ($id instanceof UrlRoutable) ? $id->getRouteKey() : $id;
+    }
+
+    /**
+     * @param array $headers
+     * @return array
+     */
+    protected function normalizeHeaders(array $headers)
+    {
+        return array_merge([
+            'Accept' => $this->acceptMediaType(),
+            'CONTENT_TYPE' => $this->contentMediaType(),
+        ], $headers);
     }
 
 }

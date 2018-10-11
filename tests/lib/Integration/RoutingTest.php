@@ -526,6 +526,60 @@ class RoutingTest extends TestCase
     }
 
     /**
+     * @return array
+     */
+    public function multiWordProvider()
+    {
+        return [
+            ['end-users'],
+            ['end_users'],
+            ['endUsers'],
+        ];
+    }
+
+    /**
+     * @param $resourceType
+     * @dataProvider multiWordProvider
+     * @see https://github.com/cloudcreativity/laravel-json-api/issues/224
+     */
+    public function testMultiWordResourceType($resourceType)
+    {
+        $this->withRoutes(function () use ($resourceType) {
+            JsonApi::register('v1', [], function (ApiGroup $api) use ($resourceType) {
+                $api->resource($resourceType, [
+                    'has-one' => ['author'],
+                    'has-many' => ['tags'],
+                ]);
+            });
+        });
+
+        $base = "/api/v1/$resourceType";
+
+        $this->assertMatch('GET', $base, '\\' . JsonApiController::class . '@index');
+    }
+
+    /**
+     * @param $relationship
+     * @dataProvider multiWordProvider
+     */
+    public function testMultiWordRelationship($relationship)
+    {
+        $this->withRoutes(function () use ($relationship) {
+            JsonApi::register('v1', [], function (ApiGroup $api) use ($relationship) {
+                $api->resource('posts', [
+                    'has-many' => $relationship,
+                ]);
+            });
+        });
+
+        $self = "/api/v1/posts/1/relationships/{$relationship}";
+        $related = "/api/v1/posts/1/{$relationship}";
+
+        $this->assertMatch('GET', $self, '\\' . JsonApiController::class . '@readRelationship');
+        $this->assertMatch('GET', $related, '\\' . JsonApiController::class . '@readRelatedResource');
+    }
+
+    /**
      * Wrap route definitions in the correct namespace.
      *
      * @param \Closure $closure

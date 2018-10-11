@@ -18,7 +18,6 @@
 namespace CloudCreativity\LaravelJsonApi\Client;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Client\ClientInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Factories\FactoryInterface;
 use CloudCreativity\LaravelJsonApi\Encoder\Parameters\EncodingParameters;
 use CloudCreativity\LaravelJsonApi\Exceptions\ClientException;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;

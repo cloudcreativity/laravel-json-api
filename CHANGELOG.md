@@ -2,6 +2,41 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## [1.0.0-beta.4] - 2018-10-11
+
+### Added
+- New validation implementation that uses Laravel validators throughout. See the
+[validation documentation](./docs/basics/validators.md) for details.
+- Errors for the new validation implementation now have their `title`, `detail` and `code` members
+translated via Laravel's translator. This means consuming applications can change the messages
+by overriding the default translations provided by this package.
+- [#234](https://github.com/cloudcreativity/laravel-json-api/issues/234)
+HTTP exception headers are now added to the JSON API response when converting to JSON API errors.
+
+### Changed
+- Minimum PHP version is now `7.1`.
+- Minimum Laravel version is now `5.5`.
+- The validated request object is now abstract, with a concrete implementation for each type
+of request.
+- [#237](https://github.com/cloudcreativity/laravel-json-api/issues/237)
+The route key name is now used as the default cursor key name.
+
+### Removed
+- The `Auth\HandlesAuthorizers` trait was removed and its logic moved into the `Authorize` middleware.
+
+### Deprecated
+- The previous validation solution is deprecated in favour of the new solution and will be removed at `2.0`.
+- The error factory implementation is deprecated in favour of using Laravel translation and will be removed at `2.0`.
+- The `Document\Error` and `Contracts\Document\MutableErrorInterface` are deprecated and will be removed
+at `2.0`. You should use the error interface/class from the `neomerx/jsonapi` package instead.
+- The following utility classes/traits/interfaces are deprecated and will be removed at `2.0`:
+  - `Utils/ErrorCreatorTrait`
+  - `Utils/ErrorsAwareTrait` and `Contracts\Utils\ErrorsAwareInterface`
+  - `Utils/Pointers`
+  - `Utils/Replacer` and `Contracts\Utils\ReplacerInterface`
+- The `Contracts\Factories\FactoryInterface` is deprecated and will be removed at `1.0`. 
+You should type-hint `Factories\Factory` directly instead.
+
 ## [1.0.0-beta.3] - 2018-09-21
 
 ### Added

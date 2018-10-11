@@ -24,17 +24,15 @@ A demo application is available at [here](https://github.com/cloudcreativity/dem
 
 ## Laravel Versions
 
-| Laravel | This Package |
-| --- | --- |
-| 5.7.* | `1.0.0-beta.3` |
-| 5.6.* | `1.0.0-beta.3` |
-| 5.5.* | `1.0.0-beta.3` |
-| 5.4.* | `1.0.0-beta.3` |
+| Laravel | This Package | EOL? |
+| --- | --- | --- |
+| 5.7.* | `1.0.0-beta.4` | - |
+| 5.6.* | `1.0.0-beta.4` | - |
+| 5.5.* | `1.0.0-beta.4` | - |
+| 5.4.* | `1.0.0-beta.3` | EOL |
 
-Make sure you consult the [Upgrade Guide](http://laravel-json-api.readthedocs.io/en/latest/upgrade/) when upgrading.
-
-> We plan to release `1.0.0` with a minimum PHP version of `7.1`. This means we will drop support for Laravel 5.4
-at some point during the `beta` release cycle.
+Make sure you consult the [Upgrade Guide](http://laravel-json-api.readthedocs.io/en/latest/upgrade/) 
+when upgrading.
 
 ## Lumen
 

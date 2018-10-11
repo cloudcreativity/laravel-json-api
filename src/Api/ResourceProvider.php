@@ -43,6 +43,7 @@ abstract class ResourceProvider
 
     /**
      * @var array
+     * @deprecated 2.0.0 use package translations instead.
      */
     protected $errors = [];
 
@@ -70,6 +71,7 @@ abstract class ResourceProvider
 
     /**
      * @return array
+     * @deprecated 2.0.0
      */
     public function getErrors()
     {

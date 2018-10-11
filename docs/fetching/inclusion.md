@@ -191,9 +191,9 @@ property:
 ```php
 namespace App\JsonApi\Posts;
 
-use CloudCreativity\LaravelJsonApi\Validators\AbstractValidatorProvider;
+use CloudCreativity\LaravelJsonApi\Validation\AbstractValidators;
 
-class Validators extends AbstractValidatorProvider
+class Validators extends AbstractValidators
 {
 
     protected $allowedIncludePaths = [
@@ -206,9 +206,6 @@ class Validators extends AbstractValidatorProvider
 }
 ```
 
-> Alternatively, if you need to programmatically work out the allowed include paths, overload
-the `allowedIncludePaths()` method.
-
 If the client provides an invalid include path, it will receive the following response:
 
 ```http
@@ -218,7 +215,9 @@ Content-Type: application/vnd.api+json
 {
     "errors": [
         {
-            "title": "Include paths should contain only allowed ones.",
+            "title": "Invalid Query Parameter",
+            "status": "400",
+            "detail": "Include path foo is not allowed.",
             "source": {
                 "parameter": "include"
             }

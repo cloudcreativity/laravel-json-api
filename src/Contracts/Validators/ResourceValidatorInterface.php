@@ -25,6 +25,7 @@ use CloudCreativity\LaravelJsonApi\Contracts\Utils\ErrorsAwareInterface;
  * Interface ResourceValidatorInterface
  *
  * @package CloudCreativity\LaravelJsonApi
+ * @deprecated 2.0.0 use classes in the `Validation` namespace instead.
  */
 interface ResourceValidatorInterface extends ErrorsAwareInterface
 {

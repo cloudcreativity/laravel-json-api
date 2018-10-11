@@ -2,25 +2,35 @@
 
 namespace DummyNamespace;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Validators\RelationshipsValidatorInterface;
-use CloudCreativity\LaravelJsonApi\Validators\AbstractValidatorProvider;
+use CloudCreativity\LaravelJsonApi\Validation\AbstractValidators;
 
-class DummyClass extends AbstractValidatorProvider
+class DummyClass extends AbstractValidators
 {
 
     /**
-     * @var string
+     * The include paths a client is allowed to request.
+     *
+     * @var string[]|null
+     *      the allowed paths, an empty array for none allowed, or null to allow all paths.
      */
-    protected $resourceType = 'dummyResourceType';
+    protected $allowedIncludePaths = [];
 
     /**
-     * Get the validation rules for the resource attributes.
+     * The sort field names a client is allowed send.
      *
-     * @param $record
-     *      the record being updated, or null if it is a create request.
-     * @return array
+     * @var string[]|null
+     *      the allowed fields, an empty array for none allowed, or null to allow all fields.
      */
-    protected function attributeRules($record = null)
+    protected $allowedSortParameters = [];
+
+    /**
+     * Get resource validation rules.
+     *
+     * @param mixed|null $record
+     *      the record being updated, or null if creating a resource.
+     * @return mixed
+     */
+    protected function rules($record = null): array
     {
         return [
             //
@@ -28,16 +38,15 @@ class DummyClass extends AbstractValidatorProvider
     }
 
     /**
-     * Define the validation rules for the resource relationships.
+     * Get query parameter validation rules.
      *
-     * @param RelationshipsValidatorInterface $relationships
-     * @param $record
-     *      the record being updated, or null if it is a create request.
-     * @return void
+     * @return array
      */
-    protected function relationshipRules(RelationshipsValidatorInterface $relationships, $record = null)
+    protected function queryRules(): array
     {
-        //
+        return [
+            //
+        ];
     }
 
 }

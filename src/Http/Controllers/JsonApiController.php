@@ -21,6 +21,14 @@ namespace CloudCreativity\LaravelJsonApi\Http\Controllers;
 use Closure;
 use CloudCreativity\LaravelJsonApi\Auth\AuthorizesRequests;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
+use CloudCreativity\LaravelJsonApi\Http\Requests\CreateResource;
+use CloudCreativity\LaravelJsonApi\Http\Requests\DeleteResource;
+use CloudCreativity\LaravelJsonApi\Http\Requests\FetchRelated;
+use CloudCreativity\LaravelJsonApi\Http\Requests\FetchRelationship;
+use CloudCreativity\LaravelJsonApi\Http\Requests\FetchResource;
+use CloudCreativity\LaravelJsonApi\Http\Requests\FetchResources;
+use CloudCreativity\LaravelJsonApi\Http\Requests\UpdateRelationship;
+use CloudCreativity\LaravelJsonApi\Http\Requests\UpdateResource;
 use CloudCreativity\LaravelJsonApi\Http\Requests\ValidatedRequest;
 use CloudCreativity\LaravelJsonApi\Utils\Str;
 use Illuminate\Http\Response;
@@ -54,10 +62,10 @@ class JsonApiController extends Controller
      * Index action.
      *
      * @param StoreInterface $store
-     * @param ValidatedRequest $request
+     * @param FetchResources $request
      * @return Response
      */
-    public function index(StoreInterface $store, ValidatedRequest $request)
+    public function index(StoreInterface $store, FetchResources $request)
     {
         $result = $this->doSearch($store, $request);
 
@@ -72,10 +80,10 @@ class JsonApiController extends Controller
      * Read resource action.
      *
      * @param StoreInterface $store
-     * @param ValidatedRequest $request
+     * @param FetchResource $request
      * @return Response
      */
-    public function read(StoreInterface $store, ValidatedRequest $request)
+    public function read(StoreInterface $store, FetchResource $request)
     {
         $record = $store->readRecord(
             $request->getResourceType(),
@@ -94,10 +102,10 @@ class JsonApiController extends Controller
      * Create resource action.
      *
      * @param StoreInterface $store
-     * @param ValidatedRequest $request
+     * @param CreateResource $request
      * @return Response
      */
-    public function create(StoreInterface $store, ValidatedRequest $request)
+    public function create(StoreInterface $store, CreateResource $request)
     {
         $record = $this->transaction(function () use ($store, $request) {
             return $this->doCreate($store, $request);
@@ -114,10 +122,10 @@ class JsonApiController extends Controller
      * Update resource action.
      *
      * @param StoreInterface $store
-     * @param ValidatedRequest $request
+     * @param UpdateResource $request
      * @return Response
      */
-    public function update(StoreInterface $store, ValidatedRequest $request)
+    public function update(StoreInterface $store, UpdateResource $request)
     {
         $record = $this->transaction(function () use ($store, $request) {
             return $this->doUpdate($store, $request);
@@ -134,10 +142,10 @@ class JsonApiController extends Controller
      * Delete resource action.
      *
      * @param StoreInterface $store
-     * @param ValidatedRequest $request
+     * @param DeleteResource $request
      * @return Response
      */
-    public function delete(StoreInterface $store, ValidatedRequest $request)
+    public function delete(StoreInterface $store, DeleteResource $request)
     {
         $result = $this->transaction(function () use ($store, $request) {
             return $this->doDelete($store, $request);
@@ -154,10 +162,10 @@ class JsonApiController extends Controller
      * Read related resource action.
      *
      * @param StoreInterface $store
-     * @param ValidatedRequest $request
+     * @param FetchRelated $request
      * @return Response
      */
-    public function readRelatedResource(StoreInterface $store, ValidatedRequest $request)
+    public function readRelatedResource(StoreInterface $store, FetchRelated $request)
     {
         $record = $request->getRecord();
 
@@ -178,10 +186,10 @@ class JsonApiController extends Controller
      * Read relationship data action.
      *
      * @param StoreInterface $store
-     * @param ValidatedRequest $request
+     * @param FetchRelationship $request
      * @return Response
      */
-    public function readRelationship(StoreInterface $store, ValidatedRequest $request)
+    public function readRelationship(StoreInterface $store, FetchRelationship $request)
     {
         $record = $request->getRecord();
 
@@ -202,10 +210,10 @@ class JsonApiController extends Controller
      * Replace relationship data action.
      *
      * @param StoreInterface $store
-     * @param ValidatedRequest $request
+     * @param UpdateRelationship $request
      * @return Response
      */
-    public function replaceRelationship(StoreInterface $store, ValidatedRequest $request)
+    public function replaceRelationship(StoreInterface $store, UpdateRelationship $request)
     {
         $result = $this->transaction(function () use ($store, $request) {
             return $this->doReplaceRelationship($store, $request);
@@ -222,10 +230,10 @@ class JsonApiController extends Controller
      * Add to relationship data action.
      *
      * @param StoreInterface $store
-     * @param ValidatedRequest $request
+     * @param UpdateRelationship $request
      * @return Response
      */
-    public function addToRelationship(StoreInterface $store, ValidatedRequest $request)
+    public function addToRelationship(StoreInterface $store, UpdateRelationship $request)
     {
         $result = $this->transaction(function () use ($store, $request) {
             return $this->doAddToRelationship($store, $request);
@@ -242,10 +250,10 @@ class JsonApiController extends Controller
      * Remove from relationship data action.
      *
      * @param StoreInterface $store
-     * @param ValidatedRequest $request
+     * @param UpdateRelationship $request
      * @return Response
      */
-    public function removeFromRelationship(StoreInterface $store, ValidatedRequest $request)
+    public function removeFromRelationship(StoreInterface $store, UpdateRelationship $request)
     {
         $result = $this->transaction(function () use ($store, $request) {
             return $this->doRemoveFromRelationship($store, $request);

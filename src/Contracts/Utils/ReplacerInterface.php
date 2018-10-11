@@ -22,6 +22,7 @@ namespace CloudCreativity\LaravelJsonApi\Contracts\Utils;
  * Interface ReplacerInterface
  *
  * @package CloudCreativity\LaravelJsonApi
+ * @deprecated 2.0.0
  */
 interface ReplacerInterface
 {

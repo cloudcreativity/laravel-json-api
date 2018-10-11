@@ -26,6 +26,7 @@ use CloudCreativity\LaravelJsonApi\Exceptions\MutableErrorCollection;
  * Interface ErrorRepositoryInterface
  *
  * @package CloudCreativity\LaravelJsonApi
+ * @deprecated 2.0.0 create errors via the error translator instead.
  */
 interface ErrorRepositoryInterface extends ConfigurableInterface
 {

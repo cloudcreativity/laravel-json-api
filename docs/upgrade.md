@@ -5,9 +5,44 @@
 We are now on `1.0.0` beta releases. Changes during this cycle will be kept to the minimum required to
 fix remaining issues, most of which relate to validation.
 
-Note that at some point during the beta releases the minimum PHP version will be changed to `7.1`, so
-support for Laravel 5.4 will be dropped. We do not plan to refactor existing code to use PHP 7 features,
-so this will not result in a major breaking change before `1.0.0`.
+## 1.0.0-beta.3 to 1.0.0-beta.4
+
+The minimum PHP version is now `7.1` and the minimum Laravel version is `5.5`.
+
+### Validation
+
+This release adds in the new validation implementation. The previous implementation remains and
+will be removed at `2.0`. This means you do not have to make any changes to your existing validators.
+However, you should note that the previous implementation is considered end-of-life and will not
+receive any fixes.
+
+To upgrade existing validators to the new ones, check out the [validation docs](./basics/validators.md).
+Note that if you run a generator, the validators class created will be the new implementation.
+
+### Controllers
+
+We have made the `ValidatedRequest` class abstract and created a class for all the different
+requests the controller handles. This will only affect your application if you have overloaded
+any of the following actions (methods) on a controller. You will need to change the
+type-hint from `ValidatedRequest` to the class shown in the following table.
+
+> All request classes are in the `CloudCreativity\LaravelJsonApi\Http\Requests` namespace.
+
+| Action | Request Class |
+| :-- | :-- |
+| `index` | `FetchResources` |
+| `create` | `CreateResource` |
+| `read` | `FetchResource` |
+| `update` | `UpdateResource` |
+| `delete` | `DeleteResource` |
+| `readRelatedResource` | `FetchRelated` |
+| `readRelationship` | `FetchRelationship` |
+| `replaceRelationship` | `UpdateRelationship` |
+| `addToRelationship` | `UpdateRelationship` |
+| `removeFromRelationship` | `UpdateRelationship` |
+
+> This change **does not** affect any of the protected methods on the controller that type-hint
+`ValidatedRequest`, as all of the new request classes extend `ValidatedRequest`.
 
 ## 1.0.0-beta.2 to 1.0.0-beta.3
 
