@@ -18,6 +18,7 @@
 namespace DummyApp\JsonApi\Tags;
 
 use CloudCreativity\LaravelJsonApi\Auth\AbstractAuthorizer;
+use DummyApp\Tag;
 use DummyApp\User;
 
 class Authorizer extends AbstractAuthorizer
@@ -28,6 +29,10 @@ class Authorizer extends AbstractAuthorizer
      */
     public function index($type, $request)
     {
+        if (Tag::class !== $type) {
+            throw new \InvalidArgumentException("Unexpected type: $type");
+        }
+
         $this->authenticate();
     }
 
@@ -36,6 +41,10 @@ class Authorizer extends AbstractAuthorizer
      */
     public function create($type, $request)
     {
+        if (Tag::class !== $type) {
+            throw new \InvalidArgumentException("Unexpected type: $type");
+        }
+
         $this->can('author', User::class);
     }
 
@@ -44,6 +53,10 @@ class Authorizer extends AbstractAuthorizer
      */
     public function read($record, $request)
     {
+        if (!$record instanceof Tag) {
+            throw new \InvalidArgumentException("Expecting a tag.");
+        }
+
         $this->authenticate();
     }
 
@@ -52,6 +65,10 @@ class Authorizer extends AbstractAuthorizer
      */
     public function update($record, $request)
     {
+        if (!$record instanceof Tag) {
+            throw new \InvalidArgumentException("Expecting a tag.");
+        }
+
         $this->can('admin', User::class);
     }
 
@@ -60,6 +77,10 @@ class Authorizer extends AbstractAuthorizer
      */
     public function delete($record, $request)
     {
+        if (!$record instanceof Tag) {
+            throw new \InvalidArgumentException("Expecting a tag.");
+        }
+
         $this->update($record, $request);
     }
 

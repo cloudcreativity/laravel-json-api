@@ -36,7 +36,7 @@ class FetchResources extends ValidatedRequest
             return;
         }
 
-        $authorizer->index($this->getResourceType(), $this->request);
+        $authorizer->index($this->getType(), $this->request);
     }
 
     /**
