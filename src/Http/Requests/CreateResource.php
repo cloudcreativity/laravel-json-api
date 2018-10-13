@@ -39,7 +39,7 @@ class CreateResource extends ValidatedRequest
             return;
         }
 
-        $authorizer->create($this->getResourceType(), $this->request);
+        $authorizer->create($this->getType(), $this->request);
     }
 
     /**

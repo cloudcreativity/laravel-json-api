@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## [1.0.0-beta.5] - 2018-10-13
+
+### Fixed
+- [#240](https://github.com/cloudcreativity/laravel-json-api/issues/240)
+Ensure PHP class name is passed to authorizer when authorizing fetch-many and create resource requests.
+
 ## [1.0.0-beta.4] - 2018-10-11
 
 ### Added

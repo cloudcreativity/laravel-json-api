@@ -234,4 +234,9 @@ class ResourceAuthorizerTest extends TestCase
         $this->assertDatabaseMissing('tags', ['id' => $tag->getKey()]);
     }
 
+    public function testRelationships()
+    {
+        $this->markTestIncomplete('@todo');
+    }
+
 }

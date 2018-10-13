@@ -138,6 +138,16 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
     }
 
     /**
+     * Get the domain record type that is subject of the request.
+     *
+     * @return string
+     */
+    public function getType()
+    {
+        return $this->jsonApiRequest->getType();
+    }
+
+    /**
      * Get the resource type that the request is for.
      *
      * @return string|null
