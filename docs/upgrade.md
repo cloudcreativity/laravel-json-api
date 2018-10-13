@@ -5,7 +5,10 @@
 We are now on `1.0.0` beta releases. Changes during this cycle will be kept to the minimum required to
 fix remaining issues, most of which relate to validation.
 
-## 1.0.0-beta.3 to 1.0.0-beta.4
+## 1.0.0-beta.3 to 1.0.0-beta.5
+
+> You should upgrade directly to `beta.5` as `beta.4` had a
+[bug](https://github.com/cloudcreativity/laravel-json-api/issues/240) in it.
 
 The minimum PHP version is now `7.1` and the minimum Laravel version is `5.5`.
 

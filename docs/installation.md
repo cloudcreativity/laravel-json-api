@@ -3,7 +3,7 @@
 Install using [Composer](http://getcomposer.org):
 
 ``` bash
-$ composer require cloudcreativity/laravel-json-api:1.0.0-beta.4
+$ composer require cloudcreativity/laravel-json-api:1.0.0-beta.5
 $ composer require --dev cloudcreativity/json-api-testing
 ```
 

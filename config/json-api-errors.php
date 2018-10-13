@@ -24,6 +24,8 @@ use Illuminate\Http\Response;
 use Illuminate\Session\TokenMismatchException;
 use Illuminate\Validation\ValidationException;
 
+/** @deprecated 2.0.0 */
+
 return [
 
     /**
