@@ -27,6 +27,7 @@ use CloudCreativity\Utils\Object\StandardObjectInterface;
  * Class Resource
  *
  * @package CloudCreativity\LaravelJsonApi
+ * @deprecated 2.0.0
  */
 class ResourceObject extends StandardObject implements ResourceObjectInterface
 {

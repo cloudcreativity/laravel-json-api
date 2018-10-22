@@ -26,6 +26,7 @@ use IteratorAggregate;
  * Interface ResourceIdentifierCollectionInterface
  *
  * @package CloudCreativity\LaravelJsonApi
+ * @deprecated 2.0.0
  */
 interface ResourceObjectCollectionInterface extends IteratorAggregate, Countable
 {

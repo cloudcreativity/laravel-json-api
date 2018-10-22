@@ -17,7 +17,7 @@
 
 namespace DummyApp\JsonApi\Comments;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectInterface;
+use CloudCreativity\LaravelJsonApi\Document\ResourceObject;
 use CloudCreativity\LaravelJsonApi\Eloquent\AbstractAdapter;
 use CloudCreativity\LaravelJsonApi\Eloquent\BelongsTo;
 use CloudCreativity\LaravelJsonApi\Pagination\CursorStrategy;
@@ -71,7 +71,7 @@ class Adapter extends AbstractAdapter
     /**
      * @inheritDoc
      */
-    protected function createRecord(ResourceObjectInterface $resource)
+    protected function createRecord(ResourceObject $resource)
     {
         $record = new Comment();
         $record->user()->associate(Auth::user());

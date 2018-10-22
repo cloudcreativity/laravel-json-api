@@ -191,7 +191,7 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
      * Get the validated JSON API document, if there is one.
      *
      * @return DocumentInterface|null
-     * @deprecated
+     * @deprecated 2.0.0
      */
     public function getDocument()
     {

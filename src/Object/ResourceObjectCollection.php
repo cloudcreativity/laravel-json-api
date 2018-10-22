@@ -29,6 +29,7 @@ use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
  * Class ResourceCollection
  *
  * @package CloudCreativity\LaravelJsonApi
+ * @deprecated 2.0.0
  */
 class ResourceObjectCollection implements ResourceObjectCollectionInterface
 {

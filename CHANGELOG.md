@@ -2,6 +2,17 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## Unreleased
+
+### Removed
+- The deprecated `Contracts\Store\AdapterInterface` was removed. Use 
+`Contracts\Adapter\ResourceAdapterInterface` instead.
+- The deprecated `Adapter\HydratesAttributesTrait` was removed.
+
+### Deprecated
+- All interfaces in the `Contracts\Object` namespace will be removed for `2.0`.
+- All classes in the `Object` namespace will be removed for `2.0`.
+
 ## [1.0.0-beta.5] - 2018-10-13
 
 ### Fixed

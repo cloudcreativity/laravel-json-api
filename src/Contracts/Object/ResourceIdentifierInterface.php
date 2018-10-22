@@ -26,6 +26,7 @@ use Neomerx\JsonApi\Contracts\Document\DocumentInterface as NeomerxDocumentInter
  * Interface ResourceIdentifierInterface
  *
  * @package CloudCreativity\LaravelJsonApi
+ * @deprecated 2.0.0
  */
 interface ResourceIdentifierInterface extends StandardObjectInterface, MetaMemberInterface
 {

@@ -25,6 +25,7 @@ use CloudCreativity\Utils\Object\StandardObjectInterface;
  * Interface MetaMemberInterface
  *
  * @package CloudCreativity\LaravelJsonApi
+ * @deprecated 2.0.0
  */
 interface MetaMemberInterface
 {

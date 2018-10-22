@@ -25,6 +25,7 @@ use Neomerx\JsonApi\Contracts\Document\DocumentInterface;
  * Class IdentifiableTrait
  *
  * @package CloudCreativity\LaravelJsonApi
+ * @deprecated 2.0.0
  */
 trait IdentifiableTrait
 {

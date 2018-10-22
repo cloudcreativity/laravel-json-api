@@ -17,10 +17,12 @@
 
 namespace CloudCreativity\LaravelJsonApi\Document;
 
+use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectInterface;
+use CloudCreativity\LaravelJsonApi\Object\ResourceObject as LegacyResourceObject;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Collection;
 
-class ResourceObject implements Arrayable, \IteratorAggregate
+class ResourceObject implements Arrayable, \IteratorAggregate, \JsonSerializable
 {
 
     /**
@@ -504,6 +506,27 @@ class ResourceObject implements Arrayable, \IteratorAggregate
             'links' => $this->links,
             'meta' => $this->meta,
         ])->filter()->all();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function jsonSerialize()
+    {
+        return $this->toArray();
+    }
+
+    /**
+     * Convert the object to a legacy resource object.
+     *
+     * @return ResourceObjectInterface
+     * @deprecated 2.0.0
+     */
+    public function toObject(): ResourceObjectInterface
+    {
+        $json = json_encode($this);
+
+        return new LegacyResourceObject(json_decode($json, false));
     }
 
     /**

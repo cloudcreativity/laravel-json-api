@@ -17,7 +17,6 @@
 
 namespace CloudCreativity\LaravelJsonApi\Eloquent;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Object\RelationshipInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations;
@@ -33,11 +32,11 @@ class HasMany extends AbstractManyRelation
 
     /**
      * @param Model $record
-     * @param RelationshipInterface $relationship
+     * @param array $relationship
      * @param EncodingParametersInterface $parameters
      * @return void
      */
-    public function update($record, RelationshipInterface $relationship, EncodingParametersInterface $parameters)
+    public function update($record, array $relationship, EncodingParametersInterface $parameters)
     {
         $related = $this->findRelated($record, $relationship);
         $relation = $this->getRelation($record, $this->key);
@@ -54,11 +53,11 @@ class HasMany extends AbstractManyRelation
 
     /**
      * @param Model $record
-     * @param RelationshipInterface $relationship
+     * @param array $relationship
      * @param EncodingParametersInterface $parameters
      * @return Model
      */
-    public function replace($record, RelationshipInterface $relationship, EncodingParametersInterface $parameters)
+    public function replace($record, array $relationship, EncodingParametersInterface $parameters)
     {
         $this->update($record, $relationship, $parameters);
         $record->refresh(); // in case the relationship has been cached.
@@ -74,11 +73,11 @@ class HasMany extends AbstractManyRelation
      * that we only add the records that are not already in the relationship.
      *
      * @param Model $record
-     * @param RelationshipInterface $relationship
+     * @param array $relationship
      * @param EncodingParametersInterface $parameters
      * @return Model
      */
-    public function add($record, RelationshipInterface $relationship, EncodingParametersInterface $parameters)
+    public function add($record, array $relationship, EncodingParametersInterface $parameters)
     {
         $related = $this->findRelated($record, $relationship);
         $relation = $this->getRelation($record, $this->key);
@@ -96,11 +95,11 @@ class HasMany extends AbstractManyRelation
 
     /**
      * @param Model $record
-     * @param RelationshipInterface $relationship
+     * @param array $relationship
      * @param EncodingParametersInterface $parameters
      * @return Model
      */
-    public function remove($record, RelationshipInterface $relationship, EncodingParametersInterface $parameters)
+    public function remove($record, array $relationship, EncodingParametersInterface $parameters)
     {
         $related = $this->findRelated($record, $relationship);
         $relation = $this->getRelation($record, $this->key);
@@ -172,13 +171,13 @@ class HasMany extends AbstractManyRelation
      * type before looking them up via the store.
      *
      * @param $record
-     * @param RelationshipInterface $relationship
+     * @param array $relationship
      * @return Collection
      */
-    protected function findRelated($record, RelationshipInterface $relationship)
+    protected function findRelated($record, array $relationship)
     {
         $inverse = $this->getRelation($record, $this->key)->getRelated();
-        $related = $this->findMany($relationship);
+        $related = $this->findToMany($relationship);
 
         $related = collect($related)->filter(function ($model) use ($inverse) {
             return $model instanceof $inverse;

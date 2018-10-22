@@ -26,6 +26,7 @@ use CloudCreativity\Utils\Object\StandardObject;
  * Class Relationships
  *
  * @package CloudCreativity\LaravelJsonApi
+ * @deprecated 2.0.0
  */
 class Relationships extends StandardObject implements RelationshipsInterface
 {
