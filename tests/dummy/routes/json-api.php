@@ -33,6 +33,7 @@ JsonApi::register('v1', [], function (ApiGroup $api) {
     $api->resource('countries', [
         'has-many' => ['users', 'posts'],
     ]);
+    $api->resource('downloads');
     $api->resource('posts', [
         'controller' => true,
         'has-one' => [

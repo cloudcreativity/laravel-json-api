@@ -22,6 +22,7 @@ use CloudCreativity\LaravelJsonApi\Contracts\Factories\FactoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\Responses\ErrorResponseInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PageInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Repositories\ErrorRepositoryInterface;
+use CloudCreativity\LaravelJsonApi\Queue\ClientJob;
 use Neomerx\JsonApi\Contracts\Codec\CodecMatcherInterface;
 use Neomerx\JsonApi\Contracts\Document\DocumentInterface;
 use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
@@ -196,7 +197,23 @@ class Responses extends BaseResponses
      */
     public function created($resource, array $links = [], $meta = null, array $headers = [])
     {
+        if ($resource instanceof ClientJob) {
+            return $this->accepted($resource, $links, $meta, $headers);
+        }
+
         return $this->getCreatedResponse($resource, $links, $meta, $headers);
+    }
+
+    /**
+     * @param ClientJob $job
+     * @param array $links
+     * @param null $meta
+     * @param array $headers
+     * @return mixed
+     */
+    public function accepted(ClientJob $job, array $links = [], $meta = null, array $headers = [])
+    {
+        return $this->getContentResponse($job, 202, $links, $meta, $headers);
     }
 
     /**

@@ -92,6 +92,18 @@ class CreateTables extends Migration
             $table->string('name');
             $table->string('code');
         });
+
+        Schema::create('downloads', function (Blueprint $table) {
+            $table->increments('id');
+            $table->timestamps();
+        });
+
+        // @TODO this needs to be moved to a package migration
+        Schema::create('json_api_client_jobs', function (Blueprint $table) {
+            $table->uuid('uuid')->primary();
+            $table->timestamps();
+            $table->string('resource_type');
+        });
     }
 
     /**
@@ -106,5 +118,9 @@ class CreateTables extends Migration
         Schema::dropIfExists('taggables');
         Schema::dropIfExists('phones');
         Schema::dropIfExists('countries');
+        Schema::dropIfExists('downloads');
+
+        // @TODO remove this
+        Schema::dropIfExists('json_api_client_jobs');
     }
 }
