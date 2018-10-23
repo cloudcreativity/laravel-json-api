@@ -2,26 +2,52 @@
 
 namespace CloudCreativity\LaravelJsonApi\Queue;
 
-use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
+use CloudCreativity\LaravelJsonApi\Contracts\Queue\AsynchronousProcess;
+use CloudCreativity\LaravelJsonApi\Routing\ResourceRegistrar;
+use DateTimeInterface;
 use Illuminate\Foundation\Bus\PendingDispatch;
 
 class ClientDispatch extends PendingDispatch
 {
 
     /**
-     * @var ClientJob
+     * @var string
      */
-    protected $clientJob;
+    protected $api;
+
+    /**
+     * @var string
+     */
+    protected $resourceType;
+
+    /**
+     * @var string|bool|null
+     */
+    protected $resourceId;
 
     /**
      * ClientDispatch constructor.
      *
+     * @param AsynchronousProcess $process
      * @param mixed $job
      */
-    public function __construct($job)
+    public function __construct(AsynchronousProcess $process, $job)
     {
         parent::__construct($job);
-        $this->clientJob = new ClientJob();
+        $job->clientJob = $process;
+        $this->resourceId = false;
+    }
+
+    /**
+     * @return string
+     */
+    public function getApi(): string
+    {
+        if (is_string($this->api)) {
+            return $this->api;
+        }
+
+        return $this->api = json_api()->getName();
     }
 
     /**
@@ -30,9 +56,9 @@ class ClientDispatch extends PendingDispatch
      * @param string $api
      * @return ClientDispatch
      */
-    public function forApi(string $api): ClientDispatch
+    public function setApi(string $api): ClientDispatch
     {
-        $this->clientJob->fill(compact('api'));
+        $this->api = $api;
 
         return $this;
     }
@@ -44,39 +70,84 @@ class ClientDispatch extends PendingDispatch
      * @param string|null $id
      * @return ClientDispatch
      */
-    public function forResource(string $type, string $id = null): ClientDispatch
+    public function setResource(string $type, string $id = null): ClientDispatch
     {
-        $this->clientJob->fill([
-            'resource_type' => $type,
-            'resource_id' => $id,
-        ]);
+        $this->resourceType = $type;
+        $this->resourceId = $id;
 
         return $this;
     }
 
     /**
-     * @return ClientJob
+     * @return string
      */
-    public function dispatch(): ClientJob
+    public function getResourceType(): string
     {
-        if ($this->didDispatch()) {
-            throw new RuntimeException('Only expecting to dispatch client job once.');
+        if (is_string($this->resourceType)) {
+            return $this->resourceType;
         }
 
-        $this->clientJob->fillJob($this->job)->save();
-        $this->job->clientJob = $this->clientJob;
-
-        parent::__destruct();
-
-        return $this->clientJob;
+        return $this->resourceType = request()->route(ResourceRegistrar::PARAM_RESOURCE_TYPE);
     }
 
     /**
-     * @return bool
+     * @return string|null
      */
-    public function didDispatch(): bool
+    public function getResourceId(): ?string
     {
-        return $this->clientJob->exists;
+        if (false !== $this->resourceId) {
+            return $this->resourceId;
+        }
+
+        $request = request();
+        $id = $request->route(ResourceRegistrar::PARAM_RESOURCE_ID);
+
+        /** If the binding has been substituted, we need to re-lookup the resource id. */
+        if (is_object($id)) {
+            $id = json_api()->getContainer()->getSchema($id)->getId($id);
+        }
+
+        return $this->resourceId = $id ?: $request->json('data.id');
+    }
+
+    /**
+     * @return DateTimeInterface|null
+     */
+    public function getTimeoutAt(): ?DateTimeInterface
+    {
+        if (method_exists($this->job, 'retryUntil')) {
+            return $this->job->retryUntil();
+        }
+
+        return $this->job->retryUntil ?? null;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getTimeout(): ?int
+    {
+        return $this->job->timeout ?? null;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getMaxTries(): ?int
+    {
+        return $this->job->tries ?? null;
+    }
+
+    /**
+     * @return AsynchronousProcess
+     */
+    public function dispatch(): AsynchronousProcess
+    {
+        $this->job->clientJob->dispatching($this);
+
+        parent::__destruct();
+
+        return $this->job->clientJob;
     }
 
     /**

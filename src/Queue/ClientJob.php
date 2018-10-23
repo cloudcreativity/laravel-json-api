@@ -2,6 +2,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Queue;
 
+use Carbon\Carbon;
 use CloudCreativity\LaravelJsonApi\Contracts\Queue\AsynchronousProcess;
 use CloudCreativity\LaravelJsonApi\Object\ResourceIdentifier;
 use Illuminate\Database\Eloquent\Model;
@@ -32,6 +33,8 @@ class ClientJob extends Model implements AsynchronousProcess
      */
     protected $fillable = [
         'api',
+        'attempts',
+        'completed_at',
         'failed',
         'resource_type',
         'resource_id',
@@ -47,7 +50,6 @@ class ClientJob extends Model implements AsynchronousProcess
      * @var array
      */
     protected $attributes = [
-        'status' => 'queued',
         'failed' => false,
         'attempts' => 0,
     ];
@@ -56,6 +58,7 @@ class ClientJob extends Model implements AsynchronousProcess
      * @var array
      */
     protected $casts = [
+        'attempts' => 'integer',
         'failed' => 'boolean',
         'timeout' => 'integer',
         'tries' => 'integer',
@@ -75,19 +78,6 @@ class ClientJob extends Model implements AsynchronousProcess
     protected $dateFormat = 'Y-m-d H:i:s.u';
 
     /**
-     * @param $job
-     * @return $this
-     */
-    public function fillJob($job)
-    {
-        return $this->fill([
-            'timeout' => isset($job->timeout) ? $job->timeout : null,
-            'timeout_at' => method_exists($job, 'retryUntil') ? $job->retryUntil() : null,
-            'tries' => isset($job->tries) ? $job->tries : null,
-        ]);
-    }
-
-    /**
      * Get the resource that will be modified as a result of the process.
      *
      * @return mixed|null
@@ -101,6 +91,33 @@ class ClientJob extends Model implements AsynchronousProcess
         return json_api($this->api)->getStore()->find(
             ResourceIdentifier::create($this->resource_type, $this->resource_id)
         );
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function dispatching(ClientDispatch $dispatch): void
+    {
+        $this->fill([
+            'api' => $dispatch->getApi(),
+            'resource_type' => $dispatch->getResourceType(),
+            'resource_id' => $dispatch->getResourceId(),
+            'timeout' => $dispatch->getTimeout(),
+            'timeout_at' => $dispatch->getTimeoutAt(),
+            'tries' => $dispatch->getMaxTries(),
+        ])->save();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function processed($job): void
+    {
+        $this->update([
+            'attempts' => $job->attempts(),
+            'completed_at' => $job->isDeleted() ? Carbon::now() : null,
+            'failed' => $job->hasFailed(),
+        ]);
     }
 
     /**

@@ -33,11 +33,13 @@ use CloudCreativity\LaravelJsonApi\Http\Middleware\BootJsonApi;
 use CloudCreativity\LaravelJsonApi\Http\Middleware\SubstituteBindings;
 use CloudCreativity\LaravelJsonApi\Http\Requests\IlluminateRequest;
 use CloudCreativity\LaravelJsonApi\Http\Responses\Responses;
+use CloudCreativity\LaravelJsonApi\Queue\UpdateClientProcess;
 use CloudCreativity\LaravelJsonApi\Routing\ResourceRegistrar;
 use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
 use CloudCreativity\LaravelJsonApi\View\Renderer;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Routing\Router;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 use Illuminate\View\Compilers\BladeCompiler;
@@ -67,6 +69,9 @@ class ServiceProvider extends BaseServiceProvider
         $this->bootResponseMacro();
         $this->bootBladeDirectives();
         $this->bootTranslations();
+
+        Queue::after(UpdateClientProcess::class);
+        Queue::failing(UpdateClientProcess::class);
 
         if ($this->app->runningInConsole()) {
             $this->bootMigrations();

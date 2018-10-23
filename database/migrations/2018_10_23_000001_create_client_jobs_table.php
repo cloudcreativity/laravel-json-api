@@ -26,7 +26,6 @@ class CreateClientJobsTable extends Migration
             $table->timestamp('timeout_at')->nullable();
             $table->integer('tries')->nullable();
             $table->boolean('failed')->default(false);
-            $table->string('status');
         });
     }
 
