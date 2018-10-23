@@ -32,10 +32,13 @@ class ClientJob extends Model implements AsynchronousProcess
      */
     protected $fillable = [
         'api',
+        'failed',
         'resource_type',
         'resource_id',
         'status',
-        'failed',
+        'timeout',
+        'timeout_at',
+        'tries',
     ];
 
     /**
@@ -54,17 +57,35 @@ class ClientJob extends Model implements AsynchronousProcess
      */
     protected $casts = [
         'failed' => 'boolean',
+        'timeout' => 'integer',
+        'tries' => 'integer',
     ];
 
     /**
      * @var array
      */
-    protected $dates = ['completed_at'];
+    protected $dates = [
+        'completed_at',
+        'timeout_at',
+    ];
 
     /**
      * @var string
      */
     protected $dateFormat = 'Y-m-d H:i:s.u';
+
+    /**
+     * @param $job
+     * @return $this
+     */
+    public function fillJob($job)
+    {
+        return $this->fill([
+            'timeout' => isset($job->timeout) ? $job->timeout : null,
+            'timeout_at' => method_exists($job, 'retryUntil') ? $job->retryUntil() : null,
+            'tries' => isset($job->tries) ? $job->tries : null,
+        ]);
+    }
 
     /**
      * Get the resource that will be modified as a result of the process.

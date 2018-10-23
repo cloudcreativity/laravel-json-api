@@ -40,6 +40,11 @@ class DeleteDownload implements ShouldQueue
     public $download;
 
     /**
+     * @var int
+     */
+    public $tries = 5;
+
+    /**
      * ReplaceDownload constructor.
      *
      * @param Download $download

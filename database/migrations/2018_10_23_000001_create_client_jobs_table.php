@@ -22,6 +22,9 @@ class CreateClientJobsTable extends Migration
             $table->string('resource_id')->nullable();
             $table->timestamp('completed_at')->nullable();
             $table->integer('attempts')->default(0);
+            $table->integer('timeout')->nullable();
+            $table->timestamp('timeout_at')->nullable();
+            $table->integer('tries')->nullable();
             $table->boolean('failed')->default(false);
             $table->string('status');
         });

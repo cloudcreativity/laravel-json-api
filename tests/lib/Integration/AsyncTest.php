@@ -46,6 +46,9 @@ class AsyncTest extends TestCase
                     'failed' => null,
                     'resource' => 'downloads',
                     'status' => 'queued',
+                    'timeout' => 60,
+                    'timeout-at' => null,
+                    'tries' => null,
                     'updated-at' => Carbon::now()->format('Y-m-d\TH:i:s.uP'),
                 ],
             ],
@@ -69,6 +72,9 @@ class AsyncTest extends TestCase
             'failed' => false,
             'status' => 'queued',
             'attempts' => 0,
+            'timeout' => 60,
+            'timeout_at' => null,
+            'tries' => null,
         ]);
     }
 
@@ -91,6 +97,9 @@ class AsyncTest extends TestCase
                 'type' => 'queue-jobs',
                 'attributes' => [
                     'resource' => 'downloads',
+                    'timeout' => 60,
+                    'timeout-at' => null,
+                    'tries' => null,
                 ],
             ],
         ]);
@@ -107,6 +116,9 @@ class AsyncTest extends TestCase
             'api' => 'v1',
             'resource_type' => 'downloads',
             'resource_id' => $data['id'],
+            'timeout' => 60,
+            'timeout_at' => null,
+            'tries' => null,
         ]);
     }
 
@@ -127,6 +139,9 @@ class AsyncTest extends TestCase
                 'type' => 'queue-jobs',
                 'attributes' => [
                     'resource' => 'downloads',
+                    'timeout' => null,
+                    'timeout-at' => Carbon::now()->addSeconds(25)->format('Y-m-d\TH:i:s.uP'),
+                    'tries' => null,
                 ],
                 'relationships' => [
                     'target' => [
@@ -154,6 +169,9 @@ class AsyncTest extends TestCase
             'api' => 'v1',
             'resource_type' => 'downloads',
             'resource_id' => $download->getRouteKey(),
+            'timeout' => null,
+            'timeout_at' => '2018-10-23 12:00:25.123456',
+            'tries' => null,
         ]);
     }
 
@@ -166,11 +184,26 @@ class AsyncTest extends TestCase
                 'type' => 'queue-jobs',
                 'attributes' => [
                     'resource' => 'downloads',
+                    'timeout' => null,
+                    'timeout-at' => null,
+                    'tries' => 5,
                 ],
             ],
         ]);
 
-        $this->assertDispatchedDelete();
+        $job = $this->assertDispatchedDelete();
+
+        $this->assertDatabaseHas('json_api_client_jobs', [
+            'uuid' => $job->clientJob->getKey(),
+            'created_at' => '2018-10-23 12:00:00.123456',
+            'updated_at' => '2018-10-23 12:00:00.123456',
+            'api' => 'v1',
+            'resource_type' => 'downloads',
+            'resource_id' => $download->getRouteKey(),
+            'tries' => 5,
+            'timeout' => null,
+            'timeout_at' => null,
+        ]);
     }
 
     /**

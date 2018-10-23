@@ -63,7 +63,7 @@ class ClientDispatch extends PendingDispatch
             throw new RuntimeException('Only expecting to dispatch client job once.');
         }
 
-        $this->clientJob->save();
+        $this->clientJob->fillJob($this->job)->save();
         $this->job->clientJob = $this->clientJob;
 
         parent::__destruct();

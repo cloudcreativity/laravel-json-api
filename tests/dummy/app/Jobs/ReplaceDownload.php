@@ -17,6 +17,7 @@
 
 namespace DummyApp\Jobs;
 
+use Carbon\Carbon;
 use CloudCreativity\LaravelJsonApi\Queue\ClientDispatchable;
 use DummyApp\Download;
 use Illuminate\Bus\Queueable;
@@ -47,6 +48,14 @@ class ReplaceDownload implements ShouldQueue
     public function __construct(Download $download)
     {
         $this->download = $download;
+    }
+
+    /**
+     * @return Carbon
+     */
+    public function retryUntil(): Carbon
+    {
+        return now()->addSeconds(25);
     }
 
     /**

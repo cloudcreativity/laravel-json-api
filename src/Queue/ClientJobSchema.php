@@ -35,6 +35,8 @@ class ClientJobSchema extends SchemaProvider
     {
         /** @var Carbon|null $completedAt */
         $completedAt = $resource->completed_at;
+        /** @var Carbon|null $timeoutAt */
+        $timeoutAt = $resource->timeout_at;
 
         return [
             'attempts' => $resource->attempts,
@@ -42,6 +44,9 @@ class ClientJobSchema extends SchemaProvider
             'completed-at' => $completedAt ? $completedAt->format($this->dateFormat) : null,
             'failed' => $completedAt ? $resource->failed : null,
             'resource' => $resource->resource_type,
+            'timeout' => $resource->timeout,
+            'timeout-at' => $timeoutAt ? $timeoutAt->format($this->dateFormat) : null,
+            'tries' => $resource->tries,
             'status' => $resource->status,
             'updated-at' => $resource->updated_at->format($this->dateFormat),
         ];

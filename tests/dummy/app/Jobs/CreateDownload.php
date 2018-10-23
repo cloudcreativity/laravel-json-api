@@ -24,6 +24,11 @@ class CreateDownload implements ShouldQueue
     public $category;
 
     /**
+     * @var int
+     */
+    public $timeout = 60;
+
+    /**
      * CreateDownload constructor.
      *
      * @param string $category
