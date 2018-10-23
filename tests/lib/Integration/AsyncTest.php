@@ -40,7 +40,13 @@ class AsyncTest extends TestCase
             'data' => [
                 'type' => 'queue-jobs',
                 'attributes' => [
+                    'attempts' => 0,
+                    'created-at' => Carbon::now()->format('Y-m-d\TH:i:s.uP'),
+                    'completed-at' => null,
+                    'failed' => null,
                     'resource' => 'downloads',
+                    'status' => 'queued',
+                    'updated-at' => Carbon::now()->format('Y-m-d\TH:i:s.uP'),
                 ],
             ],
         ]);
@@ -59,6 +65,10 @@ class AsyncTest extends TestCase
             'api' => 'v1',
             'resource_type' => 'downloads',
             'resource_id' => null,
+            'completed_at' => null,
+            'failed' => false,
+            'status' => 'queued',
+            'attempts' => 0,
         ]);
     }
 
@@ -112,16 +122,39 @@ class AsyncTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data)->assertStatus(202)->assertJson([
+        $this->doUpdate($data, ['include' => 'target'])->assertStatus(202)->assertJson([
             'data' => [
                 'type' => 'queue-jobs',
                 'attributes' => [
                     'resource' => 'downloads',
                 ],
+                'relationships' => [
+                    'target' => [
+                        'data' => [
+                            'type' => 'downloads',
+                            'id' => (string) $download->getRouteKey(),
+                        ],
+                    ],
+                ],
+            ],
+            'included' => [
+                [
+                    'type' => 'downloads',
+                    'id' => (string) $download->getRouteKey(),
+                ],
             ],
         ]);
 
-        $this->assertDispatchedReplace();
+        $job = $this->assertDispatchedReplace();
+
+        $this->assertDatabaseHas('json_api_client_jobs', [
+            'uuid' => $job->clientJob->getKey(),
+            'created_at' => '2018-10-23 12:00:00.123456',
+            'updated_at' => '2018-10-23 12:00:00.123456',
+            'api' => 'v1',
+            'resource_type' => 'downloads',
+            'resource_id' => $download->getRouteKey(),
+        ]);
     }
 
     public function testDelete()

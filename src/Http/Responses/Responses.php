@@ -23,7 +23,6 @@ use CloudCreativity\LaravelJsonApi\Contracts\Http\Responses\ErrorResponseInterfa
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PageInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Queue\AsynchronousProcess;
 use CloudCreativity\LaravelJsonApi\Contracts\Repositories\ErrorRepositoryInterface;
-use CloudCreativity\LaravelJsonApi\Queue\ClientJob;
 use Neomerx\JsonApi\Contracts\Codec\CodecMatcherInterface;
 use Neomerx\JsonApi\Contracts\Document\DocumentInterface;
 use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
@@ -210,13 +209,13 @@ class Responses extends BaseResponses
     }
 
     /**
-     * @param ClientJob $job
+     * @param AsynchronousProcess $job
      * @param array $links
      * @param null $meta
      * @param array $headers
      * @return mixed
      */
-    public function accepted(ClientJob $job, array $links = [], $meta = null, array $headers = [])
+    public function accepted(AsynchronousProcess $job, array $links = [], $meta = null, array $headers = [])
     {
         return $this->getContentResponse($job, 202, $links, $meta, $headers);
     }

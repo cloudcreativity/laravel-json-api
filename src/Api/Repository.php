@@ -91,7 +91,11 @@ class Repository
 
         $resolver->attach((new StaticResolver([
             'queue-jobs' => Queue\ClientJob::class,
-        ]))->setSchema('queue-jobs', Queue\ClientJobSchema::class));
+        ]))->setSchema(
+            'queue-jobs', Queue\ClientJobSchema::class
+        )->setValidators(
+            'queue-jobs', Queue\ClientJobValidators::class
+        ));
 
         return $api;
     }

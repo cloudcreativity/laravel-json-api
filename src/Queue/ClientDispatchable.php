@@ -21,12 +21,19 @@ trait ClientDispatchable
     public static function client(...$args): ClientDispatch
     {
         $request = request();
+        $api = json_api();
+        $id = $request->route(ResourceRegistrar::PARAM_RESOURCE_ID);
+
+        /** If the binding has been substituted, we need to re-lookup the resource id. */
+        if (is_object($id)) {
+            $id = $api->getContainer()->getSchema($id)->getId($id);
+        }
 
         return (new ClientDispatch(new static(...$args)))->forApi(
-            json_api()->getName()
+            $api->getName()
         )->forResource(
             $request->route(ResourceRegistrar::PARAM_RESOURCE_TYPE),
-            $request->route(ResourceRegistrar::PARAM_RESOURCE_ID) ?: $request->json('data.id')
+            $id ?: $request->json('data.id')
         );
     }
 
