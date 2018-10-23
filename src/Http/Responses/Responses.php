@@ -21,6 +21,7 @@ namespace CloudCreativity\LaravelJsonApi\Http\Responses;
 use CloudCreativity\LaravelJsonApi\Contracts\Factories\FactoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\Responses\ErrorResponseInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PageInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Queue\AsynchronousProcess;
 use CloudCreativity\LaravelJsonApi\Contracts\Repositories\ErrorRepositoryInterface;
 use CloudCreativity\LaravelJsonApi\Queue\ClientJob;
 use Neomerx\JsonApi\Contracts\Codec\CodecMatcherInterface;
@@ -168,6 +169,10 @@ class Responses extends BaseResponses
         $statusCode = self::HTTP_OK,
         array $headers = []
     ) {
+        if ($data instanceof AsynchronousProcess) {
+            return $this->accepted($data, $links, $meta, $headers);
+        }
+
         return $this->getContentResponse($data, $statusCode, $links, $meta, $headers);
     }
 
@@ -197,7 +202,7 @@ class Responses extends BaseResponses
      */
     public function created($resource, array $links = [], $meta = null, array $headers = [])
     {
-        if ($resource instanceof ClientJob) {
+        if ($resource instanceof AsynchronousProcess) {
             return $this->accepted($resource, $links, $meta, $headers);
         }
 

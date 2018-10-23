@@ -16,13 +16,42 @@ class ClientDispatch extends PendingDispatch
     /**
      * ClientDispatch constructor.
      *
-     * @param string $resourceType
      * @param mixed $job
      */
-    public function __construct(string $resourceType, $job)
+    public function __construct($job)
     {
         parent::__construct($job);
-        $this->clientJob = new ClientJob(['resource_type' => $resourceType]);
+        $this->clientJob = new ClientJob();
+    }
+
+    /**
+     * Set the API that the job belongs to.
+     *
+     * @param string $api
+     * @return ClientDispatch
+     */
+    public function forApi(string $api): ClientDispatch
+    {
+        $this->clientJob->fill(compact('api'));
+
+        return $this;
+    }
+
+    /**
+     * Set the resource type and id that will be created/updated by the job.
+     *
+     * @param string $type
+     * @param string|null $id
+     * @return ClientDispatch
+     */
+    public function forResource(string $type, string $id = null): ClientDispatch
+    {
+        $this->clientJob->fill([
+            'resource_type' => $type,
+            'resource_id' => $id,
+        ]);
+
+        return $this;
     }
 
     /**

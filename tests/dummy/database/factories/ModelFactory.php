@@ -56,6 +56,13 @@ $factory->define(DummyApp\Country::class, function (Faker $faker) {
     ];
 });
 
+/** Download */
+$factory->define(DummyApp\Download::class, function (Faker $faker) {
+    return [
+        'category' => $faker->randomElement(['my-posts', 'my-comments', 'my-videos']),
+    ];
+});
+
 /** Phone */
 $factory->define(DummyApp\Phone::class, function (Faker $faker) {
     return [

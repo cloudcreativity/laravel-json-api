@@ -155,7 +155,11 @@ class JsonApiController extends Controller
             return $result;
         }
 
-        return $this->reply()->noContent();
+        if (is_null($result)) {
+            return $this->reply()->noContent();
+        }
+
+        return $this->reply()->content($result);
     }
 
     /**
@@ -335,8 +339,8 @@ class JsonApiController extends Controller
      *
      * @param StoreInterface $store
      * @param ValidatedRequest $request
-     * @return Response|null
-     *      an HTTP response or null.
+     * @return Response|mixed|null
+     *      an HTTP response, content to return or null.
      */
     protected function doDelete(StoreInterface $store, ValidatedRequest $request)
     {
@@ -347,9 +351,9 @@ class JsonApiController extends Controller
             return $response;
         }
 
-        $store->deleteRecord($record, $request->getParameters());
+        $result = $store->deleteRecord($record, $request->getParameters());
 
-        return $this->invoke('deleted', $record, $request);
+        return $this->invoke('deleted', $record, $request) ?: $result;
     }
 
     /**

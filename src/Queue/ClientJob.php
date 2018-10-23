@@ -2,10 +2,11 @@
 
 namespace CloudCreativity\LaravelJsonApi\Queue;
 
+use CloudCreativity\LaravelJsonApi\Contracts\Queue\AsynchronousProcess;
 use Illuminate\Database\Eloquent\Model;
 use Ramsey\Uuid\Uuid;
 
-class ClientJob extends Model
+class ClientJob extends Model implements AsynchronousProcess
 {
 
     /**
@@ -27,8 +28,15 @@ class ClientJob extends Model
      * @var array
      */
     protected $fillable = [
+        'api',
         'resource_type',
+        'resource_id',
     ];
+
+    /**
+     * @var string
+     */
+    protected $dateFormat = 'Y-m-d H:i:s.u';
 
     /**
      * @inheritdoc

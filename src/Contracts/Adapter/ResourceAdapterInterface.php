@@ -77,8 +77,8 @@ interface ResourceAdapterInterface
      *
      * @param $record
      * @param EncodingParametersInterface $params
-     * @return bool
-     *      whether the record was successfully destroyed.
+     * @return bool|mixed
+     *      a boolean indicating whether the record was successfully destroyed, or content to return to the client.
      */
     public function delete($record, EncodingParametersInterface $params);
 

@@ -127,10 +127,13 @@ class Store implements StoreInterface
     public function deleteRecord($record, EncodingParametersInterface $params)
     {
         $adapter = $this->adapterFor($record);
+        $result = $adapter->delete($record, $params);
 
-        if (!$adapter->delete($record, $params)) {
+        if (false === $result) {
             throw new RuntimeException('Record could not be deleted.');
         }
+
+        return true !== $result ? $result : null;
     }
 
     /**

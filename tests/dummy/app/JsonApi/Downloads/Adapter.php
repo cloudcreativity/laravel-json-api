@@ -8,6 +8,8 @@ use CloudCreativity\LaravelJsonApi\Eloquent\AbstractAdapter;
 use CloudCreativity\LaravelJsonApi\Pagination\StandardStrategy;
 use DummyApp\Download;
 use DummyApp\Jobs\CreateDownload;
+use DummyApp\Jobs\DeleteDownload;
+use DummyApp\Jobs\ReplaceDownload;
 use Illuminate\Support\Collection;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
@@ -31,7 +33,23 @@ class Adapter extends AbstractAdapter
     {
         $resource = ResourceObject::create($resource->toArray());
 
-        return CreateDownload::client('downloads', $resource->get('category'))->dispatch();
+        return CreateDownload::client($resource->get('category'))->dispatch();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function update($record, ResourceObjectInterface $resource, EncodingParametersInterface $parameters)
+    {
+        return ReplaceDownload::client($record)->dispatch();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function delete($record, EncodingParametersInterface $params)
+    {
+        return DeleteDownload::client($record)->dispatch();
     }
 
     /**
@@ -41,6 +59,5 @@ class Adapter extends AbstractAdapter
     {
         // TODO: Implement filter() method.
     }
-
 
 }
