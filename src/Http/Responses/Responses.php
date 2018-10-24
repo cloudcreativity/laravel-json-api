@@ -217,6 +217,8 @@ class Responses extends BaseResponses
      */
     public function accepted(AsynchronousProcess $job, array $links = [], $meta = null, array $headers = [])
     {
+        $headers['Content-Location'] = $this->getResourceLocationUrl($job);
+
         return $this->getContentResponse($job, 202, $links, $meta, $headers);
     }
 

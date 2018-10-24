@@ -379,6 +379,32 @@ class TestResponse extends BaseTestResponse
     }
 
     /**
+     * Assert response is a JSON API asynchronous process response.
+     *
+     * @param array|null $expected
+     *      the expected asynchronous process resource object.
+     * @param string|null $location
+     *      the expected location for the asynchronous process resource object, without the id.
+     * @return $this
+     */
+    public function assertAccepted(array $expected = null, string $location = null)
+    {
+        $this->assertStatus(Response::HTTP_ACCEPTED);
+
+        if ($location && $id = $this->json('data.id')) {
+            $location = "{$location}/{$id}";
+        }
+
+        $this->assertHeader('Content-Location', $location);
+
+        if ($expected) {
+            $this->assertJson(['data' => $expected]);
+        }
+
+        return $this;
+    }
+
+    /**
      * Assert response is a has-one related resource response.
      *
      * @param array $expected

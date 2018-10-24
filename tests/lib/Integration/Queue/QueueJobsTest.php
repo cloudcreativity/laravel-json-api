@@ -52,22 +52,20 @@ class QueueJobsTest extends TestCase
             ],
         ];
 
-        $this->doCreate($data)->assertStatus(202)->assertJson([
-            'data' => [
-                'type' => 'queue-jobs',
-                'attributes' => [
-                    'attempts' => 0,
-                    'created-at' => Carbon::now()->format('Y-m-d\TH:i:s.uP'),
-                    'completed-at' => null,
-                    'failed' => null,
-                    'resource' => 'downloads',
-                    'timeout' => 60,
-                    'timeout-at' => null,
-                    'tries' => null,
-                    'updated-at' => Carbon::now()->format('Y-m-d\TH:i:s.uP'),
-                ],
+        $this->doCreate($data)->assertAccepted([
+            'type' => 'queue-jobs',
+            'attributes' => [
+                'attempts' => 0,
+                'created-at' => Carbon::now()->format('Y-m-d\TH:i:s.uP'),
+                'completed-at' => null,
+                'failed' => null,
+                'resource' => 'downloads',
+                'timeout' => 60,
+                'timeout-at' => null,
+                'tries' => null,
+                'updated-at' => Carbon::now()->format('Y-m-d\TH:i:s.uP'),
             ],
-        ]);
+        ], 'http://localhost/api/v1/downloads/queue-jobs');
 
         $job = $this->assertDispatchedCreate();
 
@@ -106,15 +104,13 @@ class QueueJobsTest extends TestCase
             ],
         ];
 
-        $this->doCreate($data)->assertStatus(202)->assertJson([
-            'data' => [
-                'type' => 'queue-jobs',
-                'attributes' => [
-                    'resource' => 'downloads',
-                    'timeout' => 60,
-                    'timeout-at' => null,
-                    'tries' => null,
-                ],
+        $this->doCreate($data)->assertAccepted([
+            'type' => 'queue-jobs',
+            'attributes' => [
+                'resource' => 'downloads',
+                'timeout' => 60,
+                'timeout-at' => null,
+                'tries' => null,
             ],
         ]);
 
@@ -148,24 +144,23 @@ class QueueJobsTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data, ['include' => 'target'])->assertStatus(202)->assertJson([
-            'data' => [
-                'type' => 'queue-jobs',
-                'attributes' => [
-                    'resource' => 'downloads',
-                    'timeout' => null,
-                    'timeout-at' => Carbon::now()->addSeconds(25)->format('Y-m-d\TH:i:s.uP'),
-                    'tries' => null,
-                ],
-                'relationships' => [
-                    'target' => [
-                        'data' => [
-                            'type' => 'downloads',
-                            'id' => (string) $download->getRouteKey(),
-                        ],
+        $this->doUpdate($data, ['include' => 'target'])->assertAccepted([
+            'type' => 'queue-jobs',
+            'attributes' => [
+                'resource' => 'downloads',
+                'timeout' => null,
+                'timeout-at' => Carbon::now()->addSeconds(25)->format('Y-m-d\TH:i:s.uP'),
+                'tries' => null,
+            ],
+            'relationships' => [
+                'target' => [
+                    'data' => [
+                        'type' => 'downloads',
+                        'id' => (string) $download->getRouteKey(),
                     ],
                 ],
             ],
+        ])->assertJson([
             'included' => [
                 [
                     'type' => 'downloads',
@@ -193,15 +188,13 @@ class QueueJobsTest extends TestCase
     {
         $download = factory(Download::class)->create();
 
-        $this->doDelete($download)->assertStatus(202)->assertJson([
-            'data' => [
-                'type' => 'queue-jobs',
-                'attributes' => [
-                    'resource' => 'downloads',
-                    'timeout' => null,
-                    'timeout-at' => null,
-                    'tries' => 5,
-                ],
+        $this->doDelete($download)->assertAccepted([
+            'type' => 'queue-jobs',
+            'attributes' => [
+                'resource' => 'downloads',
+                'timeout' => null,
+                'timeout-at' => null,
+                'tries' => 5,
             ],
         ]);
 

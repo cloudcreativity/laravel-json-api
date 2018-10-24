@@ -71,4 +71,22 @@ class ClientJobSchema extends SchemaProvider
         ];
     }
 
+    /**
+     * @param ClientJob|null $resource
+     * @return string
+     */
+    public function getSelfSubUrl($resource = null)
+    {
+        if (!$resource) {
+            return parent::getSelfSubUrl();
+        }
+
+        return sprintf(
+            '/%s/%s/%s',
+            $resource->resource_type,
+            $this->getResourceType(),
+            $this->getId($resource)
+        );
+    }
+
 }
