@@ -18,6 +18,7 @@
 namespace CloudCreativity\LaravelJsonApi\Http\Requests;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceIdentifierInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\InvalidJsonException;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
@@ -62,6 +63,11 @@ class IlluminateRequest implements RequestInterface
      * @var string|null
      */
     private $resourceId;
+
+    /**
+     * @var string|null
+     */
+    private $processId;
 
     /**
      * @var object|bool|null
@@ -171,6 +177,39 @@ class IlluminateRequest implements RequestInterface
     }
 
     /**
+     * @inheritDoc
+     */
+    public function getProcessType()
+    {
+        return $this->request->route(ResourceRegistrar::PARAM_PROCESS_TYPE);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getProcessId()
+    {
+        /** Cache the process id because binding substitutions will override it. */
+        if (is_null($this->processId)) {
+            $this->processId = $this->request->route(ResourceRegistrar::PARAM_PROCESS_ID) ?: false;
+        }
+
+        return $this->processId ?: null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getProcessIdentifier()
+    {
+        if (!$id = $this->getProcessId()) {
+            return null;
+        }
+
+        return ResourceIdentifier::create($this->getProcessType(), $id);
+    }
+
+    /**
      * @inheritdoc
      */
     public function getParameters()
@@ -199,7 +238,7 @@ class IlluminateRequest implements RequestInterface
      */
     public function isIndex()
     {
-        return $this->isMethod('get') && !$this->isResource();
+        return $this->isMethod('get') && $this->isNotResource() && $this->isNotProcesses();
     }
 
     /**
@@ -207,7 +246,7 @@ class IlluminateRequest implements RequestInterface
      */
     public function isCreateResource()
     {
-        return $this->isMethod('post') && !$this->isResource();
+        return $this->isMethod('post') && $this->isNotResource();
     }
 
     /**
@@ -293,9 +332,25 @@ class IlluminateRequest implements RequestInterface
     }
 
     /**
+     * @inheritDoc
+     */
+    public function isReadProcesses()
+    {
+        return $this->isMethod('get') && $this->isProcesses() && $this->isNotProcess();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isReadProcess()
+    {
+        return $this->isMethod('get') && $this->isProcess();
+    }
+
+    /**
      * @return bool
      */
-    private function isResource()
+    private function isResource(): bool
     {
         return !empty($this->getResourceId());
     }
@@ -303,7 +358,44 @@ class IlluminateRequest implements RequestInterface
     /**
      * @return bool
      */
-    private function isRelationship()
+    private function isNotResource(): bool
+    {
+        return !$this->isResource();
+    }
+
+    /**
+     * @return bool
+     */
+    private function isProcesses(): bool
+    {
+        return !empty($this->getProcessType());
+    }
+
+    /**
+     * @return bool
+     */
+    private function isNotProcesses(): bool
+    {
+        return !$this->isProcesses();
+    }
+
+    private function isProcess(): bool
+    {
+        return !empty($this->getProcessId());
+    }
+
+    /**
+     * @return bool
+     */
+    private function isNotProcess(): bool
+    {
+        return !$this->isProcess();
+    }
+
+    /**
+     * @return bool
+     */
+    private function isRelationship(): bool
     {
         return !empty($this->getRelationshipName());
     }
@@ -315,7 +407,7 @@ class IlluminateRequest implements RequestInterface
      *      the expected method - case insensitive.
      * @return bool
      */
-    private function isMethod($method)
+    private function isMethod($method): bool
     {
         return strtoupper($this->request->method()) === strtoupper($method);
     }
@@ -342,7 +434,7 @@ class IlluminateRequest implements RequestInterface
     /**
      * @return EncodingParametersInterface
      */
-    private function parseParameters()
+    private function parseParameters(): EncodingParametersInterface
     {
         $parser = $this->factory->createQueryParametersParser();
 
@@ -363,7 +455,7 @@ class IlluminateRequest implements RequestInterface
      *
      * @return bool
      */
-    private function expectsData()
+    private function expectsData(): bool
     {
         return $this->isCreateResource() ||
             $this->isUpdateResource() ||

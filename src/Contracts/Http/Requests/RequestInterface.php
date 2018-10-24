@@ -83,6 +83,27 @@ interface RequestInterface
     public function getInverseResourceType();
 
     /**
+     * What process resource type does the request relate to?
+     *
+     * @return string|null
+     */
+    public function getProcessType();
+
+    /**
+     * What process id does the request relate to?
+     *
+     * @return string|null
+     */
+    public function getProcessId();
+
+    /**
+     * Get the process identifier for the request.
+     *
+     * @return ResourceIdentifierInterface|null
+     */
+    public function getProcessIdentifier();
+
+    /**
      * Get the encoding parameters from the request.
      *
      * @return EncodingParametersInterface
@@ -206,5 +227,23 @@ interface RequestInterface
      * @return bool
      */
     public function isRemoveFromRelationship();
+
+    /**
+     * Is this a request to read all processes for a resource type?
+     *
+     * E.g. `GET /posts/queue-jobs`
+     *
+     * @return bool
+     */
+    public function isReadProcesses();
+
+    /**
+     * Is this a request to read a process for a resource type?
+     *
+     * E.g. `GET /posts/queue-jobs/839765f4-7ff4-4625-8bf7-eecd3ab44946`
+     *
+     * @return bool
+     */
+    public function isReadProcess();
 
 }

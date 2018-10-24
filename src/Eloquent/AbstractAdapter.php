@@ -192,7 +192,10 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
         }
 
         $record = parent::read($resourceId, $parameters);
-        $this->load($record, $parameters);
+
+        if ($record) {
+            $this->load($record, $parameters);
+        }
 
         return $record;
     }

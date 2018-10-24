@@ -89,9 +89,12 @@ class Repository
         /** Attach resource providers to the API. */
         $this->createProviders($apiName)->registerAll($api);
 
+        /** @todo tidy this up... maybe do it using a resource provider? */
         $resolver->attach((new StaticResolver([
             'queue-jobs' => Queue\ClientJob::class,
-        ]))->setSchema(
+        ]))->setAdapter(
+            'queue-jobs', Queue\ClientJobAdapter::class
+        )->setSchema(
             'queue-jobs', Queue\ClientJobSchema::class
         )->setValidators(
             'queue-jobs', Queue\ClientJobValidators::class

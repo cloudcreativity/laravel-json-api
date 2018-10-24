@@ -24,6 +24,7 @@ use CloudCreativity\LaravelJsonApi\Utils\Str;
 use Illuminate\Contracts\Routing\Registrar;
 use Illuminate\Routing\Route;
 use Illuminate\Support\Fluent;
+use Ramsey\Uuid\Uuid;
 
 /**
  * Class RegistersResources
@@ -60,6 +61,31 @@ trait RegistersResources
     }
 
     /**
+     * @return string
+     */
+    protected function baseProcessUrl(): string
+    {
+        return '/' . ResourceRegistrar::KEYWORD_PROCESSES;
+    }
+
+    /**
+     * @return string
+     */
+    protected function processUrl(): string
+    {
+        return sprintf('%s/{%s}', $this->baseProcessUrl(), ResourceRegistrar::PARAM_PROCESS_ID);
+    }
+
+    /**
+     * @return string
+     * @todo allow this to be customised.
+     */
+    protected function processType(): string
+    {
+        return 'queue-jobs';
+    }
+
+    /**
      * @param string $relationship
      * @return string
      */
@@ -93,6 +119,23 @@ trait RegistersResources
         }
 
         return $this->options->get('id');
+    }
+
+    /**
+     * @param string $uri
+     * @return string|null
+     */
+    protected function idConstraintForProcess(string $uri): ?string
+    {
+        if ($this->baseProcessUrl() === $uri) {
+            return null;
+        }
+
+        if ($constraint = $this->options->get('async_id')) {
+            return $constraint;
+        }
+
+        return Uuid::VALID_PATTERN;
     }
 
     /**
@@ -142,6 +185,27 @@ trait RegistersResources
 
         if ($idConstraint = $this->idConstraint($uri)) {
             $route->where(ResourceRegistrar::PARAM_RESOURCE_ID, $idConstraint);
+        }
+
+        return $route;
+    }
+
+    /**
+     * @param Registrar $router
+     * @param $method
+     * @param $uri
+     * @param $action
+     * @return Route
+     */
+    protected function createProcessRoute(Registrar $router, $method, $uri, $action): Route
+    {
+        /** @var Route $route */
+        $route = $router->{$method}($uri, $action);
+        $route->defaults(ResourceRegistrar::PARAM_RESOURCE_TYPE, $this->resourceType);
+        $route->defaults(ResourceRegistrar::PARAM_PROCESS_TYPE, $this->processType());
+
+        if ($constraint = $this->idConstraintForProcess($uri)) {
+            $route->where(ResourceRegistrar::PARAM_PROCESS_ID, $constraint);
         }
 
         return $route;

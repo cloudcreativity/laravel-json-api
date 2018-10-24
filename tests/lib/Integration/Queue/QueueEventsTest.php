@@ -6,7 +6,7 @@ use Carbon\Carbon;
 use CloudCreativity\LaravelJsonApi\Queue\ClientJob;
 use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
 
-class DispatchTest extends TestCase
+class QueueEventsTest extends TestCase
 {
 
     /**

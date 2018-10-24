@@ -78,6 +78,20 @@ class ClientJob extends Model implements AsynchronousProcess
     protected $dateFormat = 'Y-m-d H:i:s.u';
 
     /**
+     * @inheritdoc
+     */
+    public static function boot()
+    {
+        parent::boot();
+
+        static::addGlobalScope(new ClientJobScope());
+
+        static::creating(function (ClientJob $job) {
+            $job->uuid = $job->uuid ?: Uuid::uuid4()->toString();
+        });
+    }
+
+    /**
      * Get the resource that will be modified as a result of the process.
      *
      * @return mixed|null
@@ -118,17 +132,6 @@ class ClientJob extends Model implements AsynchronousProcess
             'completed_at' => $job->isDeleted() ? Carbon::now() : null,
             'failed' => $job->hasFailed(),
         ]);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function boot()
-    {
-        parent::boot();
-        static::creating(function (ClientJob $job) {
-            $job->uuid = $job->uuid ?: Uuid::uuid4()->toString();
-        });
     }
 
 }

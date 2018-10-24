@@ -30,10 +30,15 @@ JsonApi::register('v1', [], function (ApiGroup $api) {
         'middleware' => 'auth',
         'has-one' => 'commentable',
     ]);
+
     $api->resource('countries', [
         'has-many' => ['users', 'posts'],
     ]);
-    $api->resource('downloads');
+
+    $api->resource('downloads', [
+        'async' => true,
+    ]);
+
     $api->resource('posts', [
         'controller' => true,
         'has-one' => [
@@ -46,10 +51,13 @@ JsonApi::register('v1', [], function (ApiGroup $api) {
             'related-video' => ['only' => ['read', 'related']],
         ],
     ]);
+
     $api->resource('users', [
         'has-one' => 'phone',
     ]);
+
     $api->resource('videos');
+
     $api->resource('tags', [
         'has-many' => 'taggables',
     ]);

@@ -1,29 +1,9 @@
 <?php
-/**
- * Copyright 2018 Cloud Creativity Limited
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Queue;
 
-use Carbon\Carbon;
+use CloudCreativity\LaravelJsonApi\Queue\ClientJob;
 use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
-use DummyApp\Download;
-use DummyApp\Jobs\CreateDownload;
-use DummyApp\Jobs\DeleteDownload;
-use DummyApp\Jobs\ReplaceDownload;
-use Illuminate\Support\Facades\Queue;
 
 class QueueJobsTest extends TestCase
 {
@@ -31,233 +11,73 @@ class QueueJobsTest extends TestCase
     /**
      * @var string
      */
-    protected $resourceType = 'downloads';
+    protected $resourceType = 'queue-jobs';
 
-    /**
-     * @return void
-     */
-    protected function setUp()
+    public function testRead()
     {
-        parent::setUp();
-        Queue::fake();
-        Carbon::setTestNow('2018-10-23 12:00:00.123456');
+        $job = factory(ClientJob::class)->create();
+        $expected = $this->serialize($job);
+
+        $this->getJsonApi($expected['links']['self'])
+            ->assertRead($expected);
     }
 
-    public function testCreate()
+    public function testReadNotFound()
     {
-        $data = [
-            'type' => 'downloads',
-            'attributes' => [
-                'category' => 'my-posts',
-            ],
-        ];
+        $job = factory(ClientJob::class)->create(['resource_type' => 'foo']);
 
-        $this->doCreate($data)->assertAccepted([
-            'type' => 'queue-jobs',
-            'attributes' => [
-                'attempts' => 0,
-                'created-at' => Carbon::now()->format('Y-m-d\TH:i:s.uP'),
-                'completed-at' => null,
-                'failed' => null,
-                'resource' => 'downloads',
-                'timeout' => 60,
-                'timeout-at' => null,
-                'tries' => null,
-                'updated-at' => Carbon::now()->format('Y-m-d\TH:i:s.uP'),
-            ],
-        ], 'http://localhost/api/v1/downloads/queue-jobs');
-
-        $job = $this->assertDispatchedCreate();
-
-        $this->assertTrue($job->wasClientDispatched(), 'was client dispatched');
-        $this->assertSame('v1', $job->api(), 'api');
-        $this->assertSame('downloads', $job->resourceType(), 'resource type');
-        $this->assertNull($job->resourceId(), 'resource id');
-
-        $this->assertDatabaseHas('json_api_client_jobs', [
-            'uuid' => $job->clientJob->getKey(),
-            'created_at' => '2018-10-23 12:00:00.123456',
-            'updated_at' => '2018-10-23 12:00:00.123456',
-            'api' => 'v1',
-            'resource_type' => 'downloads',
-            'resource_id' => null,
-            'completed_at' => null,
-            'failed' => false,
-            'attempts' => 0,
-            'timeout' => 60,
-            'timeout_at' => null,
-            'tries' => null,
-        ]);
+        $this->getJsonApi($this->selfUrl($job, 'downloads'))
+            ->assertStatus(404);
     }
 
     /**
-     * If we are asynchronously creating a resource with a client generated id,
-     * that id needs to be stored on the client job.
+     * @param ClientJob $job
+     * @param string|null $resourceType
+     * @return string
      */
-    public function testCreateWithClientGeneratedId()
+    private function selfUrl(ClientJob $job, string $resourceType = null): string
     {
-        $data = [
-            'type' => 'downloads',
-            'id' => '85f3cb08-5c5c-4e41-ae92-57097d28a0b8',
-            'attributes' => [
-                'category' => 'my-posts',
-            ],
-        ];
+        $resourceType = $resourceType ?: $job->resource_type;
 
-        $this->doCreate($data)->assertAccepted([
-            'type' => 'queue-jobs',
-            'attributes' => [
-                'resource' => 'downloads',
-                'timeout' => 60,
-                'timeout-at' => null,
-                'tries' => null,
-            ],
-        ]);
-
-        $job = $this->assertDispatchedCreate();
-
-        $this->assertSame($data['id'], $job->resourceId(), 'resource id');
-        $this->assertNotSame($data['id'], $job->clientJob->getKey());
-
-        $this->assertDatabaseHas('json_api_client_jobs', [
-            'uuid' => $job->clientJob->getKey(),
-            'created_at' => '2018-10-23 12:00:00.123456',
-            'updated_at' => '2018-10-23 12:00:00.123456',
-            'api' => 'v1',
-            'resource_type' => 'downloads',
-            'resource_id' => $data['id'],
-            'timeout' => 60,
-            'timeout_at' => null,
-            'tries' => null,
-        ]);
+        return "http://localhost/api/v1/{$resourceType}/queue-jobs/{$job->getRouteKey()}";
     }
 
-    public function testUpdate()
+    /**
+     * Get the expected resource object for a client job model.
+     *
+     * @param ClientJob $job
+     * @return array
+     */
+    private function serialize(ClientJob $job): array
     {
-        $download = factory(Download::class)->create(['category' => 'my-posts']);
+        $self = $this->selfUrl($job);
+        $format = 'Y-m-d\TH:i:s.uP';
 
-        $data = [
-            'type' => 'downloads',
-            'id' => (string) $download->getRouteKey(),
-            'attributes' => [
-                'category' => 'my-comments',
-            ],
-        ];
-
-        $this->doUpdate($data, ['include' => 'target'])->assertAccepted([
+        return [
             'type' => 'queue-jobs',
+            'id' => (string) $job->getRouteKey(),
             'attributes' => [
+                'attempts' => $job->attempts,
+                'created-at' => $job->created_at->format($format),
+                'completed-at' => $job->completed_at ? $job->completed_at->format($format) : null,
+                'failed' => $job->failed,
                 'resource' => 'downloads',
-                'timeout' => null,
-                'timeout-at' => Carbon::now()->addSeconds(25)->format('Y-m-d\TH:i:s.uP'),
-                'tries' => null,
+                'timeout' => $job->timeout,
+                'timeout-at' => $job->timeout_at ? $job->timeout_at->format($format) : null,
+                'tries' => $job->tries,
+                'updated-at' => $job->updated_at->format($format),
             ],
             'relationships' => [
                 'target' => [
-                    'data' => [
-                        'type' => 'downloads',
-                        'id' => (string) $download->getRouteKey(),
+                    'links' => [
+                        'self' => "{$self}/relationships/target",
+                        'related' => "{$self}/target",
                     ],
                 ],
             ],
-        ])->assertJson([
-            'included' => [
-                [
-                    'type' => 'downloads',
-                    'id' => (string) $download->getRouteKey(),
-                ],
+            'links' => [
+                'self' => $self,
             ],
-        ]);
-
-        $job = $this->assertDispatchedReplace();
-
-        $this->assertDatabaseHas('json_api_client_jobs', [
-            'uuid' => $job->clientJob->getKey(),
-            'created_at' => '2018-10-23 12:00:00.123456',
-            'updated_at' => '2018-10-23 12:00:00.123456',
-            'api' => 'v1',
-            'resource_type' => 'downloads',
-            'resource_id' => $download->getRouteKey(),
-            'timeout' => null,
-            'timeout_at' => '2018-10-23 12:00:25.123456',
-            'tries' => null,
-        ]);
-    }
-
-    public function testDelete()
-    {
-        $download = factory(Download::class)->create();
-
-        $this->doDelete($download)->assertAccepted([
-            'type' => 'queue-jobs',
-            'attributes' => [
-                'resource' => 'downloads',
-                'timeout' => null,
-                'timeout-at' => null,
-                'tries' => 5,
-            ],
-        ]);
-
-        $job = $this->assertDispatchedDelete();
-
-        $this->assertDatabaseHas('json_api_client_jobs', [
-            'uuid' => $job->clientJob->getKey(),
-            'created_at' => '2018-10-23 12:00:00.123456',
-            'updated_at' => '2018-10-23 12:00:00.123456',
-            'api' => 'v1',
-            'resource_type' => 'downloads',
-            'resource_id' => $download->getRouteKey(),
-            'tries' => 5,
-            'timeout' => null,
-            'timeout_at' => null,
-        ]);
-    }
-
-    /**
-     * @return CreateDownload
-     */
-    private function assertDispatchedCreate(): CreateDownload
-    {
-        $actual = null;
-
-        Queue::assertPushed(CreateDownload::class, function ($job) use (&$actual) {
-            $actual = $job;
-
-            return $job->clientJob->exists;
-        });
-
-        return $actual;
-    }
-
-    /**
-     * @return ReplaceDownload
-     */
-    private function assertDispatchedReplace(): ReplaceDownload
-    {
-        $actual = null;
-
-        Queue::assertPushed(ReplaceDownload::class, function ($job) use (&$actual) {
-            $actual = $job;
-
-            return $job->clientJob->exists;
-        });
-
-        return $actual;
-    }
-
-    /**
-     * @return DeleteDownload
-     */
-    private function assertDispatchedDelete(): DeleteDownload
-    {
-        $actual = null;
-
-        Queue::assertPushed(DeleteDownload::class, function ($job) use (&$actual) {
-            $actual = $job;
-
-            return $job->clientJob->exists;
-        });
-
-        return $actual;
+        ];
     }
 }
