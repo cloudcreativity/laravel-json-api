@@ -29,3 +29,11 @@ $factory->define(ClientJob::class, function (Faker $faker) {
         'attempts' => 0,
     ];
 });
+
+$factory->state(ClientJob::class, 'success', function (Faker $faker) {
+    return [
+        'completed_at' => $faker->dateTimeBetween('-10 minutes', 'now'),
+        'failed' => false,
+        'attempts' => $faker->numberBetween(1, 3),
+    ];
+});

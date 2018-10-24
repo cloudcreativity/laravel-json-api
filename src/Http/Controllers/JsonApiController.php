@@ -24,6 +24,7 @@ use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\LaravelJsonApi\Http\Requests\CreateResource;
 use CloudCreativity\LaravelJsonApi\Http\Requests\DeleteResource;
 use CloudCreativity\LaravelJsonApi\Http\Requests\FetchProcess;
+use CloudCreativity\LaravelJsonApi\Http\Requests\FetchProcesses;
 use CloudCreativity\LaravelJsonApi\Http\Requests\FetchRelated;
 use CloudCreativity\LaravelJsonApi\Http\Requests\FetchRelationship;
 use CloudCreativity\LaravelJsonApi\Http\Requests\FetchResource;
@@ -268,7 +269,24 @@ class JsonApiController extends Controller
     }
 
     /**
-     * Read a resource process action.
+     * Read processes action.
+     *
+     * @param StoreInterface $store
+     * @param FetchProcesses $request
+     * @return Response
+     */
+    public function processes(StoreInterface $store, FetchProcesses $request)
+    {
+        $result = $store->queryRecords(
+            $request->getProcessType(),
+            $request->getEncodingParameters()
+        );
+
+        return $this->reply()->content($result);
+    }
+
+    /**
+     * Read a process action.
      *
      * @param StoreInterface $store
      * @param FetchProcess $request
@@ -282,9 +300,7 @@ class JsonApiController extends Controller
             $request->getEncodingParameters()
         );
 
-        // @TODO process event
-
-        return $this->reply()->content($record);
+        return $this->reply()->process($record);
     }
 
     /**

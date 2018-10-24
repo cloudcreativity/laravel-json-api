@@ -144,7 +144,7 @@ class ClientDispatchTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data, ['include' => 'target'])->assertAccepted([
+        $this->doUpdate($data, ['include' => 'resource'])->assertAccepted([
             'type' => 'queue-jobs',
             'attributes' => [
                 'resource' => 'downloads',
@@ -153,7 +153,7 @@ class ClientDispatchTest extends TestCase
                 'tries' => null,
             ],
             'relationships' => [
-                'target' => [
+                'resource' => [
                     'data' => [
                         'type' => 'downloads',
                         'id' => (string) $download->getRouteKey(),

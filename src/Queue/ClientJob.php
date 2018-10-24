@@ -3,7 +3,9 @@
 namespace CloudCreativity\LaravelJsonApi\Queue;
 
 use Carbon\Carbon;
+use CloudCreativity\LaravelJsonApi\Api\Api;
 use CloudCreativity\LaravelJsonApi\Contracts\Queue\AsynchronousProcess;
+use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Object\ResourceIdentifier;
 use Illuminate\Database\Eloquent\Model;
 use Ramsey\Uuid\Uuid;
@@ -92,19 +94,26 @@ class ClientJob extends Model implements AsynchronousProcess
     }
 
     /**
-     * Get the resource that will be modified as a result of the process.
-     *
-     * @return mixed|null
+     * @inheritDoc
      */
-    public function getTarget()
+    public function getLocation(): ?string
     {
-        if (!$this->api || !$this->resource_type || !$this->resource_id) {
+        $type = $this->resource_type;
+        $id = $this->resource_id;
+
+        if (!$type || !$id) {
             return null;
         }
 
-        return json_api($this->api)->getStore()->find(
-            ResourceIdentifier::create($this->resource_type, $this->resource_id)
-        );
+        return $this->getApi()->url()->read($type, $id);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isPending(): bool
+    {
+        return !$this->offsetExists('completed_at');
     }
 
     /**
@@ -132,6 +141,52 @@ class ClientJob extends Model implements AsynchronousProcess
             'completed_at' => $job->isDeleted() ? Carbon::now() : null,
             'failed' => $job->hasFailed(),
         ]);
+    }
+
+    /**
+     * @return Api
+     */
+    public function getApi(): Api
+    {
+        if (!$api = $this->api) {
+            throw new RuntimeException('Expecting API to be set on client job.');
+        }
+
+        return json_api($api);
+    }
+
+    /**
+     * Set the resource that the client job relates to.
+     *
+     * @param mixed $resource
+     * @return ClientJob
+     */
+    public function setResource($resource): ClientJob
+    {
+        $schema = $this->getApi()->getContainer()->getSchema($resource);
+
+        $this->fill([
+            'resource_type' => $schema->getResourceType(),
+            'resource_id' => $schema->getId($resource),
+        ]);
+
+        return $this;
+    }
+
+    /**
+     * Get the resource that the process relates to.
+     *
+     * @return mixed|null
+     */
+    public function getResource()
+    {
+        if (!$this->resource_type || !$this->resource_id) {
+            return null;
+        }
+
+        return $this->getApi()->getStore()->find(
+            ResourceIdentifier::create($this->resource_type, $this->resource_id)
+        );
     }
 
 }

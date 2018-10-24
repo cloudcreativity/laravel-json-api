@@ -15,6 +15,20 @@ interface AsynchronousProcess
 {
 
     /**
+     * Get the location of the resource that the process relates to, if known.
+     *
+     * @return string|null
+     */
+    public function getLocation(): ?string;
+
+    /**
+     * Is the process still pending?
+     *
+     * @return bool
+     */
+    public function isPending(): bool;
+
+    /**
      * Mark the process as being dispatched.
      *
      * @param ClientDispatch $dispatch

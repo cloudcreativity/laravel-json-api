@@ -60,12 +60,12 @@ class ClientJobSchema extends SchemaProvider
     public function getRelationships($resource, $isPrimary, array $includeRelationships)
     {
         return [
-            'target' => [
+            'resource' => [
                 self::SHOW_SELF => true,
                 self::SHOW_RELATED => true,
-                self::SHOW_DATA => isset($includeRelationships['target']),
+                self::SHOW_DATA => isset($includeRelationships['resource']),
                 self::DATA => function () use ($resource) {
-                    return $resource->getTarget();
+                    return $resource->getResource();
                 },
             ],
         ];

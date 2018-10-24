@@ -22,16 +22,8 @@ namespace CloudCreativity\LaravelJsonApi\Http\Requests;
  *
  * @package CloudCreativity\LaravelJsonApi
  */
-class FetchProcess extends ValidatedRequest
+class FetchProcess extends FetchProcesses
 {
-
-    /**
-     * @return string
-     */
-    public function getProcessType(): string
-    {
-        return $this->jsonApiRequest->getProcessType();
-    }
 
     /**
      * @return string
@@ -39,36 +31,6 @@ class FetchProcess extends ValidatedRequest
     public function getProcessId(): string
     {
         return $this->jsonApiRequest->getProcessId();
-    }
-
-    /**
-     * @inheritDoc
-     */
-    protected function authorize()
-    {
-        // @TODO
-
-//        if (!$authorizer = $this->getAuthorizer()) {
-//            return;
-//        }
-//
-//        $authorizer->read($this->getRecord(), $this->request);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    protected function validateQuery()
-    {
-        // @TODO
-
-//        if (!$validators = $this->getValidators()) {
-//            return;
-//        }
-//
-//        $this->passes(
-//            $validators->fetchQuery($this->query())
-//        );
     }
 
 }
