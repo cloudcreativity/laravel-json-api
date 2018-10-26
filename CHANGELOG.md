@@ -5,7 +5,8 @@ All notable changes to this project will be documented in this file. This projec
 ## Unreleased
 
 ### Changed
-- Adapters now receive the JSON API document (HTTP content) as an array.
+- [#248](https://github.com/cloudcreativity/laravel-json-api/pull/248)
+Adapters now receive the JSON API document (HTTP content) as an array.
 
 ### Fixed
 - [#201](https://github.com/cloudcreativity/laravel-json-api/issues/201)

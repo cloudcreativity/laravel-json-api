@@ -17,7 +17,7 @@ An advantage is it has enabled us to deprecated the document object interface/cl
 (in the `Contracts\Object` and `Object` namespaces). These were in this package for historic reasons and we 
 have wanted to remove them for some time. They are marked as deprecated and will be removed for good in `2.0.0`.
 
-The following are the main changes if you have extended our abstract adapters. Your adapters may not have all
+Below are the main changes if you have extended our abstract adapters. Your adapters may not have all
 of these methods.
 
 > If you have overridden any of the internals of the abstract adapters you may need to make additional changes.
