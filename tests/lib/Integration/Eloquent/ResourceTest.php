@@ -336,6 +336,34 @@ class ResourceTest extends TestCase
     }
 
     /**
+     * Laravel conversion middleware e.g. trim strings, works.
+     *
+     * @see https://github.com/cloudcreativity/laravel-json-api/issues/201
+     */
+    public function testTrimsStrings()
+    {
+        $model = $this->createPost();
+
+        $data = [
+            'type' => 'posts',
+            'id' => (string) $model->getRouteKey(),
+            'attributes' => [
+                'content' => ' Hello world. ',
+            ],
+        ];
+
+        $expected = $data;
+        $expected['attributes']['content'] = 'Hello world.';
+
+        $this->doUpdate($data)->assertUpdated($expected);
+
+        $this->assertDatabaseHas('posts', [
+            'id' => $model->getKey(),
+            'content' => 'Hello world.',
+        ]);
+    }
+
+    /**
      * Test the delete resource route.
      */
     public function testDelete()

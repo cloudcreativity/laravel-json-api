@@ -17,7 +17,6 @@
 
 namespace CloudCreativity\LaravelJsonApi\Contracts\Adapter;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Object\RelationshipInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 interface HasManyAdapterInterface extends RelationshipAdapterInterface
@@ -29,14 +28,14 @@ interface HasManyAdapterInterface extends RelationshipAdapterInterface
      * For a has-many relationship, this adds the resource identifiers in the relationship to the domain
      * record's relationship. It is not valid for a has-one relationship.
      *
-     * @param object $record
-     *      the object to hydrate.
-     * @param RelationshipInterface $relationship
+     * @param mixed $record
+     * @param array $relationship
+     *      The JSON API relationship object.
      * @param EncodingParametersInterface $parameters
      * @return object
      *      the updated domain record.
      */
-    public function add($record, RelationshipInterface $relationship, EncodingParametersInterface $parameters);
+    public function add($record, array $relationship, EncodingParametersInterface $parameters);
 
     /**
      * Remove data from a domain record's relationship using data from the supplied relationship object.
@@ -45,13 +44,13 @@ interface HasManyAdapterInterface extends RelationshipAdapterInterface
      * domain record's relationship. It is not valid for a has-one relationship, as `update()` must
      * be used instead.
      *
-     * @param object $record
-     *      the object to hydrate.
-     * @param RelationshipInterface $relationship
+     * @param mixed $record
+     * @param array $relationship
+     *      The JSON API relationship object.
      * @param EncodingParametersInterface $parameters
      * @return object
      *      the updated domain record.
      */
-    public function remove($record, RelationshipInterface $relationship, EncodingParametersInterface $parameters);
+    public function remove($record, array $relationship, EncodingParametersInterface $parameters);
 
 }

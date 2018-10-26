@@ -515,18 +515,17 @@ For example, this would create the following for a `posts` resource:
 namespace App\JsonApi\Posts;
 
 use CloudCreativity\LaravelJsonApi\Adapter\AbstractResourceAdapter;
-use CloudCreativity\LaravelJsonApi\Contracts\Object\RelationshipsInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectInterface;
-use CloudCreativity\Utils\Object\StandardObjectInterface;
+use CloudCreativity\LaravelJsonApi\Document\ResourceObject;
+use Illuminate\Support\Collection;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
-class Adapter extends AbstractResourceAdapter
+class DummyClass extends AbstractResourceAdapter
 {
 
     /**
      * @inheritDoc
      */
-    protected function createRecord(ResourceObjectInterface $resource)
+    protected function createRecord(ResourceObject $resource)
     {
         // TODO: Implement createRecord() method.
     }
@@ -534,9 +533,9 @@ class Adapter extends AbstractResourceAdapter
     /**
      * @inheritDoc
      */
-    protected function hydrateAttributes($record, StandardObjectInterface $attributes)
+    protected function fillAttributes($record, Collection $attributes)
     {
-        // TODO: Implement hydrateAttributes() method.
+        // TODO: Implement fillAttributes() method.
     }
 
     /**

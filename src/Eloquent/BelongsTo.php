@@ -17,10 +17,8 @@
 
 namespace CloudCreativity\LaravelJsonApi\Eloquent;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Object\RelationshipInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations;
-use Illuminate\Database\Eloquent\Relations\Relation;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 /**
@@ -59,15 +57,15 @@ class BelongsTo extends AbstractRelation
 
     /**
      * @param Model $record
-     * @param RelationshipInterface $relationship
+     * @param array $relationship
      * @param EncodingParametersInterface $parameters
      * @return void
      */
-    public function update($record, RelationshipInterface $relationship, EncodingParametersInterface $parameters)
+    public function update($record, array $relationship, EncodingParametersInterface $parameters)
     {
         $relation = $this->getRelation($record, $this->key);
 
-        if ($related = $this->related($relationship)) {
+        if ($related = $this->findToOne($relationship)) {
             $relation->associate($related);
         } else {
             $relation->dissociate();
@@ -76,11 +74,11 @@ class BelongsTo extends AbstractRelation
 
     /**
      * @param Model $record
-     * @param RelationshipInterface $relationship
+     * @param array $relationship
      * @param EncodingParametersInterface $parameters
      * @return Model
      */
-    public function replace($record, RelationshipInterface $relationship, EncodingParametersInterface $parameters)
+    public function replace($record, array $relationship, EncodingParametersInterface $parameters)
     {
         $this->update($record, $relationship, $parameters);
         $record->save();
@@ -89,45 +87,11 @@ class BelongsTo extends AbstractRelation
     }
 
     /**
-     * @param $record
-     * @return Relation
-     * @deprecated 1.0.0 use `getRelation`
-     */
-    protected function relation($record)
-    {
-        return $this->getRelation($record, $this->key);
-    }
-
-    /**
      * @inheritdoc
      */
     protected function acceptRelation($relation)
     {
         return $relation instanceof Relations\BelongsTo;
-    }
-
-    /**
-     * Find the related model for the JSON API relationship.
-     *
-     * @param RelationshipInterface $relationship
-     * @return Model|null
-     * @deprecated 1.0.0 use `findOne`
-     */
-    protected function findRelated(RelationshipInterface $relationship)
-    {
-        return $this->findOne($relationship);
-    }
-
-    /**
-     * Get the related model for the JSON API relationship.
-     *
-     * @param RelationshipInterface $relationship
-     * @return Model|null
-     * @deprecated 1.0.0 use `findRelated`
-     */
-    protected function related(RelationshipInterface $relationship)
-    {
-        return $this->findRelated($relationship);
     }
 
 }

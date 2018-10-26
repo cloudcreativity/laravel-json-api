@@ -28,6 +28,7 @@ use CloudCreativity\Utils\Object\StandardObjectInterface;
  * Class Document
  *
  * @package CloudCreativity\LaravelJsonApi
+ * @deprecated 2.0.0
  */
 class Document extends StandardObject implements DocumentInterface
 {

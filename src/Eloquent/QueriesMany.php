@@ -19,7 +19,6 @@ namespace CloudCreativity\LaravelJsonApi\Eloquent;
 
 use CloudCreativity\LaravelJsonApi\Adapter\AbstractRelationshipAdapter;
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\HasManyAdapterInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Object\RelationshipInterface;
 use CloudCreativity\LaravelJsonApi\Eloquent\Concerns\QueriesRelations;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use Illuminate\Database\Eloquent\Builder;
@@ -80,7 +79,7 @@ class QueriesMany extends AbstractRelationshipAdapter implements HasManyAdapterI
     /**
      * @inheritDoc
      */
-    public function update($record, RelationshipInterface $relationship, EncodingParametersInterface $parameters)
+    public function update($record, array $relationship, EncodingParametersInterface $parameters)
     {
         throw new RuntimeException('Modifying a queries-many relation is not supported.');
     }
@@ -88,7 +87,7 @@ class QueriesMany extends AbstractRelationshipAdapter implements HasManyAdapterI
     /**
      * @inheritDoc
      */
-    public function replace($record, RelationshipInterface $relationship, EncodingParametersInterface $parameters)
+    public function replace($record, array $relationship, EncodingParametersInterface $parameters)
     {
         throw new RuntimeException('Modifying a queries-many relation is not supported.');
     }
@@ -96,7 +95,7 @@ class QueriesMany extends AbstractRelationshipAdapter implements HasManyAdapterI
     /**
      * @inheritDoc
      */
-    public function add($record, RelationshipInterface $relationship, EncodingParametersInterface $parameters)
+    public function add($record, array $relationship, EncodingParametersInterface $parameters)
     {
         throw new RuntimeException('Modifying a queries-many relation is not supported.');
     }
@@ -104,7 +103,7 @@ class QueriesMany extends AbstractRelationshipAdapter implements HasManyAdapterI
     /**
      * @inheritDoc
      */
-    public function remove($record, RelationshipInterface $relationship, EncodingParametersInterface $parameters)
+    public function remove($record, array $relationship, EncodingParametersInterface $parameters)
     {
         throw new RuntimeException('Modifying a queries-many relation is not supported.');
     }

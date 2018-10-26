@@ -17,7 +17,7 @@
 
 namespace DummyApp\JsonApi\Videos;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectInterface;
+use CloudCreativity\LaravelJsonApi\Document\ResourceObject;
 use CloudCreativity\LaravelJsonApi\Store\EloquentAdapter;
 use DummyApp\Video;
 use Illuminate\Database\Eloquent\Model;
@@ -36,10 +36,10 @@ class Adapter extends EloquentAdapter
     }
 
     /**
-     * @param ResourceObjectInterface $resource
+     * @param ResourceObject $resource
      * @return Video
      */
-    protected function createRecord(ResourceObjectInterface $resource)
+    protected function createRecord(ResourceObject $resource)
     {
         $video = new Video();
         $video->{$video->getKeyName()} = $resource->getId();

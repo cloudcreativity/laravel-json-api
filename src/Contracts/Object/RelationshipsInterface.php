@@ -26,6 +26,7 @@ use Traversable;
  * Interface RelationshipsInterface
  *
  * @package CloudCreativity\LaravelJsonApi
+ * @deprecated 2.0.0
  */
 interface RelationshipsInterface extends StandardObjectInterface
 {
