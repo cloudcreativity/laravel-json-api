@@ -29,6 +29,8 @@ Adapters now receive the array that has been transformed by Laravel's middleware
 - The deprecated `Adapter\HydratesAttributesTrait` was removed.
 - The `Contracts\Http\Requests\RequestInterface` was removed as it is no longer necessary (because the
 package is no longer framework-agnostic).
+- Removed the `Contracts\Repository\SchemasRepositoryInterface` and `Repository\SchemasRepository` class
+because these were not in use.
 
 ### Deprecated
 - All interfaces in the `Contracts\Object` namespace will be removed for `2.0`.
