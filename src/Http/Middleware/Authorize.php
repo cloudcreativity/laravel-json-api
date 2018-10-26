@@ -21,7 +21,7 @@ namespace CloudCreativity\LaravelJsonApi\Http\Middleware;
 use Closure;
 use CloudCreativity\LaravelJsonApi\Contracts\Auth\AuthorizerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestInterface;
+use CloudCreativity\LaravelJsonApi\Http\Requests\JsonApiRequest;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Request;
@@ -40,7 +40,7 @@ class Authorize
     private $container;
 
     /**
-     * @var RequestInterface
+     * @var JsonApiRequest
      */
     private $jsonApiRequest;
 
@@ -48,9 +48,9 @@ class Authorize
      * Authorize constructor.
      *
      * @param ContainerInterface $container
-     * @param RequestInterface $request
+     * @param JsonApiRequest $request
      */
-    public function __construct(ContainerInterface $container, RequestInterface $request)
+    public function __construct(ContainerInterface $container, JsonApiRequest $request)
     {
         $this->container = $container;
         $this->jsonApiRequest = $request;
@@ -81,12 +81,12 @@ class Authorize
      * Authorize the request.
      *
      * @param AuthorizerInterface $authorizer
-     * @param RequestInterface $jsonApiRequest
+     * @param JsonApiRequest $jsonApiRequest
      * @param $request
      * @throws AuthenticationException
      * @throws AuthorizationException
      */
-    protected function authorizeRequest(AuthorizerInterface $authorizer, RequestInterface $jsonApiRequest, $request)
+    protected function authorizeRequest(AuthorizerInterface $authorizer, JsonApiRequest $jsonApiRequest, $request)
     {
         $type = $jsonApiRequest->getType();
 

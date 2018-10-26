@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file. This projec
 ### Changed
 - [#248](https://github.com/cloudcreativity/laravel-json-api/pull/248)
 Adapters now receive the JSON API document (HTTP content) as an array.
+- Renamed `Http\Requests\IlluminateRequest` to `Http\Requests\JsonApiRequest`.
 
 ### Fixed
 - [#201](https://github.com/cloudcreativity/laravel-json-api/issues/201)
@@ -16,6 +17,8 @@ Adapters now receive the array that has been transformed by Laravel's middleware
 - The deprecated `Contracts\Store\AdapterInterface` was removed. Use 
 `Contracts\Adapter\ResourceAdapterInterface` instead.
 - The deprecated `Adapter\HydratesAttributesTrait` was removed.
+- The `Contracts\Http\Requests\RequestInterface` was removed as it is no longer necessary (because the
+package is no longer framework-agnostic).
 
 ### Deprecated
 - All interfaces in the `Contracts\Object` namespace will be removed for `2.0`.

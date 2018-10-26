@@ -23,7 +23,6 @@ use CloudCreativity\LaravelJsonApi\Console\Commands;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Exceptions\ExceptionParserInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Factories\FactoryInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Repositories\ErrorRepositoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
@@ -32,7 +31,7 @@ use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use CloudCreativity\LaravelJsonApi\Http\Middleware\Authorize;
 use CloudCreativity\LaravelJsonApi\Http\Middleware\BootJsonApi;
 use CloudCreativity\LaravelJsonApi\Http\Middleware\SubstituteBindings;
-use CloudCreativity\LaravelJsonApi\Http\Requests\IlluminateRequest;
+use CloudCreativity\LaravelJsonApi\Http\Requests\JsonApiRequest;
 use CloudCreativity\LaravelJsonApi\Http\Responses\Responses;
 use CloudCreativity\LaravelJsonApi\Routing\ResourceRegistrar;
 use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
@@ -204,8 +203,8 @@ class ServiceProvider extends BaseServiceProvider
      */
     protected function bindInboundRequest()
     {
-        $this->app->singleton(RequestInterface::class, IlluminateRequest::class);
-        $this->app->alias(RequestInterface::class, 'json-api.request');
+        $this->app->singleton(JsonApiRequest::class);
+        $this->app->alias(JsonApiRequest::class, 'json-api.request');
 
         $this->app->bind(StoreInterface::class, function () {
             return json_api()->getStore();

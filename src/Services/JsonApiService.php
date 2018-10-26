@@ -21,10 +21,10 @@ namespace CloudCreativity\LaravelJsonApi\Services;
 use Closure;
 use CloudCreativity\LaravelJsonApi\Api\Api;
 use CloudCreativity\LaravelJsonApi\Api\Repository;
-use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\Responses\ErrorResponseInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Utils\ErrorReporterInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
+use CloudCreativity\LaravelJsonApi\Http\Requests\JsonApiRequest;
 use CloudCreativity\LaravelJsonApi\Routing\ResourceRegistrar;
 use Exception;
 use Illuminate\Contracts\Container\Container;
@@ -96,7 +96,7 @@ class JsonApiService
     /**
      * Get the JSON API request, if there is an inbound API handling the request.
      *
-     * @return RequestInterface|null
+     * @return JsonApiRequest|null
      */
     public function request()
     {
@@ -110,7 +110,7 @@ class JsonApiService
     /**
      * Get the inbound JSON API request.
      *
-     * @return RequestInterface
+     * @return JsonApiRequest
      */
     public function requestOrFail()
     {
@@ -219,7 +219,7 @@ class JsonApiService
     /**
      * Get the current JSON API request, if one has been bound into the container.
      *
-     * @return RequestInterface
+     * @return JsonApiRequest
      * @deprecated 1.0.0 use `request()`
      */
     public function getRequest()

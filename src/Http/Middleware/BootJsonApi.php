@@ -21,7 +21,6 @@ namespace CloudCreativity\LaravelJsonApi\Http\Middleware;
 use Closure;
 use CloudCreativity\LaravelJsonApi\Api\Api;
 use CloudCreativity\LaravelJsonApi\Api\Repository;
-use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestInterface;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Http\Request;
@@ -114,11 +113,9 @@ class BootJsonApi
     {
         /** Override the current page resolution */
         AbstractPaginator::currentPageResolver(function ($pageName) {
-            /** @var RequestInterface $request */
-            $request = app(RequestInterface::class);
-            $pagination = (array) $request->getParameters()->getPaginationParameters();
+            $pagination = json_api_request()->getParameters()->getPaginationParameters() ?: [];
 
-            return isset($pagination[$pageName]) ? $pagination[$pageName] : null;
+            return $pagination[$pageName] ?? null;
         });
     }
 
