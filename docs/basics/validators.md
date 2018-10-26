@@ -263,7 +263,8 @@ the client, your validator will be provided with the following array of data:
 > We use your resource schema's `getAttributes` method to obtain the existing attribute values.
 
 There is no reliable way for us to work out the existing values of any relationships that were missing in
-the request document. If you need to add any existing values, you can do this as follows:
+the request document. If you need to add any existing relationship values, you can do this by returning
+the relationships in their JSON API form. For example:
 
 ```php
 class Validators extends AbstractValidators
@@ -274,13 +275,23 @@ class Validators extends AbstractValidators
      * @param \App\Post $record
      * @return \Illuminate\Support\Collection
      */
-    protected function existingValues($record): Collection
+    protected function existingRelationships($record): Collection
     {
-        return parent::existingValues($record)
-            ->put('author', ['type' => 'users', 'id' => $record->user_id]);
+        return [
+            'author' => [
+                'data' => [
+                    'type' => 'users',
+                    'id' => (string) $record->user_id,
+                ],            
+            ],
+        ];
     }
 }
 ```
+
+If you need to disable the merging of the existing values, set the `$validateExisting` property
+of your validators class to `false`. If you need to programmatically work out whether to merge the existing
+values, overload the `mustValidateExisting()` method.
 
 ### Defining Rules 
 
