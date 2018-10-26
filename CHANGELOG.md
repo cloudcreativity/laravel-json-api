@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file. This projec
 
 ## Unreleased
 
+### Changed
+- Adapters now receive the JSON API document (HTTP content) as an array.
+
+### Fixed
+- [#201](https://github.com/cloudcreativity/laravel-json-api/issues/201)
+Adapters now receive the array that has been transformed by Laravel's middleware, e.g. trim strings.
+
 ### Removed
 - The deprecated `Contracts\Store\AdapterInterface` was removed. Use 
 `Contracts\Adapter\ResourceAdapterInterface` instead.

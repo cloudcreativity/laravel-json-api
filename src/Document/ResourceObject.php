@@ -20,9 +20,11 @@ namespace CloudCreativity\LaravelJsonApi\Document;
 use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectInterface;
 use CloudCreativity\LaravelJsonApi\Object\ResourceObject as LegacyResourceObject;
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 
-class ResourceObject implements Arrayable, \IteratorAggregate, \JsonSerializable
+class ResourceObject implements Arrayable, \IteratorAggregate, \JsonSerializable, \ArrayAccess
 {
 
     /**
@@ -125,6 +127,73 @@ class ResourceObject implements Arrayable, \IteratorAggregate, \JsonSerializable
     {
         $this->fieldNames = clone $this->fieldNames;
         $this->fieldValues = clone $this->fieldValues;
+    }
+
+    /**
+     * @param string $field
+     * @return mixed
+     */
+    public function __get($field)
+    {
+        return $this->offsetGet($field);
+    }
+
+    /**
+     * @param $field
+     * @param $value
+     */
+    public function __set($field, $value)
+    {
+        throw new \LogicException('Resource object is immutable.');
+    }
+
+    /**
+     * @param $field
+     * @return bool
+     */
+    public function __isset($field)
+    {
+        return $this->offsetExists($field);
+    }
+
+    /**
+     * @param $field
+     */
+    public function __unset($field)
+    {
+        throw new \LogicException('Resource object is immutable.');
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function offsetExists($offset)
+    {
+        return $this->fieldValues->offsetExists($offset);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function offsetGet($offset)
+    {
+        return $this->fieldValues->offsetGet($offset);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function offsetSet($offset, $value)
+    {
+        throw new \LogicException('Resource object is immutable.');
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function offsetUnset($offset)
+    {
+        throw new \LogicException('Resource object is immutable.');
     }
 
     /**
@@ -372,7 +441,7 @@ class ResourceObject implements Arrayable, \IteratorAggregate, \JsonSerializable
      */
     public function get(string $field, $default = null)
     {
-        return $this->fieldValues->get($field, $default);
+        return Arr::get($this->all(), $field, $default);
     }
 
     /**
