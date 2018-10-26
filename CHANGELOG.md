@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. This projec
 
 ## Unreleased
 
+### Added
+- [#247](https://github.com/cloudcreativity/laravel-json-api/issues/247) 
+New date time rule object to validate a JSON date string is a valid ISO 8601 date and time format.
+
 ### Changed
 - [#248](https://github.com/cloudcreativity/laravel-json-api/pull/248)
 Adapters now receive the JSON API document (HTTP content) as an array.

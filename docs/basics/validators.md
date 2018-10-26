@@ -539,3 +539,30 @@ class Validators extends AbstractValidators
 ```
 
 Alternatively you can overload the `queryAttributes` method.
+
+## Validating Dates
+
+JSON API 
+[recommends using the ISO 8601 format for date and time strings in JSON](https://jsonapi.org/recommendations/#date-and-time-fields).
+This is not possible to validate using Laravel's `date_format` validation rule, because W3C state that a number of
+date and time formats are valid. For example, all of the following are valid:
+
+- `2018-01-01T12:00Z`
+- `2018-01-01T12:00:00Z`
+- `2018-01-01T12:00:00.123Z`
+- `2018-01-01T12:00:00.123456Z`
+- `2018-01-01T12:00+01:00`
+- `2018-01-01T12:00:00+01:00`
+- `2018-01-01T12:00:00.123+01:00`
+- `2018-01-01T12:00:00.123456+01:00`
+
+To accept any of the valid formats for a date field, this package provides a rule object: `DateTimeIso8601`. 
+This can be used as follows:
+
+```php
+use CloudCreativity\LaravelJsonApi\Rules\DateTimeIso8601;
+
+return [
+    'published-at' => ['nullable', new DateTimeIso8601()]
+];
+```

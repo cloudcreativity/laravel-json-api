@@ -17,6 +17,7 @@
 
 namespace DummyApp\JsonApi\Posts;
 
+use CloudCreativity\LaravelJsonApi\Rules\DateTimeIso8601;
 use CloudCreativity\LaravelJsonApi\Validation\AbstractValidators;
 use DummyApp\Post;
 
@@ -87,6 +88,10 @@ class Validators extends AbstractValidators
             'title' => "required|string|between:1,255",
             'content' => "required|string|min:1",
             'slug' => "required|alpha_dash|$slugUnique",
+            'published' => [
+                'nullable',
+                new DateTimeIso8601()
+            ],
             'author.type' => 'in:users',
             'tags.*.type' => 'in:tags',
         ];

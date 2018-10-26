@@ -363,6 +363,30 @@ class ResourceTest extends TestCase
         ]);
     }
 
+    public function testInvalidDateTime()
+    {
+        $model = $this->createPost();
+
+        $data = [
+            'type' => 'posts',
+            'id' => (string) $model->getRouteKey(),
+            'attributes' => [
+                'published' => '2018-08-08',
+            ],
+        ];
+
+        $this->doUpdate($data)->assertStatus(422)->assertJson([
+            'errors' => [
+                [
+                    'detail' => 'The published is not a valid ISO 8601 date and time.',
+                    'source' => [
+                        'pointer' => '/data/attributes/published',
+                    ],
+                ]
+            ],
+        ]);
+    }
+
     /**
      * Test the delete resource route.
      */

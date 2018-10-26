@@ -57,5 +57,7 @@ return [
         'plural' => 'Page parameters :values are not allowed.',
     ],
 
+    'date_time_iso_8601' => 'The :attribute is not a valid ISO 8601 date and time.',
+
     'disallowed_parameter' => 'Parameter :name is not allowed.',
 ];
