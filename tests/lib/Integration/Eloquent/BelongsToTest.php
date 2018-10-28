@@ -209,7 +209,7 @@ class BelongsToTest extends TestCase
 
         $expected = [
             'type' => 'users',
-            'id' => $user->getKey(),
+            'id' => (string) $user->getKey(),
             'attributes' => [
                 'name' => $user->name,
             ],
@@ -235,7 +235,7 @@ class BelongsToTest extends TestCase
         $post = factory(Post::class)->create();
 
         $this->doReadRelationship($post, 'author')
-            ->assertReadHasOneIdentifier('users', $post->author_id);
+            ->assertReadHasOneIdentifier('users', (string) $post->author_id);
     }
 
     public function testReadEmptyRelationship()

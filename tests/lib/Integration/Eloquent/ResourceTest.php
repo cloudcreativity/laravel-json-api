@@ -45,11 +45,8 @@ class ResourceTest extends TestCase
             'title' => 'Title B',
         ]);
 
-        $response = $this->doSearch(['sort' => '-title']);
-        $response->assertSearchResponse()->assertContainsExact([
-            ['type' => 'posts', 'id' => $b->getRouteKey()],
-            ['type' => 'posts', 'id' => $a->getRouteKey()],
-        ]);
+        $this->doSearch(['sort' => '-title'])
+            ->assertFetchedManyInOrder([$b, $a]);
     }
 
     public function testFilteredSearch()
@@ -67,15 +64,16 @@ class ResourceTest extends TestCase
         ]);
 
         $this->doSearch(['filter' => ['title' => 'My']])
-            ->assertSearchResponse()->assertContainsOnly(['posts' => [$a->getRouteKey(), $b->getRouteKey()]]);
+            ->assertFetchedManyInOrder([$a, $b]);
     }
 
     public function testInvalidFilter()
     {
-        $this->doSearch(['filter' => ['title' => '']])
-            ->assertStatus(400)
-            ->assertErrors()
-            ->assertParameters('filter.title');
+        $this->doSearch(['filter' => ['title' => '']])->assertError(400, [
+            'detail' => 'The filter.title field must have a value.',
+            'status' => '400',
+            'source' => ['parameter' => 'filter.title'],
+        ]);
     }
 
     public function testSearchOne()
@@ -118,9 +116,7 @@ class ResourceTest extends TestCase
         // this model should not be in the search results
         $this->createPost();
 
-        $this
-            ->doSearchById($models)
-            ->assertSearchByIdResponse($models);
+        $this->doSearchById($models)->assertFetchedMany($models);
     }
 
     /**
@@ -169,7 +165,7 @@ class ResourceTest extends TestCase
         $model = $this->createPost();
         $model->tags()->create(['name' => 'Important']);
 
-        $this->doRead($model)->assertReadResponse($this->serialize($model));
+        $this->doRead($model)->assertFetchedOne($this->serialize($model));
     }
 
     /**
@@ -195,12 +191,10 @@ class ResourceTest extends TestCase
 
         $expected['relationships']['comments']['data'] = [];
 
-        $response = $this->doRead($model, ['include' => 'author,tags,comments'])->assertRead($expected);
-
-        $response->assertDocument()->assertIncluded()->assertContainsOnly([
-            'users' => [$model->author_id],
-            'tags' => [$tag->uuid],
-        ]);
+        $this->doRead($model, ['include' => 'author,tags,comments'])
+            ->assertFetchedOne($expected)
+            ->assertIsIncluded('users', $model->author)
+            ->assertIsIncluded('tags', $tag);
     }
 
     /**
@@ -210,10 +204,11 @@ class ResourceTest extends TestCase
     {
         $post = $this->createPost();
 
-        $this->doRead($post, ['include' => 'author,foo'])
-            ->assertStatus(400)
-            ->assertErrors()
-            ->assertParameters(['include']);
+        $this->doRead($post, ['include' => 'author,foo'])->assertError(400, [
+            'status' => '400',
+            'detail' => 'Include path foo is not allowed.',
+            'source' => ['parameter' => 'include'],
+        ]);
     }
 
     /**
@@ -246,7 +241,7 @@ class ResourceTest extends TestCase
         $expected = $data;
         unset($expected['attributes']['foo']);
 
-        $this->doUpdate($data)->assertUpdateResponse($expected);
+        $this->doUpdate($data)->assertUpdated($expected);
 
         $this->assertDatabaseHas('posts', [
             'id' => $model->getKey(),
@@ -394,7 +389,7 @@ class ResourceTest extends TestCase
     {
         $model = $this->createPost();
 
-        $this->doDelete($model)->assertDeleteResponse();
+        $this->doDelete($model)->assertDeleted();
         $this->assertModelDeleted($model);
     }
 

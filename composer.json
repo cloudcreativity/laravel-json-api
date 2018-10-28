@@ -38,7 +38,7 @@
     },
     "require-dev": {
         "ext-sqlite3": "*",
-        "cloudcreativity/json-api-testing": "^0.4",
+        "cloudcreativity/json-api-testing": "dev-feature/constraints",
         "guzzlehttp/guzzle": "^6.3",
         "mockery/mockery": "^1.1",
         "orchestra/testbench": "3.5.*|3.6.*|3.7.*",

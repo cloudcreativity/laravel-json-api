@@ -50,20 +50,14 @@ class StandardPagingTest extends TestCase
     public function testDefaultPagination()
     {
         $posts = factory(Post::class, 4)->create();
-        $response = $this->doSearch();
-        $response->assertSearchResponse()->assertContainsOnly(['posts' => $posts->modelKeys()]);
 
-        $response->assertJson([
-            'meta' => [
-                'page' => [
-                    'current-page' => 1,
-                    'per-page' => 10,
-                    'from' => 1,
-                    'to' => 4,
-                    'total' => 4,
-                    'last-page' => 1,
-                ],
-            ],
+        $this->doSearch()->assertFetchedMany($posts)->assertPageMeta([
+            'current-page' => 1,
+            'per-page' => 10,
+            'from' => 1,
+            'to' => 4,
+            'total' => 4,
+            'last-page' => 1,
         ]);
     }
 
@@ -72,96 +66,89 @@ class StandardPagingTest extends TestCase
      */
     public function testNoPages()
     {
-        $response = $this->doSearch(['page' => ['number' => 1, 'size' => 3]]);
-        $response->assertSearchedNone();
+        $meta = [
+            'current-page' => 1,
+            'per-page' => 3,
+            'from' => null,
+            'to' => null,
+            'total' => 0,
+            'last-page' => 1,
+        ];
 
-        $response->assertJson([
-            'meta' => [
-                'page' => [
-                    'current-page' => 1,
-                    'per-page' => 3,
-                    'from' => null,
-                    'to' => null,
-                    'total' => 0,
-                    'last-page' => 1,
-                ],
-            ],
-            'links' => [
-                'first' => $first = $this->buildLink(
-                    '/api/v1/posts',
-                    ['page' => ['number' => 1, 'size' => 3]]
-                ),
-                'last' => $first,
-            ],
-        ]);
+        $links = [
+            'first' => $first = $this->buildLink(
+                '/api/v1/posts',
+                ['page' => ['number' => 1, 'size' => 3]]
+            ),
+            'last' => $first,
+        ];
+
+        $this->doSearch(['page' => ['number' => 1, 'size' => 3]])
+            ->assertFetchedEmptyPage($links, $meta);
     }
 
     public function testPage1()
     {
         $posts = factory(Post::class, 4)->create();
-        $response = $this->doSearch(['page' => ['number' => 1, 'size' => 3]]);
-        $response->assertSearchResponse()->assertContainsOnly(['posts' => $posts->take(3)->modelKeys()]);
 
-        $response->assertJson([
-            'meta' => [
-                'page' => [
-                    'current-page' => 1,
-                    'per-page' => 3,
-                    'from' => 1,
-                    'to' => 3,
-                    'total' => 4,
-                    'last-page' => 2,
-                ],
-            ],
-            'links' => [
-                'first' => $this->buildLink(
-                    '/api/v1/posts',
-                    ['page' => ['number' => 1, 'size' => 3]]
-                ),
-                'next' => $this->buildLink(
-                    '/api/v1/posts',
-                    ['page' => ['number' => 2, 'size' => 3]]
-                ),
-                'last' => $this->buildLink(
-                    '/api/v1/posts',
-                    ['page' => ['number' => 2, 'size' => 3]]
-                ),
-            ],
-        ]);
+        $meta = [
+            'current-page' => 1,
+            'per-page' => 3,
+            'from' => 1,
+            'to' => 3,
+            'total' => 4,
+            'last-page' => 2,
+        ];
+
+        $links = [
+            'first' => $this->buildLink(
+                '/api/v1/posts',
+                ['page' => ['number' => 1, 'size' => 3]]
+            ),
+            'next' => $this->buildLink(
+                '/api/v1/posts',
+                ['page' => ['number' => 2, 'size' => 3]]
+            ),
+            'last' => $this->buildLink(
+                '/api/v1/posts',
+                ['page' => ['number' => 2, 'size' => 3]]
+            ),
+        ];
+
+        $this->doSearch(['page' => ['number' => 1, 'size' => 3]])
+            ->assertFetchedPage($posts->take(3), $links, $meta);
     }
 
     public function testPage2()
     {
         $posts = factory(Post::class, 4)->create();
-        $response = $this->doSearch(['page' => ['number' => 2, 'size' => 3]]);
-        $response->assertSearchResponse()->assertContainsOnly(['posts' => $posts->last()->getKey()]);
 
-        $response->assertJson([
-            'meta' => [
-                'page' => [
-                    'current-page' => 2,
-                    'per-page' => 3,
-                    'from' => 4,
-                    'to' => 4,
-                    'total' => 4,
-                    'last-page' => 2,
-                ],
-            ],
-            'links' => [
-                'first' => $this->buildLink(
-                    '/api/v1/posts',
-                    ['page' => ['number' => 1, 'size' => 3]]
-                ),
-                'prev' => $this->buildLink(
-                    '/api/v1/posts',
-                    ['page' => ['number' => 1, 'size' => 3]]
-                ),
-                'last' => $this->buildLink(
-                    '/api/v1/posts',
-                    ['page' => ['number' => 2, 'size' => 3]]
-                ),
-            ],
-        ]);
+        $meta = [
+            'current-page' => 2,
+            'per-page' => 3,
+            'from' => 4,
+            'to' => 4,
+            'total' => 4,
+            'last-page' => 2,
+        ];
+
+        $links = [
+            'first' => $this->buildLink(
+                '/api/v1/posts',
+                ['page' => ['number' => 1, 'size' => 3]]
+            ),
+            'prev' => $this->buildLink(
+                '/api/v1/posts',
+                ['page' => ['number' => 1, 'size' => 3]]
+            ),
+            'last' => $this->buildLink(
+                '/api/v1/posts',
+                ['page' => ['number' => 2, 'size' => 3]]
+            ),
+        ];
+
+        $this->doSearch(['page' => ['number' => 2, 'size' => 3]])
+            ->assertFetchedPage($posts->last(), $links, $meta);
     }
 
     public function testCustomPageKeys()
@@ -169,79 +156,69 @@ class StandardPagingTest extends TestCase
         factory(Post::class, 4)->create();
         $this->strategy->withPageKey('page')->withPerPageKey('limit');
 
-        $response = $this->doSearch(['page' => ['page' => 1, 'limit' => 3]]);
-        $response->assertSearchResponse();
+        $links = [
+            'first' => $this->buildLink(
+                '/api/v1/posts',
+                ['page' => ['page' => 1, 'limit' => 3]]
+            ),
+            'next' => $this->buildLink(
+                '/api/v1/posts',
+                ['page' => ['page' => 2, 'limit' => 3]]
+            ),
+            'last' => $this->buildLink(
+                '/api/v1/posts',
+                ['page' => ['page' => 2, 'limit' => 3]]
+            ),
+        ];
 
-        $response->assertJson([
-            'links' => [
-                'first' => $this->buildLink(
-                    '/api/v1/posts',
-                    ['page' => ['page' => 1, 'limit' => 3]]
-                ),
-                'next' => $this->buildLink(
-                    '/api/v1/posts',
-                    ['page' => ['page' => 2, 'limit' => 3]]
-                ),
-                'last' => $this->buildLink(
-                    '/api/v1/posts',
-                    ['page' => ['page' => 2, 'limit' => 3]]
-                ),
-            ],
-        ]);
+        $this->doSearch(['page' => ['page' => 1, 'limit' => 3]])
+            ->assertLinks($links);
     }
 
     public function testSimplePagination()
     {
         factory(Post::class, 4)->create();
         $this->strategy->withSimplePagination();
-        $response = $this->doSearch(['page' => ['number' => 1, 'size' => 3]]);
-        $response->assertSearchResponse();
 
-        $this->assertFalse(array_has($json = $response->json(), 'meta.page.total'));
-        $this->assertFalse(array_has($json, 'meta.page.last-page'));
-        $this->assertFalse(array_has($json, 'links.last'));
+        $meta = [
+            'current-page' => 1,
+            'per-page' => 3,
+            'from' => 1,
+            'to' => 3,
+        ];
 
-        $response->assertJson([
-            'meta' => [
-                'page' => [
-                    'current-page' => 1,
-                    'per-page' => 3,
-                    'from' => 1,
-                    'to' => 3,
-                ],
-            ],
-            'links' => [
-                'first' => $this->buildLink(
-                    '/api/v1/posts',
-                    ['page' => ['number' => 1, 'size' => 3]]
-                ),
-                'next' => $this->buildLink(
-                    '/api/v1/posts',
-                    ['page' => ['number' => 2, 'size' => 3]]
-                ),
-            ],
-        ]);
+        $links = [
+            'first' => $this->buildLink(
+                '/api/v1/posts',
+                ['page' => ['number' => 1, 'size' => 3]]
+            ),
+            'next' => $this->buildLink(
+                '/api/v1/posts',
+                ['page' => ['number' => 2, 'size' => 3]]
+            ),
+        ];
+
+        $this->doSearch(['page' => ['number' => 1, 'size' => 3]])
+            ->assertExactMeta(['page' => $meta])
+            ->assertExactLinks($links);
     }
 
     public function testCustomMetaKeys()
     {
-        factory(Post::class, 4)->create();
+        $posts = factory(Post::class, 4)->create();
         $this->strategy->withMetaKey('paginator')->withUnderscoredMetaKeys();
-        $response = $this->doSearch(['page' => ['number' => 1, 'size' => 3]]);
-        $response->assertSearchResponse();
 
-        $response->assertJson([
-            'meta' => [
-                'paginator' => [
-                    'current_page' => 1,
-                    'per_page' => 3,
-                    'from' => 1,
-                    'to' => 3,
-                    'total' => 4,
-                    'last_page' => 2,
-                ],
-            ],
-        ]);
+        $meta = [
+            'current_page' => 1,
+            'per_page' => 3,
+            'from' => 1,
+            'to' => 3,
+            'total' => 4,
+            'last_page' => 2,
+        ];
+
+        $this->doSearch(['page' => ['number' => 1, 'size' => 3]])
+            ->assertFetchedPage($posts->take(3), null, $meta, 'paginator');
     }
 
     public function testMetaNotNested()
@@ -249,18 +226,13 @@ class StandardPagingTest extends TestCase
         factory(Post::class, 4)->create();
         $this->strategy->withMetaKey(null);
 
-        $response = $this->doSearch(['page' => ['number' => 1, 'size' => 3]]);
-        $response->assertSearchResponse();
-
-        $response->assertJson([
-            'meta' => [
-                'current-page' => 1,
-                'per-page' => 3,
-                'from' => 1,
-                'to' => 3,
-                'total' => 4,
-                'last-page' => 2,
-            ],
+        $this->doSearch(['page' => ['number' => 1, 'size' => 3]])->assertExactMeta([
+            'current-page' => 1,
+            'per-page' => 3,
+            'from' => 1,
+            'to' => 3,
+            'total' => 4,
+            'last-page' => 2,
         ]);
     }
 
@@ -268,10 +240,9 @@ class StandardPagingTest extends TestCase
     {
         factory(Post::class, 4)->create();
 
-        $this->doSearch(['page' => ['number' => 1, 'size' => 999]])
-            ->assertStatus(400)
-            ->assertErrors()
-            ->assertParameters('page.size');
+        $this->doSearch(['page' => ['number' => 1, 'size' => 999]])->assertError(400, [
+            'source' => ['parameter' => 'page.size']
+        ]);
     }
 
 }

@@ -46,7 +46,7 @@ class SubDomainTest extends TestCase
             'type' => 'posts',
             'id' => (string) $post->getKey(),
             'links' => [
-                'self' => "http://foo.example.com/api/posts/{$post->getKey()}",
+                'self' => "http://foo.example.com/api/v1/posts/{$post->getKey()}",
             ],
         ]);
     }

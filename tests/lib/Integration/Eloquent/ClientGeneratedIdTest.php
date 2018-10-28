@@ -46,15 +46,17 @@ class ClientGeneratedIdTest extends TestCase
             'uploaded-by' => [
                 'data' => [
                     'type' => 'users',
-                    'id' => $video->user_id,
+                    'id' => (string) $video->user_id,
                 ],
             ],
         ];
 
         $this->actingAs($video->user);
 
-        $this->doCreate($data, ['include' => 'uploaded-by'])
-            ->assertCreated($expected);
+        $this->doCreate($data, ['include' => 'uploaded-by'])->assertCreatedWithClientId(
+            'http://localhost/api/v1/videos',
+            $expected
+        );
 
         $this->assertDatabaseHas('videos', ['uuid' => $video->getKey()]);
     }

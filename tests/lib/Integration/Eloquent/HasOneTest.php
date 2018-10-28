@@ -211,7 +211,7 @@ class HasOneTest extends TestCase
 
         $data = [
             'type' => 'phones',
-            'id' => $phone->getKey(),
+            'id' => (string) $phone->getKey(),
             'attributes' => [
                 'number' => $phone->number,
             ],
@@ -219,7 +219,7 @@ class HasOneTest extends TestCase
                 'user' => [
                     'data' => [
                         'type' => 'users',
-                        'id' => $user->getKey(),
+                        'id' => (string) $user->getKey(),
                     ],
                 ],
             ],

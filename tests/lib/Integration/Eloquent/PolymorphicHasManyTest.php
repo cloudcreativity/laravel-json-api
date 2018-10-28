@@ -209,9 +209,10 @@ class PolymorphicHasManyTest extends TestCase
         $tag->posts()->sync($post = factory(Post::class)->create());
         $tag->videos()->sync($videos = factory(Video::class, 2)->create());
 
-        $this->doReadRelated($tag->uuid, 'taggables')->assertReadPolymorphHasMany([
-            'posts' => $post,
-            'videos' => $videos,
+        $this->doReadRelated($tag->uuid, 'taggables')->assertFetchedMany([
+            ['type' => 'posts', 'id' => $post],
+            ['type' => 'videos', 'id' => $videos[0]],
+            ['type' => 'videos', 'id' => $videos[1]],
         ]);
     }
 
@@ -219,8 +220,7 @@ class PolymorphicHasManyTest extends TestCase
     {
         $tag = factory(Tag::class)->create();
 
-        $this->doReadRelated($tag->uuid, 'taggables')
-            ->assertReadPolymorphHasMany([]);
+        $this->doReadRelated($tag->uuid, 'taggables')->assertFetchedNone();
     }
 
     public function testReadRelationship()
@@ -230,9 +230,10 @@ class PolymorphicHasManyTest extends TestCase
         $tag->posts()->sync($post = factory(Post::class)->create());
         $tag->videos()->sync($videos = factory(Video::class, 2)->create());
 
-        $this->doReadRelated($tag->uuid, 'taggables')->assertReadPolymorphHasManyIdentifiers([
-            'posts' => $post,
-            'videos' => $videos,
+        $this->doReadRelationship($tag->uuid, 'taggables')->assertFetchedToMany([
+            ['type' => 'posts', 'id' => $post],
+            ['type' => 'videos', 'id' => $videos[0]],
+            ['type' => 'videos', 'id' => $videos[1]],
         ]);
     }
 
@@ -240,8 +241,7 @@ class PolymorphicHasManyTest extends TestCase
     {
         $tag = factory(Tag::class)->create();
 
-        $this->doReadRelated($tag->uuid, 'taggables')
-            ->assertReadPolymorphHasManyIdentifiers([]);
+        $this->doReadRelationship($tag->uuid, 'taggables')->assertFetchedNone();
     }
 
     public function testReplaceEmptyRelationshipWithRelatedResources()
