@@ -21,6 +21,7 @@ Adapters now receive the JSON API document (HTTP content) as an array.
 - The `getJsonApi()` test helper method now only has two arguments: URI and headers. Previously it
 accepted data as the second argument.
 - Improved test assertions and tidied up the test response class.
+- Improve the store aware trait so that it returns a store even if one has not been injected.
 
 ### Fixed
 - [#201](https://github.com/cloudcreativity/laravel-json-api/issues/201)
