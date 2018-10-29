@@ -31,7 +31,8 @@ Adapters now receive the array that has been transformed by Laravel's middleware
 package is no longer framework-agnostic).
 - Removed the `Contracts\Repository\SchemasRepositoryInterface` and `Repository\SchemasRepository` class
 because these were not in use.
-- The following previously deprecated methods on the `TestResponse` class were removed:
+- The previously deprecated `InteractsWithModels` testing trait was removed.
+- The following (majority previously deprecated methods) on the `TestResponse` class were removed:
   - `assertDocument`
   - `assertResourceResponse`
   - `assertResourcesResponse`
@@ -48,6 +49,8 @@ because these were not in use.
   - `assertDataResource`
   - `assertDataResourceIdentifier`
   - `assertSearchByIdResponse`
+  - `assertSearchedPolymorphIds`
+  - `assertReadPolymorphHasMany`
 
 ### Deprecated
 - All interfaces in the `Contracts\Object` namespace will be removed for `2.0`.

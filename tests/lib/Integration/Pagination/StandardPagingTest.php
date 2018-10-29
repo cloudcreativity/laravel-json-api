@@ -51,7 +51,7 @@ class StandardPagingTest extends TestCase
     {
         $posts = factory(Post::class, 4)->create();
 
-        $this->doSearch()->assertFetchedMany($posts)->assertPageMeta([
+        $this->doSearch()->assertFetchedPage($posts, null, [
             'current-page' => 1,
             'per-page' => 10,
             'from' => 1,

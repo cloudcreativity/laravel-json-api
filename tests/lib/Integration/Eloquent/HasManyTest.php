@@ -17,6 +17,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Eloquent;
 
+use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
 use DummyApp\Country;
 use DummyApp\Phone;
 use DummyApp\User;
@@ -334,8 +335,8 @@ class HasManyTest extends TestCase
         $country->users()->saveMany($users);
 
         $this->doReadRelated($country, 'users', ['page' => ['number' => 1, 'size' => 2]])
-            ->assertReadHasMany('users', $users->take(2))
-            ->assertPageMeta(['current-page' => 1, 'per-page' => 2]);
+            ->willSeeType('users')
+            ->assertFetchedPage($users->take(2), null, ['current-page' => 1, 'per-page' => 2]);
     }
 
     public function testReadRelatedWithInvalidPagination()

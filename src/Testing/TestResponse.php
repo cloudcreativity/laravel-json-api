@@ -145,22 +145,6 @@ class TestResponse extends BaseTestResponse
     }
 
     /**
-     * @param array $expected
-     * @param string|null $key
-     *      the key in the meta for the page hash, if nested.
-     * @param bool $strict
-     * @return TestResponse
-     * @todo remove before merging.
-     */
-    public function assertPageMeta(array $expected, string $key = 'page', bool $strict = true): self
-    {
-        $pointer = $key ? "/meta/{$key}" : "/meta";
-        $this->getDocument()->assertHash($expected, $pointer, $strict);
-
-        return $this;
-    }
-
-    /**
      * Assert that the response has the given status code.
      *
      * @param int $status

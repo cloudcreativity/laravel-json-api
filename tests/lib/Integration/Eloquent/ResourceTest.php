@@ -18,6 +18,7 @@
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Eloquent;
 
 use Carbon\Carbon;
+use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
 use DummyApp\Comment;
 use DummyApp\Events\ResourceEvent;
 use DummyApp\Http\Controllers\PostsController;
@@ -390,7 +391,7 @@ class ResourceTest extends TestCase
         $model = $this->createPost();
 
         $this->doDelete($model)->assertDeleted();
-        $this->assertModelDeleted($model);
+        $this->assertDatabaseMissing('posts', [$model->getKeyName() => $model->getKey()]);
     }
 
     /**

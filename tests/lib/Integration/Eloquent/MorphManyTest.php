@@ -18,6 +18,7 @@
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Eloquent;
 
 use Carbon\Carbon;
+use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
 use DummyApp\Comment;
 use DummyApp\Post;
 use DummyApp\User;
@@ -345,8 +346,8 @@ class MorphManyTest extends TestCase
         ])->sortByDesc('id')->values();
 
         $this->doReadRelated($post, 'comments', ['page' => ['limit' => 2]])
-            ->assertReadHasMany('comments', $comments->take(2))
-            ->assertPageMeta([
+            ->willSeeType('comments')
+            ->assertFetchedPage($comments->take(2), null, [
                 'per-page' => 2,
                 'from' => (string) $comments->first()->getRouteKey(),
                 'to' => (string) $comments->get(1)->getRouteKey(),
