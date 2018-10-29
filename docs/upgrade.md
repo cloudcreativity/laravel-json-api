@@ -83,6 +83,9 @@ There were two methods that we had to remove from the test response that were no
   - `assertSearchedPolymorphIds`: use `assertFetchedMany`
   - `assertReadPolymorphHasMany`: use `assertFetchedToMany`
 
+If you are using the `getJsonApi()` test helper method, it now only has two arguments: URI and headers.
+Previously it accepted data as the second argument.
+
 All other methods that we wanted to remove, but were not previously marked as deprecated, have been left.
 We have marked them as deprecated and will remove them in `2.0.0`.
 

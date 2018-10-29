@@ -18,6 +18,8 @@ update request.
 - [#248](https://github.com/cloudcreativity/laravel-json-api/pull/248)
 Adapters now receive the JSON API document (HTTP content) as an array.
 - Renamed `Http\Requests\IlluminateRequest` to `Http\Requests\JsonApiRequest`.
+- The `getJsonApi()` test helper method now only has two arguments: URI and headers. Previously it
+accepted data as the second argument.
 
 ### Fixed
 - [#201](https://github.com/cloudcreativity/laravel-json-api/issues/201)

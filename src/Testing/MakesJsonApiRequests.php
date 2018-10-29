@@ -66,13 +66,6 @@ trait MakesJsonApiRequests
     protected $contentMediaType = MediaTypeInterface::JSON_API_MEDIA_TYPE;
 
     /**
-     * The expected response media type.
-     *
-     * @var string
-     */
-    protected $responseMediaType = MediaTypeInterface::JSON_API_MEDIA_TYPE;
-
-    /**
      * Visit the given URI with a JSON API request.
      *
      * @param $method
@@ -96,13 +89,12 @@ trait MakesJsonApiRequests
 
     /**
      * @param $uri
-     * @param array|Arrayable $data
      * @param array $headers
      * @return TestResponse
      */
-    protected function getJsonApi($uri, $data = [], array $headers = [])
+    protected function getJsonApi($uri, array $headers = [])
     {
-        return $this->jsonApi('GET', $uri, $data, $headers);
+        return $this->jsonApi('GET', $uri, [], $headers);
     }
 
     /**
@@ -144,7 +136,7 @@ trait MakesJsonApiRequests
      */
     protected function createTestResponse($response)
     {
-        return new TestResponse($response, $this->expectedResourceType(), $this->expectedMediaType());
+        return new TestResponse($response, $this->expectedResourceType());
     }
 
     /**
@@ -677,16 +669,6 @@ trait MakesJsonApiRequests
     protected function expectedResourceType()
     {
         return $this->resourceType ?: null;
-    }
-
-    /**
-     * Get the expected media type for a response that contains body.
-     *
-     * @return string
-     */
-    protected function expectedMediaType()
-    {
-        return $this->responseMediaType;
     }
 
     /**
