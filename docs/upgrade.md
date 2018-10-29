@@ -70,6 +70,35 @@ fillRelated(
 )`
 ```
 
+### Testing
+
+You will need to update the JSON API test dependency to `1.0`:
+
+```bash
+$ composer require --dev cloudcreativity/json-api-testing:^1.0
+```
+
+This new version improves test assertions and feedback that you receive via PHP Unit.
+
+As a result of improving the assertions, some of your tests that previously passed may now fail. The
+prime example of this is the assertions are stricter about the *type* of a value in the response's JSON.
+You may need to tweak existing tests accordingly. If you have an existing test that is now not passing,
+and you are unsure why, please create a Github issue.
+
+If you are using the `getJsonApi()` test helper method, it now only has two arguments: URI and headers.
+Previously it accepted data as the second argument.
+
+As part of these changes we have removed all previously deprecated methods on the test response and the
+`InteractsWithModels` test trait. These were deprecated some time ago so hopefully will not require any
+major refactoring. For a full list of deprecated methods, refer to the package changelog.
+
+There were two methods that we had to remove from the test response that were not previously deprecated:
+  - `assertSearchedPolymorphIds`: use `assertFetchedMany`
+  - `assertReadPolymorphHasMany`: use `assertFetchedToMany`
+
+All other methods that we wanted to remove, but were not previously marked as deprecated, have been left.
+We have marked them as deprecated and will remove them in `2.0.0`.
+
 ## 1.0.0-beta.3 to 1.0.0-beta.5
 
 > You should upgrade directly to `beta.5` as `beta.4` had a

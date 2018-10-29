@@ -17,6 +17,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Eloquent;
 
+use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
 use DummyApp\Phone;
 use DummyApp\User;
 
@@ -211,7 +212,7 @@ class HasOneTest extends TestCase
 
         $data = [
             'type' => 'phones',
-            'id' => $phone->getKey(),
+            'id' => (string) $phone->getKey(),
             'attributes' => [
                 'number' => $phone->number,
             ],
@@ -219,7 +220,7 @@ class HasOneTest extends TestCase
                 'user' => [
                     'data' => [
                         'type' => 'users',
-                        'id' => $user->getKey(),
+                        'id' => (string) $user->getKey(),
                     ],
                 ],
             ],

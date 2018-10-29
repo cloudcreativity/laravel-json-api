@@ -73,7 +73,7 @@ class Cursor
     {
         $this->before = $before ?: null;
         $this->after = $after ?: null;
-        $this->limit = 0 < $limit ? $limit : 1;
+        $this->limit = 0 < $limit ? (int) $limit : 1;
     }
 
     /**

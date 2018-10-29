@@ -68,7 +68,7 @@ class IssueTest extends TestCase
 
         $this->getJsonApi("/api/v1/endUsers/{$user->getRouteKey()}")->assertRead([
             'type' => 'endUsers',
-            'id' => $user->getRouteKey(),
+            'id' => (string) $user->getRouteKey(),
             'attributes' => [
                 'name' => $user->name,
             ],

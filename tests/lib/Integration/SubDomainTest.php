@@ -41,12 +41,13 @@ class SubDomainTest extends TestCase
     public function testRead()
     {
         $post = factory(Post::class)->create();
+        $uri = route('api:v1:posts.read', ['foo', $post]);
 
-        $this->doRead($post)->assertRead([
+        $this->getJsonApi($uri)->assertFetchedOne([
             'type' => 'posts',
-            'id' => (string) $post->getKey(),
+            'id' => (string) $post->getRouteKey(),
             'links' => [
-                'self' => "http://foo.example.com/api/posts/{$post->getKey()}",
+                'self' => "http://foo.example.com/api/v1/posts/{$post->getRouteKey()}",
             ],
         ]);
     }
@@ -54,46 +55,55 @@ class SubDomainTest extends TestCase
     public function testUpdate()
     {
         $post = factory(Post::class)->create();
+        $uri = route('api:v1:posts.update', ['foo', $post]);
 
-        $this->doUpdate([
+        $data = [
             'type' => 'posts',
-            'id' => (string) $post->getKey(),
+            'id' => (string) $post->getRouteKey(),
             'attributes' => [
                 'title' => 'Hello World',
             ],
-        ])->assertStatus(200);
+        ];
+
+        $this->patchJsonApi($uri, compact('data'))->assertStatus(200);
     }
 
     public function testDelete()
     {
         $post = factory(Post::class)->create();
+        $uri = route('api:v1:posts.delete', ['foo', $post]);
 
-        $this->doDelete($post)->assertStatus(204);
+        $this->deleteJsonApi($uri)->assertStatus(204);
     }
 
     public function testReadRelated()
     {
         $post = factory(Post::class)->create();
+        $uri = route('api:v1:posts.relationships.author', ['foo', $post]);
 
-        $this->doReadRelated($post, 'author')->assertStatus(200);
+        $this->getJsonApi($uri)->assertStatus(200);
     }
 
     public function testReadRelationship()
     {
         $post = factory(Post::class)->create();
+        $uri = route('api:v1:posts.relationships.author.read', ['foo', $post]);
 
-        $this->doReadRelationship($post, 'author')->assertStatus(200);
+        $this->getJsonApi($uri)->assertStatus(200);
     }
 
     public function testReplaceRelationship()
     {
         $post = factory(Post::class)->create();
         $user = factory(User::class)->create();
+        $uri = route('api:v1:posts.relationships.author.replace', ['foo', $post]);
 
-        $this->doReplaceRelationship($post, 'author', [
+        $data = [
             'type' => 'users',
-            'id' => (string) $user->getKey()
-        ])->assertStatus(204);
+            'id' => (string) $user->getRouteKey(),
+        ];
+
+        $this->patchJsonApi($uri, compact('data'))->assertStatus(204);
     }
 
     /**
@@ -106,16 +116,5 @@ class SubDomainTest extends TestCase
         ], function () {
             parent::withAppRoutes();
         });
-    }
-
-    /**
-     * @param array $params
-     * @return array
-     */
-    protected function addDefaultRouteParams(array $params)
-    {
-        $params['wildcard'] = 'foo';
-
-        return $params;
     }
 }

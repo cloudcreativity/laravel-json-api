@@ -17,6 +17,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Eloquent;
 
+use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
 use DummyApp\Comment;
 use DummyApp\Post;
 use DummyApp\Video;
@@ -206,7 +207,7 @@ class MorphToTest extends TestCase
 
         $expected = [
             'type' => 'posts',
-            'id' => $post->getKey(),
+            'id' => (string) $post->getKey(),
             'attributes' => [
                 'title' => $post->title,
             ],

@@ -18,6 +18,9 @@ update request.
 - [#248](https://github.com/cloudcreativity/laravel-json-api/pull/248)
 Adapters now receive the JSON API document (HTTP content) as an array.
 - Renamed `Http\Requests\IlluminateRequest` to `Http\Requests\JsonApiRequest`.
+- The `getJsonApi()` test helper method now only has two arguments: URI and headers. Previously it
+accepted data as the second argument.
+- Improved test assertions and tidied up the test response class.
 
 ### Fixed
 - [#201](https://github.com/cloudcreativity/laravel-json-api/issues/201)
@@ -31,6 +34,26 @@ Adapters now receive the array that has been transformed by Laravel's middleware
 package is no longer framework-agnostic).
 - Removed the `Contracts\Repository\SchemasRepositoryInterface` and `Repository\SchemasRepository` class
 because these were not in use.
+- The previously deprecated `InteractsWithModels` testing trait was removed.
+- The following (majority previously deprecated methods) on the `TestResponse` class were removed:
+  - `assertDocument`
+  - `assertResourceResponse`
+  - `assertResourcesResponse`
+  - `assertRelatedResourcesResponse`
+  - `assertSearchResponse`
+  - `assertSearchOneResponse`
+  - `assertCreateResponse`
+  - `assertReadResponse`
+  - `assertUpdateResponse`
+  - `assertDeleteResponse`
+  - `assertRelatedResourceResponse`
+  - `assertHasOneRelationshipResponse`
+  - `assertDataCollection`
+  - `assertDataResource`
+  - `assertDataResourceIdentifier`
+  - `assertSearchByIdResponse`
+  - `assertSearchedPolymorphIds`
+  - `assertReadPolymorphHasMany`
 
 ### Deprecated
 - All interfaces in the `Contracts\Object` namespace will be removed for `2.0`.

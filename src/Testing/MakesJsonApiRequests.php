@@ -19,14 +19,12 @@
 namespace CloudCreativity\LaravelJsonApi\Testing;
 
 use CloudCreativity\LaravelJsonApi\Api\Api;
+use CloudCreativity\LaravelJsonApi\Api\Url;
 use Illuminate\Contracts\Routing\UrlRoutable;
 use Illuminate\Contracts\Support\Arrayable;
-use Illuminate\Support\Collection;
 use InvalidArgumentException;
-use Neomerx\JsonApi\Contracts\Document\DocumentInterface as Keys;
 use Neomerx\JsonApi\Contracts\Document\LinkInterface;
 use Neomerx\JsonApi\Contracts\Http\Headers\MediaTypeInterface;
-use Neomerx\JsonApi\Contracts\Http\Query\QueryParametersParserInterface as Params;
 use RuntimeException;
 
 /**
@@ -66,13 +64,6 @@ trait MakesJsonApiRequests
     protected $contentMediaType = MediaTypeInterface::JSON_API_MEDIA_TYPE;
 
     /**
-     * The expected response media type.
-     *
-     * @var string
-     */
-    protected $responseMediaType = MediaTypeInterface::JSON_API_MEDIA_TYPE;
-
-    /**
      * Visit the given URI with a JSON API request.
      *
      * @param $method
@@ -96,13 +87,12 @@ trait MakesJsonApiRequests
 
     /**
      * @param $uri
-     * @param array|Arrayable $data
      * @param array $headers
      * @return TestResponse
      */
-    protected function getJsonApi($uri, $data = [], array $headers = [])
+    protected function getJsonApi($uri, array $headers = [])
     {
-        return $this->jsonApi('GET', $uri, $data, $headers);
+        return $this->jsonApi('GET', $uri, [], $headers);
     }
 
     /**
@@ -144,7 +134,7 @@ trait MakesJsonApiRequests
      */
     protected function createTestResponse($response)
     {
-        return new TestResponse($response, $this->expectedResourceType(), $this->expectedMediaType());
+        return new TestResponse($response, $this->expectedResourceType());
     }
 
     /**
@@ -154,26 +144,21 @@ trait MakesJsonApiRequests
      */
     protected function doSearch(array $params = [], array $headers = [])
     {
-        $params = $this->addDefaultRouteParams($params);
-        $uri = $this->api()->url()->index($this->resourceType(), $params);
+        $uri = $this->apiUrl()->getResourceTypeUrl($this->resourceType(), $params);
 
-        return $this->getJsonApi($uri, [], $headers);
+        return $this->getJsonApi($uri, $headers);
     }
 
     /**
-     * @param array|Collection|UrlRoutable $ids
-     *      the ids - may contain UrlRoutable objects (includes Models)
+     * @param mixed $ids
      * @param array $params
      * @param array $headers
      * @return TestResponse
      */
     protected function doSearchById($ids, array $params = [], array $headers = [])
     {
-        if (!isset($params[Params::PARAM_FILTER])) {
-            $params[Params::PARAM_FILTER] = [];
-        }
-
-        $params[Params::PARAM_FILTER][Keys::KEYWORD_ID] = $this->normalizeIds($ids);
+        $params['filter'] = $params['filter'] ?? [];
+        $params['filter']['id'] = $this->normalizeIds($ids);
 
         return $this->doSearch($params, $headers);
     }
@@ -204,10 +189,13 @@ trait MakesJsonApiRequests
      */
     protected function doCreate($data, array $params = [], array $headers = [])
     {
-        $params = $this->addDefaultRouteParams($params);
-        $uri = $this->api()->url()->create($this->resourceType(), $params);
+        if ($data instanceof Arrayable) {
+            $data = $data->toArray();
+        }
 
-        return $this->postJsonApi($uri, ['data' => $data], $headers);
+        $uri = $this->apiUrl()->getResourceTypeUrl($this->resourceType(), $params);
+
+        return $this->postJsonApi($uri, compact('data'), $headers);
     }
 
     /**
@@ -236,10 +224,9 @@ trait MakesJsonApiRequests
      */
     protected function doRead($resourceId, array $params = [], array $headers = [])
     {
-        $params = $this->addDefaultRouteParams($params);
-        $uri = $this->api()->url()->read($this->resourceType(), $resourceId, $params);
+        $uri = $this->apiUrl()->getResourceUrl($this->resourceType(), $resourceId, $params);
 
-        return $this->getJsonApi($uri, [], $headers);
+        return $this->getJsonApi($uri, $headers);
     }
 
     /**
@@ -272,14 +259,13 @@ trait MakesJsonApiRequests
             $data = $data->toArray();
         }
 
-        if (!$id = $data[Keys::KEYWORD_ID] ?? null) {
+        if (!$id = $data['id'] ?? null) {
             throw new InvalidArgumentException('Expecting provided data to contain a resource id.');
         }
 
-        $params = $this->addDefaultRouteParams($params);
-        $uri = $this->api()->url()->update($this->resourceType(), $id, $params);
+        $uri = $this->apiUrl()->getResourceUrl($this->resourceType(), $id, $params);
 
-        return $this->patchJsonApi($uri, ['data' => $data], $headers);
+        return $this->patchJsonApi($uri, compact('data'), $headers);
     }
 
     /**
@@ -308,8 +294,7 @@ trait MakesJsonApiRequests
      */
     protected function doDelete($resourceId, array $params = [], array $headers = [])
     {
-        $params = $this->addDefaultRouteParams($params);
-        $uri = $this->api()->url()->delete($this->resourceType(), $resourceId, $params);
+        $uri = $this->apiUrl()->getResourceUrl($this->resourceType(), $resourceId, $params);
 
         return $this->deleteJsonApi($uri, [], $headers);
     }
@@ -334,26 +319,27 @@ trait MakesJsonApiRequests
 
     /**
      * @param $resourceId
-     * @param $relationshipName
+     * @param $field
+     *      the relationship field name.
      * @param array $params
      * @param array $headers
      * @return TestResponse
      */
-    protected function doReadRelated($resourceId, $relationshipName, array $params = [], array $headers = [])
+    protected function doReadRelated($resourceId, $field, array $params = [], array $headers = [])
     {
-        $params = $this->addDefaultRouteParams($params);
-        $uri = $this->api()->url()->relatedResource($this->resourceType(), $resourceId, $relationshipName, $params);
+        $uri = $this->apiUrl()->getRelatedUrl($this->resourceType(), $resourceId, $field, $params);
 
-        return $this->getJsonApi($uri, [], $headers);
+        return $this->getJsonApi($uri, $headers);
     }
 
     /**
      * Assert that the related resource route has not been registered for the supplied relationship name.
      *
-     * @param $relationshipName
+     * @param $field
+     *      the relationship field name.
      * @return void
      */
-    protected function assertCannotReadRelated($relationshipName)
+    protected function assertCannotReadRelated($field)
     {
         $readable = true;
 
@@ -361,38 +347,39 @@ trait MakesJsonApiRequests
             $this->api()->url()->relatedResource(
                 $this->resourceType(),
                 '1',
-                $relationshipName,
+                $field,
                 $this->addDefaultRouteParams([])
             );
         } catch (InvalidArgumentException $ex) {
             $readable = false;
         }
 
-        $this->assertFalse($readable, "Related resource $relationshipName route exists.");
+        $this->assertFalse($readable, "Related resource $field route exists.");
     }
 
     /**
      * @param $resourceId
-     * @param $relationshipName
+     * @param $field
+     *      the relationship field name.
      * @param array $params
      * @param array $headers
      * @return TestResponse
      */
-    protected function doReadRelationship($resourceId, $relationshipName, array $params = [], array $headers = [])
+    protected function doReadRelationship($resourceId, $field, array $params = [], array $headers = [])
     {
-        $params = $this->addDefaultRouteParams($params);
-        $uri = $this->api()->url()->readRelationship($this->resourceType(), $resourceId, $relationshipName, $params);
+        $uri = $this->apiUrl()->getRelationshipUri($this->resourceType(), $resourceId, $field, $params);
 
-        return $this->getJsonApi($uri, [], $headers);
+        return $this->getJsonApi($uri, $headers);
     }
 
     /**
      * Assert that the read relationship route has not been registered for the supplied relationship name.
      *
-     * @param $relationshipName
+     * @param $field
+     *      the relationship field name.
      * @return void
      */
-    protected function assertCannotReadRelationship($relationshipName)
+    protected function assertCannotReadRelationship($field)
     {
         $readable = true;
 
@@ -400,19 +387,20 @@ trait MakesJsonApiRequests
             $this->api()->url()->readRelationship(
                 $this->resourceType(),
                 '1',
-                $relationshipName,
+                $field,
                 $this->addDefaultRouteParams([])
             );
         } catch (InvalidArgumentException $ex) {
             $readable = false;
         }
 
-        $this->assertFalse($readable, "Read relationship $relationshipName route exists.");
+        $this->assertFalse($readable, "Read relationship $field route exists.");
     }
 
     /**
      * @param mixed $resourceId
-     * @param string $relationshipName
+     * @param string $field
+     *      the relationship field name.
      * @param array|Arrayable|null $data
      * @param array $params
      * @param array $headers
@@ -420,7 +408,7 @@ trait MakesJsonApiRequests
      */
     protected function doReplaceRelationship(
         $resourceId,
-        $relationshipName,
+        $field,
         $data,
         array $params = [],
         array $headers = []
@@ -429,24 +417,19 @@ trait MakesJsonApiRequests
             $data = $data->toArray();
         }
 
-        $params = $this->addDefaultRouteParams($params);
-        $uri = $this->api()->url()->replaceRelationship(
-            $this->resourceType(),
-            $resourceId,
-            $relationshipName,
-            $params
-        );
+        $uri = $this->apiUrl()->getRelationshipUri($this->resourceType(), $resourceId, $field, $params);
 
-        return $this->patchJsonApi($uri, ['data' => $data], $headers);
+        return $this->patchJsonApi($uri, compact('data'), $headers);
     }
 
     /**
      * Assert that the replace relationship route has not been registered for the supplied relationship name.
      *
-     * @param $relationshipName
+     * @param $field
+     *      the relationship field name.
      * @return void
      */
-    protected function assertCannotReplaceRelationship($relationshipName)
+    protected function assertCannotReplaceRelationship($field)
     {
         $replaceable = true;
 
@@ -454,19 +437,20 @@ trait MakesJsonApiRequests
             $this->api()->url()->replaceRelationship(
                 $this->resourceType(),
                 '1',
-                $relationshipName,
+                $field,
                 $this->addDefaultRouteParams([])
             );
         } catch (InvalidArgumentException $ex) {
             $replaceable = false;
         }
 
-        $this->assertFalse($replaceable, "Replace relationship $relationshipName route exists.");
+        $this->assertFalse($replaceable, "Replace relationship $field route exists.");
     }
 
     /**
      * @param mixed $resourceId
-     * @param string $relationshipName
+     * @param string $field
+     *      the relationship field name.
      * @param array|Arrayable $data
      * @param array $params
      * @param array $headers
@@ -474,7 +458,7 @@ trait MakesJsonApiRequests
      */
     protected function doAddToRelationship(
         $resourceId,
-        $relationshipName,
+        $field,
         $data,
         array $params = [],
         array $headers = []
@@ -483,24 +467,19 @@ trait MakesJsonApiRequests
             $data = $data->toArray();
         }
 
-        $params = $this->addDefaultRouteParams($params);
-        $uri = $this->api()->url()->addRelationship(
-            $this->resourceType(),
-            $resourceId,
-            $relationshipName,
-            $params
-        );
+        $uri = $this->apiUrl()->getRelationshipUri($this->resourceType(), $resourceId, $field, $params);
 
-        return $this->postJsonApi($uri, ['data' => $data], $headers);
+        return $this->postJsonApi($uri, compact('data'), $headers);
     }
 
     /**
      * Assert that the add-to relationship route has not been registered for the supplied relationship name.
      *
-     * @param $relationshipName
+     * @param $field
+     *      the relationship field name.
      * @return void
      */
-    protected function assertCannotAddToRelationship($relationshipName)
+    protected function assertCannotAddToRelationship($field)
     {
         $replaceable = true;
 
@@ -508,19 +487,20 @@ trait MakesJsonApiRequests
             $this->api()->url()->addRelationship(
                 $this->resourceType(),
                 '1',
-                $relationshipName,
+                $field,
                 $this->addDefaultRouteParams([])
             );
         } catch (InvalidArgumentException $ex) {
             $replaceable = false;
         }
 
-        $this->assertFalse($replaceable, "Add to relationship $relationshipName route exists.");
+        $this->assertFalse($replaceable, "Add to relationship $field route exists.");
     }
 
     /**
      * @param mixed $resourceId
-     * @param string $relationshipName
+     * @param string $field
+     *      the relationship field name.
      * @param array|Arrayable $data
      * @param array $params
      * @param array $headers
@@ -528,7 +508,7 @@ trait MakesJsonApiRequests
      */
     protected function doRemoveFromRelationship(
         $resourceId,
-        $relationshipName,
+        $field,
         $data,
         array $params = [],
         array $headers = []
@@ -537,13 +517,7 @@ trait MakesJsonApiRequests
             $data = $data->toArray();
         }
 
-        $params = $this->addDefaultRouteParams($params);
-        $uri = $this->api()->url()->removeRelationship(
-            $this->resourceType(),
-            $resourceId,
-            $relationshipName,
-            $params
-        );
+        $uri = $this->apiUrl()->getRelationshipUri($this->resourceType(), $resourceId, $field, $params);
 
         return $this->deleteJsonApi($uri, ['data' => $data], $headers);
     }
@@ -551,10 +525,11 @@ trait MakesJsonApiRequests
     /**
      * Assert that the remove-from relationship route has not been registered for the supplied relationship name.
      *
-     * @param $relationshipName
+     * @param $field
+     *      the relationship field name.
      * @return void
      */
-    protected function assertCannotRemoveFromRelationship($relationshipName)
+    protected function assertCannotRemoveFromRelationship($field)
     {
         $replaceable = true;
 
@@ -562,14 +537,14 @@ trait MakesJsonApiRequests
             $this->api()->url()->removeRelationship(
                 $this->resourceType(),
                 '1',
-                $relationshipName,
+                $field,
                 $this->addDefaultRouteParams([])
             );
         } catch (InvalidArgumentException $ex) {
             $replaceable = false;
         }
 
-        $this->assertFalse($replaceable, "Remove from relationship $relationshipName route exists.");
+        $this->assertFalse($replaceable, "Remove from relationship $field route exists.");
     }
 
     /**
@@ -587,13 +562,29 @@ trait MakesJsonApiRequests
     /**
      * Assert that the resource relationship's replace, add-to and remove-from routes do not exist.
      *
-     * @param $relationshipName
+     * @param $field
+     *      the relationship field name.
+     * @return void
      */
-    protected function assertRelationshipIsReadOnly($relationshipName)
+    protected function assertRelationshipIsReadOnly($field)
     {
-        $this->assertCannotReplaceRelationship($relationshipName);
-        $this->assertCannotAddToRelationship($relationshipName);
-        $this->assertCannotRemoveFromRelationship($relationshipName);
+        $this->assertCannotReplaceRelationship($field);
+        $this->assertCannotAddToRelationship($field);
+        $this->assertCannotRemoveFromRelationship($field);
+    }
+
+    /**
+     * Set the API to test.
+     *
+     * @param string|null $api
+     *      the API, or null to test the default API.
+     * @return MakesJsonApiRequests
+     */
+    protected function withApi(?string $api): self
+    {
+        $this->api = $api;
+
+        return $this;
     }
 
     /**
@@ -680,17 +671,8 @@ trait MakesJsonApiRequests
     }
 
     /**
-     * Get the expected media type for a response that contains body.
-     *
-     * @return string
-     */
-    protected function expectedMediaType()
-    {
-        return $this->responseMediaType;
-    }
-
-    /**
      * @return Api
+     * @deprecated
      */
     protected function api()
     {
@@ -698,13 +680,22 @@ trait MakesJsonApiRequests
     }
 
     /**
-     * Add default parameters to those provided to a `do*` method.
+     * @return Url
+     */
+    protected function apiUrl(): Url
+    {
+        return json_api($this->api ?: null)->getUrl();
+    }
+
+    /**
+     * Add default parameters to those provided to `assertCannot*` method.
      *
      * Classes can override this method if they need to add any default parameters for constructing
      * the route link.
      *
      * @param array $params
      * @return array
+     * @todo need to find a way of writing the assertCannot methods without using route params.
      */
     protected function addDefaultRouteParams(array $params)
     {
