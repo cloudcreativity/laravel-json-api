@@ -175,7 +175,23 @@ abstract class AbstractResolver implements ResolverInterface
      */
     public function getAuthorizerByName($name)
     {
-        return $this->resolve('Authorizer', $name);
+        return $this->resolveName('Authorizer', $name);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getContentNegotiatorByResourceType($resourceType)
+    {
+        return $this->resolve('ContentNegotiator', $resourceType);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getContentNegotiatorByName($name)
+    {
+        return $this->resolveName('ContentNegotiator', $name);
     }
 
     /**
@@ -194,6 +210,18 @@ abstract class AbstractResolver implements ResolverInterface
     public function getValidatorsByResourceType($resourceType)
     {
         return $this->resolve('Validators', $resourceType);
+    }
+
+    /**
+     * Resolve a name that is not a resource type.
+     *
+     * @param $unit
+     * @param $name
+     * @return string
+     */
+    protected function resolveName($unit, $name)
+    {
+        return $this->resolve($unit, $name);
     }
 
     /**

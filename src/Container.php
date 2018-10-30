@@ -20,6 +20,7 @@ namespace CloudCreativity\LaravelJsonApi;
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\ResourceAdapterInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Auth\AuthorizerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\ContentNegotiatorInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorProviderInterface;
@@ -252,6 +253,34 @@ class Container implements ContainerInterface
     }
 
     /**
+     * @inheritDoc
+     */
+    public function getContentNegotiatorByResourceType($resourceType)
+    {
+        $className = $this->resolver->getContentNegotiatorByResourceType($resourceType);
+
+        return $this->createContentNegotiatorFromClassName($className);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getContentNegotiatorByName($name)
+    {
+        if (!$className = $this->resolver->getContentNegotiatorByName($name)) {
+            throw new RuntimeException("Content negotiator [$name] is not recognised.");
+        }
+
+        $negotiator = $this->create($className);
+
+        if (!$negotiator instanceof ContentNegotiatorInterface) {
+            throw new RuntimeException("Class [$className] is not a content negotiator.");
+        }
+
+        return $negotiator;
+    }
+
+    /**
      * Get the JSON API resource type for the provided PHP type.
      *
      * @param $type
@@ -441,14 +470,35 @@ class Container implements ContainerInterface
     }
 
     /**
+     * @param $className
+     * @return ContentNegotiatorInterface|null
+     */
+    protected function createContentNegotiatorFromClassName($className)
+    {
+        $negotiator = $this->create($className);
+
+        if (!is_null($negotiator) && !$negotiator instanceof ContentNegotiatorInterface) {
+            throw new RuntimeException("Class [$className] is not a resource content negotiator.");
+        }
+
+        return $negotiator;
+    }
+
+    /**
      * @inheritDoc
      */
     protected function create($className)
     {
-        if (class_exists($className) || $this->container->bound($className))
-            return $this->container->make($className);
+        return $this->exists($className) ? $this->container->make($className) : null;
+    }
 
-        return null;
+    /**
+     * @param $className
+     * @return bool
+     */
+    protected function exists($className)
+    {
+        return class_exists($className) || $this->container->bound($className);
     }
 
 }

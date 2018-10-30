@@ -18,17 +18,16 @@
 
 namespace CloudCreativity\LaravelJsonApi\Http\Responses;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Factories\FactoryInterface;
+use CloudCreativity\LaravelJsonApi\Api\Api;
+use CloudCreativity\LaravelJsonApi\Api\Codec;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\Responses\ErrorResponseInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PageInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Repositories\ErrorRepositoryInterface;
-use Neomerx\JsonApi\Contracts\Codec\CodecMatcherInterface;
+use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
+use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use Neomerx\JsonApi\Contracts\Document\DocumentInterface;
 use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
-use Neomerx\JsonApi\Contracts\Http\Headers\SupportedExtensionsInterface;
-use Neomerx\JsonApi\Contracts\Schema\ContainerInterface;
-use Neomerx\JsonApi\Encoder\EncoderOptions;
+use Neomerx\JsonApi\Contracts\Http\Headers\MediaTypeInterface;
 use Neomerx\JsonApi\Exceptions\ErrorCollection;
 use Neomerx\JsonApi\Http\Headers\MediaType;
 use Neomerx\JsonApi\Http\Responses as BaseResponses;
@@ -42,24 +41,19 @@ class Responses extends BaseResponses
 {
 
     /**
-     * @var FactoryInterface
+     * @var Factory
      */
     private $factory;
 
     /**
-     * @var ContainerInterface
+     * @var Api
      */
-    private $schemas;
+    private $api;
 
     /**
-     * @var ErrorRepositoryInterface
+     * @var Codec|null
      */
-    private $errorRepository;
-
-    /**
-     * @var CodecMatcherInterface
-     */
-    private $codecs;
+    private $codec;
 
     /**
      * @var EncodingParametersInterface|null
@@ -67,59 +61,73 @@ class Responses extends BaseResponses
     private $parameters;
 
     /**
-     * @var SupportedExtensionsInterface|null
-     */
-    private $extensions;
-
-    /**
-     * @var string|null
-     */
-    private $urlPrefix;
-
-
-    /**
-     * Statically create the responses.
+     * Responses constructor.
      *
-     * If no API name is provided, the API handling the inbound HTTP request will be used.
-     *
-     * @param string|null $apiName
-     * @return Responses
+     * @param Factory $factory
+     * @param Api $api
+     *      the API that is sending the responses.
      */
-    public static function create($apiName = null)
+    public function __construct(Factory $factory, Api $api)
     {
-        $api = json_api($apiName);
-        $request = json_api_request();
-
-        return $api->response($request ? $request->getParameters() : null);
+        $this->factory = $factory;
+        $this->api = $api;
     }
 
     /**
-     * AbstractResponses constructor.
-     *
-     * @param FactoryInterface $factory
-     * @param ContainerInterface $schemas
-     * @param ErrorRepositoryInterface $errors
-     * @param CodecMatcherInterface $codecs
-     * @param EncodingParametersInterface|null $parameters
-     * @param SupportedExtensionsInterface|null $extensions
-     * @param string|null $urlPrefix
+     * @param Codec $codec
+     * @return Responses
      */
-    public function __construct(
-        FactoryInterface $factory,
-        ContainerInterface $schemas,
-        ErrorRepositoryInterface $errors,
-        CodecMatcherInterface $codecs = null,
-        EncodingParametersInterface $parameters = null,
-        SupportedExtensionsInterface $extensions = null,
-        $urlPrefix = null
-    ) {
-        $this->factory = $factory;
-        $this->schemas = $schemas;
-        $this->errorRepository = $errors;
-        $this->codecs = $codecs;
+    public function withCodec(Codec $codec): self
+    {
+        $this->codec = $codec;
+
+        return $this;
+    }
+
+    /**
+     * Send a response with the supplied media type.
+     *
+     * @param string $mediaType
+     * @return $this
+     */
+    public function withMediaType(string $mediaType): self
+    {
+        if (!$codec = $this->api->getCodecs()->find($mediaType)) {
+            throw new \InvalidArgumentException(
+                "Media type {$mediaType} is not valid for API {$this->api->getName()}."
+            );
+        }
+
+        return $this->withCodec($codec);
+    }
+
+    /**
+     * Set the encoding options.
+     *
+     * @param int $options
+     * @param int $depth
+     * @param string|null $mediaType
+     * @return Responses
+     */
+    public function withEncoding($options = 0, $depth = 512, $mediaType = MediaTypeInterface::JSON_API_MEDIA_TYPE)
+    {
+        return $this->withCodec(new Codec(
+            MediaType::parse(0, $mediaType),
+            $this->api->encoderOptions($options, $depth)
+        ));
+    }
+
+    /**
+     * Set the encoding parameters to use.
+     *
+     * @param EncodingParametersInterface|null $parameters
+     * @return $this
+     */
+    public function withEncodingParameters(?EncodingParametersInterface $parameters): self
+    {
         $this->parameters = $parameters;
-        $this->extensions = $extensions;
-        $this->urlPrefix = $urlPrefix;
+
+        return $this;
     }
 
     /**
@@ -263,11 +271,11 @@ class Responses extends BaseResponses
         }
 
         if (is_string($errors)) {
-            $errors = $this->errorRepository->error($errors);
+            $errors = $this->api->getErrors()->error($errors);
         }
 
         if (is_array($errors)) {
-            $errors = $this->errorRepository->errors($errors);
+            $errors = $this->api->getErrors()->errors($errors);
         }
 
         return $this->errors(
@@ -300,14 +308,31 @@ class Responses extends BaseResponses
      */
     protected function getEncoder()
     {
-        if ($this->codecs && $encoder = $this->codecs->getEncoder()) {
-            return $encoder;
+        if (!$options = $this->getCodec()->getOptions()) {
+            throw new RuntimeException('Response codec does not support encoding to JSON API.');
         }
 
-        return $this->factory->createEncoder(
-            $this->getSchemaContainer(),
-            new EncoderOptions(0, $this->getUrlPrefix())
-        );
+        return $this->api->encoder($options);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function getMediaType()
+    {
+        return $this->getCodec()->getMediaType();
+    }
+
+    /**
+     * @return Codec
+     */
+    protected function getCodec()
+    {
+        if (!$this->codec) {
+            $this->codec = $this->api->getDefaultCodec();
+        }
+
+        return $this->codec;
     }
 
     /**
@@ -315,7 +340,7 @@ class Responses extends BaseResponses
      */
     protected function getUrlPrefix()
     {
-        return $this->urlPrefix;
+        return $this->api->getUrl()->toString();
     }
 
     /**
@@ -331,7 +356,7 @@ class Responses extends BaseResponses
      */
     protected function getSchemaContainer()
     {
-        return $this->schemas;
+        return $this->api->getContainer();
     }
 
     /**
@@ -339,19 +364,7 @@ class Responses extends BaseResponses
      */
     protected function getSupportedExtensions()
     {
-        return $this->extensions;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function getMediaType()
-    {
-        if ($this->codecs && $mediaType = $this->codecs->getEncoderRegisteredMatchedType()) {
-            return $mediaType;
-        }
-
-        return new MediaType(MediaType::JSON_API_TYPE, MediaType::JSON_API_SUB_TYPE);
+        return $this->api->getSupportedExtensions();
     }
 
     /**

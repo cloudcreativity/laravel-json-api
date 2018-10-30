@@ -219,6 +219,24 @@ class AggregateResolver implements ResolverInterface, IteratorAggregate
     /**
      * @inheritDoc
      */
+    public function getContentNegotiatorByResourceType($resourceType)
+    {
+        $resolver = $this->resolverByResourceType($resourceType);
+
+        return $resolver ? $resolver->getContentNegotiatorByResourceType($resourceType) : null;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getContentNegotiatorByName($name)
+    {
+        return $this->getDefaultResolver()->getContentNegotiatorByName($name);
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function getValidatorsByType($type)
     {
         $resolver = $this->resolverByType($type);

@@ -30,9 +30,9 @@ use CloudCreativity\LaravelJsonApi\Exceptions\ExceptionParser;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use CloudCreativity\LaravelJsonApi\Http\Middleware\Authorize;
 use CloudCreativity\LaravelJsonApi\Http\Middleware\BootJsonApi;
+use CloudCreativity\LaravelJsonApi\Http\Middleware\NegotiateContent;
 use CloudCreativity\LaravelJsonApi\Http\Middleware\SubstituteBindings;
 use CloudCreativity\LaravelJsonApi\Http\Requests\JsonApiRequest;
-use CloudCreativity\LaravelJsonApi\Http\Responses\Responses;
 use CloudCreativity\LaravelJsonApi\Routing\ResourceRegistrar;
 use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
 use CloudCreativity\LaravelJsonApi\View\Renderer;
@@ -108,6 +108,7 @@ class ServiceProvider extends BaseServiceProvider
     {
         $router->aliasMiddleware('json-api', BootJsonApi::class);
         $router->aliasMiddleware('json-api.bindings', SubstituteBindings::class);
+        $router->aliasMiddleware('json-api.content', NegotiateContent::class);
         $router->aliasMiddleware('json-api.auth', Authorize::class);
     }
 
@@ -129,7 +130,9 @@ class ServiceProvider extends BaseServiceProvider
     protected function bootResponseMacro()
     {
         Response::macro('jsonApi', function ($api = null) {
-            return Responses::create($api);
+            return json_api($api)->getResponses()->withEncodingParameters(
+                json_api_request()->getParameters()
+            );
         });
     }
 

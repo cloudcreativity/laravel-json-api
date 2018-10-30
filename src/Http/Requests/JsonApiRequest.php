@@ -366,6 +366,42 @@ class JsonApiRequest
     }
 
     /**
+     * Will the response contain a specific resource?
+     *
+     * E.g. for a `posts` resource, this is invoked on the following URLs:
+     *
+     * - `POST /posts`
+     * - `GET /posts/1`
+     * - `PATCH /posts/1`
+     * - `DELETE /posts/1`
+     *
+     * I.e. a response that may contain a specified resource.
+     *
+     * @return bool
+     */
+    public function willSeeOne(): bool
+    {
+        return !$this->isIndex() && $this->isNotRelationship();
+    }
+
+    /**
+     * Will the response contain zero-to-many of a resource?
+     *
+     * E.g. for a `posts` resource, this is invoked on the following URLs:
+     *
+     * - `/posts`
+     * - `/comments/1/posts`
+     *
+     * I.e. a response that will contain zero to many of the posts resource.
+     *
+     * @return bool
+     */
+    public function willSeeMany(): bool
+    {
+        return !$this->willSeeOne();
+    }
+
+    /**
      * @return bool
      */
     private function isResource(): bool
@@ -379,6 +415,14 @@ class JsonApiRequest
     private function isRelationship(): bool
     {
         return !empty($this->getRelationshipName());
+    }
+
+    /**
+     * @return bool
+     */
+    private function isNotRelationship(): bool
+    {
+        return !$this->isRelationship();
     }
 
     /**
