@@ -104,7 +104,7 @@ class ContentNegotiator implements ContentNegotiatorInterface
      */
     protected function checkAcceptTypes(AcceptHeaderInterface $header, Codecs $codecs): Codec
     {
-        if (!$codec = $this->match($header, $codecs)) {
+        if (!$codec = $this->accept($header, $codecs)) {
             throw $this->notAcceptable($header);
         }
 
@@ -119,8 +119,6 @@ class ContentNegotiator implements ContentNegotiatorInterface
      */
     protected function checkContentType($request): void
     {
-        $request->getAcceptableContentTypes();
-
         if (!$this->isJsonApi($request)) {
             throw $this->unsupportedMediaType();
         }
@@ -167,7 +165,7 @@ class ContentNegotiator implements ContentNegotiatorInterface
      * @param Codecs $codecs
      * @return Codec|null
      */
-    protected function match(AcceptHeaderInterface $header, Codecs $codecs): ?Codec
+    protected function accept(AcceptHeaderInterface $header, Codecs $codecs): ?Codec
     {
         return $codecs->acceptable($header);
     }

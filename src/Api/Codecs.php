@@ -60,12 +60,30 @@ class Codecs implements \IteratorAggregate, \Countable
      * @param Codec ...$codecs
      * @return Codecs
      */
-    public function append(Codec ...$codecs): self
+    public function push(Codec ...$codecs): self
     {
         $copy = clone $this;
         $copy->stack = collect($this->stack)->merge($codecs)->all();
 
         return $copy;
+    }
+
+    /**
+     * Push codecs if the truth test is met.
+     *
+     * @param bool $test
+     * @param Codec|iterable $codecs
+     * @return Codecs
+     */
+    public function when(bool $test, $codecs): self
+    {
+        if (!$test) {
+            return $this;
+        }
+
+        $codecs = $codecs instanceof Codec ? [$codecs] : $codecs;
+
+        return $this->push(...$codecs);
     }
 
     /**

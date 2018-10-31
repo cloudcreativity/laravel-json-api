@@ -39,6 +39,14 @@ class CreateTables extends Migration
             $table->unsignedInteger('country_id')->nullable();
         });
 
+        Schema::create('avatars', function (Blueprint $table) {
+            $table->increments('id');
+            $table->timestamps();
+            $table->string('path');
+            $table->string('media_type');
+            $table->unsignedInteger('user_id')->nullable();
+        });
+
         Schema::create('posts', function (Blueprint $table) {
             $table->increments('id');
             $table->timestamps();

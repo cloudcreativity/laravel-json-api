@@ -20,6 +20,17 @@ use Illuminate\Database\Eloquent\Factory as EloquentFactory;
 
 /** @var EloquentFactory $factory */
 
+/** Avatar */
+$factory->define(DummyApp\Avatar::class, function (Faker $faker) {
+    return [
+        'path' => $faker->image(),
+        'media_type' => 'image/jpeg',
+        'user_id' => function () {
+            return factory(DummyApp\User::class)->create()->getKey();
+        },
+    ];
+});
+
 /** Comment */
 $factory->define(DummyApp\Comment::class, function (Faker $faker) {
     return [

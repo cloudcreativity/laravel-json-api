@@ -20,19 +20,20 @@ use CloudCreativity\LaravelJsonApi\Routing\ApiGroup;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
-Route::group(['middleware' => 'web'], function () {
-    Auth::routes();
-});
-
 JsonApi::register('v1', [], function (ApiGroup $api) {
+
+    $api->resource('avatars');
+
     $api->resource('comments', [
         'controller' => true,
         'middleware' => 'auth',
         'has-one' => 'commentable',
     ]);
+
     $api->resource('countries', [
         'has-many' => ['users', 'posts'],
     ]);
+
     $api->resource('posts', [
         'controller' => true,
         'has-one' => [
@@ -45,10 +46,13 @@ JsonApi::register('v1', [], function (ApiGroup $api) {
             'related-video' => ['only' => ['read', 'related']],
         ],
     ]);
+
     $api->resource('users', [
         'has-one' => 'phone',
     ]);
+
     $api->resource('videos');
+
     $api->resource('tags', [
         'has-many' => 'taggables',
     ]);

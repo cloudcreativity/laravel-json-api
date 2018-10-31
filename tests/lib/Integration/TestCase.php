@@ -70,7 +70,7 @@ abstract class TestCase extends BaseTestCase
         return [
             ServiceProvider::class,
             DummyPackage\ServiceProvider::class,
-            DummyApp\Providers\DummyServiceProvider::class,
+            DummyApp\Providers\AppServiceProvider::class,
         ];
     }
 
@@ -112,10 +112,12 @@ abstract class TestCase extends BaseTestCase
      */
     protected function withAppRoutes()
     {
-        Route::group([
-            'namespace' => 'DummyApp\\Http\\Controllers',
-        ], function () {
-            require __DIR__ . '/../../dummy/routes/json-api.php';
+        Route::middleware('web')
+            ->namespace($namespace = 'DummyApp\\Http\\Controllers')
+            ->group(__DIR__ . '/../../dummy/routes/web.php');
+
+        Route::group(compact('namespace'), function () {
+            require __DIR__ . '/../../dummy/routes/api.php';
         });
 
         $this->refreshRoutes();
