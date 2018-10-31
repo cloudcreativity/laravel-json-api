@@ -32,7 +32,7 @@ use CloudCreativity\LaravelJsonApi\Resolver\NamespaceResolver;
 use GuzzleHttp\Client;
 use Neomerx\JsonApi\Contracts\Codec\CodecMatcherInterface;
 use Neomerx\JsonApi\Contracts\Encoder\EncoderInterface;
-use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
+use Neomerx\JsonApi\Contracts\Http\Headers\MediaTypeInterface;
 use Neomerx\JsonApi\Contracts\Http\Headers\SupportedExtensionsInterface;
 use Neomerx\JsonApi\Encoder\EncoderOptions;
 
@@ -107,12 +107,17 @@ class Api
     private $errorRepository;
 
     /**
+     * @var Responses|null
+     */
+    private $responses;
+
+    /**
      * Definition constructor.
      *
      * @param Factory $factory
      * @param AggregateResolver $resolver
      * @param $apiName
-     * @param array $codecs
+     * @param Codecs $codecs
      * @param Url $url
      * @param bool $useEloquent
      * @param string|null $supportedExt
@@ -122,12 +127,16 @@ class Api
         Factory $factory,
         AggregateResolver $resolver,
         $apiName,
-        array $codecs,
+        Codecs $codecs,
         Url $url,
         $useEloquent = true,
         $supportedExt = null,
         array $errors = []
     ) {
+        if ($codecs->isEmpty()) {
+            throw new \InvalidArgumentException('API must have codecs.');
+        }
+
         $this->factory = $factory;
         $this->resolver = $resolver;
         $this->name = $apiName;
@@ -204,22 +213,6 @@ class Api
     }
 
     /**
-     * @return CodecMatcherInterface
-     */
-    public function getCodecMatcher()
-    {
-        if (!$this->codecMatcher) {
-            $this->codecMatcher = $this->factory->createConfiguredCodecMatcher(
-                $this->getContainer(),
-                $this->codecs,
-                (string) $this->getUrl()
-            );
-        }
-
-        return $this->codecMatcher;
-    }
-
-    /**
      * @return ContainerInterface|null
      */
     public function getContainer()
@@ -269,52 +262,84 @@ class Api
     }
 
     /**
-     * Get the matched encoder, or a default encoder.
+     * Get the supported encoder media types.
      *
-     * @return EncoderInterface
+     * @return Codecs
      */
-    public function getEncoder()
+    public function getCodecs()
     {
-        if ($encoder = $this->getCodecMatcher()->getEncoder()) {
-            return $encoder;
-        }
-
-        $this->getCodecMatcher()->setEncoder($encoder = $this->encoder());
-
-        return $encoder;
+        return $this->codecs;
     }
 
     /**
-     * @param int $options
+     * @return Codec
+     */
+    public function getDefaultCodec()
+    {
+        return $this->codecs->find(MediaTypeInterface::JSON_API_MEDIA_TYPE) ?: $this->codecs->first();
+    }
+
+    /**
+     * Get the responses instance for the API.
+     *
+     * @return Responses
+     */
+    public function getResponses()
+    {
+        if (!$this->responses) {
+            $this->responses = $this->response();
+        }
+
+        return $this->responses;
+    }
+
+    /**
+     * Get the matched encoder, or a default encoder.
+     *
+     * @return EncoderInterface
+     * @deprecated 2.0.0 use `encoder` to create an encoder.
+     */
+    public function getEncoder()
+    {
+        return $this->encoder();
+    }
+
+    /**
+     * Create an encoder for the API.
+     *
+     * @param int|EncoderOptions $options
      * @param int $depth
      * @return SerializerInterface
      */
     public function encoder($options = 0, $depth = 512)
     {
-        $options = new EncoderOptions($options, (string) $this->getUrl(), $depth);
+        if (!$options instanceof EncoderOptions) {
+            $options = $this->encoderOptions($options, $depth);
+        }
 
         return $this->factory->createEncoder($this->getContainer(), $options);
     }
 
     /**
+     * Create encoder options.
+     *
+     * @param int $options
+     * @param int $depth
+     * @return EncoderOptions
+     */
+    public function encoderOptions($options = 0, $depth = 512)
+    {
+        return new EncoderOptions($options, $this->getUrl()->toString(), $depth);
+    }
+
+    /**
      * Create a responses helper for this API.
      *
-     * @param EncodingParametersInterface|null $parameters
-     * @param SupportedExtensionsInterface|null $extensions
      * @return Responses
      */
-    public function response(
-        EncodingParametersInterface $parameters = null,
-        SupportedExtensionsInterface $extensions = null
-    ) {
-        return $this->factory->createResponses(
-            $this->getContainer(),
-            $this->getErrors(),
-            $this->getCodecMatcher(),
-            $parameters,
-            $extensions ?: $this->getSupportedExtensions(),
-            (string) $this->getUrl()
-        );
+    public function response()
+    {
+        return $this->factory->createResponseFactory($this);
     }
 
     /**

@@ -88,7 +88,7 @@ namespace {
         /**
          * Get the inbound JSON API request.
          *
-         * @return JsonApiRequest|null
+         * @return JsonApiRequest
          */
         function json_api_request() {
             return app('json-api')->request();

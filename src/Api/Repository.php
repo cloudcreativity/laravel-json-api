@@ -73,14 +73,15 @@ class Repository
     {
         $config = $this->configFor($apiName);
         $config = $this->normalize($config, $host);
+        $url = Url::fromArray($config['url']);
         $resolver = new AggregateResolver($this->factory->createResolver($apiName, $config));
 
         $api = new Api(
             $this->factory,
             $resolver,
             $apiName,
-            $config['codecs'],
-            Url::fromArray($config['url']),
+            Codecs::create($config['codecs'], $url->toString()),
+            $url,
             $config['use-eloquent'],
             $config['supported-ext'],
             $config['errors']
@@ -154,6 +155,7 @@ class Repository
 
         $config['url'] = $this->normalizeUrl((array) $config['url'], $host);
         $config['errors'] = array_replace($this->defaultErrors(), (array) $config['errors']);
+        $config['codecs'] = $config['codecs']['encoders'] ?? $config['codecs'];
 
         return $config;
     }

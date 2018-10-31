@@ -412,6 +412,44 @@ class JsonApiRequest
     }
 
     /**
+     * Will the response contain a specific resource?
+     *
+     * E.g. for a `posts` resource, this is invoked on the following URLs:
+     *
+     * - `POST /posts`
+     * - `GET /posts/1`
+     * - `PATCH /posts/1`
+     * - `DELETE /posts/1`
+     * - `GET /posts/queue-jobs/839765f4-7ff4-4625-8bf7-eecd3ab44946`
+     *
+     * I.e. a response that may contain a specified resource.
+     *
+     * @return bool
+     */
+    public function willSeeOne(): bool
+    {
+        return !$this->isIndex() && $this->isNotRelationship();
+    }
+
+    /**
+     * Will the response contain zero-to-many of a resource?
+     *
+     * E.g. for a `posts` resource, this is invoked on the following URLs:
+     *
+     * - `/posts`
+     * - `/comments/1/posts`
+     * - `/posts/queue-jobs`
+     *
+     * I.e. a response that will contain zero to many of a resource.
+     *
+     * @return bool
+     */
+    public function willSeeMany(): bool
+    {
+        return !$this->willSeeOne();
+    }
+
+    /**
      * Is this a request to read all processes for a resource type?
      *
      * E.g. `GET /posts/queue-jobs`
@@ -457,6 +495,14 @@ class JsonApiRequest
     private function isNotResource(): bool
     {
         return !$this->isResource();
+    }
+
+    /**
+     * @return bool
+     */
+    private function isNotRelationship(): bool
+    {
+        return !$this->isRelationship();
     }
 
     /**
