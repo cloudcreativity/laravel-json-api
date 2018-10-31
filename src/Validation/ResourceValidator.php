@@ -51,7 +51,7 @@ class ResourceValidator extends AbstractValidator
     protected function createError(string $key, string $detail): ErrorInterface
     {
         return $this->errors->invalidResource(
-            $this->resource->pointer($key),
+            $this->resource->pointer($key, '/data'),
             $detail
         );
     }

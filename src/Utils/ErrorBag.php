@@ -246,7 +246,7 @@ class ErrorBag extends AbstractErrorBag
     protected function createSourcePointer($key)
     {
         if ($this->keyMap instanceof ResourceObject) {
-            return $this->keyMap->pointer($key);
+            return $this->keyMap->pointer($key, '/data');
         }
 
         $key = $this->normalizeKey($key, '/');

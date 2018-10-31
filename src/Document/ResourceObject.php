@@ -81,11 +81,11 @@ class ResourceObject implements Arrayable, \IteratorAggregate, \JsonSerializable
 
         return new self(
             $data['type'],
-            isset($data['id']) ? $data['id'] : null,
-            isset($data['attributes']) ? $data['attributes'] : [],
-            isset($data['relationships']) ? $data['relationships'] : [],
-            isset($data['meta']) ? $data['meta'] : [],
-            isset($data['links']) ? $data['links'] : []
+            $data['id'] ?? null,
+            $data['attributes'] ?? [],
+            $data['relationships'] ?? [],
+            $data['meta'] ?? [],
+            $data['links'] ?? []
         );
     }
 
@@ -502,6 +502,14 @@ class ResourceObject implements Arrayable, \IteratorAggregate, \JsonSerializable
      */
     public function replace(string $field, $value): self
     {
+        if ('type' === $field) {
+            return $this->putIdentifier($value, $this->id);
+        }
+
+        if ('id' === $field) {
+            return $this->putIdentifier($this->type, $value);
+        }
+
         if ($this->isAttribute($field)) {
             return $this->putAttr($field, $value);
         }
@@ -517,31 +525,34 @@ class ResourceObject implements Arrayable, \IteratorAggregate, \JsonSerializable
      * Convert a validation key to a JSON pointer.
      *
      * @param string $key
+     * @param string $prefix
      * @return string
      */
-    public function pointer(string $key): string
+    public function pointer(string $key, string $prefix = ''): string
     {
+        $prefix = rtrim($prefix, '/');
+
         if ('type' === $key) {
-            return '/data/type';
+            return $prefix . '/type';
         }
 
         if ('id' === $key) {
-            return '/data/id';
+            return $prefix . '/id';
         }
 
         $parts = collect(explode('.', $key));
         $field = $parts->first();
 
         if ($this->isAttribute($field)) {
-            return '/data/attributes/' . $parts->implode('/');
+            return $prefix . '/attributes/' . $parts->implode('/');
         }
 
         if ($this->isRelationship($field)) {
             $name = 1 < $parts->count() ? $field . '/' . $parts->put(0, 'data')->implode('/') : $field;
-            return "/data/relationships/{$name}";
+            return $prefix . "/relationships/{$name}";
         }
 
-        return '/data';
+        return $prefix . '/';
     }
 
     /**
@@ -634,8 +645,27 @@ class ResourceObject implements Arrayable, \IteratorAggregate, \JsonSerializable
      */
     private function normalize(): void
     {
+        if (collect($this->attributes)->intersectByKeys($this->relationships)->isNotEmpty()) {
+            throw new \LogicException('Attributes and relationships cannot have the same field names.');
+        }
+
         $this->fieldValues = $this->fieldValues();
         $this->fieldNames = $this->fieldNames();
+    }
+
+    /**
+     * @param string $type
+     * @param string|null $id
+     * @return ResourceObject
+     */
+    private function putIdentifier(string $type, ?string $id): self
+    {
+        $copy = clone $this;
+        $copy->type = $type;
+        $copy->id = $id;
+        $copy->normalize();
+
+        return $copy;
     }
 
     /**
