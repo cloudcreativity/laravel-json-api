@@ -21,13 +21,11 @@ namespace CloudCreativity\LaravelJsonApi\Eloquent;
 use CloudCreativity\LaravelJsonApi\Adapter\AbstractResourceAdapter;
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\HasManyAdapterInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\RelationshipAdapterInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Object\RelationshipInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PageInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PagingStrategyInterface;
+use CloudCreativity\LaravelJsonApi\Document\ResourceObject;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Pagination\CursorStrategy;
-use CloudCreativity\Utils\Object\StandardObjectInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations;
@@ -203,12 +201,12 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     /**
      * @inheritdoc
      */
-    public function update($record, ResourceObjectInterface $resource, EncodingParametersInterface $parameters)
+    public function update($record, array $document, EncodingParametersInterface $parameters)
     {
         $parameters = $this->getQueryParameters($parameters);
 
         /** @var Model $record */
-        $record = parent::update($record, $resource, $parameters);
+        $record = parent::update($record, $document, $parameters);
         $this->load($record, $parameters);
 
         return $record;
@@ -294,7 +292,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     /**
      * @inheritDoc
      */
-    protected function createRecord(ResourceObjectInterface $resource)
+    protected function createRecord(ResourceObject $resource)
     {
         return $this->model->newInstance();
     }
@@ -302,7 +300,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     /**
      * @inheritDoc
      */
-    protected function hydrateAttributes($record, StandardObjectInterface $attributes)
+    protected function fillAttributes($record, Collection $attributes)
     {
         if (!$record instanceof Model) {
             throw new \InvalidArgumentException('Expecting an Eloquent model.');
@@ -342,7 +340,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     protected function fillRelationship(
         $record,
         $field,
-        RelationshipInterface $relationship,
+        array $relationship,
         EncodingParametersInterface $parameters
     ) {
         $relation = $this->getRelated($field);
@@ -356,18 +354,18 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      * Hydrate related models after the primary record has been persisted.
      *
      * @param Model $record
-     * @param ResourceObjectInterface $resource
+     * @param ResourceObject $resource
      * @param EncodingParametersInterface $parameters
      */
-    protected function hydrateRelated(
+    protected function fillRelated(
         $record,
-        ResourceObjectInterface $resource,
+        ResourceObject $resource,
         EncodingParametersInterface $parameters
     ) {
         $relationships = $resource->getRelationships();
         $changed = false;
 
-        foreach ($relationships->getAll() as $field => $value) {
+        foreach ($relationships as $field => $value) {
             /** Skip any fields that are not fillable. */
             if ($this->isNotFillable($field, $record)) {
                 continue;
@@ -381,7 +379,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
             $relation = $this->getRelated($field);
 
             if ($this->requiresPrimaryRecordPersistence($relation)) {
-                $relation->update($record, $relationships->getRelationship($field), $parameters);
+                $relation->update($record, $value, $parameters);
                 $changed = true;
             }
         }

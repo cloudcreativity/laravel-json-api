@@ -18,7 +18,6 @@
 namespace CloudCreativity\LaravelJsonApi\Store;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
-use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 
 /**
  * Trait StoreAwareTrait
@@ -35,20 +34,22 @@ trait StoreAwareTrait
 
     /**
      * @param StoreInterface $store
-     * @return void
+     * @return $this
      */
     public function withStore(StoreInterface $store)
     {
         $this->store = $store;
+
+        return $this;
     }
 
     /**
      * @return StoreInterface
      */
-    protected function getStore()
+    protected function getStore(): StoreInterface
     {
         if (!$this->store) {
-            throw new RuntimeException('No store injected.');
+            $this->store = json_api()->getStore();
         }
 
         return $this->store;

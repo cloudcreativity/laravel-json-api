@@ -35,7 +35,7 @@ class PackageTest extends TestCase
 
         $expected = [
             'type' => 'blogs',
-            'id' => $blog->getKey(),
+            'id' => $blog,
             'attributes' => [
                 'title' => $blog->title,
                 'article' => $blog->article,
@@ -43,7 +43,7 @@ class PackageTest extends TestCase
             ],
         ];
 
-        $this->doRead($blog)->assertRead($expected);
+        $this->doRead($blog)->assertFetchedOne($expected);
     }
 
     /**
@@ -56,11 +56,6 @@ class PackageTest extends TestCase
         /** @var Post $post */
         $post = factory(Post::class)->create();
 
-        $expected = [
-            'type' => 'posts',
-            'id' => $post->getKey(),
-        ];
-
-        $this->doRead($post)->assertRead($expected);
+        $this->doRead($post)->assertFetchedOne($post);
     }
 }

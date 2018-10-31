@@ -17,7 +17,6 @@
 
 namespace CloudCreativity\LaravelJsonApi\Http\Requests;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceIdentifierInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\InvalidJsonException;
@@ -36,7 +35,7 @@ use function CloudCreativity\LaravelJsonApi\json_decode;
  *
  * @package CloudCreativity\LaravelJsonApi
  */
-class IlluminateRequest implements RequestInterface
+class JsonApiRequest
 {
 
     /**
@@ -100,9 +99,11 @@ class IlluminateRequest implements RequestInterface
     }
 
     /**
-     * @inheritDoc
+     * Get the domain record type that is subject of the request.
+     *
+     * @return string
      */
-    public function getType()
+    public function getType(): string
     {
         if ($resource = $this->getResource()) {
             return get_class($resource);
@@ -118,17 +119,22 @@ class IlluminateRequest implements RequestInterface
     }
 
     /**
-     * @inheritdoc
+     * What resource type does the request relate to?
+     *
+     * @return string|null
+     *      the requested resource type, or null if none was requested.
      */
-    public function getResourceType()
+    public function getResourceType(): ?string
     {
         return $this->request->route(ResourceRegistrar::PARAM_RESOURCE_TYPE);
     }
 
     /**
-     * @inheritdoc
+     * What resource id does the request relate to?
+     *
+     * @return string|null
      */
-    public function getResourceId()
+    public function getResourceId(): ?string
     {
         /** Cache the resource id because binding substitutions will override it. */
         if (is_null($this->resourceId)) {
@@ -139,9 +145,12 @@ class IlluminateRequest implements RequestInterface
     }
 
     /**
-     * @inheritdoc
+     * Get the resource identifier for the request.
+     *
+     * @return ResourceIdentifierInterface|null
+     * @deprecated 2.0.0
      */
-    public function getResourceIdentifier()
+    public function getResourceIdentifier(): ?ResourceIdentifierInterface
     {
         if (!$resourceId = $this->getResourceId()) {
             return null;
@@ -151,7 +160,9 @@ class IlluminateRequest implements RequestInterface
     }
 
     /**
-     * @inheritdoc
+     * Get the domain object that the request relates to.
+     *
+     * @return mixed|null
      */
     public function getResource()
     {
@@ -161,33 +172,44 @@ class IlluminateRequest implements RequestInterface
     }
 
     /**
-     * @inheritdoc
+     * What resource relationship does the request relate to?
+     *
+     * @return string|null
      */
-    public function getRelationshipName()
+    public function getRelationshipName(): ?string
     {
         return $this->request->route(ResourceRegistrar::PARAM_RELATIONSHIP_NAME);
     }
 
     /**
-     * @inheritdoc
+     * What is the inverse resource type for a relationship?
+     *
+     * For example, a `GET /posts/1/author`, the string returned by this method
+     * would be `users` if the related author is a `users` JSON API resource type.
+     *
+     * @return string|null
      */
-    public function getInverseResourceType()
+    public function getInverseResourceType(): ?string
     {
         return $this->request->route(ResourceRegistrar::PARAM_RELATIONSHIP_INVERSE_TYPE);
     }
 
     /**
-     * @inheritDoc
+     * What process resource type does the request relate to?
+     *
+     * @return string|null
      */
-    public function getProcessType()
+    public function getProcessType(): ?string
     {
         return $this->request->route(ResourceRegistrar::PARAM_PROCESS_TYPE);
     }
 
     /**
-     * @inheritdoc
+     * What process id does the request relate to?
+     *
+     * @return string|null
      */
-    public function getProcessId()
+    public function getProcessId(): ?string
     {
         /** Cache the process id because binding substitutions will override it. */
         if (is_null($this->processId)) {
@@ -198,9 +220,12 @@ class IlluminateRequest implements RequestInterface
     }
 
     /**
-     * @inheritdoc
+     * Get the process identifier for the request.
+     *
+     * @return ResourceIdentifierInterface|null
+     * @deprecated 2.0.0
      */
-    public function getProcessIdentifier()
+    public function getProcessIdentifier(): ?ResourceIdentifierInterface
     {
         if (!$id = $this->getProcessId()) {
             return null;
@@ -210,9 +235,11 @@ class IlluminateRequest implements RequestInterface
     }
 
     /**
-     * @inheritdoc
+     * Get the encoding parameters from the request.
+     *
+     * @return EncodingParametersInterface
      */
-    public function getParameters()
+    public function getParameters(): EncodingParametersInterface
     {
         if ($this->parameters) {
             return $this->parameters;
@@ -222,7 +249,9 @@ class IlluminateRequest implements RequestInterface
     }
 
     /**
-     * @inheritdoc
+     * Get the JSON API document from the request, if there is one.
+     *
+     * @return object|null
      */
     public function getDocument()
     {
@@ -234,73 +263,114 @@ class IlluminateRequest implements RequestInterface
     }
 
     /**
-     * @inheritdoc
+     * Is this an index request?
+     *
+     * E.g. `GET /posts`
+     *
+     * @return bool
      */
-    public function isIndex()
+    public function isIndex(): bool
     {
         return $this->isMethod('get') && $this->isNotResource() && $this->isNotProcesses();
     }
 
     /**
-     * @inheritdoc
+     * Is this a create resource request?
+     *
+     * E.g. `POST /posts`
+     *
+     * @return bool
      */
-    public function isCreateResource()
+    public function isCreateResource(): bool
     {
         return $this->isMethod('post') && $this->isNotResource();
     }
 
     /**
-     * @inheritdoc
+     * Is this a read resource request?
+     *
+     * E.g. `GET /posts/1`
+     *
+     * @return bool
      */
-    public function isReadResource()
+    public function isReadResource(): bool
     {
         return $this->isMethod('get') && $this->isResource() && !$this->isRelationship();
     }
 
     /**
-     * @inheritdoc
+     * Is this an update resource request?
+     *
+     * E.g. `PATCH /posts/1`
+     *
+     * @return bool
      */
-    public function isUpdateResource()
+    public function isUpdateResource(): bool
     {
         return $this->isMethod('patch') && $this->isResource() && !$this->isRelationship();
     }
 
     /**
-     * @inheritdoc
+     * Is this a delete resource request?
+     *
+     * E.g. `DELETE /posts/1`
+     *
+     * @return bool
      */
-    public function isDeleteResource()
+    public function isDeleteResource(): bool
     {
         return $this->isMethod('delete') && $this->isResource() && !$this->isRelationship();
     }
 
     /**
-     * @inheritdoc
+     * Is this a request for a related resource or resources?
+     *
+     * E.g. `GET /posts/1/author` or `GET /posts/1/comments`
+     *
+     * @return bool
      */
-    public function isReadRelatedResource()
+    public function isReadRelatedResource(): bool
     {
         return $this->isRelationship() && !$this->hasRelationships();
     }
 
     /**
-     * @inheritdoc
+     * Does the request URI have the 'relationships' keyword?
+     *
+     * E.g. `/posts/1/relationships/author` or `/posts/1/relationships/comments`
+     *
+     * I.e. the URL request contains the pattern `/relationships/` after the
+     * resource id and before the relationship name.
+     *
+     * @return bool
+     * @see http://jsonapi.org/format/#fetching-relationships
      */
-    public function hasRelationships()
+    public function hasRelationships(): bool
     {
         return $this->request->is('*/relationships/*');
     }
 
     /**
-     * @inheritdoc
+     * Is this a request to read the data of a relationship?
+     *
+     * E.g. `GET /posts/1/relationships/author` or `GET /posts/1/relationships/comments`
+     *
+     * @return bool
      */
-    public function isReadRelationship()
+    public function isReadRelationship(): bool
     {
         return $this->isMethod('get') && $this->hasRelationships();
     }
 
     /**
-     * @inheritdoc
+     * Is this a request to modify the data of a relationship?
+     *
+     * I.e. is this a replace relationship, add to relationship or remove from relationship
+     * request.
+     *
+     * @return bool
      */
-    public function isModifyRelationship()
+    public function isModifyRelationship(): bool
     {
         return $this->isReplaceRelationship() ||
             $this->isAddToRelationship() ||
@@ -308,41 +378,59 @@ class IlluminateRequest implements RequestInterface
     }
 
     /**
-     * @inheritdoc
+     * Is this a request to replace the data of a relationship?
+     *
+     * E.g. `PATCH /posts/1/relationships/author` or `PATCH /posts/1/relationships/comments`
      */
-    public function isReplaceRelationship()
+    public function isReplaceRelationship(): bool
     {
         return $this->isMethod('patch') && $this->hasRelationships();
     }
 
     /**
-     * @inheritdoc
+     * Is this a request to add to the data of a has-many relationship?
+     *
+     * E.g. `POST /posts/1/relationships/comments`
+     *
+     * @return bool
      */
-    public function isAddToRelationship()
+    public function isAddToRelationship(): bool
     {
         return $this->isMethod('post') && $this->hasRelationships();
     }
 
     /**
-     * @inheritdoc
+     * Is this a request to remove from the data of a has-many relationship?
+     *
+     * E.g. `DELETE /posts/1/relationships/comments`
+     *
+     * @return bool
      */
-    public function isRemoveFromRelationship()
+    public function isRemoveFromRelationship(): bool
     {
         return $this->isMethod('delete') && $this->hasRelationships();
     }
 
     /**
-     * @inheritDoc
+     * Is this a request to read all processes for a resource type?
+     *
+     * E.g. `GET /posts/queue-jobs`
+     *
+     * @return bool
      */
-    public function isReadProcesses()
+    public function isReadProcesses(): bool
     {
         return $this->isMethod('get') && $this->isProcesses() && $this->isNotProcess();
     }
 
     /**
-     * @inheritDoc
+     * Is this a request to read a process for a resource type?
+     *
+     * E.g. `GET /posts/queue-jobs/839765f4-7ff4-4625-8bf7-eecd3ab44946`
+     *
+     * @return bool
      */
-    public function isReadProcess()
+    public function isReadProcess(): bool
     {
         return $this->isMethod('get') && $this->isProcess();
     }
@@ -353,6 +441,14 @@ class IlluminateRequest implements RequestInterface
     private function isResource(): bool
     {
         return !empty($this->getResourceId());
+    }
+
+    /**
+     * @return bool
+     */
+    private function isRelationship(): bool
+    {
+        return !empty($this->getRelationshipName());
     }
 
     /**
@@ -379,6 +475,9 @@ class IlluminateRequest implements RequestInterface
         return !$this->isProcesses();
     }
 
+    /**
+     * @return bool
+     */
     private function isProcess(): bool
     {
         return !empty($this->getProcessId());
@@ -390,14 +489,6 @@ class IlluminateRequest implements RequestInterface
     private function isNotProcess(): bool
     {
         return !$this->isProcess();
-    }
-
-    /**
-     * @return bool
-     */
-    private function isRelationship(): bool
-    {
-        return !empty($this->getRelationshipName());
     }
 
     /**

@@ -20,15 +20,14 @@ namespace CloudCreativity\LaravelJsonApi\Store;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\HasManyAdapterInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Object\RelationshipInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceIdentifierCollectionInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceIdentifierInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreAwareInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\RecordNotFoundException;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Object\ResourceIdentifier;
+use CloudCreativity\LaravelJsonApi\Object\ResourceIdentifierCollection;
+use Illuminate\Support\Collection;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 /**
@@ -81,11 +80,11 @@ class Store implements StoreInterface
     /**
      * @inheritDoc
      */
-    public function createRecord($resourceType, ResourceObjectInterface $resource, EncodingParametersInterface $params)
+    public function createRecord($resourceType, array $document, EncodingParametersInterface $params)
     {
         $record = $this
             ->adapterFor($resourceType)
-            ->create($resource, $params);
+            ->create($document, $params);
 
         if ($schema = $this->container->getSchemaByResourceType($resourceType)) {
             $identifier = ResourceIdentifier::create($resourceType, $schema->getId($record));
@@ -114,11 +113,11 @@ class Store implements StoreInterface
     /**
      * @inheritDoc
      */
-    public function updateRecord($record, ResourceObjectInterface $resource, EncodingParametersInterface $params)
+    public function updateRecord($record, array $document, EncodingParametersInterface $params)
     {
         return $this
             ->adapterFor($record)
-            ->update($record, $resource, $params);
+            ->update($record, $document, $params);
     }
 
     /**
@@ -170,13 +169,13 @@ class Store implements StoreInterface
     public function replaceRelationship(
         $record,
         $relationshipName,
-        RelationshipInterface $relationship,
+        array $document,
         EncodingParametersInterface $params
     ) {
         return $this
             ->adapterFor($record)
             ->getRelated($relationshipName)
-            ->replace($record, $relationship, $params);
+            ->replace($record, $document, $params);
     }
 
     /**
@@ -185,12 +184,12 @@ class Store implements StoreInterface
     public function addToRelationship(
         $record,
         $relationshipName,
-        RelationshipInterface $relationship,
+        array $document,
         EncodingParametersInterface $params
     ) {
         return $this
             ->adapterForHasMany($record, $relationshipName)
-            ->add($record, $relationship, $params);
+            ->add($record, $document, $params);
     }
 
     /**
@@ -199,19 +198,25 @@ class Store implements StoreInterface
     public function removeFromRelationship(
         $record,
         $relationshipName,
-        RelationshipInterface $relationship,
+        array $document,
         EncodingParametersInterface $params
     ) {
         return $this
             ->adapterForHasMany($record, $relationshipName)
-            ->remove($record, $relationship, $params);
+            ->remove($record, $document, $params);
     }
 
     /**
      * @inheritdoc
      */
-    public function exists(ResourceIdentifierInterface $identifier)
+    public function exists($type, $id = null)
     {
+        if ($type instanceof ResourceIdentifierInterface) {
+            $identifier = $type;
+        } else {
+            $identifier = ResourceIdentifier::create($type, $id);
+        }
+
         $check = $this->identityMap->exists($identifier);
 
         if (is_bool($check)) {
@@ -230,8 +235,9 @@ class Store implements StoreInterface
     /**
      * @inheritdoc
      */
-    public function find(ResourceIdentifierInterface $identifier)
+    public function find($type, $id = null)
     {
+        $identifier = ResourceIdentifier::cast($type, $id);
         $record = $this->identityMap->find($identifier);
 
         if (is_object($record)) {
@@ -273,8 +279,46 @@ class Store implements StoreInterface
     /**
      * @inheritDoc
      */
-    public function findMany(ResourceIdentifierCollectionInterface $identifiers)
+    public function findToOne(array $relationship)
     {
+        if (!array_key_exists('data', $relationship)) {
+            throw new RuntimeException('Expecting relationship to have a data member.');
+        }
+
+        if (is_null($relationship['data'])) {
+            return null;
+        }
+
+        if (!is_array($relationship['data'])) {
+            throw new RuntimeException('Expecting data to be an array with a type and id member.');
+        }
+
+        return $this->find($relationship['data']);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function findToMany(array $relationship)
+    {
+        $data = $relationship['data'] ?? null;
+
+        if (!is_array($data)) {
+            throw new RuntimeException('Expecting relationship to have a data member that is an array.');
+        }
+
+        return $this->findMany($data);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function findMany($identifiers)
+    {
+        if (is_array($identifiers)) {
+            $identifiers = ResourceIdentifierCollection::fromArray($identifiers);
+        }
+
         $results = [];
 
         foreach ($identifiers->map() as $resourceType => $ids) {

@@ -27,6 +27,7 @@ use Neomerx\JsonApi\Exceptions\ErrorCollection;
  * Interface DocumentInterface
  *
  * @package CloudCreativity\LaravelJsonApi
+ * @deprecated 2.0.0
  */
 interface DocumentInterface extends StandardObjectInterface, MetaMemberInterface
 {

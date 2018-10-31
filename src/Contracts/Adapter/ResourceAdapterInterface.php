@@ -17,7 +17,6 @@
 
 namespace CloudCreativity\LaravelJsonApi\Contracts\Adapter;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 /**
@@ -44,12 +43,13 @@ interface ResourceAdapterInterface
     /**
      * Create a domain record using data from the supplied resource object.
      *
-     * @param ResourceObjectInterface $resource
+     * @param array $document
+     *      The JSON API document received from the client.
      * @param EncodingParametersInterface $parameters
      * @return object
      *      the created domain record.
      */
-    public function create(ResourceObjectInterface $resource, EncodingParametersInterface $parameters);
+    public function create(array $document, EncodingParametersInterface $parameters);
 
     /**
      * Query a single domain record.
@@ -63,19 +63,20 @@ interface ResourceAdapterInterface
     /**
      * Update a domain record with data from the supplied resource object.
      *
-     * @param object $record
+     * @param mixed $record
      *      the domain record to update.
-     * @param ResourceObjectInterface $resource
+     * @param array $document
+     *      The JSON API document received from the client.
      * @param EncodingParametersInterface $params
      * @return object
      *      the updated domain record.
      */
-    public function update($record, ResourceObjectInterface $resource, EncodingParametersInterface $params);
+    public function update($record, array $document, EncodingParametersInterface $params);
 
     /**
      * Delete a domain record.
      *
-     * @param $record
+     * @param mixed $record
      * @param EncodingParametersInterface $params
      * @return bool|mixed
      *      a boolean indicating whether the record was successfully destroyed, or content to return to the client.
@@ -94,7 +95,7 @@ interface ResourceAdapterInterface
      * Get the domain record that relates to the specified JSON API resource id, if it exists.
      *
      * @param string $resourceId
-     * @return object|null
+     * @return mixed|null
      */
     public function find($resourceId);
 

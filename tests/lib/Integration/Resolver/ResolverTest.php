@@ -71,7 +71,7 @@ class ResolverTest extends TestCase
 
         $this->doRead($post)->assertRead([
             'type' => 'foobars',
-            'id' => $post->getRouteKey(),
+            'id' => $post,
             'attributes' => [
                 'title' => $post->title,
             ],
@@ -92,7 +92,7 @@ class ResolverTest extends TestCase
 
         $this->doRead($post)->assertRead([
             'type' => 'foobars',
-            'id' => $post->getRouteKey(),
+            'id' => $post,
             'attributes' => [
                 'title' => $post->title,
             ],

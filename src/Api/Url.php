@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Copyright 2018 Cloud Creativity Limited
  *
@@ -17,6 +16,8 @@
  */
 
 namespace CloudCreativity\LaravelJsonApi\Api;
+
+use Illuminate\Contracts\Routing\UrlRoutable;
 
 /**
  * Class Url
@@ -47,7 +48,7 @@ class Url
      * @param array $url
      * @return Url
      */
-    public static function fromArray(array $url)
+    public static function fromArray(array $url): self
     {
         return new self(
             isset($url['host']) ? $url['host'] : '',
@@ -63,10 +64,10 @@ class Url
      * @param string $namespace
      * @param string $name
      */
-    public function __construct($host, $namespace, $name)
+    public function __construct(string $host, string $namespace, string $name)
     {
         $this->host = rtrim($host, '/');
-        $this->namespace = $namespace ? '/' . ltrim($namespace, '/') : null;
+        $this->namespace = $namespace ? '/' . ltrim($namespace, '/') : '';
         $this->name = $name;
     }
 
@@ -81,7 +82,7 @@ class Url
     /**
      * @return string
      */
-    public function toString()
+    public function toString(): string
     {
         return rtrim($this->host . $this->namespace, '/');
     }
@@ -90,7 +91,7 @@ class Url
      * @param $host
      * @return Url
      */
-    public function withHost($host)
+    public function withHost($host): self
     {
         $copy = clone $this;
         $copy->host = rtrim($host, '/');
@@ -101,7 +102,7 @@ class Url
     /**
      * @return string
      */
-    public function getHost()
+    public function getHost(): string
     {
         return $this->host;
     }
@@ -109,7 +110,7 @@ class Url
     /**
      * @return string
      */
-    public function getNamespace()
+    public function getNamespace(): string
     {
         return $this->namespace;
     }
@@ -117,18 +118,86 @@ class Url
     /**
      * @return string
      */
-    public function getName()
+    public function getName(): string
     {
         return $this->name;
     }
 
     /**
+     * Get the base URI for a Guzzle client.
+     *
      * @return string
      */
-    public function getBaseUri()
+    public function getBaseUri(): string
     {
         return $this->toString() . '/';
     }
 
+    /**
+     * Get the URL for the resource type.
+     *
+     * @param string $type
+     * @param array $params
+     * @return string
+     */
+    public function getResourceTypeUrl(string $type, array $params = []): string
+    {
+        return $this->url([$type], $params);
+    }
+
+    /**
+     * Get the URL for the specified resource.
+     *
+     * @param string $type
+     * @param mixed $id
+     * @param array $params
+     * @return string
+     */
+    public function getResourceUrl(string $type, $id, array $params = []): string
+    {
+        return $this->url([$type, $id], $params);
+    }
+
+    /**
+     * Get the URI for a related resource.
+     *
+     * @param string $type
+     * @param mixed $id
+     * @param string $field
+     * @param array $params
+     * @return string
+     */
+    public function getRelatedUrl(string $type, $id, string $field, array $params = []): string
+    {
+        return $this->url([$type, $id, $field], $params);
+    }
+
+    /**
+     * Get the URI for the resource's relationship.
+     *
+     * @param string $type
+     * @param mixed $id
+     * @param string $field
+     * @param array $params
+     * @return string
+     */
+    public function getRelationshipUri(string $type, $id, string $field, array $params = []): string
+    {
+        return $this->url([$type, $id, 'relationships', $field], $params);
+    }
+
+    /**
+     * @param array $extra
+     * @param array $params
+     * @return string
+     */
+    private function url(array $extra, array $params = []): string
+    {
+        $url = collect([$this->toString()])->merge($extra)->map(function ($value) {
+            return $value instanceof UrlRoutable ? $value->getRouteKey() : (string) $value;
+        })->implode('/');
+
+        return $params ? $url . '?' . http_build_query($params) : $url;
+    }
 
 }

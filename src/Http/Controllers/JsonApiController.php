@@ -335,7 +335,7 @@ class JsonApiController extends Controller
 
         $record = $store->createRecord(
             $request->getResourceType(),
-            $request->getDocument()->getResource(),
+            $request->all(),
             $request->getParameters()
         );
 
@@ -360,7 +360,7 @@ class JsonApiController extends Controller
 
         $record = $store->updateRecord(
             $request->getRecord(),
-            $request->getDocument()->getResource(),
+            $request->all(),
             $request->getParameters()
         );
 
@@ -408,7 +408,7 @@ class JsonApiController extends Controller
         $record = $store->replaceRelationship(
             $record,
             $field,
-            $request->getDocument()->getRelationship(),
+            $request->all(),
             $request->getParameters()
         );
 
@@ -434,7 +434,7 @@ class JsonApiController extends Controller
         $record = $store->addToRelationship(
             $record,
             $field,
-            $request->getDocument()->getRelationship(),
+            $request->all(),
             $request->getParameters()
         );
 
@@ -460,7 +460,7 @@ class JsonApiController extends Controller
         $record = $store->removeFromRelationship(
             $record,
             $field,
-            $request->getDocument()->getRelationship(),
+            $request->all(),
             $request->getParameters()
         );
 

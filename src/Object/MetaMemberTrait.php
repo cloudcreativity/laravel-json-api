@@ -27,6 +27,7 @@ use Neomerx\JsonApi\Contracts\Document\DocumentInterface;
  * Class MetaMemberTrait
  *
  * @package CloudCreativity\LaravelJsonApi
+ * @deprecated 2.0.0
  */
 trait MetaMemberTrait
 {

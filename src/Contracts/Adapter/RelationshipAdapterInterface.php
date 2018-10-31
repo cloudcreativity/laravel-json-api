@@ -17,7 +17,6 @@
 
 namespace CloudCreativity\LaravelJsonApi\Contracts\Adapter;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Object\RelationshipInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 interface RelationshipAdapterInterface
@@ -37,7 +36,7 @@ interface RelationshipAdapterInterface
      * For example, if a client was querying the `comments` relationship of a `posts` resource.
      * This method would be invoked providing the post that is being queried as the `$record` argument.
      *
-     * @param object $record
+     * @param mixed $record
      * @param EncodingParametersInterface $parameters
      * @return mixed
      */
@@ -49,7 +48,7 @@ interface RelationshipAdapterInterface
      * For example, if a client was querying the `comments` relationship of a `posts` resource.
      * This method would be invoked providing the post that is being queried as the `$record` argument.
      *
-     * @param $record
+     * @param mixed $record
      * @param EncodingParametersInterface $parameters
      * @return mixed
      */
@@ -64,25 +63,25 @@ interface RelationshipAdapterInterface
      * For a has-many relationship, this completely replaces every member of the relationship, changing
      * it to match the supplied relationship object.
      *
-     * @param object $record
-     *      the object to hydrate.
-     * @param RelationshipInterface $relationship
-     *      the relationship object to use for the hydration.
+     * @param mixed $record
+     * @param array $relationship
+     *      The JSON API relationship object.
      * @param EncodingParametersInterface $parameters
      * @return object
      *      the updated domain record.
      */
-    public function update($record, RelationshipInterface $relationship, EncodingParametersInterface $parameters);
+    public function update($record, array $relationship, EncodingParametersInterface $parameters);
 
     /**
      * Replace a domain record's relationship with data from the supplied relationship object.
      *
-     * @param $record
-     * @param RelationshipInterface $relationship
+     * @param mixed $record
+     * @param array $relationship
+     *      The JSON API relationship object.
      * @param EncodingParametersInterface $parameters
      * @return object
      *      the updated domain record.
      */
-    public function replace($record, RelationshipInterface $relationship, EncodingParametersInterface $parameters);
+    public function replace($record, array $relationship, EncodingParametersInterface $parameters);
 
 }

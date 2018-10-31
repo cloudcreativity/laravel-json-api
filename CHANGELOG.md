@@ -2,6 +2,68 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## Unreleased
+
+### Added
+- [#247](https://github.com/cloudcreativity/laravel-json-api/issues/247) 
+New date time rule object to validate a JSON date string is a valid ISO 8601 date and time format.
+- [#246](https://github.com/cloudcreativity/laravel-json-api/issues/246)
+Can now disable providing the existing resource attributes to the resource validator for an update
+request.
+- Added an `existingRelationships` method to the abstract validators class. Child classes can overload
+this method if they need the validator to have access to any existing relationship values for an
+update request.
+- JSON API specification validation will now fail if the `attributes` or `relationships` members have
+`type` or `id` fields.
+- JSON API specification validation will now fail if the `attributes` and `relationships` members have
+common field names, as field names share a common namespace.
+
+### Changed
+- [#248](https://github.com/cloudcreativity/laravel-json-api/pull/248)
+Adapters now receive the JSON API document (HTTP content) as an array.
+- Renamed `Http\Requests\IlluminateRequest` to `Http\Requests\JsonApiRequest`.
+- The `getJsonApi()` test helper method now only has two arguments: URI and headers. Previously it
+accepted data as the second argument.
+- Improved test assertions and tidied up the test response class.
+- Improve the store aware trait so that it returns a store even if one has not been injected.
+
+### Fixed
+- [#201](https://github.com/cloudcreativity/laravel-json-api/issues/201)
+Adapters now receive the array that has been transformed by Laravel's middleware, e.g. trim strings.
+
+### Removed
+- The deprecated `Contracts\Store\AdapterInterface` was removed. Use 
+`Contracts\Adapter\ResourceAdapterInterface` instead.
+- The deprecated `Adapter\HydratesAttributesTrait` was removed.
+- The `Contracts\Http\Requests\RequestInterface` was removed as it is no longer necessary (because the
+package is no longer framework-agnostic).
+- Removed the `Contracts\Repository\SchemasRepositoryInterface` and `Repository\SchemasRepository` class
+because these were not in use.
+- The previously deprecated `InteractsWithModels` testing trait was removed.
+- The following (majority previously deprecated methods) on the `TestResponse` class were removed:
+  - `assertDocument`
+  - `assertResourceResponse`
+  - `assertResourcesResponse`
+  - `assertRelatedResourcesResponse`
+  - `assertSearchResponse`
+  - `assertSearchOneResponse`
+  - `assertCreateResponse`
+  - `assertReadResponse`
+  - `assertUpdateResponse`
+  - `assertDeleteResponse`
+  - `assertRelatedResourceResponse`
+  - `assertHasOneRelationshipResponse`
+  - `assertDataCollection`
+  - `assertDataResource`
+  - `assertDataResourceIdentifier`
+  - `assertSearchByIdResponse`
+  - `assertSearchedPolymorphIds`
+  - `assertReadPolymorphHasMany`
+
+### Deprecated
+- All interfaces in the `Contracts\Object` namespace will be removed for `2.0`.
+- All classes in the `Object` namespace will be removed for `2.0`.
+
 ## [1.0.0-beta.5] - 2018-10-13
 
 ### Fixed

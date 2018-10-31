@@ -52,20 +52,25 @@ class ClientDispatchTest extends TestCase
             ],
         ];
 
-        $this->doCreate($data)->assertAccepted([
+        $expected = [
             'type' => 'queue-jobs',
             'attributes' => [
                 'attempts' => 0,
                 'created-at' => Carbon::now()->format('Y-m-d\TH:i:s.uP'),
                 'completed-at' => null,
-                'failed' => null,
+                'failed' => false,
                 'resource' => 'downloads',
                 'timeout' => 60,
                 'timeout-at' => null,
                 'tries' => null,
                 'updated-at' => Carbon::now()->format('Y-m-d\TH:i:s.uP'),
             ],
-        ], 'http://localhost/api/v1/downloads/queue-jobs');
+        ];
+
+        $id = $this->doCreate($data)->assertAcceptedWithId(
+            'http://localhost/api/v1/downloads/queue-jobs',
+            $expected
+        )->jsonApi('/data/id');
 
         $job = $this->assertDispatchedCreate();
 
@@ -75,7 +80,7 @@ class ClientDispatchTest extends TestCase
         $this->assertNull($job->resourceId(), 'resource id');
 
         $this->assertDatabaseHas('json_api_client_jobs', [
-            'uuid' => $job->clientJob->getKey(),
+            'uuid' => $id,
             'created_at' => '2018-10-23 12:00:00.123456',
             'updated_at' => '2018-10-23 12:00:00.123456',
             'api' => 'v1',
@@ -104,7 +109,7 @@ class ClientDispatchTest extends TestCase
             ],
         ];
 
-        $this->doCreate($data)->assertAccepted([
+        $this->doCreate($data)->assertAcceptedWithId('http://localhost/api/v1/downloads/queue-jobs', [
             'type' => 'queue-jobs',
             'attributes' => [
                 'resource' => 'downloads',
@@ -144,7 +149,7 @@ class ClientDispatchTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data, ['include' => 'resource'])->assertAccepted([
+        $expected = [
             'type' => 'queue-jobs',
             'attributes' => [
                 'resource' => 'downloads',
@@ -160,14 +165,12 @@ class ClientDispatchTest extends TestCase
                     ],
                 ],
             ],
-        ])->assertJson([
-            'included' => [
-                [
-                    'type' => 'downloads',
-                    'id' => (string) $download->getRouteKey(),
-                ],
-            ],
-        ]);
+        ];
+
+        $this->doUpdate($data, ['include' => 'resource'])->assertAcceptedWithId(
+            'http://localhost/api/v1/downloads/queue-jobs',
+            $expected
+        )->assertIsIncluded('downloads', $download);
 
         $job = $this->assertDispatchedReplace();
 
@@ -188,7 +191,7 @@ class ClientDispatchTest extends TestCase
     {
         $download = factory(Download::class)->create();
 
-        $this->doDelete($download)->assertAccepted([
+        $this->doDelete($download)->assertAcceptedWithId('http://localhost/api/v1/downloads/queue-jobs', [
             'type' => 'queue-jobs',
             'attributes' => [
                 'resource' => 'downloads',

@@ -19,7 +19,6 @@ namespace CloudCreativity\LaravelJsonApi\Http\Requests;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Auth\AuthorizerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Object\DocumentInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validation\DocumentValidatorInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorFactoryInterface;
@@ -44,14 +43,14 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
     protected $request;
 
     /**
+     * @var JsonApiRequest
+     */
+    protected $jsonApiRequest;
+
+    /**
      * @var Factory
      */
     protected $factory;
-
-    /**
-     * @var RequestInterface
-     */
-    protected $jsonApiRequest;
 
     /**
      * @var ContainerInterface
@@ -81,13 +80,13 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
      * @param Request $httpRequest
      * @param ContainerInterface $container
      * @param Factory $factory
-     * @param RequestInterface $jsonApiRequest
+     * @param JsonApiRequest $jsonApiRequest
      */
     public function __construct(
         Request $httpRequest,
         ContainerInterface $container,
         Factory $factory,
-        RequestInterface $jsonApiRequest
+        JsonApiRequest $jsonApiRequest
     ) {
         $this->request = $httpRequest;
         $this->factory = $factory;
@@ -191,7 +190,7 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
      * Get the validated JSON API document, if there is one.
      *
      * @return DocumentInterface|null
-     * @deprecated
+     * @deprecated 2.0.0
      */
     public function getDocument()
     {

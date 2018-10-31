@@ -5,6 +5,100 @@
 We are now on `1.0.0` beta releases. Changes during this cycle will be kept to the minimum required to
 fix remaining issues, most of which relate to validation.
 
+## 1.0.0-beta.5 to 1.0.0-beta.6
+
+### Adapters
+
+We have modified the adapter interface to ensure that Laravel's transformation middleware (e.g. trim strings) 
+work with this package. This means that adapters now receives the JSON API document (the HTTP request body) as
+an array. This has also resulted in some changes to the method signatures of methods on our abstract adapters.
+
+An advantage is it has enabled us to deprecated the document object interface/classes
+(in the `Contracts\Object` and `Object` namespaces). These were in this package for historic reasons and we 
+have wanted to remove them for some time. They are marked as deprecated and will be removed for good in `2.0.0`.
+
+Below are the main changes if you have extended our abstract adapters. Your adapters may not have all
+of these methods.
+
+> If you have overridden any of the internals of the abstract adapters you may need to make additional changes.
+If you have directly implemented the interface to write your own adapter, you will need to refer to the updated
+adapter interface for changes.
+
+#### `createRecord()`
+
+The method signature has changed from:
+
+`createRecord(\CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectInterface $resource)`
+
+to:
+
+`createRecord(\CloudCreativity\LaravelJsonApi\Document\ResourceObject $resource)`
+
+The new resource object class represents the resource sent by the client. Values can be accessed using the
+JSON API field name (i.e. the attribute or relationship name). For example `$value = $resource['title']` 
+would access the `title` attribute. This is far simpler than the previous resource object class.
+
+#### `fillAttributes()`
+
+The method signature has changed from:
+
+`fillAttributes($record, \CloudCreativity\Utils\Object\StandardObjectInterface $attributes)`
+
+to:
+
+`fillAttributes($record, \Illuminate\Support\Collection $attributes)`
+
+#### `hydrateRelated`
+
+This method has been renamed `fillRelated` and the method signature has changed from:
+
+```
+hydrateRelated(
+  $record, 
+  \CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectInterface $resource,
+  \Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface
+)`
+```
+
+to:
+
+```
+fillRelated(
+  $record, 
+  \CloudCreativity\LaravelJsonApi\Document\ResourceObject $resource,
+  \Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface
+)`
+```
+
+### Testing
+
+You will need to update the JSON API test dependency to `1.0`:
+
+```bash
+$ composer require --dev cloudcreativity/json-api-testing:^1.0
+```
+
+This new version improves test assertions and feedback that you receive via PHP Unit.
+
+As a result of improving the assertions, some of your tests that previously passed may now fail. The
+prime example of this is the assertions are stricter about the *type* of a value in the response's JSON.
+You may need to tweak existing tests accordingly. If you have an existing test that is now not passing,
+and you are unsure why, please create a Github issue.
+
+If you are using the `getJsonApi()` test helper method, it now only has two arguments: URI and headers.
+Previously it accepted data as the second argument.
+
+As part of these changes we have removed all previously deprecated methods on the test response and the
+`InteractsWithModels` test trait. These were deprecated some time ago so hopefully will not require any
+major refactoring. For a full list of deprecated methods, refer to the package changelog.
+
+There were two methods that we had to remove from the test response that were not previously deprecated:
+  - `assertSearchedPolymorphIds`: use `assertFetchedMany`
+  - `assertReadPolymorphHasMany`: use `assertFetchedToMany`
+
+All other methods that we wanted to remove, but were not previously marked as deprecated, have been left.
+We have marked them as deprecated and will remove them in `2.0.0`.
+
 ## 1.0.0-beta.3 to 1.0.0-beta.5
 
 > You should upgrade directly to `beta.5` as `beta.4` had a

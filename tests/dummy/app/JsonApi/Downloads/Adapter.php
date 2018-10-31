@@ -29,17 +29,17 @@ class Adapter extends AbstractAdapter
     /**
      * @inheritdoc
      */
-    public function create(ResourceObjectInterface $resource, EncodingParametersInterface $parameters)
+    public function create(array $document, EncodingParametersInterface $parameters)
     {
-        $resource = ResourceObject::create($resource->toArray());
-
-        return CreateDownload::client($resource->get('category'))->dispatch();
+        return CreateDownload::client(
+            array_get($document, 'data.attributes.category')
+        )->dispatch();
     }
 
     /**
      * @inheritdoc
      */
-    public function update($record, ResourceObjectInterface $resource, EncodingParametersInterface $parameters)
+    public function update($record, array $document, EncodingParametersInterface $parameters)
     {
         return ReplaceDownload::client($record)->dispatch();
     }
@@ -57,7 +57,7 @@ class Adapter extends AbstractAdapter
      */
     protected function filter($query, Collection $filters)
     {
-        // TODO: Implement filter() method.
+        // noop
     }
 
 }

@@ -17,10 +17,9 @@
 
 namespace CloudCreativity\LaravelJsonApi\Http\Middleware;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\NotFoundException;
-use CloudCreativity\LaravelJsonApi\Object\ResourceIdentifier;
+use CloudCreativity\LaravelJsonApi\Http\Requests\JsonApiRequest;
 use CloudCreativity\LaravelJsonApi\Routing\ResourceRegistrar;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
@@ -39,7 +38,7 @@ class SubstituteBindings
     private $store;
 
     /**
-     * @var RequestInterface
+     * @var JsonApiRequest
      */
     private $jsonApiRequest;
 
@@ -47,9 +46,9 @@ class SubstituteBindings
      * SubstituteBindings constructor.
      *
      * @param StoreInterface $store
-     * @param RequestInterface $request
+     * @param JsonApiRequest $request
      */
-    public function __construct(StoreInterface $store, RequestInterface $request)
+    public function __construct(StoreInterface $store, JsonApiRequest $request)
     {
         $this->store = $store;
         $this->jsonApiRequest = $request;

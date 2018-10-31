@@ -122,6 +122,16 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
     protected $allowedFieldSets = null;
 
     /**
+     * Whether existing resource attributes should be validated on for an update.
+     *
+     * If this is set to false, the validator instance will not be provided with the
+     * resource's existing attribute values when validating an update (PATCH) request.
+     *
+     * @var bool
+     */
+    protected $validateExisting = true;
+
+    /**
      * @var Factory
      */
     private $factory;
@@ -303,7 +313,7 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
      * > attributes as null values.
      *
      * So that the validator has access to the current values of attributes, we
-     * merge to provided new attributes over the top of the existing attribute
+     * merge attributes provided by the client over the top of the existing attribute
      * values.
      *
      * @param mixed $record
@@ -316,12 +326,36 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
     {
         $resource = $document['data'];
 
-        $resource['attributes'] = $this->extractAttributes(
-            $record,
-            isset($resource['attributes']) ? $resource['attributes'] : []
-        )->all();
+        if ($this->mustValidateExisting($record, $document)) {
+            $resource['attributes'] = $this->extractAttributes(
+                $record,
+                $resource['attributes'] ?? []
+            )->all();
+
+            $resource['relationships'] = $this->extractRelationships(
+                $record,
+                $resource['relationships'] ?? []
+            )->all();
+        }
 
         return $resource;
+    }
+
+    /**
+     * Should existing resource values be provided to the validator for an update request?
+     *
+     * Child classes can overload this method if they need to programmatically work out
+     * if existing values must be provided to the validator instance for an update request.
+     *
+     * @param mixed $record
+     *      the record being updated
+     * @param array $document
+     *      the JSON API document provided by the client.
+     * @return bool
+     */
+    protected function mustValidateExisting($record, array $document): bool
+    {
+        return false !== $this->validateExisting;
     }
 
     /**
@@ -333,18 +367,45 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
      */
     protected function extractAttributes($record, array $new): Collection
     {
-        return $this->existingValues($record)->merge($new);
+        return $this->existingAttributes($record)->merge($new);
     }
 
     /**
-     * Get any existing values for the provided record.
+     * Get any existing attributes for the provided record.
      *
      * @param $record
      * @return Collection
      */
-    protected function existingValues($record): Collection
+    protected function existingAttributes($record): Collection
     {
         return collect($this->container->getSchema($record)->getAttributes($record));
+    }
+
+    /**
+     * Extract relationships for a resource update.
+     *
+     * @param $record
+     * @param array $new
+     * @return Collection
+     */
+    protected function extractRelationships($record, array $new): Collection
+    {
+        return $this->existingRelationships($record)->merge($new);
+    }
+
+    /**
+     * Get any existing relationships for the provided record.
+     *
+     * As there is no reliable way for us to work this out (as we do not
+     * know the relationship keys), child classes should overload this method
+     * to add existing relationship data.
+     *
+     * @param $record
+     * @return Collection
+     */
+    protected function existingRelationships($record): Collection
+    {
+        return collect();
     }
 
     /**

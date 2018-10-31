@@ -38,7 +38,7 @@ class QueueJobsTest extends TestCase
      */
     public function testReadNotPending()
     {
-       $job = factory(ClientJob::class)->state('success')->create([
+       $job = factory(ClientJob::class)->states('success')->create([
            'resource_id' => '5b08ebcb-114b-4f9e-a0db-bd8bd046e74c',
        ]);
 
@@ -55,7 +55,7 @@ class QueueJobsTest extends TestCase
      */
     public function testReadNotPendingCannotSeeOther()
     {
-        $job = factory(ClientJob::class)->state('success')->create();
+        $job = factory(ClientJob::class)->states('success')->create();
         $expected = $this->serialize($job);
 
         $this->getJsonApi($this->jobUrl($job))

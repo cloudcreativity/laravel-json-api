@@ -28,10 +28,10 @@ class HasOne extends BelongsTo
     /**
      * @inheritDoc
      */
-    public function update($record, RelationshipInterface $relationship, EncodingParametersInterface $parameters)
+    public function update($record, array $relationship, EncodingParametersInterface $parameters)
     {
         $relation = $this->getRelation($record, $this->key);
-        $related = $this->related($relationship);
+        $related = $this->findToOne($relationship);
         /** @var Model|null $current */
         $current = $record->{$this->key};
 
@@ -56,7 +56,7 @@ class HasOne extends BelongsTo
     /**
      * @inheritDoc
      */
-    public function replace($record, RelationshipInterface $relationship, EncodingParametersInterface $parameters)
+    public function replace($record, array $relationship, EncodingParametersInterface $parameters)
     {
         $this->update($record, $relationship, $parameters);
         $record->refresh(); // in case the relationship has been cached.

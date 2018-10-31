@@ -17,6 +17,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Eloquent;
 
+use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
 use DummyApp\Country;
 use DummyApp\Phone;
 use DummyApp\User;
@@ -129,12 +130,9 @@ class HasManyTest extends TestCase
             ],
         ];
 
-        $expected = $data;
-        unset($expected['relationships']['users']);
-
-        $id = $this
-            ->doCreate($data)
-            ->assertCreatedWithId($expected);
+        $id = $this->doCreate($data)->assertCreatedWithId(
+            collect($data)->forget('relationships')->all()
+        );
 
         $this->assertUsersAre(Country::find($id), $users);
     }
@@ -156,10 +154,9 @@ class HasManyTest extends TestCase
             ],
         ];
 
-        $expected = $data;
-        unset($expected['relationships']['users']);
-
-        $this->doUpdate($data)->assertUpdated($expected);
+        $this->doUpdate($data)->assertUpdated(
+            collect($data)->forget('relationships')->all()
+        );
 
         $this->assertDatabaseMissing('users', [
             'country_id' => $country->getKey(),
@@ -187,10 +184,9 @@ class HasManyTest extends TestCase
             ],
         ];
 
-        $expected = $data;
-        unset($expected['relationships']['users']);
-
-        $this->doUpdate($data)->assertUpdated($expected);
+        $this->doUpdate($data)->assertUpdated(
+            collect($data)->forget('relationships')->all()
+        );
         $this->assertUserIs($country, $user);
     }
 
@@ -221,10 +217,9 @@ class HasManyTest extends TestCase
             ],
         ];
 
-        $expected = $data;
-        unset($expected['relationships']['users']);
-
-        $this->doUpdate($data)->assertUpdated($expected);
+        $this->doUpdate($data)->assertUpdated(
+            collect($data)->forget('relationships')->all()
+        );
         $this->assertUsersAre($country, $users);
     }
 
@@ -276,10 +271,11 @@ class HasManyTest extends TestCase
     {
         $country = factory(Country::class)->create();
 
-        $this->doReadRelated($country, 'users', ['filter' => ['name' => '']])
-            ->assertStatus(400)
-            ->assertErrors()
-            ->assertParameters('filter.name');
+        $this->doReadRelated($country, 'users', ['filter' => ['name' => '']])->assertError(400, [
+            'status' => '400',
+            'detail' => 'The filter.name field must have a value.',
+            'source' => ['parameter' => 'filter.name'],
+        ]);
     }
 
     public function testReadRelatedWithSort()
@@ -305,10 +301,10 @@ class HasManyTest extends TestCase
         $country = factory(Country::class)->create();
 
         // code is a valid sort on the countries resource, but not on the users resource.
-        $this->doReadRelated($country, 'users', ['sort' => 'code'])
-            ->assertStatus(400)
-            ->assertErrors()
-            ->assertParameters('sort');
+        $this->doReadRelated($country, 'users', ['sort' => 'code'])->assertError(400, [
+            'source' => ['parameter' => 'sort'],
+            'title' => 'Sort parameter code is not allowed.',
+        ]);
     }
 
     public function testReadRelatedWithInclude()
@@ -318,23 +314,18 @@ class HasManyTest extends TestCase
         $country->users()->saveMany($users);
         $phone = factory(Phone::class)->create(['user_id' => $users[0]->getKey()]);
 
-        $response = $this
-            ->doReadRelated($country, 'users', ['include' => 'phone'])
-            ->assertReadHasMany('users', $users);
-
-        $response->assertDocument()
-            ->assertIncluded()
-            ->assertContainsOnly(['phones' => [$phone->getRouteKey()]]);
+        $this->doReadRelated($country, 'users', ['include' => 'phone'])
+            ->assertReadHasMany('users', $users)
+            ->assertIsIncluded('phones', $phone);
     }
 
     public function testReadRelatedWithInvalidInclude()
     {
         $country = factory(Country::class)->create();
 
-        $this->doReadRelated($country, 'users', ['include' => 'foo'])
-            ->assertStatus(400)
-            ->assertErrors()
-            ->assertParameters('include');
+        $this->doReadRelated($country, 'users', ['include' => 'foo'])->assertError(400, [
+            'source' => ['parameter' => 'include'],
+        ]);
     }
 
     public function testReadRelatedWithPagination()
@@ -343,22 +334,18 @@ class HasManyTest extends TestCase
         $users = factory(User::class, 3)->create();
         $country->users()->saveMany($users);
 
-        $response = $this
-            ->doReadRelated($country, 'users', ['page' => ['number' => 1, 'size' => 2]])
-            ->assertReadHasMany('users', $users->take(2));
-
-        $response->assertDocument()
-            ->assertMetaSubset(['page' => ['current-page' => 1, 'per-page' => 2]]);
+        $this->doReadRelated($country, 'users', ['page' => ['number' => 1, 'size' => 2]])
+            ->willSeeType('users')
+            ->assertFetchedPage($users->take(2), null, ['current-page' => 1, 'per-page' => 2]);
     }
 
     public function testReadRelatedWithInvalidPagination()
     {
         $country = factory(Country::class)->create();
 
-        $this->doReadRelated($country, 'users', ['page' => ['number' => 0, 'size' => 10]])
-            ->assertStatus(400)
-            ->assertErrors()
-            ->assertParameters('page.number');
+        $this->doReadRelated($country, 'users', ['page' => ['number' => 0, 'size' => 10]])->assertError(400, [
+            'source' => ['parameter' => 'page.number'],
+        ]);
     }
 
     public function testReadRelationship()

@@ -27,6 +27,7 @@ use InvalidArgumentException;
  * Class ResourceIdentifierCollection
  *
  * @package CloudCreativity\LaravelJsonApi
+ * @deprecated 2.0.0
  */
 class ResourceIdentifierCollection implements ResourceIdentifierCollectionInterface
 {
@@ -35,6 +36,21 @@ class ResourceIdentifierCollection implements ResourceIdentifierCollectionInterf
      * @var array
      */
     private $stack = [];
+
+    /**
+     * @param array $identifiers
+     * @return ResourceIdentifierCollection
+     */
+    public static function fromArray(array $identifiers)
+    {
+        $collection = new self();
+
+        foreach ($identifiers as $identifier) {
+            $collection->add(ResourceIdentifier::fromArray($identifier));
+        }
+
+        return $collection;
+    }
 
     /**
      * @param array $identifiers
