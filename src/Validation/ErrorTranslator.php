@@ -86,6 +86,27 @@ class ErrorTranslator
     }
 
     /**
+     * Create an error for when a member has a field that is not allowed.
+     *
+     * @param string $path
+     * @param string $member
+     * @param string $field
+     * @return ErrorInterface
+     */
+    public function memberFieldNotAllowed(string $path, string $member, string $field): ErrorInterface
+    {
+        return new Error(
+            null,
+            null,
+            Response::HTTP_BAD_REQUEST,
+            $this->trans('member_field_not_allowed', 'code'),
+            $this->trans('member_field_not_allowed', 'title'),
+            $this->trans('member_field_not_allowed', 'detail', compact('member', 'field')),
+            $this->pointer($path, $member)
+        );
+    }
+
+    /**
      * Create an error for a member that must be a string.
      *
      * @param string $path
@@ -226,6 +247,29 @@ class ErrorTranslator
             $this->trans('resource_not_found', 'code'),
             $this->trans('resource_not_found', 'title'),
             $this->trans('resource_not_found', 'detail'),
+            $this->pointer($path)
+        );
+    }
+
+    /**
+     * Create an error for when a resource field exists in both the attributes and relationships members.
+     *
+     * @param string $field
+     * @param string $path
+     * @return ErrorInterface
+     */
+    public function resourceFieldExistsInAttributesAndRelationships(
+        string $field,
+        string $path = '/data'
+    ): ErrorInterface
+    {
+        return new Error(
+            null,
+            null,
+            Response::HTTP_BAD_REQUEST,
+            $this->trans('resource_field_exists_in_attributes_and_relationships', 'code'),
+            $this->trans('resource_field_exists_in_attributes_and_relationships', 'title'),
+            $this->trans('resource_field_exists_in_attributes_and_relationships', 'detail', compact('field')),
             $this->pointer($path)
         );
     }

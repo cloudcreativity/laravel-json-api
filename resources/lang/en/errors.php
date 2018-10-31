@@ -58,6 +58,12 @@ return [
         'code' => '',
     ],
 
+    'member_field_not_allowed' => [
+        'title' => 'Non-Compliant JSON API Document',
+        'detail' => "The member :member cannot have a :field field.",
+        'code' => '',
+    ],
+
     'resource_type_not_supported' => [
         'title' => 'Not Supported',
         'detail' => "Resource type :type is not supported by this endpoint.",
@@ -85,6 +91,12 @@ return [
     'resource_not_found' => [
         'title' => 'Not Found',
         'detail' => "The related resource does not exist.",
+        'code' => '',
+    ],
+
+    'resource_field_exists_in_attributes_and_relationships' => [
+        'title' => 'Non-Compliant JSON API Document',
+        'detail' => 'The :field field cannot exist as an attribute and a relationship.',
         'code' => '',
     ],
 

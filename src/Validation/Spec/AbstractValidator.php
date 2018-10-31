@@ -315,15 +315,16 @@ abstract class AbstractValidator implements DocumentValidatorInterface
      * Get a value from the document data object use dot notation.
      *
      * @param string|array $key
+     * @param mixed $default
      * @return mixed|null
      */
-    protected function dataGet($key)
+    protected function dataGet($key, $default = null)
     {
         if (!isset($this->document->data)) {
-            return null;
+            return $default;
         }
 
-        return data_get($this->document->data, $key);
+        return data_get($this->document->data, $key, $default);
     }
 
     /**
@@ -360,6 +361,20 @@ abstract class AbstractValidator implements DocumentValidatorInterface
     protected function memberNotObject(string $path, string $member): void
     {
         $this->errors->add($this->translator->memberNotObject($path, $member));
+    }
+
+    /**
+     * Add errors for when a member has a field that is not allowed.
+     *
+     * @param string $path
+     * @param string $member
+     * @param iterable $fields
+     */
+    protected function memberFieldsNotAllowed(string $path, string $member, iterable $fields): void
+    {
+        foreach ($fields as $field) {
+            $this->errors->add($this->translator->memberFieldNotAllowed($path, $member, $field));
+        }
     }
 
     /**
@@ -444,6 +459,21 @@ abstract class AbstractValidator implements DocumentValidatorInterface
     protected function resourceDoesNotExist(string $path): void
     {
         $this->errors->add($this->translator->resourceDoesNotExist($path));
+    }
+
+    /**
+     * Add errors for when a resource field exists in both the attributes and relationships members.
+     *
+     * @param iterable $fields
+     * @return void
+     */
+    protected function resourceFieldsExistInAttributesAndRelationships(iterable $fields): void
+    {
+        foreach ($fields as $field) {
+            $this->errors->add(
+                $this->translator->resourceFieldExistsInAttributesAndRelationships($field)
+            );
+        }
     }
 
 }

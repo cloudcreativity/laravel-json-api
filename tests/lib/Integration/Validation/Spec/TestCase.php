@@ -17,6 +17,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Validation\Spec;
 
+use CloudCreativity\LaravelJsonApi\Testing\TestResponse;
 use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase as BaseTestCase;
 
 abstract class TestCase extends BaseTestCase
@@ -26,7 +27,7 @@ abstract class TestCase extends BaseTestCase
      * @param $uri
      * @param $content
      * @param $method
-     * @return \Illuminate\Foundation\Testing\TestResponse
+     * @return TestResponse
      */
     protected function doInvalidRequest($uri, $content, $method = 'POST')
     {

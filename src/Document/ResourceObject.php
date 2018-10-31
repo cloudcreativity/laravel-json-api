@@ -22,7 +22,6 @@ use CloudCreativity\LaravelJsonApi\Object\ResourceObject as LegacyResourceObject
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Str;
 
 class ResourceObject implements Arrayable, \IteratorAggregate, \JsonSerializable, \ArrayAccess
 {
