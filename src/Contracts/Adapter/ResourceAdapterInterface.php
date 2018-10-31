@@ -17,6 +17,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Contracts\Adapter;
 
+use CloudCreativity\LaravelJsonApi\Contracts\Queue\AsynchronousProcess;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 /**
@@ -46,8 +47,8 @@ interface ResourceAdapterInterface
      * @param array $document
      *      The JSON API document received from the client.
      * @param EncodingParametersInterface $parameters
-     * @return object
-     *      the created domain record.
+     * @return AsynchronousProcess|mixed
+     *      the created domain record, or the process to create it.
      */
     public function create(array $document, EncodingParametersInterface $parameters);
 
@@ -56,7 +57,7 @@ interface ResourceAdapterInterface
      *
      * @param string $resourceId
      * @param EncodingParametersInterface $parameters
-     * @return object|null
+     * @return mixed|null
      */
     public function read($resourceId, EncodingParametersInterface $parameters);
 
@@ -68,8 +69,8 @@ interface ResourceAdapterInterface
      * @param array $document
      *      The JSON API document received from the client.
      * @param EncodingParametersInterface $params
-     * @return object
-     *      the updated domain record.
+     * @return AsynchronousProcess|mixed
+     *      the updated domain record or the process to updated it.
      */
     public function update($record, array $document, EncodingParametersInterface $params);
 
@@ -78,8 +79,8 @@ interface ResourceAdapterInterface
      *
      * @param mixed $record
      * @param EncodingParametersInterface $params
-     * @return bool|mixed
-     *      a boolean indicating whether the record was successfully destroyed, or content to return to the client.
+     * @return AsynchronousProcess|bool
+     *      whether the record was successfully destroyed, or the process to delete it.
      */
     public function delete($record, EncodingParametersInterface $params);
 

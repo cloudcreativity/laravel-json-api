@@ -2,8 +2,6 @@
 
 namespace DummyApp\JsonApi\Downloads;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectInterface;
-use CloudCreativity\LaravelJsonApi\Document\ResourceObject;
 use CloudCreativity\LaravelJsonApi\Eloquent\AbstractAdapter;
 use CloudCreativity\LaravelJsonApi\Pagination\StandardStrategy;
 use DummyApp\Download;
