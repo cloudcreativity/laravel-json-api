@@ -20,6 +20,7 @@ namespace CloudCreativity\LaravelJsonApi\Adapter;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\RelationshipAdapterInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\ResourceAdapterInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Queue\AsynchronousProcess;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreAwareInterface;
 use CloudCreativity\LaravelJsonApi\Document\ResourceObject;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
@@ -65,9 +66,11 @@ abstract class AbstractResourceAdapter implements ResourceAdapterInterface, Stor
      * Persist changes to the record.
      *
      * @param $record
-     * @return void
+     * @param bool $creating
+     *      whether the record is being created.
+     * @return AsynchronousProcess|null
      */
-    abstract protected function persist($record);
+    abstract protected function persist($record, $creating);
 
     /**
      * @inheritdoc
@@ -76,11 +79,8 @@ abstract class AbstractResourceAdapter implements ResourceAdapterInterface, Stor
     {
         $resource = ResourceObject::create($document['data']);
         $record = $this->createRecord($resource);
-        $this->fill($record, $resource, $parameters);
-        $this->persist($record);
-        $this->fillRelated($record, $resource, $parameters);
 
-        return $record;
+        return $this->fillAndPersist($record, $resource, $parameters, true);
     }
 
     /**
@@ -97,11 +97,8 @@ abstract class AbstractResourceAdapter implements ResourceAdapterInterface, Stor
     public function update($record, array $document, EncodingParametersInterface $parameters)
     {
         $resource = ResourceObject::create($document['data']);
-        $this->fill($record, $resource, $parameters);
-        $this->persist($record);
-        $this->fillRelated($record, $resource, $parameters);
 
-        return $record;
+        return $this->fillAndPersist($record, $resource, $parameters, false) ?: $record;
     }
 
     /**
@@ -228,4 +225,27 @@ abstract class AbstractResourceAdapter implements ResourceAdapterInterface, Stor
         // no-op
     }
 
+    /**
+     * @param mixed $record
+     * @param ResourceObject $resource
+     * @param EncodingParametersInterface $parameters
+     * @param bool $creating
+     * @return AsynchronousProcess|mixed
+     */
+    protected function fillAndPersist(
+        $record,
+        ResourceObject $resource,
+        EncodingParametersInterface $parameters,
+        $creating
+    ) {
+        $this->fill($record, $resource, $parameters);
+
+        if ($async = $this->persist($record, $creating)) {
+            return $async;
+        }
+
+        $this->fillRelated($record, $resource, $parameters);
+
+        return $record;
+    }
 }
