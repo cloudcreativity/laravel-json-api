@@ -60,7 +60,7 @@ If your resource does not support filtering, you should reject any request that 
 parameter. You can do this by disallowing filtering parameters on your [Validators](../basics/validators.md)
 class as follows:
 
-```php****
+```php
 class Validators extends AbstractValidators
 {
     // ...
