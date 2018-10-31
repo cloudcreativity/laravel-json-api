@@ -1,11 +1,60 @@
 language: php
+dist: trusty
+sudo: false
 
-php:
-  - '7.1'
-  - '7.2'
+matrix:
+  include:
+  - php: 7.1
+    env:
+    - LARAVEL_VERSION=5.5.*
+    - SYMFONY_VERSION=^3.0
+    - PHPUNIT_VERSION=^6.5
+  - php: 7.1
+    env:
+    - LARAVEL_VERSION=5.6.*
+    - SYMFONY_VERSION=^4.0
+    - PHPUNIT_VERSION=^7.0
+  - php: 7.1
+    env:
+    - LARAVEL_VERSION=5.7.*
+    - SYMFONY_VERSION=^4.0
+    - PHPUNIT_VERSION=^7.0
+  - php: 7.2
+    env:
+    - LARAVEL_VERSION=5.5.*
+    - SYMFONY_VERSION=^3.0
+    - PHPUNIT_VERSION=^6.5
+  - php: 7.2
+    env:
+    - LARAVEL_VERSION=5.6.*
+    - SYMFONY_VERSION=^4.0
+    - PHPUNIT_VERSION=^7.0
+  - php: 7.2
+    env:
+    - LARAVEL_VERSION=5.7.*
+    - SYMFONY_VERSION=^4.0
+    - PHPUNIT_VERSION=^7.0
+  - php: 7.3
+    env:
+    - LARAVEL_VERSION=5.5.*
+    - SYMFONY_VERSION=^3.0
+    - PHPUNIT_VERSION=^6.5
+  - php: 7.3
+    env:
+    - LARAVEL_VERSION=5.6.*
+    - SYMFONY_VERSION=^4.0
+    - PHPUNIT_VERSION=^7.0
+  - php: 7.3
+    env:
+    - LARAVEL_VERSION=5.7.*
+    - SYMFONY_VERSION=^4.0
+    - PHPUNIT_VERSION=^7.0
 
-before_script:
-  - travis_retry composer install --no-interaction --prefer-dist
+install:
+- composer require "laravel/framework:${LARAVEL_VERSION}" --no-update -n
+- composer require "symfony/lts:${SYMFONY_VERSION}" --no-update -n
+- composer require "phpunit/phpunit:${PHPUNIT_VERSION}" --dev --no-update -n
+- travis_retry composer install --no-suggest --prefer-dist -n -o
 
 script:
   - vendor/bin/phpunit
