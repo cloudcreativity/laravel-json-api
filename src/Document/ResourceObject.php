@@ -683,10 +683,10 @@ class ResourceObject implements Arrayable, \IteratorAggregate, \JsonSerializable
 
     /**
      * @param string $field
-     * @param array $value
+     * @param array|null $value
      * @return ResourceObject
      */
-    private function putRelation(string $field, array $value): self
+    private function putRelation(string $field, ?array $value): self
     {
         $copy = clone $this;
         $copy->relationships[$field] = $copy->relationships[$field] ?? [];
