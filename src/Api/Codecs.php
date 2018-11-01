@@ -15,16 +15,18 @@ class Codecs implements \IteratorAggregate, \Countable
     private $stack;
 
     /**
+     * Create codecs from array config.
+     *
      * @param iterable $config
      * @param string|null $urlPrefix
      * @return Codecs
      */
-    public static function create(iterable $config, string $urlPrefix = null): self
+    public static function fromArray(iterable $config, string $urlPrefix = null): self
     {
         $codecs = collect($config)->mapWithKeys(function ($value, $key) {
             return is_numeric($key) ? [$value => 0] : [$key => $value];
         })->map(function ($options, $mediaType) use ($urlPrefix) {
-            return Codec::create($mediaType, $options, $urlPrefix);
+            return Codec::encoder($mediaType, $options, $urlPrefix);
         })->values();
 
         return new self(...$codecs);

@@ -20,6 +20,21 @@ class ReadTest extends TestCase
     }
 
     /**
+     * Test that reading the avatar with an image media tye results in it being downloaded.
+     */
+    public function testDownload(): void
+    {
+        $this->markTestSkipped('@todo');
+
+        $avatar = factory(Avatar::class)->create();
+
+        $this->withAcceptMediaType('image/*')
+            ->doRead($avatar)
+            ->assertSuccessful()
+            ->assertHeader('Content-Type', $avatar->media_type);
+    }
+
+    /**
      * Test that we can include the user in the response.
      */
     public function testIncludeUser(): void

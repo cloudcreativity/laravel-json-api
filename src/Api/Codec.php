@@ -2,6 +2,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Api;
 
+use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use Neomerx\JsonApi\Contracts\Http\Headers\AcceptMediaTypeInterface;
 use Neomerx\JsonApi\Contracts\Http\Headers\MediaTypeInterface;
 use Neomerx\JsonApi\Encoder\EncoderOptions;
@@ -21,23 +22,41 @@ class Codec
     private $options;
 
     /**
-     * @param string $mediaType
+     * Create a codec that will encode JSON API content.
+     *
+     * @param string|MediaTypeInterface $mediaType
      * @param int $options
      * @param string|null $urlPrefix
      * @param int $depth
      * @return Codec
      */
-    public static function create(
-        string $mediaType,
+    public static function encoder(
+        $mediaType,
         int $options = 0,
         string $urlPrefix = null,
         int $depth = 512
     ): self
     {
-        return new self(
-            MediaType::parse(0, $mediaType),
-            new EncoderOptions($options, $urlPrefix, $depth)
-        );
+        if (!$mediaType instanceof MediaTypeInterface) {
+            $mediaType = MediaType::parse(0, $mediaType);
+        }
+
+        return new self($mediaType, new EncoderOptions($options, $urlPrefix, $depth));
+    }
+
+    /**
+     * Create a codec that will not encoded JSON API content.
+     *
+     * @param string|MediaTypeInterface $mediaType
+     * @return Codec
+     */
+    public static function custom($mediaType): self
+    {
+        if (!$mediaType instanceof MediaTypeInterface) {
+            $mediaType = MediaType::parse(0, $mediaType);
+        }
+
+        return new self($mediaType, null);
     }
 
     /**
@@ -64,11 +83,31 @@ class Codec
     /**
      * Get the options, if the media type returns JSON API encoded content.
      *
-     * @return EncoderOptions|null
+     * @return EncoderOptions
      */
-    public function getOptions(): ?EncoderOptions
+    public function getOptions(): EncoderOptions
     {
+        if ($this->willNotEncode()) {
+            throw new RuntimeException('Codec does not support encoding to JSON API.');
+        }
+
         return $this->options;
+    }
+
+    /**
+     * @return bool
+     */
+    public function willEncode(): bool
+    {
+        return !is_null($this->options);
+    }
+
+    /**
+     * @return bool
+     */
+    public function willNotEncode(): bool
+    {
+        return !$this->willEncode();
     }
 
     /**

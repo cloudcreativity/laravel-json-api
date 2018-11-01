@@ -308,11 +308,9 @@ class Responses extends BaseResponses
      */
     protected function getEncoder()
     {
-        if (!$options = $this->getCodec()->getOptions()) {
-            throw new RuntimeException('Response codec does not support encoding to JSON API.');
-        }
-
-        return $this->api->encoder($options);
+        return $this->api->encoder(
+            $this->getCodec()->getOptions()
+        );
     }
 
     /**
