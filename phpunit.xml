@@ -19,6 +19,9 @@
         <testsuite name="Integration">
             <directory suffix="Test.php">./tests/lib/Integration/</directory>
         </testsuite>
+        <testsuite name="Acceptance">
+            <directory suffix="Test.php">./tests/dummy/tests/</directory>
+        </testsuite>
     </testsuites>
     <filter>
         <whitelist>

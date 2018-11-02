@@ -17,6 +17,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Http\Requests;
 
+use CloudCreativity\LaravelJsonApi\Api\Codec;
 use CloudCreativity\LaravelJsonApi\Contracts\Auth\AuthorizerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Object\DocumentInterface;
@@ -218,6 +219,16 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
     public function getEncodingParameters()
     {
         return $this->jsonApiRequest->getParameters();
+    }
+
+    /**
+     * Get the request codec.
+     *
+     * @return Codec
+     */
+    public function getCodec()
+    {
+        return $this->jsonApiRequest->getCodec();
     }
 
     /**

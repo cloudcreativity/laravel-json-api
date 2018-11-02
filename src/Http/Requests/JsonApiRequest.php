@@ -17,14 +17,17 @@
 
 namespace CloudCreativity\LaravelJsonApi\Http\Requests;
 
+use CloudCreativity\LaravelJsonApi\Api\Codec;
 use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceIdentifierInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\InvalidJsonException;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Object\ResourceIdentifier;
 use CloudCreativity\LaravelJsonApi\Routing\ResourceRegistrar;
+use CloudCreativity\LaravelJsonApi\Utils\Helpers;
 use Illuminate\Http\Request;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
+use Neomerx\JsonApi\Contracts\Http\Headers\HeaderParametersInterface;
 use Neomerx\JsonApi\Contracts\Http\HttpFactoryInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use function CloudCreativity\LaravelJsonApi\http_contains_body;
@@ -57,6 +60,16 @@ class JsonApiRequest
      * @var ResolverInterface
      */
     private $resolver;
+
+    /**
+     * @var HeaderParametersInterface|null
+     */
+    private $headers;
+
+    /**
+     * @var Codec|null
+     */
+    private $codec;
 
     /**
      * @var string|null
@@ -96,6 +109,57 @@ class JsonApiRequest
         $this->serverRequest = $serverRequest;
         $this->resolver = $resolver;
         $this->factory = $factory;
+    }
+
+    /**
+     * Get the content negotiation headers.
+     *
+     * @return HeaderParametersInterface
+     */
+    public function getHeaders(): HeaderParametersInterface
+    {
+        if ($this->headers) {
+            return $this->headers;
+        }
+
+        return $this->headers = $this->factory
+            ->createHeaderParametersParser()
+            ->parse($this->serverRequest, Helpers::doesRequestHaveBody($this->serverRequest));
+    }
+
+    /**
+     * Set the matched codec.
+     *
+     * @param Codec $codec
+     * @return $this
+     */
+    public function setCodec(Codec $codec): self
+    {
+        $this->codec = $codec;
+
+        return $this;
+    }
+
+    /**
+     * Get the matched codec.
+     *
+     * @return Codec
+     */
+    public function getCodec(): Codec
+    {
+        if (!$this->hasCodec()) {
+            throw new RuntimeException('Request codec has not been matched.');
+        }
+
+        return $this->codec;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasCodec(): bool
+    {
+        return !!$this->codec;
     }
 
     /**

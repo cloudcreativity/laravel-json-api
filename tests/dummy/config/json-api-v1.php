@@ -53,6 +53,7 @@ return [
     | `'posts' => DummyApp\Post::class`
     */
     'resources' => [
+        'avatars' => \DummyApp\Avatar::class,
         'comments' => \DummyApp\Comment::class,
         'countries' => \DummyApp\Country::class,
         'downloads' => \DummyApp\Download::class,

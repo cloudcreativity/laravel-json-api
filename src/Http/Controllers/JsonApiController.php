@@ -33,8 +33,8 @@ use CloudCreativity\LaravelJsonApi\Http\Requests\UpdateRelationship;
 use CloudCreativity\LaravelJsonApi\Http\Requests\UpdateResource;
 use CloudCreativity\LaravelJsonApi\Http\Requests\ValidatedRequest;
 use CloudCreativity\LaravelJsonApi\Utils\Str;
-use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Class JsonApiController

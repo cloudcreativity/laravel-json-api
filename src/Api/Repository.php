@@ -80,7 +80,7 @@ class Repository
             $this->factory,
             $resolver,
             $apiName,
-            Codecs::create($config['codecs'], $url->toString()),
+            Codecs::fromArray($config['codecs'], $url->toString()),
             $url,
             $config['use-eloquent'],
             $config['supported-ext'],

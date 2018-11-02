@@ -62,7 +62,7 @@ class NegotiateContent
             $request
         );
 
-        $this->encodeWith($codec);
+        $this->matched($codec);
 
         return $next($request);
     }
@@ -120,14 +120,14 @@ class NegotiateContent
     }
 
     /**
-     * Set the encoder to use for JSON API content.
+     * Apply the matched codec.
      *
      * @param Codec $codec
      * @return void
      */
-    protected function encodeWith(Codec $codec): void
+    protected function matched(Codec $codec): void
     {
-        $this->api->getResponses()->withCodec($codec);
+        $this->jsonApiRequest->setCodec($codec);
     }
 
     /**

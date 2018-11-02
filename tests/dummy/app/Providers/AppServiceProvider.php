@@ -27,7 +27,7 @@ use Illuminate\Database\Eloquent\Factory as ModelFactory;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
-class DummyServiceProvider extends ServiceProvider
+class AppServiceProvider extends ServiceProvider
 {
 
     /**
