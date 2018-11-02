@@ -59,7 +59,7 @@ class ClientDispatchTest extends TestCase
                 'created-at' => Carbon::now()->format('Y-m-d\TH:i:s.uP'),
                 'completed-at' => null,
                 'failed' => false,
-                'resource' => 'downloads',
+                'resource-type' => 'downloads',
                 'timeout' => 60,
                 'timeout-at' => null,
                 'tries' => null,
@@ -112,7 +112,7 @@ class ClientDispatchTest extends TestCase
         $this->doCreate($data)->assertAcceptedWithId('http://localhost/api/v1/downloads/queue-jobs', [
             'type' => 'queue-jobs',
             'attributes' => [
-                'resource' => 'downloads',
+                'resource-type' => 'downloads',
                 'timeout' => 60,
                 'timeout-at' => null,
                 'tries' => null,
@@ -152,7 +152,7 @@ class ClientDispatchTest extends TestCase
         $expected = [
             'type' => 'queue-jobs',
             'attributes' => [
-                'resource' => 'downloads',
+                'resource-type' => 'downloads',
                 'timeout' => null,
                 'timeout-at' => Carbon::now()->addSeconds(25)->format('Y-m-d\TH:i:s.uP'),
                 'tries' => null,
@@ -194,7 +194,7 @@ class ClientDispatchTest extends TestCase
         $this->doDelete($download)->assertAcceptedWithId('http://localhost/api/v1/downloads/queue-jobs', [
             'type' => 'queue-jobs',
             'attributes' => [
-                'resource' => 'downloads',
+                'resource-type' => 'downloads',
                 'timeout' => null,
                 'timeout-at' => null,
                 'tries' => 5,

@@ -40,7 +40,6 @@ class ClientJob extends Model implements AsynchronousProcess
         'failed',
         'resource_type',
         'resource_id',
-        'status',
         'timeout',
         'timeout_at',
         'tries',
