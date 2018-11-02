@@ -290,7 +290,12 @@ class Factory extends BaseFactory implements FactoryInterface
      */
     public function createResponseFactory(Api $api)
     {
-        return new Responses($this, $api, $this->container->make('json-api.request'));
+        return new Responses(
+            $this,
+            $api,
+            $this->container->make('json-api.request'),
+            $this->container->make('json-api.exceptions')
+        );
     }
 
     /**

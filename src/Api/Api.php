@@ -25,6 +25,7 @@ use CloudCreativity\LaravelJsonApi\Contracts\Repositories\ErrorRepositoryInterfa
 use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorFactoryInterface;
+use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use CloudCreativity\LaravelJsonApi\Http\Responses\Responses;
 use CloudCreativity\LaravelJsonApi\Resolver\AggregateResolver;
@@ -272,11 +273,13 @@ class Api
     }
 
     /**
+     * Get the default API codec.
+     *
      * @return Codec
      */
     public function getDefaultCodec()
     {
-        return $this->codecs->find(MediaTypeInterface::JSON_API_MEDIA_TYPE) ?: $this->codecs->first();
+        return $this->codecs->find(MediaTypeInterface::JSON_API_MEDIA_TYPE) ?: Codec::jsonApi();
     }
 
     /**

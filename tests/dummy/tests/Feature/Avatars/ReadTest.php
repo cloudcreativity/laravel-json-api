@@ -38,6 +38,22 @@ class ReadTest extends TestCase
     }
 
     /**
+     * If the avatar model exists, but the file doesn't, we need to get an error back. As
+     * we have not requests JSON API, this should be the standard Laravel error i.e.
+     * `text/html`.
+     */
+    public function testDownloadFileDoesNotExist(): void
+    {
+        $path = 'avatars/does-not-exist.jpg';
+        $avatar = factory(Avatar::class)->create(compact('path'));
+
+        $this->withAcceptMediaType('image/*')
+            ->doRead($avatar)
+            ->assertStatus(404)
+            ->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+    }
+
+    /**
      * Test that we can include the user in the response.
      */
     public function testIncludeUser(): void

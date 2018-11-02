@@ -34,11 +34,11 @@ abstract class TestCase extends BaseTestCase
             $content = json_encode($content);
         }
 
-        $headers = [
+        $headers = $this->transformHeadersToServerVars([
             'CONTENT_LENGTH' => mb_strlen($content, '8bit'),
             'CONTENT_TYPE' => 'application/vnd.api+json',
             'Accept' => 'application/vnd.api+json',
-        ];
+        ]);
 
         return $this->call($method, $uri, [], [], [], $headers, $content);
     }
