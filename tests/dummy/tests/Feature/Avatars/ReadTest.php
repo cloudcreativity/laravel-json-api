@@ -3,6 +3,8 @@
 namespace DummyApp\Tests\Feature\Avatars;
 
 use DummyApp\Avatar;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 
 class ReadTest extends TestCase
 {
@@ -24,9 +26,10 @@ class ReadTest extends TestCase
      */
     public function testDownload(): void
     {
-        $this->markTestSkipped('@todo');
+        Storage::fake('local');
 
-        $avatar = factory(Avatar::class)->create();
+        $path = UploadedFile::fake()->create('avatar.jpg')->store('avatars');
+        $avatar = factory(Avatar::class)->create(compact('path'));
 
         $this->withAcceptMediaType('image/*')
             ->doRead($avatar)

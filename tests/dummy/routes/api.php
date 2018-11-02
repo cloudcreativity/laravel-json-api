@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\Route;
 
 JsonApi::register('v1', [], function (ApiGroup $api) {
 
-    $api->resource('avatars');
+    $api->resource('avatars', ['controller' => true]);
 
     $api->resource('comments', [
         'controller' => true,

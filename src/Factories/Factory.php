@@ -290,7 +290,7 @@ class Factory extends BaseFactory implements FactoryInterface
      */
     public function createResponseFactory(Api $api)
     {
-        return new Responses($this, $api);
+        return new Responses($this, $api, $this->container->make('json-api.request'));
     }
 
     /**
@@ -398,7 +398,7 @@ class Factory extends BaseFactory implements FactoryInterface
      */
     public function createContentNegotiator()
     {
-        return new ContentNegotiator($this->container, $this);
+        return new ContentNegotiator($this->container->make('json-api.request'));
     }
 
     /**

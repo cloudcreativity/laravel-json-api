@@ -24,6 +24,7 @@ use CloudCreativity\LaravelJsonApi\Contracts\Http\Responses\ErrorResponseInterfa
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PageInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
+use CloudCreativity\LaravelJsonApi\Http\Requests\JsonApiRequest;
 use Neomerx\JsonApi\Contracts\Document\DocumentInterface;
 use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
@@ -51,6 +52,11 @@ class Responses extends BaseResponses
     private $api;
 
     /**
+     * @var JsonApiRequest
+     */
+    private $jsonApiRequest;
+
+    /**
      * @var Codec|null
      */
     private $codec;
@@ -66,11 +72,13 @@ class Responses extends BaseResponses
      * @param Factory $factory
      * @param Api $api
      *      the API that is sending the responses.
+     * @param JsonApiRequest $request
      */
-    public function __construct(Factory $factory, Api $api)
+    public function __construct(Factory $factory, Api $api, JsonApiRequest $request)
     {
         $this->factory = $factory;
         $this->api = $api;
+        $this->jsonApiRequest = $request;
     }
 
     /**
@@ -327,10 +335,22 @@ class Responses extends BaseResponses
     protected function getCodec()
     {
         if (!$this->codec) {
-            $this->codec = $this->api->getDefaultCodec();
+            $this->codec = $this->getDefaultCodec();
         }
 
         return $this->codec;
+    }
+
+    /**
+     * @return Codec
+     */
+    protected function getDefaultCodec()
+    {
+        if ($this->jsonApiRequest->hasCodec()) {
+            return $this->jsonApiRequest->getCodec();
+        }
+
+        return $this->api->getDefaultCodec();
     }
 
     /**

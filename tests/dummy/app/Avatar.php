@@ -12,6 +12,7 @@ class Avatar extends Model
      * @var array
      */
     protected $fillable = [
+        'path',
         'media_type',
     ];
 

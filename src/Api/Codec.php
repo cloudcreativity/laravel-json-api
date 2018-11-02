@@ -111,6 +111,36 @@ class Codec
     }
 
     /**
+     * Is the codec for any of the supplied media types?
+     *
+     * @param string ...$mediaTypes
+     * @return bool
+     */
+    public function is(string ...$mediaTypes): bool
+    {
+        $mediaTypes = collect($mediaTypes)->map(function ($mediaType, $index) {
+            return MediaType::parse($index, $mediaType);
+        });
+
+        return $this->any(...$mediaTypes);
+    }
+
+    /**
+     * @param MediaTypeInterface ...$mediaTypes
+     * @return bool
+     */
+    public function any(MediaTypeInterface ...$mediaTypes): bool
+    {
+        foreach ($mediaTypes as $mediaType) {
+            if ($this->matches($mediaType)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Does the codec match the supplied media type?
      *
      * @param MediaTypeInterface $mediaType
