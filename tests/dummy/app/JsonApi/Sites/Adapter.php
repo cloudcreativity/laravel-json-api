@@ -132,7 +132,7 @@ class Adapter extends AbstractResourceAdapter
     /**
      * @inheritdoc
      */
-    protected function persist($record, $creating)
+    protected function persist($record)
     {
         $this->repository->store($record);
     }

@@ -66,11 +66,9 @@ abstract class AbstractResourceAdapter implements ResourceAdapterInterface, Stor
      * Persist changes to the record.
      *
      * @param $record
-     * @param bool $creating
-     *      whether the record is being created.
      * @return AsynchronousProcess|null
      */
-    abstract protected function persist($record, $creating);
+    abstract protected function persist($record);
 
     /**
      * @inheritdoc
@@ -80,7 +78,7 @@ abstract class AbstractResourceAdapter implements ResourceAdapterInterface, Stor
         $resource = ResourceObject::create($document['data']);
         $record = $this->createRecord($resource);
 
-        return $this->fillAndPersist($record, $resource, $parameters, true);
+        return $this->fillAndPersist($record, $resource, $parameters);
     }
 
     /**
@@ -98,7 +96,7 @@ abstract class AbstractResourceAdapter implements ResourceAdapterInterface, Stor
     {
         $resource = ResourceObject::create($document['data']);
 
-        return $this->fillAndPersist($record, $resource, $parameters, false) ?: $record;
+        return $this->fillAndPersist($record, $resource, $parameters) ?: $record;
     }
 
     /**
@@ -229,18 +227,13 @@ abstract class AbstractResourceAdapter implements ResourceAdapterInterface, Stor
      * @param mixed $record
      * @param ResourceObject $resource
      * @param EncodingParametersInterface $parameters
-     * @param bool $creating
      * @return AsynchronousProcess|mixed
      */
-    protected function fillAndPersist(
-        $record,
-        ResourceObject $resource,
-        EncodingParametersInterface $parameters,
-        $creating
-    ) {
+    protected function fillAndPersist($record, ResourceObject $resource, EncodingParametersInterface $parameters)
+    {
         $this->fill($record, $resource, $parameters);
 
-        if ($async = $this->persist($record, $creating)) {
+        if ($async = $this->persist($record)) {
             return $async;
         }
 
