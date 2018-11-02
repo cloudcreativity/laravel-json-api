@@ -288,7 +288,29 @@ class ResourceObjectTest extends TestCase
         $this->assertSame($expected, $actual->toArray());
     }
 
-    public function testReplaceRelationship(): void
+    public function testReplaceToOne(): void
+    {
+        $author = ['type' => 'users', 'id' => '999'];
+
+        $expected = $this->values;
+        $expected['relationships']['author']['data'] = $author;
+
+        $this->assertNotSame($this->resource, $actual = $this->resource->replace('author', $author));
+        $this->assertSame($this->values, $this->resource->toArray(), 'original resource is not modified');
+        $this->assertSame($expected, $actual->toArray());
+    }
+
+    public function testReplaceToOneNull(): void
+    {
+        $expected = $this->values;
+        $expected['relationships']['author']['data'] = null;
+
+        $this->assertNotSame($this->resource, $actual = $this->resource->replace('author', null));
+        $this->assertSame($this->values, $this->resource->toArray(), 'original resource is not modified');
+        $this->assertSame($expected, $actual->toArray());
+    }
+
+    public function testReplaceToMany(): void
     {
         $comments = [
             ['type' => 'comments', 'id' => '123456'],
