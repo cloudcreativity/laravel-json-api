@@ -403,15 +403,11 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     }
 
     /**
-     * @param Model $record
-     * @param bool $creating
-     * @return AsynchronousProcess|null
+     * @inheritdoc
      */
-    protected function persist($record, $creating)
+    protected function persist($record)
     {
         $record->save();
-
-        return null;
     }
 
     /**
