@@ -20,7 +20,7 @@ class QueueJobsTest extends TestCase
         factory(ClientJob::class)->create(['resource_type' => 'foo']);
 
         $this->getJsonApi('/api/v1/downloads/queue-jobs')
-            ->assertSearchedIds($jobs);
+            ->assertFetchedMany($jobs);
     }
 
     public function testReadPending()
@@ -29,7 +29,7 @@ class QueueJobsTest extends TestCase
         $expected = $this->serialize($job);
 
         $this->getJsonApi($expected['links']['self'])
-            ->assertRead($expected);
+            ->assertFetchedOneExact($expected);
     }
 
     /**
@@ -59,7 +59,7 @@ class QueueJobsTest extends TestCase
         $expected = $this->serialize($job);
 
         $this->getJsonApi($this->jobUrl($job))
-            ->assertRead($expected)
+            ->assertFetchedOneExact($expected)
             ->assertHeaderMissing('Location');
     }
 
@@ -102,7 +102,7 @@ class QueueJobsTest extends TestCase
                 'created-at' => $job->created_at->format($format),
                 'completed-at' => $job->completed_at ? $job->completed_at->format($format) : null,
                 'failed' => $job->failed,
-                'resource' => 'downloads',
+                'resource-type' => 'downloads',
                 'timeout' => $job->timeout,
                 'timeout-at' => $job->timeout_at ? $job->timeout_at->format($format) : null,
                 'tries' => $job->tries,

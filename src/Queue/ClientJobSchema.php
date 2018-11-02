@@ -43,7 +43,7 @@ class ClientJobSchema extends SchemaProvider
             'created-at' => $resource->created_at->format($this->dateFormat),
             'completed-at' => $completedAt ? $completedAt->format($this->dateFormat) : null,
             'failed' => $resource->failed,
-            'resource' => $resource->resource_type,
+            'resource-type' => $resource->resource_type,
             'timeout' => $resource->timeout,
             'timeout-at' => $timeoutAt ? $timeoutAt->format($this->dateFormat) : null,
             'tries' => $resource->tries,
