@@ -98,10 +98,10 @@ class ErrorsTest extends TestCase
     public function testDocumentRequired($content, $method = 'POST')
     {
         if ('POST' === $method) {
-            $uri = $this->api()->url()->create('posts');
+            $uri = $this->apiUrl()->getResourceTypeUrl('posts');
         } else {
             $model = factory(Post::class)->create();
-            $uri = $this->api()->url()->read('posts', $model);
+            $uri = $this->apiUrl()->getResourceUrl('posts', $model);
         }
 
         $expected = [
@@ -155,7 +155,7 @@ class ErrorsTest extends TestCase
      */
     public function testCustomDocumentRequired()
     {
-        $uri = $this->api()->url()->create('posts');
+        $uri = $this->apiUrl()->getResourceTypeUrl('posts');
         $expected = $this->withCustomError(DocumentRequiredException::class);
 
         $this->doInvalidRequest($uri, '')
@@ -367,11 +367,11 @@ class ErrorsTest extends TestCase
      */
     private function doInvalidRequest($uri, $content, $method = 'POST')
     {
-        $headers = [
+        $headers = $this->transformHeadersToServerVars([
             'CONTENT_LENGTH' => mb_strlen($content, '8bit'),
             'CONTENT_TYPE' => 'application/vnd.api+json',
             'Accept' => 'application/vnd.api+json',
-        ];
+        ]);
 
         return $this->call($method, $uri, [], [], [], $headers, $content);
     }

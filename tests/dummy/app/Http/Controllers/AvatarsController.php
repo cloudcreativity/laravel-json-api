@@ -18,10 +18,16 @@ class AvatarsController extends JsonApiController
      */
     protected function reading(Avatar $avatar, ValidatedRequest $request): ?StreamedResponse
     {
-        if ($request->getCodec()->is($avatar->media_type)) {
-            return Storage::disk('local')->download($avatar->path);
+        if (!$request->getCodec()->is($avatar->media_type)) {
+            return null;
         }
 
-        return null;
+        abort_unless(
+            Storage::disk('local')->exists($avatar->path),
+            404,
+            'The image file does not exist.'
+        );
+
+        return Storage::disk('local')->download($avatar->path);
     }
 }

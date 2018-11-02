@@ -22,6 +22,19 @@ class Codec
     private $options;
 
     /**
+     * Create a codec for the JSON API media type.
+     *
+     * @param int $options
+     * @param string|null $urlPrefix
+     * @param int $depth
+     * @return Codec
+     */
+    public static function jsonApi(int $options = 0, string $urlPrefix = null, int $depth = 512): self
+    {
+        return self::encoder(MediaTypeInterface::JSON_API_MEDIA_TYPE, $options, $urlPrefix, $depth);
+    }
+
+    /**
      * Create a codec that will encode JSON API content.
      *
      * @param string|MediaTypeInterface $mediaType
