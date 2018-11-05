@@ -351,7 +351,7 @@ class ResourceObject implements Arrayable, \IteratorAggregate, \JsonSerializable
     public function getRelations(): Collection
     {
         return $this->getRelationships()->filter(function (array $relation) {
-            return isset($relation['data']);
+            return array_key_exists('data', $relation);
         })->map(function (array $relation) {
             return $relation['data'];
         });

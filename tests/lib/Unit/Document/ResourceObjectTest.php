@@ -122,6 +122,35 @@ class ResourceObjectTest extends TestCase
         return $expected;
     }
 
+    public function testFieldsWithEmptyToOne(): void
+    {
+        $this->values['relationships']['author']['data'] = null;
+
+        $expected = [
+            'author' => null,
+            'content' => '...',
+            'id' => '1',
+            'published' => null,
+            'tags' => [
+                [
+                    'type' => 'tags',
+                    'id' => '4',
+                ],
+                [
+                    'type' => 'tags',
+                    'id' => '5',
+                ],
+            ],
+            'title' => 'Hello World',
+            'type' => 'posts',
+        ];
+
+        $resource = ResourceObject::create($this->values);
+        $this->assertSame($expected, $resource->all());
+        $this->assertNull($resource['author']);
+        $this->assertNull($resource->get('author', true));
+    }
+
     /**
      * @param array $expected
      * @depends testFields
