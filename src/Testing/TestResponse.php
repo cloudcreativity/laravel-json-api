@@ -107,20 +107,30 @@ class TestResponse extends BaseTestResponse
         bool $strict = true
     ): self
     {
-        if (empty($links) && empty($meta)) {
-            throw new \InvalidArgumentException('Expecting links or meta to ensure response is a page.');
-        }
+        $this->assertPage($expected, $links, $meta, $metaKey, $strict);
 
-        $this->assertFetchedMany($expected, $strict);
+        return $this;
+    }
 
-        if ($links) {
-            $this->assertLinks($links, $strict);
-        }
-
-        if ($meta) {
-            $meta = $metaKey ? [$metaKey => $meta] : $meta;
-            $this->assertMeta($meta, $strict);
-        }
+    /**
+     * Assert the response is a JSON API page with expected resources in the specified order.
+     *
+     * @param $expected
+     * @param array|null $links
+     * @param array|null $meta
+     * @param string|null $metaKey
+     * @param bool $strict
+     * @return TestResponse
+     */
+    public function assertFetchedPageInOrder(
+        $expected,
+        ?array $links,
+        ?array $meta,
+        string $metaKey = 'page',
+        bool $strict = true
+    ): self
+    {
+        $this->assertPage($expected, $links, $meta, $metaKey, $strict, true);
 
         return $this;
     }
@@ -449,4 +459,43 @@ class TestResponse extends BaseTestResponse
         return (string) $id;
     }
 
+    /**
+     * Assert the response is a JSON API page.
+     *
+     * @param $expected
+     * @param array|null $links
+     * @param array|null $meta
+     * @param string|null $metaKey
+     * @param bool $strict
+     * @param bool $order
+     * @return void
+     */
+    private function assertPage(
+        $expected,
+        ?array $links,
+        ?array $meta,
+        string $metaKey = 'page',
+        bool $strict = true,
+        bool $order = false
+    ): void
+    {
+        if (empty($links) && empty($meta)) {
+            throw new \InvalidArgumentException('Expecting links or meta to ensure response is a page.');
+        }
+
+        if ($order) {
+            $this->assertFetchedManyInOrder($expected, $strict);
+        } else {
+            $this->assertFetchedMany($expected, $strict);
+        }
+
+        if ($links) {
+            $this->assertLinks($links, $strict);
+        }
+
+        if ($meta) {
+            $meta = $metaKey ? [$metaKey => $meta] : $meta;
+            $this->assertMeta($meta, $strict);
+        }
+    }
 }
