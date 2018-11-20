@@ -10,7 +10,7 @@ class LaravelJsonApi
      *
      * @var bool
      */
-    public static $runMigrations = true;
+    public static $runMigrations = false;
 
     /**
      * Indicates if listeners will be bound to the Laravel queue events.
@@ -22,9 +22,9 @@ class LaravelJsonApi
     /**
      * @return LaravelJsonApi
      */
-    public static function ignoreMigrations(): self
+    public static function runMigrations(): self
     {
-        static::$runMigrations = false;
+        static::$runMigrations = true;
 
         return new self();
     }

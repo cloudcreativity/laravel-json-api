@@ -59,6 +59,7 @@ return [
         'downloads' => \DummyApp\Download::class,
         'phones' => \DummyApp\Phone::class,
         'posts' => \DummyApp\Post::class,
+        'queue-jobs' => \CloudCreativity\LaravelJsonApi\Queue\ClientJob::class,
         'sites' => \DummyApp\Entities\Site::class,
         'tags' => \DummyApp\Tag::class,
         'users' => \DummyApp\User::class,
@@ -152,7 +153,6 @@ return [
     |
     */
     'providers' => [
-        \CloudCreativity\LaravelJsonApi\Resources\ResourceProvider::class,
         \DummyPackage\ResourceProvider::class,
     ],
 

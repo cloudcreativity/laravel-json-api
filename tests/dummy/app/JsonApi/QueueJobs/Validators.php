@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\LaravelJsonApi\Resources\QueueJobs;
+namespace DummyApp\JsonApi\QueueJobs;
 
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Validation\AbstractValidators;
