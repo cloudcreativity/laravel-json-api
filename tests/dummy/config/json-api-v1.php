@@ -152,6 +152,7 @@ return [
     |
     */
     'providers' => [
+        \CloudCreativity\LaravelJsonApi\Resources\ResourceProvider::class,
         \DummyPackage\ResourceProvider::class,
     ],
 

@@ -74,11 +74,6 @@ class ClientJob extends Model implements AsynchronousProcess
     ];
 
     /**
-     * @var string
-     */
-    protected $dateFormat = 'Y-m-d H:i:s.u';
-
-    /**
      * @inheritdoc
      */
     public static function boot()
@@ -184,7 +179,7 @@ class ClientJob extends Model implements AsynchronousProcess
         }
 
         return $this->getApi()->getStore()->find(
-            ResourceIdentifier::create($this->resource_type, $this->resource_id)
+            ResourceIdentifier::create($this->resource_type, (string) $this->resource_id)
         );
     }
 

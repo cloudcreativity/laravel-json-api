@@ -20,9 +20,7 @@ namespace CloudCreativity\LaravelJsonApi\Api;
 
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
-use CloudCreativity\LaravelJsonApi\Queue;
 use CloudCreativity\LaravelJsonApi\Resolver\AggregateResolver;
-use CloudCreativity\LaravelJsonApi\Resolver\StaticResolver;
 use Illuminate\Contracts\Config\Repository as Config;
 
 /**
@@ -89,17 +87,6 @@ class Repository
 
         /** Attach resource providers to the API. */
         $this->createProviders($apiName)->registerAll($api);
-
-        /** @todo tidy this up... maybe do it using a resource provider? */
-        $resolver->attach((new StaticResolver([
-            'queue-jobs' => Queue\ClientJob::class,
-        ]))->setAdapter(
-            'queue-jobs', Queue\ClientJobAdapter::class
-        )->setSchema(
-            'queue-jobs', Queue\ClientJobSchema::class
-        )->setValidators(
-            'queue-jobs', Queue\ClientJobValidators::class
-        ));
 
         return $api;
     }

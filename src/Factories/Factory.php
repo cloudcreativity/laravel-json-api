@@ -19,6 +19,7 @@
 namespace CloudCreativity\LaravelJsonApi\Factories;
 
 use CloudCreativity\LaravelJsonApi\Api\Api;
+use CloudCreativity\LaravelJsonApi\Api\AbstractProvider;
 use CloudCreativity\LaravelJsonApi\Api\LinkGenerator;
 use CloudCreativity\LaravelJsonApi\Api\ResourceProvider;
 use CloudCreativity\LaravelJsonApi\Api\Url;
@@ -275,7 +276,7 @@ class Factory extends BaseFactory implements FactoryInterface
     {
         $provider = $this->container->make($fqn);
 
-        if (!$provider instanceof ResourceProvider) {
+        if (!$provider instanceof AbstractProvider) {
             throw new RuntimeException("Expecting $fqn to resolve to a resource provider instance.");
         }
 

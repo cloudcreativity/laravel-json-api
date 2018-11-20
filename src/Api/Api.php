@@ -402,10 +402,10 @@ class Api
     /**
      * Register a resource provider with this API.
      *
-     * @param ResourceProvider $provider
+     * @param AbstractProvider $provider
      * @return void
      */
-    public function register(ResourceProvider $provider)
+    public function register(AbstractProvider $provider)
     {
         $this->resolver->attach($provider->getResolver());
         $this->errors = array_replace($provider->getErrors(), $this->errors);

@@ -15,27 +15,29 @@
  * limitations under the License.
  */
 
+namespace CloudCreativity\LaravelJsonApi\Resources\QueueJobs;
+
+use CloudCreativity\LaravelJsonApi\Eloquent\AbstractAdapter;
 use CloudCreativity\LaravelJsonApi\Queue\ClientJob;
-use DummyApp\Download;
-use Faker\Generator as Faker;
-use Illuminate\Database\Eloquent\Factory;
+use Illuminate\Support\Collection;
 
-/** @var Factory $factory */
+class Adapter extends AbstractAdapter
+{
 
-$factory->define(ClientJob::class, function (Faker $faker) {
-    return [
-        'api' => 'v1',
-        'failed' => false,
-        'resource_type' => 'downloads',
-        'attempts' => 0,
-    ];
-});
+    /**
+     * ClientJobAdapter constructor.
+     */
+    public function __construct()
+    {
+        parent::__construct(new ClientJob());
+    }
 
-$factory->state(ClientJob::class, 'success', function (Faker $faker) {
-    return [
-        'completed_at' => $faker->dateTimeBetween('-10 minutes', 'now'),
-        'failed' => false,
-        'attempts' => $faker->numberBetween(1, 3),
-        'resource_id' => factory(Download::class)->create()->getRouteKey(),
-    ];
-});
+    /**
+     * @inheritDoc
+     */
+    protected function filter($query, Collection $filters)
+    {
+        // TODO: Implement filter() method.
+    }
+
+}

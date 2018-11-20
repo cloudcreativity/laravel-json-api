@@ -40,7 +40,7 @@ class ClientDispatchTest extends TestCase
     {
         parent::setUp();
         Queue::fake();
-        Carbon::setTestNow('2018-10-23 12:00:00.123456');
+        Carbon::setTestNow('2018-10-23 12:00:00');
     }
 
     public function testCreate()
@@ -56,14 +56,14 @@ class ClientDispatchTest extends TestCase
             'type' => 'queue-jobs',
             'attributes' => [
                 'attempts' => 0,
-                'created-at' => Carbon::now()->format('Y-m-d\TH:i:s.uP'),
+                'created-at' => Carbon::now()->toAtomString(),
                 'completed-at' => null,
                 'failed' => false,
                 'resource-type' => 'downloads',
                 'timeout' => 60,
                 'timeout-at' => null,
                 'tries' => null,
-                'updated-at' => Carbon::now()->format('Y-m-d\TH:i:s.uP'),
+                'updated-at' => Carbon::now()->toAtomString(),
             ],
         ];
 
@@ -81,8 +81,8 @@ class ClientDispatchTest extends TestCase
 
         $this->assertDatabaseHas('json_api_client_jobs', [
             'uuid' => $id,
-            'created_at' => '2018-10-23 12:00:00.123456',
-            'updated_at' => '2018-10-23 12:00:00.123456',
+            'created_at' => '2018-10-23 12:00:00',
+            'updated_at' => '2018-10-23 12:00:00',
             'api' => 'v1',
             'resource_type' => 'downloads',
             'resource_id' => null,
@@ -126,8 +126,8 @@ class ClientDispatchTest extends TestCase
 
         $this->assertDatabaseHas('json_api_client_jobs', [
             'uuid' => $job->clientJob->getKey(),
-            'created_at' => '2018-10-23 12:00:00.123456',
-            'updated_at' => '2018-10-23 12:00:00.123456',
+            'created_at' => '2018-10-23 12:00:00',
+            'updated_at' => '2018-10-23 12:00:00',
             'api' => 'v1',
             'resource_type' => 'downloads',
             'resource_id' => $data['id'],
@@ -154,35 +154,27 @@ class ClientDispatchTest extends TestCase
             'attributes' => [
                 'resource-type' => 'downloads',
                 'timeout' => null,
-                'timeout-at' => Carbon::now()->addSeconds(25)->format('Y-m-d\TH:i:s.uP'),
+                'timeout-at' => Carbon::now()->addSeconds(25)->toAtomString(),
                 'tries' => null,
-            ],
-            'relationships' => [
-                'resource' => [
-                    'data' => [
-                        'type' => 'downloads',
-                        'id' => (string) $download->getRouteKey(),
-                    ],
-                ],
             ],
         ];
 
-        $this->doUpdate($data, ['include' => 'resource'])->assertAcceptedWithId(
+        $this->doUpdate($data)->assertAcceptedWithId(
             'http://localhost/api/v1/downloads/queue-jobs',
             $expected
-        )->assertIsIncluded('downloads', $download);
+        );
 
         $job = $this->assertDispatchedReplace();
 
         $this->assertDatabaseHas('json_api_client_jobs', [
             'uuid' => $job->clientJob->getKey(),
-            'created_at' => '2018-10-23 12:00:00.123456',
-            'updated_at' => '2018-10-23 12:00:00.123456',
+            'created_at' => '2018-10-23 12:00:00',
+            'updated_at' => '2018-10-23 12:00:00',
             'api' => 'v1',
             'resource_type' => 'downloads',
             'resource_id' => $download->getRouteKey(),
             'timeout' => null,
-            'timeout_at' => '2018-10-23 12:00:25.123456',
+            'timeout_at' => '2018-10-23 12:00:25',
             'tries' => null,
         ]);
     }
@@ -205,8 +197,8 @@ class ClientDispatchTest extends TestCase
 
         $this->assertDatabaseHas('json_api_client_jobs', [
             'uuid' => $job->clientJob->getKey(),
-            'created_at' => '2018-10-23 12:00:00.123456',
-            'updated_at' => '2018-10-23 12:00:00.123456',
+            'created_at' => '2018-10-23 12:00:00',
+            'updated_at' => '2018-10-23 12:00:00',
             'api' => 'v1',
             'resource_type' => 'downloads',
             'resource_id' => $download->getRouteKey(),
