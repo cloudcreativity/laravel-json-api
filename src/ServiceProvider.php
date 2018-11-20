@@ -69,8 +69,10 @@ class ServiceProvider extends BaseServiceProvider
         $this->bootBladeDirectives();
         $this->bootTranslations();
 
-        Queue::after(UpdateClientProcess::class);
-        Queue::failing(UpdateClientProcess::class);
+        if (LaravelJsonApi::$queueBindings) {
+            Queue::after(UpdateClientProcess::class);
+            Queue::failing(UpdateClientProcess::class);
+        }
 
         if ($this->app->runningInConsole()) {
             $this->bootMigrations();
@@ -159,7 +161,9 @@ class ServiceProvider extends BaseServiceProvider
      */
     protected function bootMigrations()
     {
-        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+        if (LaravelJsonApi::$runMigrations) {
+            $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+        }
     }
 
     /**
