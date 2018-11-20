@@ -3,6 +3,7 @@
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Queue;
 
 use CloudCreativity\LaravelJsonApi\Queue\ClientDispatchable;
+use DummyApp\Download;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -29,12 +30,20 @@ class TestJob implements ShouldQueue
     public $tries = 2;
 
     /**
+     * Execute the job.
+     *
+     * @return Download
      * @throws \Exception
      */
-    public function handle(): void
+    public function handle(): Download
     {
         if ($this->ex) {
             throw new \LogicException('Boom.');
         }
+
+        $download = factory(Download::class)->create();
+        $this->didCreate($download);
+
+        return $download;
     }
 }

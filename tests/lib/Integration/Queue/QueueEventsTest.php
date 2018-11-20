@@ -5,6 +5,7 @@ namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Queue;
 use Carbon\Carbon;
 use CloudCreativity\LaravelJsonApi\Queue\ClientJob;
 use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
+use DummyApp\Download;
 
 class QueueEventsTest extends TestCase
 {
@@ -31,6 +32,10 @@ class QueueEventsTest extends TestCase
             'completed_at' => Carbon::now()->format('Y-m-d H:i:s'),
             'failed' => false,
         ]);
+
+        $clientJob = $job->clientJob->refresh();
+
+        $this->assertInstanceOf(Download::class, $clientJob->getResource());
     }
 
     public function testFails()
