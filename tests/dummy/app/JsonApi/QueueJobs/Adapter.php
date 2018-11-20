@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\LaravelJsonApi\Resources\QueueJobs;
+namespace DummyApp\JsonApi\QueueJobs;
 
 use CloudCreativity\LaravelJsonApi\Eloquent\AbstractAdapter;
 use CloudCreativity\LaravelJsonApi\Queue\ClientJob;

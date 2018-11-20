@@ -15,13 +15,11 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\LaravelJsonApi\Resources\QueueJobs;
+namespace CloudCreativity\LaravelJsonApi\Queue;
 
-use CloudCreativity\LaravelJsonApi\Queue\ClientJob;
-use DateTime;
 use Neomerx\JsonApi\Schema\SchemaProvider;
 
-class Schema extends SchemaProvider
+abstract class ClientJobSchema extends SchemaProvider
 {
 
     /**
@@ -30,41 +28,12 @@ class Schema extends SchemaProvider
     protected $resourceType = 'queue-jobs';
 
     /**
-     * @var string
-     */
-    protected $dateFormat = DateTime::ATOM;
-
-    /**
      * @param ClientJob $resource
      * @return string
      */
     public function getId($resource)
     {
-        return $resource->getRouteKey();
-    }
-
-    /**
-     * @param ClientJob $resource
-     * @return array
-     */
-    public function getAttributes($resource)
-    {
-        /** @var DateTime|null $completedAt */
-        $completedAt = $resource->completed_at;
-        /** @var DateTime|null $timeoutAt */
-        $timeoutAt = $resource->timeout_at;
-
-        return [
-            'attempts' => $resource->attempts,
-            'created-at' => $resource->created_at->format($this->dateFormat),
-            'completed-at' => $completedAt ? $completedAt->format($this->dateFormat) : null,
-            'failed' => $resource->failed,
-            'resource-type' => $resource->resource_type,
-            'timeout' => $resource->timeout,
-            'timeout-at' => $timeoutAt ? $timeoutAt->format($this->dateFormat) : null,
-            'tries' => $resource->tries,
-            'updated-at' => $resource->updated_at->format($this->dateFormat),
-        ];
+        return (string) $resource->getRouteKey();
     }
 
     /**
