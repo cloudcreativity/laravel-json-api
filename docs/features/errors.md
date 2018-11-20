@@ -90,7 +90,7 @@ use CloudCreativity\LaravelJsonApi\Document\Error;
 try {
     dispatchNow(new ChargeCard($token));
 } catch (\App\PaymentException $ex) {
-    Error::create([
+    $error = Error::create([
         'title' => 'Payment Required',
         'detail' => $ex->getMessage(),
         'status' => '402',
