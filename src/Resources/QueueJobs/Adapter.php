@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Copyright 2018 Cloud Creativity Limited
  *
@@ -16,14 +15,29 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\LaravelJsonApi\Api;
+namespace CloudCreativity\LaravelJsonApi\Resources\QueueJobs;
 
-/**
- * Class ResourceProvider
- *
- * @package CloudCreativity\LaravelJsonApi
- * @deprecated 2.0.0 extend AbstractProvider directly.
- */
-abstract class ResourceProvider extends AbstractProvider
+use CloudCreativity\LaravelJsonApi\Eloquent\AbstractAdapter;
+use CloudCreativity\LaravelJsonApi\Queue\ClientJob;
+use Illuminate\Support\Collection;
+
+class Adapter extends AbstractAdapter
 {
+
+    /**
+     * ClientJobAdapter constructor.
+     */
+    public function __construct()
+    {
+        parent::__construct(new ClientJob());
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function filter($query, Collection $filters)
+    {
+        // TODO: Implement filter() method.
+    }
+
 }

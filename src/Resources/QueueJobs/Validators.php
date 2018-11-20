@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Copyright 2018 Cloud Creativity Limited
  *
@@ -16,14 +15,34 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\LaravelJsonApi\Api;
+namespace CloudCreativity\LaravelJsonApi\Resources\QueueJobs;
 
-/**
- * Class ResourceProvider
- *
- * @package CloudCreativity\LaravelJsonApi
- * @deprecated 2.0.0 extend AbstractProvider directly.
- */
-abstract class ResourceProvider extends AbstractProvider
+use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
+use CloudCreativity\LaravelJsonApi\Validation\AbstractValidators;
+
+class Validators extends AbstractValidators
 {
+
+    /**
+     * @var array
+     */
+    protected $allowedIncludePaths = [];
+
+    /**
+     * @inheritDoc
+     */
+    protected function rules($record = null): array
+    {
+        throw new RuntimeException('Not implemented.');
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function queryRules(): array
+    {
+        return [];
+    }
+
+
 }
