@@ -28,13 +28,11 @@ class ClientDispatch extends PendingDispatch
     /**
      * ClientDispatch constructor.
      *
-     * @param AsynchronousProcess $process
      * @param mixed $job
      */
-    public function __construct(AsynchronousProcess $process, $job)
+    public function __construct($job)
     {
         parent::__construct($job);
-        $job->clientJob = $process;
         $this->resourceId = false;
     }
 
@@ -143,6 +141,9 @@ class ClientDispatch extends PendingDispatch
      */
     public function dispatch(): AsynchronousProcess
     {
+        $fqn = json_api($this->getApi())->getJobFqn();
+
+        $this->job->clientJob = new $fqn;
         $this->job->clientJob->dispatching($this);
 
         parent::__destruct();

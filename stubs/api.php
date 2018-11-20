@@ -53,7 +53,7 @@ return [
     | `'posts' => App\Post::class`
     */
     'resources' => [
-        'posts' => App\Post::class,
+        'posts' => \App\Post::class,
     ],
 
     /*
@@ -93,6 +93,23 @@ return [
         'namespace' => '/api/v1',
         'name' => 'api:v1:',
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Jobs
+    |--------------------------------------------------------------------------
+    |
+    | Defines the class that is used to store client dispatched jobs. The
+    | storing of these classes allows you to implement the JSON API
+    | recommendation for asynchronous processing.
+    |
+    | We recommend referring to the Laravel JSON API documentation on
+    | asynchronous processing if you are using this feature. If you use a
+    | different class here, it must implement the asynchronous process
+    | interface.
+    |
+    */
+    'jobs' => \CloudCreativity\LaravelJsonApi\Queue\ClientJob::class,
 
     /*
     |--------------------------------------------------------------------------

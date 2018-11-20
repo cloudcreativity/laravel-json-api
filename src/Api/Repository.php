@@ -79,6 +79,7 @@ class Repository
             $apiName,
             $config['codecs'],
             Url::fromArray($config['url']),
+            $config['jobs'],
             $config['use-eloquent'],
             $config['supported-ext'],
             $config['errors']
@@ -133,6 +134,7 @@ class Repository
             'supported-ext' => null,
             'url' => null,
             'errors' => null,
+            'jobs' => null,
         ], $config);
 
         if (!$config['namespace']) {
