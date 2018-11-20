@@ -65,7 +65,7 @@ trait ClientDispatchable
     }
 
     /**
-     * Set the resource that the job relates to.
+     * Set the resource that was created by the job.
      *
      * If a job is creating a new resource, this method can be used to update
      * the client job with the created resource. This method does nothing if the
@@ -74,7 +74,7 @@ trait ClientDispatchable
      * @param $resource
      * @return void
      */
-    public function setResource($resource): void
+    public function didCreate($resource): void
     {
         if ($this->wasClientDispatched()) {
             $this->clientJob->setResource($resource)->save();
