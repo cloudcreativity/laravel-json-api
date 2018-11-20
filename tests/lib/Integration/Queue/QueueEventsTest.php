@@ -28,7 +28,7 @@ class QueueEventsTest extends TestCase
         $this->assertDatabaseHas('json_api_client_jobs', [
             'uuid' => $job->clientJob->getKey(),
             'attempts' => 1,
-            'completed_at' => Carbon::now()->format('Y-m-d H:i:s.u'),
+            'completed_at' => Carbon::now()->format('Y-m-d H:i:s'),
             'failed' => false,
         ]);
     }
@@ -49,7 +49,7 @@ class QueueEventsTest extends TestCase
         $this->assertDatabaseHas('json_api_client_jobs', [
             'uuid' => $job->clientJob->getKey(),
             'attempts' => 1,
-            'completed_at' => Carbon::now()->format('Y-m-d H:i:s.u'),
+            'completed_at' => Carbon::now()->format('Y-m-d H:i:s'),
             'failed' => true,
         ]);
     }

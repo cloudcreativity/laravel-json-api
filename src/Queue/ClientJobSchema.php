@@ -2,7 +2,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Queue;
 
-use Carbon\Carbon;
+use DateTime;
 use Neomerx\JsonApi\Schema\SchemaProvider;
 
 class ClientJobSchema extends SchemaProvider
@@ -16,7 +16,7 @@ class ClientJobSchema extends SchemaProvider
     /**
      * @var string
      */
-    protected $dateFormat = 'Y-m-d\TH:i:s.uP';
+    protected $dateFormat = DateTime::ATOM;
 
     /**
      * @param ClientJob $resource
@@ -33,9 +33,9 @@ class ClientJobSchema extends SchemaProvider
      */
     public function getAttributes($resource)
     {
-        /** @var Carbon|null $completedAt */
+        /** @var DateTime|null $completedAt */
         $completedAt = $resource->completed_at;
-        /** @var Carbon|null $timeoutAt */
+        /** @var DateTime|null $timeoutAt */
         $timeoutAt = $resource->timeout_at;
 
         return [

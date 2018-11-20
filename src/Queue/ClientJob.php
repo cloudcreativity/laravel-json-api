@@ -74,11 +74,6 @@ class ClientJob extends Model implements AsynchronousProcess
     ];
 
     /**
-     * @var string
-     */
-    protected $dateFormat = 'Y-m-d H:i:s.u';
-
-    /**
      * @inheritdoc
      */
     public static function boot()

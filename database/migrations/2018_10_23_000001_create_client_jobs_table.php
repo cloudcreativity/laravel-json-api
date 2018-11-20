@@ -16,7 +16,7 @@ class CreateClientJobsTable extends Migration
     {
         Schema::create('json_api_client_jobs', function (Blueprint $table) {
             $table->uuid('uuid')->primary();
-            $table->timestamps(6);
+            $table->timestamps();
             $table->string('api');
             $table->string('resource_type');
             $table->string('resource_id')->nullable();

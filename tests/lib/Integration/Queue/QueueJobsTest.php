@@ -91,21 +91,20 @@ class QueueJobsTest extends TestCase
     private function serialize(ClientJob $job): array
     {
         $self = $this->jobUrl($job);
-        $format = 'Y-m-d\TH:i:s.uP';
 
         return [
             'type' => 'queue-jobs',
             'id' => (string) $job->getRouteKey(),
             'attributes' => [
                 'attempts' => $job->attempts,
-                'created-at' => $job->created_at->format($format),
-                'completed-at' => $job->completed_at ? $job->completed_at->format($format) : null,
+                'created-at' => $job->created_at->toAtomString(),
+                'completed-at' => $job->completed_at ? $job->completed_at->toAtomString() : null,
                 'failed' => $job->failed,
                 'resource-type' => 'downloads',
                 'timeout' => $job->timeout,
-                'timeout-at' => $job->timeout_at ? $job->timeout_at->format($format) : null,
+                'timeout-at' => $job->timeout_at ? $job->timeout_at->toAtomString() : null,
                 'tries' => $job->tries,
-                'updated-at' => $job->updated_at->format($format),
+                'updated-at' => $job->updated_at->toAtomString(),
             ],
             'links' => [
                 'self' => $self,
