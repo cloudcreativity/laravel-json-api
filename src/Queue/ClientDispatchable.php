@@ -19,7 +19,6 @@ trait ClientDispatchable
     public static function client(...$args): ClientDispatch
     {
         return new ClientDispatch(
-            new ClientJob(),
             new static(...$args)
         );
     }

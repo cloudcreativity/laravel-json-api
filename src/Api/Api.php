@@ -28,6 +28,7 @@ use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorFactoryInterfac
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use CloudCreativity\LaravelJsonApi\Http\Responses\Responses;
+use CloudCreativity\LaravelJsonApi\Queue\ClientJob;
 use CloudCreativity\LaravelJsonApi\Resolver\AggregateResolver;
 use CloudCreativity\LaravelJsonApi\Resolver\NamespaceResolver;
 use GuzzleHttp\Client;
@@ -84,6 +85,11 @@ class Api
     /**
      * @var string|null
      */
+    private $jobFqn;
+
+    /**
+     * @var string|null
+     */
     private $supportedExt;
 
     /**
@@ -113,13 +119,14 @@ class Api
     private $responses;
 
     /**
-     * Definition constructor.
+     * Api constructor.
      *
      * @param Factory $factory
      * @param AggregateResolver $resolver
      * @param $apiName
      * @param Codecs $codecs
      * @param Url $url
+     * @param string|null $jobFqn
      * @param bool $useEloquent
      * @param string|null $supportedExt
      * @param array $errors
@@ -130,6 +137,7 @@ class Api
         $apiName,
         Codecs $codecs,
         Url $url,
+        $jobFqn = null,
         $useEloquent = true,
         $supportedExt = null,
         array $errors = []
@@ -143,6 +151,7 @@ class Api
         $this->name = $apiName;
         $this->codecs = $codecs;
         $this->url = $url;
+        $this->jobFqn = $jobFqn;
         $this->useEloquent = $useEloquent;
         $this->supportedExt = $supportedExt;
         $this->errors = $errors;
@@ -211,6 +220,16 @@ class Api
     public function getUrl()
     {
         return $this->url;
+    }
+
+    /**
+     * Get the fully qualified name of the class to use for storing client jobs.
+     *
+     * @return string
+     */
+    public function getJobFqn()
+    {
+        return $this->jobFqn ?: ClientJob::class;
     }
 
     /**
