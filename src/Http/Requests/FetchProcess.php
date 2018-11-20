@@ -17,6 +17,8 @@
 
 namespace CloudCreativity\LaravelJsonApi\Http\Requests;
 
+use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorProviderInterface;
+
 /**
  * Class FetchResource
  *
@@ -31,6 +33,27 @@ class FetchProcess extends FetchProcesses
     public function getProcessId(): string
     {
         return $this->jsonApiRequest->getProcessId();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function validateQuery()
+    {
+        if (!$validators = $this->getValidators()) {
+            return;
+        }
+
+        /** Pre-1.0 validators */
+        if ($validators instanceof ValidatorProviderInterface) {
+            $validators->resourceQueryChecker()->checkQuery($this->getEncodingParameters());
+            return;
+        }
+
+        /** 1.0 validators */
+        $this->passes(
+            $validators->fetchQuery($this->query())
+        );
     }
 
 }

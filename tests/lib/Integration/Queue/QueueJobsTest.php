@@ -68,6 +68,14 @@ class QueueJobsTest extends TestCase
             ->assertStatus(404);
     }
 
+    public function testInvalidInclude()
+    {
+        $job = factory(ClientJob::class)->create();
+
+        $this->getJsonApi($this->jobUrl($job) . '?' . http_build_query(['include' => 'foo']))
+            ->assertStatus(400);
+    }
+
     /**
      * @param ClientJob $job
      * @param string|null $resourceType
