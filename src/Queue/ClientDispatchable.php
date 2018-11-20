@@ -63,4 +63,21 @@ trait ClientDispatchable
     {
         return optional($this->clientJob)->resource_id;
     }
+
+    /**
+     * Set the resource that the job relates to.
+     *
+     * If a job is creating a new resource, this method can be used to update
+     * the client job with the created resource. This method does nothing if the
+     * job was not dispatched by a client.
+     *
+     * @param $resource
+     * @return void
+     */
+    public function setResource($resource): void
+    {
+        if ($this->wasClientDispatched()) {
+            $this->clientJob->setResource($resource)->save();
+        }
+    }
 }
