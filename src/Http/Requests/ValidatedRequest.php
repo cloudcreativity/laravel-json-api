@@ -56,7 +56,7 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
     /**
      * @var ContainerInterface
      */
-    private $container;
+    protected $container;
 
     /**
      * Authorize the request.
