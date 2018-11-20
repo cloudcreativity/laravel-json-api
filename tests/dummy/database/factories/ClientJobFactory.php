@@ -16,6 +16,7 @@
  */
 
 use CloudCreativity\LaravelJsonApi\Queue\ClientJob;
+use DummyApp\Download;
 use Faker\Generator as Faker;
 use Illuminate\Database\Eloquent\Factory;
 
@@ -35,5 +36,6 @@ $factory->state(ClientJob::class, 'success', function (Faker $faker) {
         'completed_at' => $faker->dateTimeBetween('-10 minutes', 'now'),
         'failed' => false,
         'attempts' => $faker->numberBetween(1, 3),
+        'resource_id' => factory(Download::class)->create()->getRouteKey(),
     ];
 });

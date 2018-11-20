@@ -11,7 +11,7 @@ class ClientJobValidators extends AbstractValidators
     /**
      * @var array
      */
-    protected $allowedIncludePaths = ['resource'];
+    protected $allowedIncludePaths = [];
 
     /**
      * @inheritDoc

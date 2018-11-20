@@ -38,11 +38,8 @@ class QueueJobsTest extends TestCase
      */
     public function testReadNotPending()
     {
-       $job = factory(ClientJob::class)->states('success')->create([
-           'resource_id' => '5b08ebcb-114b-4f9e-a0db-bd8bd046e74c',
-       ]);
-
-       $location = "http://localhost/api/v1/downloads/5b08ebcb-114b-4f9e-a0db-bd8bd046e74c";
+       $job = factory(ClientJob::class)->states('success')->create();
+       $location = "http://localhost/api/v1/downloads/{$job->resource_id}";
 
        $this->getJsonApi($this->jobUrl($job))
            ->assertStatus(303)
@@ -55,7 +52,7 @@ class QueueJobsTest extends TestCase
      */
     public function testReadNotPendingCannotSeeOther()
     {
-        $job = factory(ClientJob::class)->states('success')->create();
+        $job = factory(ClientJob::class)->states('success')->create(['resource_id' => null]);
         $expected = $this->serialize($job);
 
         $this->getJsonApi($this->jobUrl($job))
@@ -78,9 +75,11 @@ class QueueJobsTest extends TestCase
      */
     private function jobUrl(ClientJob $job, string $resourceType = null): string
     {
-        $resourceType = $resourceType ?: $job->resource_type;
-
-        return "/api/v1/{$resourceType}/queue-jobs/{$job->getRouteKey()}";
+        return url('/api/v1', [
+            $resourceType ?: $job->resource_type,
+            'queue-jobs',
+            $job
+        ]);
     }
 
     /**
@@ -91,7 +90,7 @@ class QueueJobsTest extends TestCase
      */
     private function serialize(ClientJob $job): array
     {
-        $self = "http://localhost" . $this->jobUrl($job);
+        $self = $this->jobUrl($job);
         $format = 'Y-m-d\TH:i:s.uP';
 
         return [
@@ -107,14 +106,6 @@ class QueueJobsTest extends TestCase
                 'timeout-at' => $job->timeout_at ? $job->timeout_at->format($format) : null,
                 'tries' => $job->tries,
                 'updated-at' => $job->updated_at->format($format),
-            ],
-            'relationships' => [
-                'resource' => [
-                    'links' => [
-                        'self' => "{$self}/relationships/resource",
-                        'related' => "{$self}/resource",
-                    ],
-                ],
             ],
             'links' => [
                 'self' => $self,

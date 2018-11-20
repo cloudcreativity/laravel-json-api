@@ -157,20 +157,12 @@ class ClientDispatchTest extends TestCase
                 'timeout-at' => Carbon::now()->addSeconds(25)->format('Y-m-d\TH:i:s.uP'),
                 'tries' => null,
             ],
-            'relationships' => [
-                'resource' => [
-                    'data' => [
-                        'type' => 'downloads',
-                        'id' => (string) $download->getRouteKey(),
-                    ],
-                ],
-            ],
         ];
 
-        $this->doUpdate($data, ['include' => 'resource'])->assertAcceptedWithId(
+        $this->doUpdate($data)->assertAcceptedWithId(
             'http://localhost/api/v1/downloads/queue-jobs',
             $expected
-        )->assertIsIncluded('downloads', $download);
+        );
 
         $job = $this->assertDispatchedReplace();
 
