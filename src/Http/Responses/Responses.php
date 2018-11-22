@@ -288,7 +288,8 @@ class Responses extends BaseResponses
     public function process(AsynchronousProcess $job, array $links = [], $meta = null, array $headers = [])
     {
         if (!$job->isPending() && $location = $job->getLocation()) {
-            return response()->redirectTo($location, Response::HTTP_SEE_OTHER, $headers);
+            $headers['Location'] = $location;
+            return $this->createJsonApiResponse(null, Response::HTTP_SEE_OTHER, $headers);
         }
 
         return $this->getContentResponse($job, self::HTTP_OK, $links, $meta, $headers);
