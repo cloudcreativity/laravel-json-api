@@ -34,16 +34,20 @@ class QueueJobsTest extends TestCase
 
     /**
      * When job process is done, the request SHOULD return a status 303 See other
-     * with a link in Location header.
+     * with a link in Location header. The spec recommendation shows a response with
+     * a Content-Type header as `application/vnd.api+json` but no content in the response body.
      */
     public function testReadNotPending()
     {
        $job = factory(ClientJob::class)->states('success')->create();
-       $location = "http://localhost/api/v1/downloads/{$job->resource_id}";
 
-       $this->getJsonApi($this->jobUrl($job))
+       $response = $this
+           ->getJsonApi($this->jobUrl($job))
            ->assertStatus(303)
-           ->assertHeader('Location', $location);
+           ->assertLocation('/api/v1/downloads/' . $job->resource_id)
+           ->assertHeader('Content-Type', 'application/vnd.api+json');
+
+       $this->assertEmpty($response->getContent(), 'content is empty.');
     }
 
     /**
