@@ -25,6 +25,7 @@ use CloudCreativity\LaravelJsonApi\Contracts\Http\Responses\ErrorResponseInterfa
 use CloudCreativity\LaravelJsonApi\Contracts\Utils\ErrorReporterInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Http\Requests\JsonApiRequest;
+use CloudCreativity\LaravelJsonApi\LaravelJsonApi;
 use CloudCreativity\LaravelJsonApi\Routing\ResourceRegistrar;
 use Exception;
 use Illuminate\Contracts\Container\Container;
@@ -43,11 +44,6 @@ class JsonApiService
     private $container;
 
     /**
-     * @var string
-     */
-    private $default;
-
-    /**
      * JsonApiService constructor.
      *
      * @param Container $container
@@ -55,7 +51,6 @@ class JsonApiService
     public function __construct(Container $container)
     {
         $this->container = $container;
-        $this->default = 'default';
     }
 
     /**
@@ -63,18 +58,17 @@ class JsonApiService
      *
      * @param string|null $apiName
      * @return string
+     * @deprecated 2.0.0 setting the API name via this method will be removed (getter will remain).
      */
     public function defaultApi($apiName = null)
     {
         if (is_null($apiName)) {
-            return $this->default;
+            return LaravelJsonApi::$defaultApi;
         }
 
-        if (!is_string($apiName) || empty($apiName)) {
-            throw new \InvalidArgumentException('Expecting a non-empty string API name.');
-        }
+        LaravelJsonApi::defaultApi($apiName);
 
-        return $this->default = $apiName;
+        return $apiName;
     }
 
     /**
@@ -90,7 +84,7 @@ class JsonApiService
         /** @var Repository $repo */
         $repo = $this->container->make(Repository::class);
 
-        return $repo->createApi($apiName ?: $this->default);
+        return $repo->createApi($apiName ?: $this->defaultApi());
     }
 
     /**
