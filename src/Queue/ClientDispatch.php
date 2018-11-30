@@ -141,7 +141,9 @@ class ClientDispatch extends PendingDispatch
      */
     public function dispatch(): AsynchronousProcess
     {
-        $fqn = json_api($this->getApi())->getJobFqn();
+        $fqn = json_api($this->getApi())
+            ->getJobs()
+            ->getModel();
 
         $this->job->clientJob = new $fqn;
         $this->job->clientJob->dispatching($this);

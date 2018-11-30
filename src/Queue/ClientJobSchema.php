@@ -23,9 +23,17 @@ abstract class ClientJobSchema extends SchemaProvider
 {
 
     /**
-     * @var string
+     * @var string|null
      */
-    protected $resourceType = 'queue-jobs';
+    protected $api;
+
+    /**
+     * @return string
+     */
+    public function getResourceType()
+    {
+        return json_api($this->api)->getJobs()->getResource();
+    }
 
     /**
      * @param ClientJob $resource

@@ -65,7 +65,7 @@ trait RegistersResources
      */
     protected function baseProcessUrl(): string
     {
-        return '/' . ResourceRegistrar::KEYWORD_PROCESSES;
+        return '/' . $this->processType();
     }
 
     /**
@@ -78,11 +78,10 @@ trait RegistersResources
 
     /**
      * @return string
-     * @todo allow this to be customised.
      */
     protected function processType(): string
     {
-        return 'queue-jobs';
+        return $this->options->get('processes') ?: ResourceRegistrar::KEYWORD_PROCESSES;
     }
 
     /**
