@@ -64,6 +64,11 @@ class JsonApiRequest
     private $resourceId;
 
     /**
+     * @var string|null
+     */
+    private $processId;
+
+    /**
      * @var object|bool|null
      */
     private $document;
@@ -143,6 +148,7 @@ class JsonApiRequest
      * Get the resource identifier for the request.
      *
      * @return ResourceIdentifierInterface|null
+     * @deprecated 2.0.0
      */
     public function getResourceIdentifier(): ?ResourceIdentifierInterface
     {
@@ -189,6 +195,46 @@ class JsonApiRequest
     }
 
     /**
+     * What process resource type does the request relate to?
+     *
+     * @return string|null
+     */
+    public function getProcessType(): ?string
+    {
+        return $this->request->route(ResourceRegistrar::PARAM_PROCESS_TYPE);
+    }
+
+    /**
+     * What process id does the request relate to?
+     *
+     * @return string|null
+     */
+    public function getProcessId(): ?string
+    {
+        /** Cache the process id because binding substitutions will override it. */
+        if (is_null($this->processId)) {
+            $this->processId = $this->request->route(ResourceRegistrar::PARAM_PROCESS_ID) ?: false;
+        }
+
+        return $this->processId ?: null;
+    }
+
+    /**
+     * Get the process identifier for the request.
+     *
+     * @return ResourceIdentifierInterface|null
+     * @deprecated 2.0.0
+     */
+    public function getProcessIdentifier(): ?ResourceIdentifierInterface
+    {
+        if (!$id = $this->getProcessId()) {
+            return null;
+        }
+
+        return ResourceIdentifier::create($this->getProcessType(), $id);
+    }
+
+    /**
      * Get the encoding parameters from the request.
      *
      * @return EncodingParametersInterface
@@ -225,7 +271,7 @@ class JsonApiRequest
      */
     public function isIndex(): bool
     {
-        return $this->isMethod('get') && !$this->isResource();
+        return $this->isMethod('get') && $this->isNotResource() && $this->isNotProcesses();
     }
 
     /**
@@ -237,7 +283,7 @@ class JsonApiRequest
      */
     public function isCreateResource(): bool
     {
-        return $this->isMethod('post') && !$this->isResource();
+        return $this->isMethod('post') && $this->isNotResource();
     }
 
     /**
@@ -366,6 +412,30 @@ class JsonApiRequest
     }
 
     /**
+     * Is this a request to read all processes for a resource type?
+     *
+     * E.g. `GET /posts/queue-jobs`
+     *
+     * @return bool
+     */
+    public function isReadProcesses(): bool
+    {
+        return $this->isMethod('get') && $this->isProcesses() && $this->isNotProcess();
+    }
+
+    /**
+     * Is this a request to read a process for a resource type?
+     *
+     * E.g. `GET /posts/queue-jobs/839765f4-7ff4-4625-8bf7-eecd3ab44946`
+     *
+     * @return bool
+     */
+    public function isReadProcess(): bool
+    {
+        return $this->isMethod('get') && $this->isProcess();
+    }
+
+    /**
      * @return bool
      */
     private function isResource(): bool
@@ -379,6 +449,46 @@ class JsonApiRequest
     private function isRelationship(): bool
     {
         return !empty($this->getRelationshipName());
+    }
+
+    /**
+     * @return bool
+     */
+    private function isNotResource(): bool
+    {
+        return !$this->isResource();
+    }
+
+    /**
+     * @return bool
+     */
+    private function isProcesses(): bool
+    {
+        return !empty($this->getProcessType());
+    }
+
+    /**
+     * @return bool
+     */
+    private function isNotProcesses(): bool
+    {
+        return !$this->isProcesses();
+    }
+
+    /**
+     * @return bool
+     */
+    private function isProcess(): bool
+    {
+        return !empty($this->getProcessId());
+    }
+
+    /**
+     * @return bool
+     */
+    private function isNotProcess(): bool
+    {
+        return !$this->isProcess();
     }
 
     /**

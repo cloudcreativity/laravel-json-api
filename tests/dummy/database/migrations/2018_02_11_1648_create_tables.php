@@ -92,6 +92,12 @@ class CreateTables extends Migration
             $table->string('name');
             $table->string('code');
         });
+
+        Schema::create('downloads', function (Blueprint $table) {
+            $table->increments('id');
+            $table->timestamps();
+            $table->string('category');
+        });
     }
 
     /**
@@ -106,5 +112,6 @@ class CreateTables extends Migration
         Schema::dropIfExists('taggables');
         Schema::dropIfExists('phones');
         Schema::dropIfExists('countries');
+        Schema::dropIfExists('downloads');
     }
 }

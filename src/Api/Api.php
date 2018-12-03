@@ -27,6 +27,7 @@ use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use CloudCreativity\LaravelJsonApi\Http\Responses\Responses;
+use CloudCreativity\LaravelJsonApi\Queue\ClientJob;
 use CloudCreativity\LaravelJsonApi\Resolver\AggregateResolver;
 use CloudCreativity\LaravelJsonApi\Resolver\NamespaceResolver;
 use GuzzleHttp\Client;
@@ -81,6 +82,11 @@ class Api
     private $url;
 
     /**
+     * @var Jobs
+     */
+    private $jobs;
+
+    /**
      * @var string|null
      */
     private $supportedExt;
@@ -107,13 +113,14 @@ class Api
     private $errorRepository;
 
     /**
-     * Definition constructor.
+     * Api constructor.
      *
      * @param Factory $factory
      * @param AggregateResolver $resolver
      * @param $apiName
      * @param array $codecs
      * @param Url $url
+     * @param Jobs $jobs
      * @param bool $useEloquent
      * @param string|null $supportedExt
      * @param array $errors
@@ -124,6 +131,7 @@ class Api
         $apiName,
         array $codecs,
         Url $url,
+        Jobs $jobs,
         $useEloquent = true,
         $supportedExt = null,
         array $errors = []
@@ -133,6 +141,7 @@ class Api
         $this->name = $apiName;
         $this->codecs = $codecs;
         $this->url = $url;
+        $this->jobs = $jobs;
         $this->useEloquent = $useEloquent;
         $this->supportedExt = $supportedExt;
         $this->errors = $errors;
@@ -201,6 +210,14 @@ class Api
     public function getUrl()
     {
         return $this->url;
+    }
+
+    /**
+     * @return Jobs
+     */
+    public function getJobs()
+    {
+        return $this->jobs;
     }
 
     /**
@@ -374,10 +391,10 @@ class Api
     /**
      * Register a resource provider with this API.
      *
-     * @param ResourceProvider $provider
+     * @param AbstractProvider $provider
      * @return void
      */
-    public function register(ResourceProvider $provider)
+    public function register(AbstractProvider $provider)
     {
         $this->resolver->attach($provider->getResolver());
         $this->errors = array_replace($provider->getErrors(), $this->errors);

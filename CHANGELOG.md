@@ -17,6 +17,7 @@ update request.
 `type` or `id` fields.
 - JSON API specification validation will now fail if the `attributes` and `relationships` members have
 common field names, as field names share a common namespace.
+- Can now return `Responsable` instances from controller hooks.
 
 ### Changed
 - [#248](https://github.com/cloudcreativity/laravel-json-api/pull/248)

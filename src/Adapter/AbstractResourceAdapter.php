@@ -20,6 +20,7 @@ namespace CloudCreativity\LaravelJsonApi\Adapter;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\RelationshipAdapterInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\ResourceAdapterInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Queue\AsynchronousProcess;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreAwareInterface;
 use CloudCreativity\LaravelJsonApi\Document\ResourceObject;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
@@ -65,7 +66,7 @@ abstract class AbstractResourceAdapter implements ResourceAdapterInterface, Stor
      * Persist changes to the record.
      *
      * @param $record
-     * @return void
+     * @return AsynchronousProcess|null
      */
     abstract protected function persist($record);
 
@@ -76,11 +77,8 @@ abstract class AbstractResourceAdapter implements ResourceAdapterInterface, Stor
     {
         $resource = ResourceObject::create($document['data']);
         $record = $this->createRecord($resource);
-        $this->fill($record, $resource, $parameters);
-        $this->persist($record);
-        $this->fillRelated($record, $resource, $parameters);
 
-        return $record;
+        return $this->fillAndPersist($record, $resource, $parameters);
     }
 
     /**
@@ -97,11 +95,8 @@ abstract class AbstractResourceAdapter implements ResourceAdapterInterface, Stor
     public function update($record, array $document, EncodingParametersInterface $parameters)
     {
         $resource = ResourceObject::create($document['data']);
-        $this->fill($record, $resource, $parameters);
-        $this->persist($record);
-        $this->fillRelated($record, $resource, $parameters);
 
-        return $record;
+        return $this->fillAndPersist($record, $resource, $parameters) ?: $record;
     }
 
     /**
@@ -228,4 +223,23 @@ abstract class AbstractResourceAdapter implements ResourceAdapterInterface, Stor
         // no-op
     }
 
+    /**
+     * @param mixed $record
+     * @param ResourceObject $resource
+     * @param EncodingParametersInterface $parameters
+     * @return AsynchronousProcess|mixed
+     */
+    protected function fillAndPersist($record, ResourceObject $resource, EncodingParametersInterface $parameters)
+    {
+        $this->fill($record, $resource, $parameters);
+        $async = $this->persist($record);
+
+        if ($async instanceof AsynchronousProcess) {
+            return $async;
+        }
+
+        $this->fillRelated($record, $resource, $parameters);
+
+        return $record;
+    }
 }

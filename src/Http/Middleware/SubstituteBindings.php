@@ -64,7 +64,11 @@ class SubstituteBindings
     public function handle($request, \Closure $next)
     {
         if ($this->jsonApiRequest->getResourceId()) {
-            $this->bind($request->route());
+            $this->bindResource($request->route());
+        }
+
+        if ($this->jsonApiRequest->getProcessId()) {
+            $this->bindProcess($request->route());
         }
 
         return $next($request);
@@ -76,7 +80,7 @@ class SubstituteBindings
      * @param Route $route
      * @return void
      */
-    private function bind(Route $route)
+    private function bindResource(Route $route): void
     {
         $record = $this->store->find($this->jsonApiRequest->getResourceIdentifier());
 
@@ -85,6 +89,23 @@ class SubstituteBindings
         }
 
         $route->setParameter(ResourceRegistrar::PARAM_RESOURCE_ID, $record);
+    }
+
+    /**
+     * Bind the process to the route.
+     *
+     * @param Route $route
+     * @return void
+     */
+    private function bindProcess(Route $route): void
+    {
+        $process = $this->store->find($this->jsonApiRequest->getProcessIdentifier());
+
+        if (!$process) {
+            throw new NotFoundException();
+        }
+
+        $route->setParameter(ResourceRegistrar::PARAM_PROCESS_ID, $process);
     }
 
 }

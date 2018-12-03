@@ -55,6 +55,7 @@ return [
     'resources' => [
         'comments' => \DummyApp\Comment::class,
         'countries' => \DummyApp\Country::class,
+        'downloads' => \DummyApp\Download::class,
         'phones' => \DummyApp\Phone::class,
         'posts' => \DummyApp\Post::class,
         'sites' => \DummyApp\Entities\Site::class,
@@ -99,6 +100,24 @@ return [
         'host' => null,
         'namespace' => '/api/v1',
         'name' => 'api:v1:',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Jobs
+    |--------------------------------------------------------------------------
+    |
+    | Defines settings for the asynchronous processing feature. We recommend
+    | referring to the documentation on asynchronous processing if you are
+    | using this feature.
+    |
+    | Note that if you use a different model class, it must implement the
+    | asynchronous process interface.
+    |
+    */
+    'jobs' => [
+        'resource' => 'queue-jobs',
+        'model' => \CloudCreativity\LaravelJsonApi\Queue\ClientJob::class,
     ],
 
     /*

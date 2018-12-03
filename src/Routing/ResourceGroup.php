@@ -58,12 +58,15 @@ class ResourceGroup
     public function addResource(Registrar $router)
     {
         $router->group($this->groupAction(), function (Registrar $router) {
+            /** Async process routes */
+            $this->addProcessRoutes($router);
+
             /** Primary resource routes. */
             $router->group([], function ($router) {
                 $this->addResourceRoutes($router);
             });
 
-            /** Resource relationship Routes */
+            /** Resource relationship routes */
             $this->addRelationshipRoutes($router);
         });
     }
@@ -120,6 +123,32 @@ class ResourceGroup
     protected function relationshipsGroup()
     {
         return new RelationshipsGroup($this->resourceType, $this->options);
+    }
+
+    /**
+     * Add routes for async processes.
+     *
+     * @param Registrar $router
+     */
+    protected function addProcessRoutes(Registrar $router): void
+    {
+        if (true !== $this->options->get('async')) {
+            return;
+        }
+
+        $this->createProcessRoute(
+            $router,
+            'get',
+            $this->baseProcessUrl(),
+            $this->routeAction('processes')
+        );
+
+        $this->createProcessRoute(
+            $router,
+            'get',
+            $this->processUrl(),
+            $this->routeAction('process')
+        );
     }
 
     /**

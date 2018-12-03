@@ -9,9 +9,22 @@ The default API name is `default`. You can change the default name via the JSON 
 the following to the `boot()` method of your `AppServiceProvider`:
 
 ```php
-public function boot()
+<?php
+
+namespace App\Providers;
+
+use CloudCreativity\LaravelJsonApi\LaravelJsonApi;
+use Illuminate\Support\ServiceProvider;
+
+class AppServiceProvider extends ServiceProvider
 {
-    JsonApi::defaultApi('v1');
+    public function boot()
+    {
+        LaravelJsonApi::defaultApi('v1');
+    }
+    
+    // ...
+    
 }
 ```
 

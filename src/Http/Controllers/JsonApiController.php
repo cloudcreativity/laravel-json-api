@@ -20,9 +20,12 @@ namespace CloudCreativity\LaravelJsonApi\Http\Controllers;
 
 use Closure;
 use CloudCreativity\LaravelJsonApi\Auth\AuthorizesRequests;
+use CloudCreativity\LaravelJsonApi\Contracts\Queue\AsynchronousProcess;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\LaravelJsonApi\Http\Requests\CreateResource;
 use CloudCreativity\LaravelJsonApi\Http\Requests\DeleteResource;
+use CloudCreativity\LaravelJsonApi\Http\Requests\FetchProcess;
+use CloudCreativity\LaravelJsonApi\Http\Requests\FetchProcesses;
 use CloudCreativity\LaravelJsonApi\Http\Requests\FetchRelated;
 use CloudCreativity\LaravelJsonApi\Http\Requests\FetchRelationship;
 use CloudCreativity\LaravelJsonApi\Http\Requests\FetchResource;
@@ -31,6 +34,7 @@ use CloudCreativity\LaravelJsonApi\Http\Requests\UpdateRelationship;
 use CloudCreativity\LaravelJsonApi\Http\Requests\UpdateResource;
 use CloudCreativity\LaravelJsonApi\Http\Requests\ValidatedRequest;
 use CloudCreativity\LaravelJsonApi\Utils\Str;
+use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 
@@ -69,7 +73,7 @@ class JsonApiController extends Controller
     {
         $result = $this->doSearch($store, $request);
 
-        if ($result instanceof Response) {
+        if ($this->isResponse($result)) {
             return $result;
         }
 
@@ -91,7 +95,13 @@ class JsonApiController extends Controller
             $request->getParameters()
         );
 
-        if ($record && $result = $this->invoke('reading', $record, $request)) {
+        if (!$record) {
+            return $this->reply()->content(null);
+        }
+
+        $result = $this->invoke('reading', $record, $request);
+
+        if ($this->isResponse($result)) {
             return $result;
         }
 
@@ -111,7 +121,7 @@ class JsonApiController extends Controller
             return $this->doCreate($store, $request);
         });
 
-        if ($record instanceof Response) {
+        if ($this->isResponse($record)) {
             return $record;
         }
 
@@ -131,11 +141,11 @@ class JsonApiController extends Controller
             return $this->doUpdate($store, $request);
         });
 
-        if ($record instanceof Response) {
+        if ($this->isResponse($record)) {
             return $record;
         }
 
-        return $this->reply()->content($record);
+        return $this->reply()->updated($record);
     }
 
     /**
@@ -151,11 +161,11 @@ class JsonApiController extends Controller
             return $this->doDelete($store, $request);
         });
 
-        if ($result instanceof Response) {
+        if ($this->isResponse($result)) {
             return $result;
         }
 
-        return $this->reply()->noContent();
+        return $this->reply()->deleted($result);
     }
 
     /**
@@ -168,8 +178,9 @@ class JsonApiController extends Controller
     public function readRelatedResource(StoreInterface $store, FetchRelated $request)
     {
         $record = $request->getRecord();
+        $result = $this->beforeReadingRelationship($record, $request);
 
-        if ($result = $this->beforeReadingRelationship($record, $request)) {
+        if ($this->isResponse($result)) {
             return $result;
         }
 
@@ -192,8 +203,9 @@ class JsonApiController extends Controller
     public function readRelationship(StoreInterface $store, FetchRelationship $request)
     {
         $record = $request->getRecord();
+        $result = $this->beforeReadingRelationship($record, $request);
 
-        if ($result = $this->beforeReadingRelationship($record, $request)) {
+        if ($this->isResponse($result)) {
             return $result;
         }
 
@@ -219,7 +231,7 @@ class JsonApiController extends Controller
             return $this->doReplaceRelationship($store, $request);
         });
 
-        if ($result instanceof Response) {
+        if ($this->isResponse($result)) {
             return $result;
         }
 
@@ -239,7 +251,7 @@ class JsonApiController extends Controller
             return $this->doAddToRelationship($store, $request);
         });
 
-        if ($result instanceof Response) {
+        if ($this->isResponse($result)) {
             return $result;
         }
 
@@ -259,11 +271,46 @@ class JsonApiController extends Controller
             return $this->doRemoveFromRelationship($store, $request);
         });
 
-        if ($result instanceof Response) {
+        if ($this->isResponse($result)) {
             return $result;
         }
 
         return $this->reply()->noContent();
+    }
+
+    /**
+     * Read processes action.
+     *
+     * @param StoreInterface $store
+     * @param FetchProcesses $request
+     * @return Response
+     */
+    public function processes(StoreInterface $store, FetchProcesses $request)
+    {
+        $result = $store->queryRecords(
+            $request->getProcessType(),
+            $request->getEncodingParameters()
+        );
+
+        return $this->reply()->content($result);
+    }
+
+    /**
+     * Read a process action.
+     *
+     * @param StoreInterface $store
+     * @param FetchProcess $request
+     * @return Response
+     */
+    public function process(StoreInterface $store, FetchProcess $request)
+    {
+        $record = $store->readRecord(
+            $request->getProcessType(),
+            $request->getProcessId(),
+            $request->getEncodingParameters()
+        );
+
+        return $this->reply()->process($record);
     }
 
     /**
@@ -287,8 +334,8 @@ class JsonApiController extends Controller
      *
      * @param StoreInterface $store
      * @param ValidatedRequest $request
-     * @return object|Response
-     *      the created record or a HTTP response.
+     * @return mixed
+     *      the created record, an asynchronous process, or a HTTP response.
      */
     protected function doCreate(StoreInterface $store, ValidatedRequest $request)
     {
@@ -310,14 +357,12 @@ class JsonApiController extends Controller
      *
      * @param StoreInterface $store
      * @param ValidatedRequest $request
-     * @return object|Response
-     *      the updated record or a HTTP response.
+     * @return mixed
+     *      the updated record, an asynchronous process, or a HTTP response.
      */
     protected function doUpdate(StoreInterface $store, ValidatedRequest $request)
     {
-        $response = $this->beforeCommit($request);
-
-        if ($response instanceof Response) {
+        if ($response = $this->beforeCommit($request)) {
             return $response;
         }
 
@@ -335,21 +380,20 @@ class JsonApiController extends Controller
      *
      * @param StoreInterface $store
      * @param ValidatedRequest $request
-     * @return Response|null
-     *      an HTTP response or null.
+     * @return mixed|null
+     *      an HTTP response, an asynchronous process, content to return, or null.
      */
     protected function doDelete(StoreInterface $store, ValidatedRequest $request)
     {
         $record = $request->getRecord();
-        $response = $this->invoke('deleting', $record, $request);
 
-        if ($response instanceof Response) {
+        if ($response = $this->invoke('deleting', $record, $request)) {
             return $response;
         }
 
-        $store->deleteRecord($record, $request->getParameters());
+        $result = $store->deleteRecord($record, $request->getParameters());
 
-        return $this->invoke('deleted', $record, $request);
+        return $this->invoke('deleted', $record, $request) ?: $result;
     }
 
     /**
@@ -357,7 +401,7 @@ class JsonApiController extends Controller
      *
      * @param StoreInterface $store
      * @param ValidatedRequest $request
-     * @return Response|object
+     * @return mixed
      */
     protected function doReplaceRelationship(StoreInterface $store, ValidatedRequest $request)
     {
@@ -383,7 +427,7 @@ class JsonApiController extends Controller
      *
      * @param StoreInterface $store
      * @param ValidatedRequest $request
-     * @return Response|object
+     * @return mixed
      */
     protected function doAddToRelationship(StoreInterface $store, ValidatedRequest $request)
     {
@@ -409,7 +453,7 @@ class JsonApiController extends Controller
      *
      * @param StoreInterface $store
      * @param ValidatedRequest $request
-     * @return Response|object
+     * @return mixed
      */
     protected function doRemoveFromRelationship(StoreInterface $store, ValidatedRequest $request)
     {
@@ -446,8 +490,19 @@ class JsonApiController extends Controller
     }
 
     /**
+     * Can the controller return the provided value?
+     *
+     * @param $value
+     * @return bool
+     */
+    protected function isResponse($value)
+    {
+        return $value instanceof Response || $value instanceof Responsable;
+    }
+
+    /**
      * @param ValidatedRequest $request
-     * @return Response|null
+     * @return mixed|null
      */
     private function beforeCommit(ValidatedRequest $request)
     {
@@ -466,7 +521,7 @@ class JsonApiController extends Controller
      * @param ValidatedRequest $request
      * @param $record
      * @param $updating
-     * @return Response|null
+     * @return mixed|null
      */
     private function afterCommit(ValidatedRequest $request, $record, $updating)
     {
@@ -482,7 +537,7 @@ class JsonApiController extends Controller
     /**
      * @param $record
      * @param ValidatedRequest $request
-     * @return Response|null
+     * @return mixed|null
      */
     private function beforeReadingRelationship($record, ValidatedRequest $request)
     {
@@ -497,13 +552,13 @@ class JsonApiController extends Controller
      *
      * @param $method
      * @param mixed ...$arguments
-     * @return Response|null
+     * @return mixed|null
      */
     private function invoke($method, ...$arguments)
     {
-        $response = method_exists($this, $method) ? $this->{$method}(...$arguments) : null;
+        $result = method_exists($this, $method) ? $this->{$method}(...$arguments) : null;
 
-        return ($response instanceof Response) ? $response : null;
+        return $this->isInvokedResult($result) ? $result : null;
     }
 
     /**
@@ -511,19 +566,28 @@ class JsonApiController extends Controller
      *
      * @param array $method
      * @param mixed ...$arguments
-     * @return Response|null
+     * @return mixed|null
      */
     private function invokeMany(array $method, ...$arguments)
     {
         foreach ($method as $hook) {
             $result = $this->invoke($hook, ...$arguments);
 
-            if ($result instanceof Response) {
+            if ($this->isInvokedResult($result)) {
                 return $result;
             }
         }
 
         return null;
+    }
+
+    /**
+     * @param $value
+     * @return bool
+     */
+    private function isInvokedResult($value)
+    {
+        return $value instanceof AsynchronousProcess || $this->isResponse($value);
     }
 
 }
