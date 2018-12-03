@@ -24,7 +24,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
 /**
- * Class HandlesErrors
+ * Trait HandlesErrors
  *
  * @package CloudCreativity\LaravelJsonApi
  */
