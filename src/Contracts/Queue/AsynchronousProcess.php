@@ -15,6 +15,13 @@ interface AsynchronousProcess
 {
 
     /**
+     * Get the resource type that the process relates to.
+     *
+     * @return string
+     */
+    public function getResourceType(): string;
+
+    /**
      * Get the location of the resource that the process relates to, if known.
      *
      * @return string|null

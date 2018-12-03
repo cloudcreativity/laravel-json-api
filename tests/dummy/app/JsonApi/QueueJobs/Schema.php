@@ -18,11 +18,23 @@
 namespace DummyApp\JsonApi\QueueJobs;
 
 use Carbon\Carbon;
+use CloudCreativity\LaravelJsonApi\Queue\AsyncSchema;
 use CloudCreativity\LaravelJsonApi\Queue\ClientJob;
-use CloudCreativity\LaravelJsonApi\Queue\ClientJobSchema;
+use Neomerx\JsonApi\Schema\SchemaProvider;
 
-class Schema extends ClientJobSchema
+class Schema extends SchemaProvider
 {
+
+    use AsyncSchema;
+
+    /**
+     * @param ClientJob $resource
+     * @return string
+     */
+    public function getId($resource)
+    {
+        return (string) $resource->getRouteKey();
+    }
 
     /**
      * @param ClientJob $resource

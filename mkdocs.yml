@@ -31,6 +31,7 @@ pages:
     - Updating Relationships: crud/relationships.md
     - Deleting Resources: crud/deleting.md
   - Digging Deeper:
+    - Asynchronous Processing: features/async.md
     - Broadcasting: features/broadcasting.md
     - Errors: features/errors.md
     - Helpers: features/helpers.md
