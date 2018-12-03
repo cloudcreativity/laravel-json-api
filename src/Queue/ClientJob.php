@@ -90,6 +90,18 @@ class ClientJob extends Model implements AsynchronousProcess
     /**
      * @inheritDoc
      */
+    public function getResourceType(): string
+    {
+        if (!$type = $this->resource_type) {
+            throw new RuntimeException('No resource type set.');
+        }
+
+        return $type;
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function getLocation(): ?string
     {
         $type = $this->resource_type;

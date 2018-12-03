@@ -83,9 +83,9 @@ class Api
     private $url;
 
     /**
-     * @var string|null
+     * @var Jobs
      */
-    private $jobFqn;
+    private $jobs;
 
     /**
      * @var string|null
@@ -126,7 +126,7 @@ class Api
      * @param $apiName
      * @param Codecs $codecs
      * @param Url $url
-     * @param string|null $jobFqn
+     * @param Jobs $jobs
      * @param bool $useEloquent
      * @param string|null $supportedExt
      * @param array $errors
@@ -137,7 +137,7 @@ class Api
         $apiName,
         Codecs $codecs,
         Url $url,
-        $jobFqn = null,
+        Jobs $jobs,
         $useEloquent = true,
         $supportedExt = null,
         array $errors = []
@@ -151,7 +151,7 @@ class Api
         $this->name = $apiName;
         $this->codecs = $codecs;
         $this->url = $url;
-        $this->jobFqn = $jobFqn;
+        $this->jobs = $jobs;
         $this->useEloquent = $useEloquent;
         $this->supportedExt = $supportedExt;
         $this->errors = $errors;
@@ -223,13 +223,11 @@ class Api
     }
 
     /**
-     * Get the fully qualified name of the class to use for storing client jobs.
-     *
-     * @return string
+     * @return Jobs
      */
-    public function getJobFqn()
+    public function getJobs()
     {
-        return $this->jobFqn ?: ClientJob::class;
+        return $this->jobs;
     }
 
     /**

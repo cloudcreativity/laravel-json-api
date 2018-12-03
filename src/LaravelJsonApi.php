@@ -6,6 +6,13 @@ class LaravelJsonApi
 {
 
     /**
+     * The default API name.
+     *
+     * @var null
+     */
+    public static $defaultApi = 'default';
+
+    /**
      * Indicates if Laravel JSON API migrations will be run.
      *
      * @var bool
@@ -20,11 +27,28 @@ class LaravelJsonApi
     public static $queueBindings = true;
 
     /**
+     * Set the default API name.
+     *
+     * @param string $name
+     * @return LaravelJsonApi
+     */
+    public static function defaultApi(string $name): self
+    {
+        if (empty($name)) {
+            throw new \InvalidArgumentException('Default API name must not be empty.');
+        }
+
+        self::$defaultApi = $name;
+
+        return new self();
+    }
+
+    /**
      * @return LaravelJsonApi
      */
     public static function runMigrations(): self
     {
-        static::$runMigrations = true;
+        self::$runMigrations = true;
 
         return new self();
     }
@@ -34,7 +58,7 @@ class LaravelJsonApi
      */
     public static function skipQueueBindings(): self
     {
-        static::$queueBindings = false;
+        self::$queueBindings = false;
 
         return new self();
     }

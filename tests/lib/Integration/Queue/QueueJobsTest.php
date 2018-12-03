@@ -44,7 +44,7 @@ class QueueJobsTest extends TestCase
        $response = $this
            ->getJsonApi($this->jobUrl($job))
            ->assertStatus(303)
-           ->assertLocation('/api/v1/downloads/' . $job->resource_id)
+           ->assertHeader('Location', url('/api/v1/downloads', [$job->resource_id]))
            ->assertHeader('Content-Type', 'application/vnd.api+json');
 
        $this->assertEmpty($response->getContent(), 'content is empty.');

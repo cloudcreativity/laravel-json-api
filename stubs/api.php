@@ -99,17 +99,18 @@ return [
     | Jobs
     |--------------------------------------------------------------------------
     |
-    | Defines the class that is used to store client dispatched jobs. The
-    | storing of these classes allows you to implement the JSON API
-    | recommendation for asynchronous processing.
+    | Defines settings for the asynchronous processing feature. We recommend
+    | referring to the documentation on asynchronous processing if you are
+    | using this feature.
     |
-    | We recommend referring to the Laravel JSON API documentation on
-    | asynchronous processing if you are using this feature. If you use a
-    | different class here, it must implement the asynchronous process
-    | interface.
+    | Note that if you use a different model class, it must implement the
+    | asynchronous process interface.
     |
     */
-    'jobs' => \CloudCreativity\LaravelJsonApi\Queue\ClientJob::class,
+    'jobs' => [
+        'resource' => 'queue-jobs',
+        'model' => \CloudCreativity\LaravelJsonApi\Queue\ClientJob::class,
+    ],
 
     /*
     |--------------------------------------------------------------------------

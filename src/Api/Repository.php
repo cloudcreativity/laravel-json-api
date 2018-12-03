@@ -80,7 +80,7 @@ class Repository
             $apiName,
             Codecs::fromArray($config['codecs'], $url->toString()),
             $url,
-            $config['jobs'],
+            Jobs::fromArray($config['jobs'] ?: []),
             $config['use-eloquent'],
             $config['supported-ext'],
             $config['errors']
@@ -129,7 +129,7 @@ class Repository
         $config = array_replace([
             'namespace' => null,
             'by-resource' => true,
-            'resources' => null,
+            'resources' => [],
             'use-eloquent' => true,
             'codecs' => null,
             'supported-ext' => null,
@@ -142,6 +142,7 @@ class Repository
             $config['namespace'] = rtrim(app()->getNamespace(), '\\') . '\\JsonApi';
         }
 
+        $config['resources'] = $this->normalizeResources($config['resources'] ?? [], $config);
         $config['url'] = $this->normalizeUrl((array) $config['url'], $host);
         $config['errors'] = array_replace($this->defaultErrors(), (array) $config['errors']);
         $config['codecs'] = $config['codecs']['encoders'] ?? $config['codecs'];
@@ -189,5 +190,21 @@ class Repository
             'namespace' => (string) array_get($url, 'namespace'),
             'name' => (string) array_get($url, 'name'),
         ];
+    }
+
+    /**
+     * @param array $resources
+     * @param array $config
+     * @return array
+     */
+    private function normalizeResources(array $resources, array $config)
+    {
+        $jobs = isset($config['jobs']) ? Jobs::fromArray($config['jobs']) : null;
+
+        if ($jobs && !isset($resources[$jobs->getResource()])) {
+            $resources[$jobs->getResource()] = $jobs->getModel();
+        }
+
+        return $resources;
     }
 }

@@ -232,8 +232,9 @@ abstract class AbstractResourceAdapter implements ResourceAdapterInterface, Stor
     protected function fillAndPersist($record, ResourceObject $resource, EncodingParametersInterface $parameters)
     {
         $this->fill($record, $resource, $parameters);
+        $async = $this->persist($record);
 
-        if ($async = $this->persist($record)) {
+        if ($async instanceof AsynchronousProcess) {
             return $async;
         }
 

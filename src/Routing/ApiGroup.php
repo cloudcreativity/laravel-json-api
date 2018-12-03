@@ -99,6 +99,7 @@ class ApiGroup
     {
         return [
             'default-authorizer' => $this->options->get('authorizer'),
+            'processes' => $this->api->getJobs()->getResource(),
             'prefix' => $this->api->getUrl()->getNamespace(),
             'id' => $this->options->get('id'),
         ];
