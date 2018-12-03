@@ -44,6 +44,11 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
     protected $request;
 
     /**
+     * @var JsonApiRequest
+     */
+    protected $jsonApiRequest;
+
+    /**
      * @var Factory
      */
     protected $factory;
@@ -51,12 +56,7 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
     /**
      * @var ContainerInterface
      */
-    private $container;
-
-    /**
-     * @var JsonApiRequest
-     */
-    private $jsonApiRequest;
+    protected $container;
 
     /**
      * Authorize the request.

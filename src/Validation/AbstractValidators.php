@@ -330,12 +330,12 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
             $resource['attributes'] = $this->extractAttributes(
                 $record,
                 $resource['attributes'] ?? []
-            )->all();
+            );
 
             $resource['relationships'] = $this->extractRelationships(
                 $record,
                 $resource['relationships'] ?? []
-            )->all();
+            );
         }
 
         return $resource;
@@ -363,22 +363,22 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
      *
      * @param $record
      * @param array $new
-     * @return Collection
+     * @return array
      */
-    protected function extractAttributes($record, array $new): Collection
+    protected function extractAttributes($record, array $new): array
     {
-        return $this->existingAttributes($record)->merge($new);
+        return collect($this->existingAttributes($record))->merge($new)->all();
     }
 
     /**
      * Get any existing attributes for the provided record.
      *
      * @param $record
-     * @return Collection
+     * @return iterable
      */
-    protected function existingAttributes($record): Collection
+    protected function existingAttributes($record): iterable
     {
-        return collect($this->container->getSchema($record)->getAttributes($record));
+        return $this->container->getSchema($record)->getAttributes($record);
     }
 
     /**
@@ -386,11 +386,11 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
      *
      * @param $record
      * @param array $new
-     * @return Collection
+     * @return array
      */
-    protected function extractRelationships($record, array $new): Collection
+    protected function extractRelationships($record, array $new): array
     {
-        return $this->existingRelationships($record)->merge($new);
+        return collect($this->existingRelationships($record))->merge($new)->all();
     }
 
     /**
@@ -401,11 +401,11 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
      * to add existing relationship data.
      *
      * @param $record
-     * @return Collection
+     * @return iterable
      */
-    protected function existingRelationships($record): Collection
+    protected function existingRelationships($record): iterable
     {
-        return collect();
+        return [];
     }
 
     /**

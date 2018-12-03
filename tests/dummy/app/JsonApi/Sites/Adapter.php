@@ -130,7 +130,7 @@ class Adapter extends AbstractResourceAdapter
     }
 
     /**
-     * @param Site $record
+     * @inheritdoc
      */
     protected function persist($record)
     {

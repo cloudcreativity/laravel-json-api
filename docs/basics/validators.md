@@ -41,14 +41,14 @@ Content-Type: application/vnd.api+json
 
 {
   "errors": [
-    [
+    {
       "title": "Non-Compliant JSON API Document",
       "status": "400",
       "detail": "The member id must be a string.",
       "source": {
         "pointer": "/data/id"
       }
-    ]
+    }
   ]
 }
 ```
@@ -273,9 +273,9 @@ class Validators extends AbstractValidators
 
     /**
      * @param \App\Post $record
-     * @return \Illuminate\Support\Collection
+     * @return iterable
      */
-    protected function existingRelationships($record): Collection
+    protected function existingRelationships($record): iterable
     {
         return [
             'author' => [

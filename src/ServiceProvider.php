@@ -19,7 +19,6 @@
 namespace CloudCreativity\LaravelJsonApi;
 
 use CloudCreativity\LaravelJsonApi\Api\Repository;
-use CloudCreativity\LaravelJsonApi\Console\Commands;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Exceptions\ExceptionParserInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Factories\FactoryInterface;
@@ -33,11 +32,14 @@ use CloudCreativity\LaravelJsonApi\Http\Middleware\BootJsonApi;
 use CloudCreativity\LaravelJsonApi\Http\Middleware\NegotiateContent;
 use CloudCreativity\LaravelJsonApi\Http\Middleware\SubstituteBindings;
 use CloudCreativity\LaravelJsonApi\Http\Requests\JsonApiRequest;
+use CloudCreativity\LaravelJsonApi\Http\Responses\Responses;
+use CloudCreativity\LaravelJsonApi\Queue\UpdateClientProcess;
 use CloudCreativity\LaravelJsonApi\Routing\ResourceRegistrar;
 use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
 use CloudCreativity\LaravelJsonApi\View\Renderer;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Routing\Router;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 use Illuminate\View\Compilers\BladeCompiler;
@@ -59,18 +61,6 @@ class ServiceProvider extends BaseServiceProvider
 {
 
     /**
-     * @var array
-     */
-    protected $generatorCommands = [
-        Commands\MakeAdapter::class,
-        Commands\MakeApi::class,
-        Commands\MakeAuthorizer::class,
-        Commands\MakeResource::class,
-        Commands\MakeSchema::class,
-        Commands\MakeValidators::class,
-    ];
-
-    /**
      * @param Router $router
      */
     public function boot(Router $router)
@@ -79,6 +69,28 @@ class ServiceProvider extends BaseServiceProvider
         $this->bootResponseMacro();
         $this->bootBladeDirectives();
         $this->bootTranslations();
+
+        if (LaravelJsonApi::$queueBindings) {
+            Queue::after(UpdateClientProcess::class);
+            Queue::failing(UpdateClientProcess::class);
+        }
+
+        if ($this->app->runningInConsole()) {
+            $this->bootMigrations();
+
+            $this->publishes([
+                __DIR__ . '/../database/migrations' => database_path('migrations'),
+            ], 'json-api-migrations');
+
+            $this->commands([
+                Console\Commands\MakeAdapter::class,
+                Console\Commands\MakeApi::class,
+                Console\Commands\MakeAuthorizer::class,
+                Console\Commands\MakeResource::class,
+                Console\Commands\MakeSchema::class,
+                Console\Commands\MakeValidators::class,
+            ]);
+        }
     }
 
     /**
@@ -95,7 +107,6 @@ class ServiceProvider extends BaseServiceProvider
         $this->bindApiRepository();
         $this->bindExceptionParser();
         $this->bindRenderer();
-        $this->registerArtisanCommands();
         $this->mergePackageConfig();
     }
 
@@ -145,6 +156,18 @@ class ServiceProvider extends BaseServiceProvider
         $compiler = $this->app->make(BladeCompiler::class);
         $compiler->directive('jsonapi', Renderer::class . '::compileWith');
         $compiler->directive('encode', Renderer::class . '::compileEncode');
+    }
+
+    /**
+     * Register package migrations.
+     *
+     * @return void
+     */
+    protected function bootMigrations()
+    {
+        if (LaravelJsonApi::$runMigrations) {
+            $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+        }
     }
 
     /**
@@ -250,16 +273,6 @@ class ServiceProvider extends BaseServiceProvider
     {
         $this->app->singleton(Renderer::class);
         $this->app->alias(Renderer::class, 'json-api.renderer');
-    }
-
-    /**
-     * Register generator commands with artisan
-     */
-    protected function registerArtisanCommands()
-    {
-        if ($this->app->runningInConsole()) {
-            $this->commands($this->generatorCommands);
-        }
     }
 
     /**

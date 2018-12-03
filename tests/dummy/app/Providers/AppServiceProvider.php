@@ -18,6 +18,7 @@
 namespace DummyApp\Providers;
 
 use CloudCreativity\LaravelJsonApi\Facades\JsonApi;
+use CloudCreativity\LaravelJsonApi\LaravelJsonApi;
 use DummyApp\Entities\SiteRepository;
 use DummyApp\Policies\PostPolicy;
 use DummyApp\Policies\UserPolicy;
@@ -60,6 +61,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
+        LaravelJsonApi::runMigrations();
         $this->app->singleton(SiteRepository::class);
     }
 

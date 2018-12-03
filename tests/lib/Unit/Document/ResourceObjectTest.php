@@ -122,6 +122,35 @@ class ResourceObjectTest extends TestCase
         return $expected;
     }
 
+    public function testFieldsWithEmptyToOne(): void
+    {
+        $this->values['relationships']['author']['data'] = null;
+
+        $expected = [
+            'author' => null,
+            'content' => '...',
+            'id' => '1',
+            'published' => null,
+            'tags' => [
+                [
+                    'type' => 'tags',
+                    'id' => '4',
+                ],
+                [
+                    'type' => 'tags',
+                    'id' => '5',
+                ],
+            ],
+            'title' => 'Hello World',
+            'type' => 'posts',
+        ];
+
+        $resource = ResourceObject::create($this->values);
+        $this->assertSame($expected, $resource->all());
+        $this->assertNull($resource['author']);
+        $this->assertNull($resource->get('author', true));
+    }
+
     /**
      * @param array $expected
      * @depends testFields
@@ -151,27 +180,45 @@ class ResourceObjectTest extends TestCase
         $this->assertTrue($this->resource->get('foobar', true));
     }
 
+    /**
+     * Fields share a common namespace, so if there is a duplicate field
+     * name in the attributes and relationships, we expect an exception as the resource
+     * is not valid.
+     */
+    public function testDuplicateFields(): void
+    {
+        $this->values['attributes']['author'] = null;
+
+        $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage('same field names');
+        ResourceObject::create($this->values);
+    }
+
     public function testCannotSetOffset(): void
     {
         $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage('immutable');
         $this->resource['foo'] = 'bar';
     }
 
     public function testCannotUnsetOffset(): void
     {
         $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage('immutable');
         unset($this->resource['content']);
     }
 
     public function testCannotUnset(): void
     {
         $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage('immutable');
         unset($this->resource->content);
     }
 
     public function testCannotSet(): void
     {
         $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage('immutable');
         $this->resource['foo'] = 'bar';
     }
 
@@ -181,15 +228,15 @@ class ResourceObjectTest extends TestCase
     public function pointerProvider(): array
     {
         return [
-            ['type', '/data/type'],
-            ['id', '/data/id'],
-            ['title', '/data/attributes/title'],
-            ['title.foo.bar', '/data/attributes/title/foo/bar'],
-            ['author', '/data/relationships/author'],
-            ['author.type', '/data/relationships/author/data/type'],
-            ['tags.0.id', '/data/relationships/tags/data/0/id'],
-            ['comments', '/data/relationships/comments'],
-            ['foo', '/data'],
+            ['type', '/type'],
+            ['id', '/id'],
+            ['title', '/attributes/title'],
+            ['title.foo.bar', '/attributes/title/foo/bar'],
+            ['author', '/relationships/author'],
+            ['author.type', '/relationships/author/data/type'],
+            ['tags.0.id', '/relationships/tags/data/0/id'],
+            ['comments', '/relationships/comments'],
+            ['foo', '/'],
         ];
     }
 
@@ -201,6 +248,19 @@ class ResourceObjectTest extends TestCase
     public function testPointer(string $key, string $expected): void
     {
         $this->assertSame($expected, $this->resource->pointer($key));
+        $this->assertSame($expected, $this->resource->pointer($key, '/'), 'with slash prefix');
+    }
+
+    /**
+     * @param string $key
+     * @param string $expected
+     * @dataProvider pointerProvider
+     */
+    public function testPointerWithPrefix(string $key, string $expected): void
+    {
+        $expected = "/data" . $expected;
+
+        $this->assertSame($expected, $this->resource->pointer($key, '/data'));
     }
 
     public function testForget(): void
@@ -232,6 +292,21 @@ class ResourceObjectTest extends TestCase
         $this->assertSame($expected, $actual->toArray());
     }
 
+    public function testReplaceTypeAndId(): void
+    {
+        $expected = $this->values;
+        $expected['type'] = 'foobars';
+        $expected['id'] = '999';
+
+        $actual = $this->resource
+            ->replace('type', 'foobars')
+            ->replace('id', '999');
+
+        $this->assertNotSame($this->resource, $actual);
+        $this->assertSame($this->values, $this->resource->toArray(), 'original resource is not modified');
+        $this->assertSame($expected, $actual->toArray());
+    }
+
     public function testReplaceAttribute(): void
     {
         $expected = $this->values;
@@ -242,7 +317,29 @@ class ResourceObjectTest extends TestCase
         $this->assertSame($expected, $actual->toArray());
     }
 
-    public function testReplaceRelationship(): void
+    public function testReplaceToOne(): void
+    {
+        $author = ['type' => 'users', 'id' => '999'];
+
+        $expected = $this->values;
+        $expected['relationships']['author']['data'] = $author;
+
+        $this->assertNotSame($this->resource, $actual = $this->resource->replace('author', $author));
+        $this->assertSame($this->values, $this->resource->toArray(), 'original resource is not modified');
+        $this->assertSame($expected, $actual->toArray());
+    }
+
+    public function testReplaceToOneNull(): void
+    {
+        $expected = $this->values;
+        $expected['relationships']['author']['data'] = null;
+
+        $this->assertNotSame($this->resource, $actual = $this->resource->replace('author', null));
+        $this->assertSame($this->values, $this->resource->toArray(), 'original resource is not modified');
+        $this->assertSame($expected, $actual->toArray());
+    }
+
+    public function testReplaceToMany(): void
     {
         $comments = [
             ['type' => 'comments', 'id' => '123456'],

@@ -13,6 +13,11 @@ request.
 - Added an `existingRelationships` method to the abstract validators class. Child classes can overload
 this method if they need the validator to have access to any existing relationship values for an
 update request.
+- JSON API specification validation will now fail if the `attributes` or `relationships` members have
+`type` or `id` fields.
+- JSON API specification validation will now fail if the `attributes` and `relationships` members have
+common field names, as field names share a common namespace.
+- Can now return `Responsable` instances from controller hooks.
 
 ### Changed
 - [#248](https://github.com/cloudcreativity/laravel-json-api/pull/248)

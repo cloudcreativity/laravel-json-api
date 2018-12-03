@@ -23,6 +23,7 @@ use CloudCreativity\LaravelJsonApi\Contracts\Adapter\HasManyAdapterInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\RelationshipAdapterInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PageInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PagingStrategyInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Queue\AsynchronousProcess;
 use CloudCreativity\LaravelJsonApi\Document\ResourceObject;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Pagination\CursorStrategy;
@@ -190,7 +191,10 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
         }
 
         $record = parent::read($resourceId, $parameters);
-        $this->load($record, $parameters);
+
+        if ($record) {
+            $this->load($record, $parameters);
+        }
 
         return $record;
     }
@@ -399,14 +403,11 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     }
 
     /**
-     * @param Model $record
-     * @return Model
+     * @inheritdoc
      */
     protected function persist($record)
     {
         $record->save();
-
-        return $record;
     }
 
     /**

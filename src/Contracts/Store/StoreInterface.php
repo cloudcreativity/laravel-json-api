@@ -99,7 +99,7 @@ interface StoreInterface
      *
      * @param $record
      * @param EncodingParametersInterface $params
-     * @return void
+     * @return mixed|null
      */
     public function deleteRecord($record, EncodingParametersInterface $params);
 
