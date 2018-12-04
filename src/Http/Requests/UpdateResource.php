@@ -103,7 +103,7 @@ class UpdateResource extends ValidatedRequest
     {
         $validator = $validators->updateResource($this->getResourceId(), $this->getRecord());
 
-        if (!$validator->isValid(new Document($document))) {
+        if (!$validator->isValid(new Document($document), $this->getRecord())) {
             throw new ValidationException($validator->getErrors());
         }
     }
