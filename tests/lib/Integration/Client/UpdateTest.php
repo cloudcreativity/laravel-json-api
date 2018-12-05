@@ -61,6 +61,7 @@ class UpdateTest extends TestCase
             'attributes' => [
                 'created-at' => $this->post->created_at->toAtomString(),
                 'updated-at' => $this->post->updated_at->toAtomString(),
+                'deleted-at' => null,
                 'title' => $this->post->title,
                 'slug' => $this->post->slug,
                 'content' => $this->post->content,
@@ -101,6 +102,7 @@ class UpdateTest extends TestCase
             'attributes' => [
                 'created-at' => $this->post->created_at->toAtomString(),
                 'updated-at' => $this->post->updated_at->toAtomString(),
+                'deleted-at' => null,
                 'title' => $this->post->title,
                 'slug' => $this->post->slug,
                 'content' => $this->post->content,
@@ -171,6 +173,7 @@ class UpdateTest extends TestCase
             'attributes' => [
                 'created-at' => $this->post->created_at->toAtomString(),
                 'updated-at' => $this->post->updated_at->toAtomString(),
+                'deleted-at' => null,
                 'title' => $this->post->title,
                 'slug' => $this->post->slug,
                 'content' => $this->post->content,
