@@ -2,6 +2,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Eloquent\Concerns;
 
+use Carbon\Carbon;
 use CloudCreativity\LaravelJsonApi\Utils\Str;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Schema\Builder;
@@ -54,40 +55,63 @@ trait SoftDeletesModels
      */
     protected function fillAttributes($record, Collection $attributes)
     {
-        $record->fill(
-            $this->deserializeAttributes($attributes, $record)
-        );
+        $field = $this->getSoftDeleteField($record);
 
-        $this->fillSoftDelete($record, $attributes);
+        if ($attributes->has($field)) {
+            $this->fillSoftDelete($record, $field, $attributes->get($field));
+        }
+
+        $record->fill(
+            $this->deserializeAttributes($attributes->forget($field), $record)
+        );
     }
 
     /**
-     * Fill the soft delete value if it is been provided.
+     * Fill the soft delete value if it has been provided.
      *
      * @param Model $record
-     * @param Collection $attributes
+     * @param string $field
+     * @param mixed $value
      */
-    protected function fillSoftDelete(Model $record, Collection $attributes)
+    protected function fillSoftDelete(Model $record, $field, $value)
     {
-        $key = $this->getSoftDeleteKey($record);
-        $field = $this->getSoftDeleteField($record);
-
-        if (!$field || !$key || !$attributes->has($field)) {
-            return;
-        }
-
-        $value = $attributes->get($field);
+        $value = $this->deserializeSoftDelete(
+            $value,
+            $field,
+            $record
+        );
 
         $record->forceFill([
-            $key => $this->deserializeAttribute($value, $field, $record)
+            $this->getSoftDeleteKey($record) => $value,
         ]);
+    }
+
+    /**
+     * Deserialize the provided value for the soft delete attribute.
+     *
+     * If a boolean is provided, we interpret the soft delete value as now.
+     * We check for all the boolean values accepted by the Laravel boolean
+     * validator.
+     *
+     * @param $value
+     * @param $field
+     * @param $record
+     * @return Carbon|null
+     */
+    protected function deserializeSoftDelete($value, $field, $record)
+    {
+        if (collect([true, false, 1, 0, '1', '0'])->containsStrict($value)) {
+            return $value ? Carbon::now() : null;
+        }
+
+        return $this->deserializeAttribute($value, $field, $record);
     }
 
     /**
      * Get the JSON API field that is used for the soft-delete value.
      *
      * @param Model $record
-     * @return string|null
+     * @return string
      */
     protected function getSoftDeleteField(Model $record)
     {
@@ -95,22 +119,20 @@ trait SoftDeletesModels
             return $this->softDeleteField;
         }
 
-        if ($key = $this->getSoftDeleteKey($record)) {
-            return $this->softDeleteField = Str::dasherize($key);
-        }
+        $key = $this->getSoftDeleteKey($record);
 
-        return null;
+        return $this->softDeleteField = Str::dasherize($key);
     }
 
     /**
      * Get the model key that should be used for the soft-delete value.
      *
      * @param Model $record
-     * @return string|null
+     * @return string
      */
     protected function getSoftDeleteKey(Model $record)
     {
-        return method_exists($record, 'getDeletedAtColumn') ? $record->getDeletedAtColumn() : null;
+        return $record->getDeletedAtColumn();
     }
 
     /**

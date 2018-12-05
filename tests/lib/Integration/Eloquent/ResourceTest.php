@@ -35,6 +35,24 @@ class ResourceTest extends TestCase
     protected $resourceType = 'posts';
 
     /**
+     * @return void
+     */
+    protected function setUp()
+    {
+        parent::setUp();
+        Carbon::setTestNow('2018-12-01 12:00:00');
+    }
+
+    /**
+     * @return void
+     */
+    protected function tearDown()
+    {
+        parent::tearDown();
+        Carbon::setTestNow();
+    }
+
+    /**
      * Test searching with a sort parameter.
      */
     public function testSortedSearch()
@@ -414,6 +432,25 @@ class ResourceTest extends TestCase
         $this->assertSoftDeleted('posts', [$post->getKeyName() => $post->getKey()]);
     }
 
+    public function testSoftDeleteWithBoolean()
+    {
+        $post = factory(Post::class)->create();
+
+        $data = [
+            'type' => 'posts',
+            'id' => (string) $post->getRouteKey(),
+            'attributes' => [
+                'deleted-at' => true,
+            ],
+        ];
+
+        $expected = $data;
+        $expected['attributes']['deleted-at'] = Carbon::now()->toAtomString();
+
+        $this->doUpdate($data)->assertUpdated($expected);
+        $this->assertSoftDeleted('posts', [$post->getKeyName() => $post->getKey()]);
+    }
+
     /**
      * Test that we can update attributes at the same time as soft deleting.
      */
@@ -453,6 +490,35 @@ class ResourceTest extends TestCase
         ];
 
         $this->doUpdate($data)->assertUpdated($data);
+
+        $this->assertDatabaseHas('posts', [
+            $post->getKeyName() => $post->getKey(),
+            'deleted_at' => null,
+        ]);
+
+        Event::assertDispatched("eloquent.restored: " . Post::class, function ($name, $actual) use ($post) {
+            return $post->is($actual);
+        });
+    }
+
+    public function testRestoreWithBoolean()
+    {
+        Event::fake();
+
+        $post = factory(Post::class)->create(['deleted_at' => '2018-01-01 12:00:00']);
+
+        $data = [
+            'type' => 'posts',
+            'id' => (string) $post->getRouteKey(),
+            'attributes' => [
+                'deleted-at' => false,
+            ],
+        ];
+
+        $expected = $data;
+        $expected['attributes']['deleted-at'] = null;
+
+        $this->doUpdate($data)->assertUpdated($expected);
 
         $this->assertDatabaseHas('posts', [
             $post->getKeyName() => $post->getKey(),
