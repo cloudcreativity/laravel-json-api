@@ -22,9 +22,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Post extends Model
 {
+
+    use SoftDeletes;
 
     /**
      * @var array
@@ -41,6 +44,7 @@ class Post extends Model
      */
     protected $dates = [
         'published_at',
+        'deleted_at',
     ];
 
     /**

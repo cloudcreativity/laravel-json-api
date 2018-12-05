@@ -24,6 +24,7 @@ use DummyApp\Events\ResourceEvent;
 use DummyApp\Http\Controllers\PostsController;
 use DummyApp\Post;
 use DummyApp\Tag;
+use Illuminate\Support\Facades\Event;
 
 class ResourceTest extends TestCase
 {
@@ -166,7 +167,21 @@ class ResourceTest extends TestCase
         $model = $this->createPost();
         $model->tags()->create(['name' => 'Important']);
 
-        $this->doRead($model)->assertFetchedOne($this->serialize($model));
+        $this->doRead($model)->assertFetchedOneExact(
+            $this->serialize($model)
+        );
+    }
+
+    /**
+     * We must be able to read soft deleted models.
+     */
+    public function testReadSoftDeleted()
+    {
+        $post = factory(Post::class)->create(['deleted_at' => Carbon::now()]);
+
+        $this->doRead($post)->assertFetchedOneExact(
+            $this->serialize($post)
+        );
     }
 
     /**
@@ -383,6 +398,103 @@ class ResourceTest extends TestCase
         ]);
     }
 
+    public function testSoftDelete()
+    {
+        $post = factory(Post::class)->create();
+
+        $data = [
+            'type' => 'posts',
+            'id' => (string) $post->getRouteKey(),
+            'attributes' => [
+                'deleted-at' => (new Carbon('2018-01-01 12:00:00'))->toAtomString(),
+            ],
+        ];
+
+        $this->doUpdate($data)->assertUpdated($data);
+        $this->assertSoftDeleted('posts', [$post->getKeyName() => $post->getKey()]);
+    }
+
+    /**
+     * Test that we can update attributes at the same time as soft deleting.
+     */
+    public function testUpdateAndSoftDelete()
+    {
+        $post = factory(Post::class)->create();
+
+        $data = [
+            'type' => 'posts',
+            'id' => (string) $post->getRouteKey(),
+            'attributes' => [
+                'deleted-at' => (new Carbon('2018-01-01 12:00:00'))->toAtomString(),
+                'title' => 'My Post Is Soft Deleted',
+            ],
+        ];
+
+        $this->doUpdate($data)->assertUpdated($data);
+
+        $this->assertDatabaseHas('posts', [
+            $post->getKeyName() => $post->getKey(),
+            'title' => 'My Post Is Soft Deleted',
+        ]);
+    }
+
+    public function testRestore()
+    {
+        Event::fake();
+
+        $post = factory(Post::class)->create(['deleted_at' => '2018-01-01 12:00:00']);
+
+        $data = [
+            'type' => 'posts',
+            'id' => (string) $post->getRouteKey(),
+            'attributes' => [
+                'deleted-at' => null,
+            ],
+        ];
+
+        $this->doUpdate($data)->assertUpdated($data);
+
+        $this->assertDatabaseHas('posts', [
+            $post->getKeyName() => $post->getKey(),
+            'deleted_at' => null,
+        ]);
+
+        Event::assertDispatched("eloquent.restored: " . Post::class, function ($name, $actual) use ($post) {
+            return $post->is($actual);
+        });
+    }
+
+    /**
+     * Test that we can update attributes at the same time as restoring the model.
+     */
+    public function testUpdateAndRestore()
+    {
+        Event::fake();
+
+        $post = factory(Post::class)->create(['deleted_at' => '2018-01-01 12:00:00']);
+
+        $data = [
+            'type' => 'posts',
+            'id' => (string) $post->getRouteKey(),
+            'attributes' => [
+                'deleted-at' => null,
+                'title' => 'My Post Is Restored',
+            ],
+        ];
+
+        $this->doUpdate($data)->assertUpdated($data);
+
+        $this->assertDatabaseHas('posts', [
+            $post->getKeyName() => $post->getKey(),
+            'deleted_at' => null,
+            'title' => 'My Post Is Restored',
+        ]);
+
+        Event::assertDispatched("eloquent.restored: " . Post::class, function ($name, $actual) use ($post) {
+            return $post->is($actual);
+        });
+    }
+
     /**
      * Test the delete resource route.
      */
@@ -410,22 +522,24 @@ class ResourceTest extends TestCase
     /**
      * Get the posts resource that we expect in server responses.
      *
-     * @param Post $model
+     * @param Post $post
      * @return array
      */
-    private function serialize(Post $model)
+    private function serialize(Post $post)
     {
-        $self = "http://localhost/api/v1/posts/{$model->getRouteKey()}";
+        $self = url('/api/v1/posts', [$post]);
 
         return [
             'type' => 'posts',
-            'id' => (string) $model->getRouteKey(),
+            'id' => (string) $post->getRouteKey(),
             'attributes' => [
-                'created-at' => $model->created_at->toW3cString(),
-                'updated-at' => $model->updated_at->toW3cString(),
-                'title' => $model->title,
-                'slug' => $model->slug,
-                'content' => $model->content,
+                'content' => $post->content,
+                'created-at' => $post->created_at->toAtomString(),
+                'deleted-at' => $post->deleted_at ? $post->deleted_at->toAtomString() : null,
+                'published' => $post->published_at ? $post->published_at->toAtomString() : null,
+                'slug' => $post->slug,
+                'title' => $post->title,
+                'updated-at' => $post->updated_at->toAtomString(),
             ],
             'relationships' => [
                 'author' => [
@@ -434,16 +548,19 @@ class ResourceTest extends TestCase
                         'related' => "$self/author",
                     ],
                 ],
-                'tags' => [
-                    'links' => [
-                        'self' => "$self/relationships/tags",
-                        'related' => "$self/tags",
-                    ],
-                ],
                 'comments' => [
                     'links' => [
                         'self' => "$self/relationships/comments",
                         'related' => "$self/comments",
+                    ],
+                    'meta' => [
+                        'count' => $post->comments()->count(),
+                    ],
+                ],
+                'tags' => [
+                    'links' => [
+                        'self' => "$self/relationships/tags",
+                        'related' => "$self/tags",
                     ],
                 ],
             ],

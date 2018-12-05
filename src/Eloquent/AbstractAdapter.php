@@ -227,7 +227,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      */
     public function exists($resourceId)
     {
-        return $this->newQuery()->where($this->getQualifiedKeyName(), $resourceId)->exists();
+        return $this->findQuery($resourceId)->exists();
     }
 
     /**
@@ -235,7 +235,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      */
     public function find($resourceId)
     {
-        return $this->newQuery()->where($this->getQualifiedKeyName(), $resourceId)->first();
+        return $this->findQuery($resourceId)->first();
     }
 
     /**
@@ -243,7 +243,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      */
     public function findMany(array $resourceIds)
     {
-        return $this->newQuery()->whereIn($this->getQualifiedKeyName(), $resourceIds)->get()->all();
+        return $this->findManyQuery($resourceIds)->get()->all();
     }
 
     /**
@@ -257,6 +257,30 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     protected function newQuery()
     {
         return $this->model->newQuery();
+    }
+
+    /**
+     * @param $resourceId
+     * @return Builder
+     */
+    protected function findQuery($resourceId)
+    {
+        return $this->newQuery()->where(
+            $this->getQualifiedKeyName(),
+            $resourceId
+        );
+    }
+
+    /**
+     * @param array $resourceIds
+     * @return Builder
+     */
+    protected function findManyQuery(array $resourceIds)
+    {
+        return $this->newQuery()->whereIn(
+            $this->getQualifiedKeyName(),
+            $resourceIds
+        );
     }
 
     /**
@@ -296,43 +320,6 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     protected function createRecord(ResourceObject $resource)
     {
         return $this->model->newInstance();
-    }
-
-    /**
-     * @inheritDoc
-     */
-    protected function fillAttributes($record, Collection $attributes)
-    {
-        if (!$record instanceof Model) {
-            throw new \InvalidArgumentException('Expecting an Eloquent model.');
-        }
-
-        $data = [];
-
-        foreach ($attributes as $field => $value) {
-            /** Skip any JSON API fields that are not to be filled. */
-            if ($this->isNotFillable($field, $record)) {
-                continue;
-            }
-
-            $key = $this->keyForAttribute($field, $record);
-            $data[$key] = $this->deserializeAttribute($value, $field, $record);
-         }
-
-        $record->fill($data);
-    }
-
-    /**
-     * Convert a JSON API attribute key into a model attribute key.
-     *
-     * @param $resourceKey
-     * @param Model $model
-     * @return string
-     * @deprecated use `modelKeyForField`
-     */
-    protected function keyForAttribute($resourceKey, Model $model)
-    {
-        return $this->modelKeyForField($resourceKey, $model);
     }
 
     /**
@@ -501,11 +488,10 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
 
     /**
      * @return string
-     * @todo on Laravel >=5.5 can use `qualifyColumn` method.
      */
     protected function getQualifiedKeyName()
     {
-        return $this->model->getTable() . '.' . $this->getKeyName();
+        return $this->model->qualifyColumn($this->getKeyName());
     }
 
     /**
