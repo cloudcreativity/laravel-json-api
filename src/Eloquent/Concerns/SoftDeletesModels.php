@@ -18,16 +18,6 @@ trait SoftDeletesModels
 {
 
     /**
-     * The JSON API field name that is used for the soft delete value.
-     *
-     * If none is set, defaults to the dasherized version of the model's
-     * deleted_at column.
-     *
-     * @var string|null
-     */
-    protected $softDeleteField = null;
-
-    /**
      * @param Model $record
      * @param EncodingParametersInterface $params
      * @return bool
@@ -108,6 +98,19 @@ trait SoftDeletesModels
     }
 
     /**
+     * The JSON API field name that is used for the soft delete value.
+     *
+     * If none is set, defaults to the dasherized version of the model's
+     * deleted_at column.
+     *
+     * @return string|null
+     */
+    protected function softDeleteField()
+    {
+        return property_exists($this, 'softDeleteField') ? $this->softDeleteField : null;
+    }
+
+    /**
      * Get the JSON API field that is used for the soft-delete value.
      *
      * @param Model $record
@@ -115,13 +118,13 @@ trait SoftDeletesModels
      */
     protected function getSoftDeleteField(Model $record)
     {
-        if ($this->softDeleteField) {
-            return $this->softDeleteField;
+        if ($field = $this->softDeleteField()) {
+            return $field;
         }
 
         $key = $this->getSoftDeleteKey($record);
 
-        return $this->softDeleteField = Str::dasherize($key);
+        return Str::dasherize($key);
     }
 
     /**
