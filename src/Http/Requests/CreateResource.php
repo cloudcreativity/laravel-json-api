@@ -82,7 +82,11 @@ class CreateResource extends ValidatedRequest
 
         /** Check the document is compliant with the JSON API spec. */
         $this->passes(
-            $this->factory->createResourceDocumentValidator($document, $this->getResourceType())
+            $this->factory->createNewResourceDocumentValidator(
+                $document,
+                $this->getResourceType(),
+                $validators && $validators->supportsClientIds()
+            )
         );
 
         /** Check the document is logically correct. */

@@ -365,27 +365,65 @@ class Factory extends BaseFactory implements FactoryInterface
      *
      * @param object $document
      * @param string $expectedType
-     *      the expected resource type.
-     * @param string|null $expectedId
-     *      the expected resource id if updating an existing resource.
-     * @return DocumentValidatorInterface
+     * @param bool $clientIds
+     *      whether client ids are supported.
+     * @return Validation\Spec\CreateResourceValidator
      */
-    public function createResourceDocumentValidator($document, $expectedType, $expectedId = null)
+    public function createNewResourceDocumentValidator($document, $expectedType, $clientIds)
     {
         $store = $this->container->make(StoreInterface::class);
         $errors = $this->createErrorTranslator();
 
+        return new Validation\Spec\CreateResourceValidator(
+            $store,
+            $errors,
+            $document,
+            $expectedType,
+            $clientIds
+        );
+    }
+
+    /**
+     * Create a validator to check that a resource document complies with the JSON API specification.
+     *
+     * @param object $document
+     * @param string $expectedType
+     * @param string $expectedId
+     * @return Validation\Spec\UpdateResourceValidator
+     */
+    public function createExistingResourceDocumentValidator($document, $expectedType, $expectedId)
+    {
+        $store = $this->container->make(StoreInterface::class);
+        $errors = $this->createErrorTranslator();
+
+        return new Validation\Spec\UpdateResourceValidator(
+            $store,
+            $errors,
+            $document,
+            $expectedType,
+            $expectedId
+        );
+    }
+
+    /**
+     * Create a validator to check that a resource document complies with the JSON API specification.
+     *
+     * @param object $document
+     * @param string $expectedType
+     *      the expected resource type.
+     * @param string|null $expectedId
+     *      the expected resource id if updating an existing resource.
+     * @return DocumentValidatorInterface
+     * @deprecated 1.0.0 use `createNewResourceDocumentValidator` or `createExistingResourceDocumentValidator`.
+     */
+    public function createResourceDocumentValidator($document, $expectedType, $expectedId = null)
+    {
         if ($expectedId) {
-            return new Validation\Spec\UpdateResourceValidator(
-                $store,
-                $errors,
-                $document,
-                $expectedType,
-                $expectedId
-            );
+            return $this->createExistingResourceDocumentValidator($document, $expectedType, $expectedId);
         }
 
-        return new Validation\Spec\CreateResourceValidator($store, $errors, $document, $expectedType);
+        // true for client ids means the old behaviour is supported.
+        return $this->createNewResourceDocumentValidator($document, $expectedType, true);
     }
 
     /**

@@ -107,6 +107,21 @@ class ResourceValidationTest extends TestCase
                     'source' => ['pointer' => '/data/type'],
                 ],
             ],
+            'data.id:client id not allowed' => [
+                [
+                    'data' => [
+                        'type' => 'posts',
+                        'id' => 'foobar',
+                        'attributes' => ['title' => 'Hello World'],
+                    ],
+                ],
+                [
+                    'title' => 'Not Supported',
+                    'detail' => 'Resource type posts does not support client-generated IDs.',
+                    'status' => '403',
+                    'source' => ['pointer' => '/data/id'],
+                ],
+            ],
             'data.attributes:not object' => [
                 [
                     'data' => [

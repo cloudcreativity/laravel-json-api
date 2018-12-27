@@ -70,7 +70,7 @@ class UpdateResourceValidator extends CreateResourceValidator
             return false;
         }
 
-        if (!parent::validateId()) {
+        if (!$this->validateIdMember($this->dataGet('id'), '/data')) {
             return false;
         }
 

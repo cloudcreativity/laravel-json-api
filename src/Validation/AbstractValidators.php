@@ -39,6 +39,17 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
 {
 
     /**
+     * Whether the resource supports client-generated ids.
+     *
+     * A boolean to indicate whether client-generated ids are accepted. If
+     * null, this will be worked out based on whether there are any validation
+     * rules for the resource's `id` member.
+     *
+     * @var bool|null
+     */
+    protected $clientIds;
+
+    /**
      * Custom messages for the resource validator.
      *
      * @var array
@@ -167,6 +178,18 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
     {
         $this->factory = $factory;
         $this->container = $container;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function supportsClientIds(): bool
+    {
+        if (is_bool($this->clientIds)) {
+            return $this->clientIds;
+        }
+
+        return $this->clientIds = collect($this->rules())->has('id');
     }
 
     /**

@@ -43,6 +43,9 @@ or update relationship request. This matches previous behaviour which was remove
 Fix invalid pointer for a required resource field when the client does not supply the field.
 - [#273](https://github.com/cloudcreativity/laravel-json-api/issues/273)
 Responses class now correctly passes an array of errors to the error repository.
+- [#259](https://github.com/cloudcreativity/laravel-json-api/issues/259)
+If a client sends a client-generated ID for a resource that does not support client-generated IDs, a
+`403 Forbidden` response will be sent, as defined in the JSON API spec.
 
 ### Removed
 - The deprecated `Contracts\Store\AdapterInterface` was removed. Use 

@@ -88,6 +88,22 @@ fillRelated(
 )`
 ```
 
+### Client-Generated IDs
+
+The JSON API spec says that a server must send a `403 Forbidden` response if a create resource request
+includes a client-generated ID, but the resource does not support client-generated IDs. Previously
+we did not reject these requests.
+
+We now need to know whether your resource supports client-generated IDs. This is worked out on your
+resource's `Validators` class. If you have a validation rule for the `id` member, we assume that you
+do support client-generated IDs. You can also specify this yourself using the `$clientIds` property
+on your `Validators` class.
+
+This change will not affect your resources unless you supported client-generated IDs without defining
+a validation rule for the `id` member. If you encounter this scenario, add a validation rule for
+the `id` member. For example if you accept UUID client-generated IDs, a regex validation rule would
+be appropriate.
+
 ### Testing
 
 You will need to update the JSON API test dependency to `1.0`:

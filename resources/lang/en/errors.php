@@ -82,6 +82,12 @@ return [
         'code' => '',
     ],
 
+    'resource_client_ids_not_supported' => [
+        'title' => 'Not Supported',
+        'detail' => 'Resource type :type does not support client-generated IDs.',
+        'code' => '',
+    ],
+
     'resource_exists' => [
         'title' => 'Conflict',
         'detail' => "Resource :id already exists.",
