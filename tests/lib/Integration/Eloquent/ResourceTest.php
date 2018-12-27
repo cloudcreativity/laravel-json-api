@@ -178,6 +178,38 @@ class ResourceTest extends TestCase
     }
 
     /**
+     * @see https://github.com/cloudcreativity/laravel-json-api/issues/255
+     */
+    public function testCreateWithoutRequiredMember()
+    {
+        $model = factory(Post::class)->make();
+
+        $data = [
+            'type' => 'posts',
+            'attributes' => [
+                'title' => $model->title,
+                'content' => $model->content,
+            ],
+            'relationships' => [
+                'author' => [
+                    'data' => [
+                        'type' => 'users',
+                        'id' => (string) $model->author_id,
+                    ],
+                ],
+            ],
+        ];
+
+        $this->doCreate($data)->assertErrorStatus([
+            'status' => '422',
+            'detail' => 'The slug field is required.',
+            'source' => [
+                'pointer' => '/data',
+            ],
+        ]);
+    }
+
+    /**
      * Test the read resource route.
      */
     public function testRead()

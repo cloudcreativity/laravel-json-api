@@ -36,6 +36,8 @@ accepted data as the second argument.
 Adapters now receive the array that has been transformed by Laravel's middleware, e.g. trim strings.
 - Legacy validators now correctly receive the record when validating a document for an update resource
 or update relationship request. This matches previous behaviour which was removed by accident in `beta.4`.
+- [#255](https://github.com/cloudcreativity/laravel-json-api/issues/255)
+Fix invalid pointer for a required resource field when the client does not supply the field.
 
 ### Removed
 - The deprecated `Contracts\Store\AdapterInterface` was removed. Use 

@@ -348,8 +348,7 @@ class ErrorTranslator
         if (!$member) {
             $pointer = $path;
         } else {
-            $path = rtrim($path, '/');
-            $pointer = $member ? sprintf('%s/%s', $path, $member) : $path;
+            $pointer = $member ? sprintf('%s/%s', rtrim($path, '/'), $member) : $path;
         }
 
         return [Error::SOURCE_POINTER => $pointer];

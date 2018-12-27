@@ -258,7 +258,8 @@ class ResourceObjectTest extends TestCase
      */
     public function testPointerWithPrefix(string $key, string $expected): void
     {
-        $expected = "/data" . $expected;
+        // @see https://github.com/cloudcreativity/laravel-json-api/issues/255
+        $expected = rtrim("/data" . $expected, '/');
 
         $this->assertSame($expected, $this->resource->pointer($key, '/data'));
     }
