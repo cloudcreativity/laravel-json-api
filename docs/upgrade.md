@@ -48,6 +48,24 @@ to:
 
 `fillAttributes($record, \Illuminate\Support\Collection $attributes)`
 
+#### `delete`/`destroy`
+
+Previously you have needed to implement the public `delete` method. This is now implemented on the
+abstract adapter, and you will instead need to add a protected `destroy` method. The destroy method
+must remove the provided record from storage (e.g. the database) and return a boolean to indicate success.
+
+Note that we have added this method so that we can implement the new `deleting` and `deleted` adapter
+hooks.
+
+For example, remove the `delete` method from your adapter and add:
+
+```php
+protected function destroy($record)
+{
+    return $record->delete();
+}
+```
+
 #### `hydrateRelated`
 
 This method has been renamed `fillRelated` and the method signature has changed from:

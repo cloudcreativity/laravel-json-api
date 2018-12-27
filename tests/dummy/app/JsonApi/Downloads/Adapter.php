@@ -2,6 +2,7 @@
 
 namespace DummyApp\JsonApi\Downloads;
 
+use CloudCreativity\LaravelJsonApi\Contracts\Queue\AsynchronousProcess;
 use CloudCreativity\LaravelJsonApi\Eloquent\AbstractAdapter;
 use CloudCreativity\LaravelJsonApi\Pagination\StandardStrategy;
 use DummyApp\Download;
@@ -9,7 +10,6 @@ use DummyApp\Jobs\CreateDownload;
 use DummyApp\Jobs\DeleteDownload;
 use DummyApp\Jobs\ReplaceDownload;
 use Illuminate\Support\Collection;
-use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 class Adapter extends AbstractAdapter
 {
@@ -25,29 +25,30 @@ class Adapter extends AbstractAdapter
     }
 
     /**
-     * @inheritdoc
+     * @param Download $download
+     * @return AsynchronousProcess
      */
-    public function create(array $document, EncodingParametersInterface $parameters)
+    protected function creating(Download $download)
     {
-        return CreateDownload::client(
-            array_get($document, 'data.attributes.category')
-        )->dispatch();
+        return CreateDownload::client($download->category)->dispatch();
     }
 
     /**
-     * @inheritdoc
+     * @param Download $download
+     * @return AsynchronousProcess
      */
-    public function update($record, array $document, EncodingParametersInterface $parameters)
+    protected function updating(Download $download)
     {
-        return ReplaceDownload::client($record)->dispatch();
+        return ReplaceDownload::client($download)->dispatch();
     }
 
     /**
-     * @inheritdoc
+     * @param Download $download
+     * @return AsynchronousProcess
      */
-    public function delete($record, EncodingParametersInterface $params)
+    protected function deleting(Download $download)
     {
-        return DeleteDownload::client($record)->dispatch();
+        return DeleteDownload::client($download)->dispatch();
     }
 
     /**

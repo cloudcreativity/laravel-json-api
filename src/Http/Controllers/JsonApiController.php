@@ -33,6 +33,7 @@ use CloudCreativity\LaravelJsonApi\Http\Requests\FetchResources;
 use CloudCreativity\LaravelJsonApi\Http\Requests\UpdateRelationship;
 use CloudCreativity\LaravelJsonApi\Http\Requests\UpdateResource;
 use CloudCreativity\LaravelJsonApi\Http\Requests\ValidatedRequest;
+use CloudCreativity\LaravelJsonApi\Utils\InvokesHooks;
 use CloudCreativity\LaravelJsonApi\Utils\Str;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Http\Response;
@@ -46,7 +47,9 @@ use Illuminate\Routing\Controller;
 class JsonApiController extends Controller
 {
 
-    use CreatesResponses, AuthorizesRequests;
+    use CreatesResponses,
+        AuthorizesRequests,
+        InvokesHooks;
 
     /**
      * The database connection name to use for transactions, or null for the default connection.
@@ -548,44 +551,10 @@ class JsonApiController extends Controller
     }
 
     /**
-     * Invoke a hook.
-     *
-     * @param $method
-     * @param mixed ...$arguments
-     * @return mixed|null
-     */
-    private function invoke($method, ...$arguments)
-    {
-        $result = method_exists($this, $method) ? $this->{$method}(...$arguments) : null;
-
-        return $this->isInvokedResult($result) ? $result : null;
-    }
-
-    /**
-     * Invoke multiple hooks.
-     *
-     * @param array $method
-     * @param mixed ...$arguments
-     * @return mixed|null
-     */
-    private function invokeMany(array $method, ...$arguments)
-    {
-        foreach ($method as $hook) {
-            $result = $this->invoke($hook, ...$arguments);
-
-            if ($this->isInvokedResult($result)) {
-                return $result;
-            }
-        }
-
-        return null;
-    }
-
-    /**
      * @param $value
      * @return bool
      */
-    private function isInvokedResult($value)
+    protected function isInvokedResult($value): bool
     {
         return $value instanceof AsynchronousProcess || $this->isResponse($value);
     }

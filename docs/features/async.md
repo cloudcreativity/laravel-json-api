@@ -162,7 +162,7 @@ hooks will be the most common ones to use for asynchronous processes.
 ### Dispatching in Adapters
 
 If you prefer to dispatch your jobs in a resource adapters, then the adapters support returning
-asynchronous processes.
+asynchronous processes. To do this, return an asynchronous process from any of the adapter hooks.
 
 For example, to process a podcast after creating it:
 
@@ -178,10 +178,8 @@ class Adapter extends AbstractAdapter
 
     // ...
 
-    public function create(array $document, EncodingParametersInterface $parameters)
+    protected function created(Podcast $podcast)
     {
-        $podcast = parent::create($document, $parameters);
-        
         return ProcessPodcast::client($podcast)->dispatch();
     }
 }

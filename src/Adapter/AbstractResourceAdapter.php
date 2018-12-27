@@ -25,6 +25,7 @@ use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreAwareInterface;
 use CloudCreativity\LaravelJsonApi\Document\ResourceObject;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Store\StoreAwareTrait;
+use CloudCreativity\LaravelJsonApi\Utils\InvokesHooks;
 use CloudCreativity\LaravelJsonApi\Utils\Str;
 use Illuminate\Support\Collection;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
@@ -38,6 +39,7 @@ abstract class AbstractResourceAdapter implements ResourceAdapterInterface, Stor
 {
 
     use StoreAwareTrait,
+        InvokesHooks,
         Concerns\GuardsFields,
         Concerns\FindsManyResources;
 
@@ -71,6 +73,15 @@ abstract class AbstractResourceAdapter implements ResourceAdapterInterface, Stor
     abstract protected function persist($record);
 
     /**
+     * Delete a record from storage.
+     *
+     * @param $record
+     * @return bool
+     *      whether the record was successfully destroyed.
+     */
+    abstract protected function destroy($record);
+
+    /**
      * @inheritdoc
      */
     public function create(array $document, EncodingParametersInterface $parameters)
@@ -78,7 +89,7 @@ abstract class AbstractResourceAdapter implements ResourceAdapterInterface, Stor
         $resource = ResourceObject::create($document['data']);
         $record = $this->createRecord($resource);
 
-        return $this->fillAndPersist($record, $resource, $parameters);
+        return $this->fillAndPersist($record, $resource, $parameters, false);
     }
 
     /**
@@ -96,7 +107,27 @@ abstract class AbstractResourceAdapter implements ResourceAdapterInterface, Stor
     {
         $resource = ResourceObject::create($document['data']);
 
-        return $this->fillAndPersist($record, $resource, $parameters) ?: $record;
+        return $this->fillAndPersist($record, $resource, $parameters, true) ?: $record;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function delete($record, EncodingParametersInterface $params)
+    {
+        if ($result = $this->invoke('deleting', $record)) {
+            return $result;
+        }
+
+        if (true !== $this->destroy($record)) {
+            return false;
+        }
+
+        if ($result = $this->invoke('deleted', $record)) {
+            return $result;
+        }
+
+        return true;
     }
 
     /**
@@ -227,11 +258,21 @@ abstract class AbstractResourceAdapter implements ResourceAdapterInterface, Stor
      * @param mixed $record
      * @param ResourceObject $resource
      * @param EncodingParametersInterface $parameters
+     * @param bool $updating
      * @return AsynchronousProcess|mixed
      */
-    protected function fillAndPersist($record, ResourceObject $resource, EncodingParametersInterface $parameters)
-    {
+    protected function fillAndPersist(
+        $record,
+        ResourceObject $resource,
+        EncodingParametersInterface $parameters,
+        $updating
+    ) {
         $this->fill($record, $resource, $parameters);
+
+        if ($result = $this->beforePersist($record, $resource, $updating)) {
+            return $result;
+        }
+
         $async = $this->persist($record);
 
         if ($async instanceof AsynchronousProcess) {
@@ -240,6 +281,47 @@ abstract class AbstractResourceAdapter implements ResourceAdapterInterface, Stor
 
         $this->fillRelated($record, $resource, $parameters);
 
+        if ($result = $this->afterPersist($record, $resource, $updating)) {
+            return $result;
+        }
+
         return $record;
     }
+
+    /**
+     * @inheritDoc
+     */
+    protected function isInvokedResult($result): bool
+    {
+        return $result instanceof AsynchronousProcess;
+    }
+
+    /**
+     * @param $record
+     * @param ResourceObject $resource
+     * @param $updating
+     * @return AsynchronousProcess|null
+     */
+    private function beforePersist($record, ResourceObject $resource, $updating)
+    {
+        return $this->invokeMany([
+            'saving',
+            $updating ? 'updating' : 'creating',
+        ], $record, $resource);
+    }
+
+    /**
+     * @param $record
+     * @param ResourceObject $resource
+     * @param $updating
+     * @return AsynchronousProcess|null
+     */
+    private function afterPersist($record, ResourceObject $resource, $updating)
+    {
+        return $this->invokeMany([
+            $updating ? 'updated' : 'created',
+            'saved',
+        ], $record, $resource);
+    }
+
 }

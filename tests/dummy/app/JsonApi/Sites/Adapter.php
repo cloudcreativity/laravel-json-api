@@ -60,18 +60,6 @@ class Adapter extends AbstractResourceAdapter
     }
 
     /**
-     * @param Site $record
-     * @param EncodingParametersInterface $params
-     * @return bool
-     */
-    public function delete($record, EncodingParametersInterface $params)
-    {
-        $this->repository->remove($record);
-
-        return true;
-    }
-
-    /**
      * @inheritdoc
      */
     public function exists($resourceId)
@@ -108,13 +96,22 @@ class Adapter extends AbstractResourceAdapter
     /**
      * @inheritDoc
      */
+    protected function destroy($record)
+    {
+        $this->repository->remove($record);
+
+        return true;
+    }
+
+    /**
+     * @inheritDoc
+     */
     protected function fillAttributes($record, Collection $attributes)
     {
         foreach ($attributes as $field => $value) {
             $this->fillAttribute($record, $field, $value);
         }
     }
-
 
     /**
      * @param object $record

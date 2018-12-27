@@ -13,6 +13,9 @@ New date time rule object to validate a JSON date string is a valid ISO 8601 dat
 - [#246](https://github.com/cloudcreativity/laravel-json-api/issues/246)
 Can now disable providing the existing resource attributes to the resource validator for an update
 request.
+- [#267](https://github.com/cloudcreativity/laravel-json-api/issues/267)
+New adapter hooks are invoked to allow either the filling of additional attributes or dispatching
+asynchronous processes from within an adapter.
 - Added an `existingRelationships` method to the abstract validators class. Child classes can overload
 this method if they need the validator to have access to any existing relationship values for an
 update request.

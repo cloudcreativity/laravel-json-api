@@ -214,15 +214,6 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     }
 
     /**
-     * @inheritdoc
-     */
-    public function delete($record, EncodingParametersInterface $params)
-    {
-        /** @var Model $record */
-        return (bool) $record->delete();
-    }
-
-    /**
      * @inheritDoc
      */
     public function exists($resourceId)
@@ -320,6 +311,15 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     protected function createRecord(ResourceObject $resource)
     {
         return $this->model->newInstance();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function destroy($record)
+    {
+        /** @var Model $record */
+        return (bool) $record->delete();
     }
 
     /**

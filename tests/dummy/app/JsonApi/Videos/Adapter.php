@@ -36,16 +36,14 @@ class Adapter extends EloquentAdapter
     }
 
     /**
+     * @param Video $video
      * @param ResourceObject $resource
-     * @return Video
+     * @return void
      */
-    protected function createRecord(ResourceObject $resource)
+    protected function creating(Video $video, ResourceObject $resource)
     {
-        $video = new Video();
         $video->{$video->getKeyName()} = $resource->getId();
         $video->user()->associate(Auth::user());
-
-        return $video;
     }
 
     /**
