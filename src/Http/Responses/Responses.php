@@ -363,7 +363,7 @@ class Responses extends BaseResponses
         }
 
         if (is_array($errors)) {
-            $errors = $this->errorRepository->errors($errors);
+            $errors = $this->errorRepository->errors(...$errors);
         }
 
         return $this->errors(

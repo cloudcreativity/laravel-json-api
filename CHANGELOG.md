@@ -38,6 +38,8 @@ Adapters now receive the array that has been transformed by Laravel's middleware
 or update relationship request. This matches previous behaviour which was removed by accident in `beta.4`.
 - [#255](https://github.com/cloudcreativity/laravel-json-api/issues/255)
 Fix invalid pointer for a required resource field when the client does not supply the field.
+- [#273](https://github.com/cloudcreativity/laravel-json-api/issues/273)
+Responses class now correctly passes an array of errors to the error repository.
 
 ### Removed
 - The deprecated `Contracts\Store\AdapterInterface` was removed. Use 
