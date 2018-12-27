@@ -95,9 +95,9 @@ abstract class AbstractResourceAdapter implements ResourceAdapterInterface, Stor
     /**
      * @inheritDoc
      */
-    public function read($resourceId, EncodingParametersInterface $parameters)
+    public function read($record, EncodingParametersInterface $parameters)
     {
-        return $this->find($resourceId);
+        return $record;
     }
 
     /**

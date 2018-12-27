@@ -182,15 +182,13 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     /**
      * @inheritDoc
      */
-    public function read($resourceId, EncodingParametersInterface $parameters)
+    public function read($record, EncodingParametersInterface $parameters)
     {
         $parameters = $this->getQueryParameters($parameters);
 
         if (!empty($parameters->getFilteringParameters())) {
-            return $this->readWithFilters($resourceId, $parameters);
+            $record = $this->readWithFilters($record, $parameters);
         }
-
-        $record = parent::read($resourceId, $parameters);
 
         if ($record) {
             $this->load($record, $parameters);
@@ -275,17 +273,18 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     }
 
     /**
-     * Read by resource id and filters.
+     * Does the record match the supplied filters?
      *
-     * @param $resourceId
+     * @param Model $record
      * @param EncodingParametersInterface $parameters
-     * @return Model
+     * @return Model|null
      */
-    protected function readWithFilters($resourceId, EncodingParametersInterface $parameters)
+    protected function readWithFilters($record, EncodingParametersInterface $parameters)
     {
-        $query = $this->newQuery()->where($this->getQualifiedKeyName(), $resourceId);
+        $query = $this->newQuery()->whereKey($record->getKey());
+        $this->applyFilters($query, collect($parameters->getFilteringParameters()));
 
-        return $this->queryOne($query, $parameters);
+        return $query->exists() ? $record : null;
     }
 
     /**

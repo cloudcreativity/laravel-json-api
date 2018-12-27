@@ -18,6 +18,7 @@
 namespace CloudCreativity\LaravelJsonApi\Http\Requests;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceIdentifierInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Queue\AsynchronousProcess;
 use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\InvalidJsonException;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
@@ -217,6 +218,16 @@ class JsonApiRequest
         }
 
         return $this->processId ?: null;
+    }
+
+    /**
+     * @return AsynchronousProcess|null
+     */
+    public function getProcess(): ?AsynchronousProcess
+    {
+        $process = $this->request->route(ResourceRegistrar::PARAM_PROCESS_ID);
+
+        return ($process instanceof AsynchronousProcess) ? $process : null;
     }
 
     /**

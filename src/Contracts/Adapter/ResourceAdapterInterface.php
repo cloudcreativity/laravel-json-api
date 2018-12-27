@@ -55,11 +55,12 @@ interface ResourceAdapterInterface
     /**
      * Query a single domain record.
      *
-     * @param string $resourceId
+     * @param mixed $record
+     *      the domain record being read.
      * @param EncodingParametersInterface $parameters
      * @return mixed|null
      */
-    public function read($resourceId, EncodingParametersInterface $parameters);
+    public function read($record, EncodingParametersInterface $parameters);
 
     /**
      * Update a domain record with data from the supplied resource object.
