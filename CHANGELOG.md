@@ -5,6 +5,9 @@ All notable changes to this project will be documented in this file. This projec
 ## Unreleased
 
 ### Added
+- [#277](https://github.com/cloudcreativity/laravel-json-api/pull/277)
+Eloquent adapter can now support soft-deleting, restoring and force-deleting resources by applying
+a trait to the adapter. See the soft-deletes documentation chapter for details.
 - [#247](https://github.com/cloudcreativity/laravel-json-api/issues/247) 
 New date time rule object to validate a JSON date string is a valid ISO 8601 date and time format.
 - [#246](https://github.com/cloudcreativity/laravel-json-api/issues/246)
