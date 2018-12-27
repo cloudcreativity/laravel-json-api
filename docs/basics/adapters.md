@@ -487,6 +487,14 @@ protected function methodForRelation($field)
 }
 ```
 
+### Soft-Deleting
+
+By default the Eloquent resource adapter uses the model's `delete` method when the client sends a `DELETE`
+request. It also does not find soft-deleted models for a `GET` request. This package provides a trait to
+modify this default behaviour and expose soft-deleting capabilities to the client.
+
+See the [Soft Deleting](../features/soft-deletes.md) for information on implementing this.
+
 ## Custom Adapters
 
 Custom adapters can be used for any domain record that is not an Eloquent model. Adapters will work with this

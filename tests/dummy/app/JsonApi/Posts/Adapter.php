@@ -19,6 +19,7 @@ namespace DummyApp\JsonApi\Posts;
 
 use CloudCreativity\LaravelJsonApi\Eloquent\AbstractAdapter;
 use CloudCreativity\LaravelJsonApi\Eloquent\BelongsTo;
+use CloudCreativity\LaravelJsonApi\Eloquent\Concerns\SoftDeletesModels;
 use CloudCreativity\LaravelJsonApi\Eloquent\HasMany;
 use CloudCreativity\LaravelJsonApi\Eloquent\QueriesMany;
 use CloudCreativity\LaravelJsonApi\Eloquent\QueriesOne;
@@ -29,6 +30,8 @@ use Illuminate\Support\Collection;
 
 class Adapter extends AbstractAdapter
 {
+
+    use SoftDeletesModels;
 
     /**
      * @var array

@@ -20,6 +20,7 @@ namespace CloudCreativity\LaravelJsonApi\Eloquent\Concerns;
 use Carbon\Carbon;
 use CloudCreativity\LaravelJsonApi\Utils\Str;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 
 /**
  * Trait DeserializesAttributes
@@ -63,6 +64,19 @@ trait DeserializesAttributes
     protected $dates = [];
 
     /**
+     * Fill JSON API attributes into a model.
+     *
+     * @param Model $record
+     * @param $attributes
+     */
+    protected function fillAttributes($record, Collection $attributes)
+    {
+        $record->fill(
+            $this->deserializeAttributes($attributes, $record)
+        );
+    }
+
+    /**
      * Convert a JSON API resource field name to a model key.
      *
      * @param $field
@@ -78,6 +92,37 @@ trait DeserializesAttributes
         $key = $model::$snakeAttributes ? Str::underscore($field) : Str::camelize($field);
 
         return $this->attributes[$field] = $key;
+    }
+
+    /**
+     * Convert a JSON API attribute key into a model attribute key.
+     *
+     * @param $resourceKey
+     * @param Model $model
+     * @return string
+     * @deprecated 1.0.0 use `modelKeyForField`
+     */
+    protected function keyForAttribute($resourceKey, Model $model)
+    {
+        return $this->modelKeyForField($resourceKey, $model);
+    }
+
+    /**
+     * Deserialize fillable attributes.
+     *
+     * @param $attributes
+     * @param $record
+     * @return array
+     */
+    protected function deserializeAttributes($attributes, $record)
+    {
+        return collect($attributes)->reject(function ($v, $field) use ($record) {
+            return $this->isNotFillable($field, $record);
+        })->mapWithKeys(function ($value, $field) use ($record) {
+            $key = $this->keyForAttribute($field, $record);
+
+            return [$key => $this->deserializeAttribute($value, $field, $record)];
+        })->all();
     }
 
     /**
