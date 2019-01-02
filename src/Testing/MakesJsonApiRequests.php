@@ -181,16 +181,11 @@ trait MakesJsonApiRequests
     /**
      * @param iterable $queryParams
      * @param iterable $headers
-     * @param bool|null $secure
      * @return TestResponse
      */
-    protected function doSearch(
-        iterable $queryParams = [],
-        iterable $headers = [],
-        bool $secure = null
-    ): TestResponse
+    protected function doSearch(iterable $queryParams = [], iterable $headers = []): TestResponse
     {
-        $uri = $this->resourceUrl([], $secure);
+        $uri = $this->resourceUrl();
 
         return $this->getJsonApi($uri, $queryParams, $headers);
     }
@@ -199,20 +194,14 @@ trait MakesJsonApiRequests
      * @param mixed $ids
      * @param iterable $queryParams
      * @param iterable $headers
-     * @param bool|null $secure
      * @return TestResponse
      */
-    protected function doSearchById(
-        $ids,
-        iterable $queryParams = [],
-        iterable $headers = [],
-        bool $secure = null
-    ): TestResponse
+    protected function doSearchById($ids, iterable $queryParams = [], iterable $headers = []): TestResponse
     {
         $queryParams['filter'] = $queryParams['filter'] ?? [];
         $queryParams['filter']['id'] = $this->normalizeIds($ids);
 
-        return $this->doSearch($queryParams, $headers, $secure);
+        return $this->doSearch($queryParams, $headers);
     }
 
     /**
@@ -238,18 +227,12 @@ trait MakesJsonApiRequests
      * @param mixed $data
      * @param iterable $queryParams
      * @param iterable $headers
-     * @param bool|null $secure
      * @return TestResponse
      */
-    protected function doCreate(
-        $data,
-        iterable $queryParams = [],
-        iterable $headers = [],
-        bool $secure = null
-    ): TestResponse
+    protected function doCreate($data, iterable $queryParams = [], iterable $headers = []): TestResponse
     {
         $data = collect($data)->jsonSerialize();
-        $uri = $this->resourceUrl([], $secure);
+        $uri = $this->resourceUrl();
 
         return $this->postJsonApi($uri, $queryParams, compact('data'), $headers);
     }
@@ -277,17 +260,11 @@ trait MakesJsonApiRequests
      * @param mixed $resourceId
      * @param iterable $queryParams
      * @param iterable $headers
-     * @param bool|null $secure
      * @return TestResponse
      */
-    protected function doRead(
-        $resourceId,
-        iterable $queryParams = [],
-        iterable $headers = [],
-        bool $secure = null
-    ): TestResponse
+    protected function doRead($resourceId, iterable $queryParams = [], iterable $headers = []): TestResponse
     {
-        $uri = $this->resourceUrl($resourceId, $secure);
+        $uri = $this->resourceUrl($resourceId);
 
         return $this->getJsonApi($uri, $queryParams, $headers);
     }
@@ -315,15 +292,9 @@ trait MakesJsonApiRequests
      * @param mixed $data
      * @param iterable $queryParams
      * @param iterable $headers
-     * @param bool|null $secure
      * @return TestResponse
      */
-    protected function doUpdate(
-        $data,
-        iterable $queryParams = [],
-        iterable $headers = [],
-        bool $secure = null
-    ): TestResponse
+    protected function doUpdate($data, iterable $queryParams = [], iterable $headers = []): TestResponse
     {
         $data = collect($data)->jsonSerialize();
 
@@ -331,7 +302,7 @@ trait MakesJsonApiRequests
             Assert::fail('Expecting data for test request to contain a resource id.');
         }
 
-        $uri = $this->resourceUrl($id, $secure);
+        $uri = $this->resourceUrl($id);
 
         return $this->patchJsonApi($uri, $queryParams, compact('data'), $headers);
     }
@@ -359,17 +330,11 @@ trait MakesJsonApiRequests
      * @param mixed $resourceId
      * @param iterable $queryParams
      * @param iterable $headers
-     * @param bool|null $secure
      * @return TestResponse
      */
-    protected function doDelete(
-        $resourceId,
-        iterable $queryParams = [],
-        iterable $headers = [],
-        bool $secure = null
-    ): TestResponse
+    protected function doDelete($resourceId, iterable $queryParams = [], iterable $headers = []): TestResponse
     {
-        $uri = $this->resourceUrl($resourceId, $secure);
+        $uri = $this->resourceUrl($resourceId);
 
         return $this->deleteJsonApi($uri, $queryParams, [], $headers);
     }
@@ -399,18 +364,16 @@ trait MakesJsonApiRequests
      *      the relationship field name.
      * @param iterable $queryParams
      * @param iterable $headers
-     * @param bool|null $secure
      * @return TestResponse
      */
     protected function doReadRelated(
         $resourceId,
         string $field,
         iterable $queryParams = [],
-        iterable $headers = [],
-        bool $secure = null
+        iterable $headers = []
     ): TestResponse
     {
-        $uri = $this->resourceUrl([$resourceId, $field], $secure);
+        $uri = $this->resourceUrl($resourceId, $field);
 
         return $this->getJsonApi($uri, $queryParams, $headers);
     }
@@ -447,18 +410,16 @@ trait MakesJsonApiRequests
      *      the relationship field name.
      * @param array $queryParams
      * @param array $headers
-     * @param bool|null $secure
      * @return TestResponse
      */
     protected function doReadRelationship(
         $resourceId,
         string $field,
         iterable $queryParams = [],
-        iterable $headers = [],
-        bool $secure = null
+        iterable $headers = []
     ): TestResponse
     {
-        $uri = $this->resourceUrl([$resourceId, 'relationships', $field], $secure);
+        $uri = $this->resourceUrl($resourceId, 'relationships', $field);
 
         return $this->getJsonApi($uri, $queryParams, $headers);
     }
@@ -496,7 +457,6 @@ trait MakesJsonApiRequests
      * @param mixed $data
      * @param array $queryParams
      * @param array $headers
-     * @param bool|null $secure
      * @return TestResponse
      */
     protected function doReplaceRelationship(
@@ -504,15 +464,14 @@ trait MakesJsonApiRequests
         string $field,
         $data,
         iterable $queryParams = [],
-        iterable $headers = [],
-        bool $secure = null
+        iterable $headers = []
     ): TestResponse
     {
         if (!is_null($data)) {
             $data = collect($data)->jsonSerialize();
         }
 
-        $uri = $this->resourceUrl([$resourceId, 'relationships', $field], $secure);
+        $uri = $this->resourceUrl($resourceId, 'relationships', $field);
 
         return $this->patchJsonApi($uri, $queryParams, compact('data'), $headers);
     }
@@ -550,7 +509,6 @@ trait MakesJsonApiRequests
      * @param mixed $data
      * @param iterable $queryParams
      * @param iterable $headers
-     * @param bool|null $secure
      * @return TestResponse
      */
     protected function doAddToRelationship(
@@ -558,12 +516,11 @@ trait MakesJsonApiRequests
         string $field,
         $data,
         iterable $queryParams = [],
-        iterable $headers = [],
-        bool $secure = null
+        iterable $headers = []
     ): TestResponse
     {
         $data = collect($data)->jsonSerialize();
-        $uri = $this->resourceUrl([$resourceId, 'relationships', $field], $secure);
+        $uri = $this->resourceUrl($resourceId, 'relationships', $field);
 
         return $this->postJsonApi($uri, $queryParams, compact('data'), $headers);
     }
@@ -601,7 +558,6 @@ trait MakesJsonApiRequests
      * @param mixed $data
      * @param array $queryParams
      * @param array $headers
-     * @param bool|null $secure
      * @return TestResponse
      */
     protected function doRemoveFromRelationship(
@@ -609,12 +565,11 @@ trait MakesJsonApiRequests
         string $field,
         $data,
         iterable $queryParams = [],
-        iterable $headers = [],
-        bool $secure = null
+        iterable $headers = []
     ): TestResponse
     {
         $data = collect($data)->jsonSerialize();
-        $uri = $this->resourceUrl([$resourceId, 'relationships', $field], $secure);
+        $uri = $this->resourceUrl($resourceId, 'relationships', $field);
 
         return $this->deleteJsonApi($uri, $queryParams, ['data' => $data], $headers);
     }
@@ -812,38 +767,36 @@ trait MakesJsonApiRequests
     protected function baseApiUrl(): string
     {
         if (!$this->baseApiUrl) {
-            Assert::fail('You must set a base API URL to test.');
+            $this->baseApiUrl = $this->api()->getUrl()->getNamespace();
         }
 
-        return $this->baseApiUrl;
+        return $this->prepareUrlForRequest($this->baseApiUrl);
     }
 
     /**
      * Get a URL for the API being tested.
      *
-     * @param mixed $extra
-     * @param bool|null $secure
+     * @param mixed ...$extra
      * @return string
      */
-    protected function jsonApiUrl($extra = [], bool $secure = null): string
+    protected function jsonApiUrl(...$extra): string
     {
-        $url = url($this->baseApiUrl(), $extra, $secure);
-
-        return $url;
+        return collect([$this->baseApiUrl()])->merge($extra)->map(function ($value) {
+            return ($value instanceof UrlRoutable) ? $value->getRouteKey() : $value;
+        })->implode('/');
     }
 
     /**
      * Get a URL for the resource type being tested.
      *
-     * @param mixed $extra
-     * @param bool|null $secure
+     * @param mixed ...$extra
      * @return string
      */
-    protected function resourceUrl($extra = [], bool $secure = null): string
+    protected function resourceUrl(...$extra): string
     {
-        $base = rtrim($this->baseApiUrl(), '/') . '/' . $this->resourceType();
+        array_unshift($extra, $this->resourceType());
 
-        return url($base, $extra, $secure);
+        return $this->jsonApiUrl(...$extra);
     }
 
     /**
