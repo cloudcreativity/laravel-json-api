@@ -211,15 +211,27 @@ class ResourceTest extends TestCase
 
     /**
      * Test the read resource route.
+     *
+     * @see https://github.com/cloudcreativity/laravel-json-api/issues/256
+     *      we only expect to see the model retrieved once.
      */
     public function testRead()
     {
+        $retrieved = 0;
+
+        Post::retrieved(function () use (&$retrieved) {
+            $retrieved++;
+        });
+
+
         $model = $this->createPost();
         $model->tags()->create(['name' => 'Important']);
 
         $this->doRead($model)->assertFetchedOneExact(
             $this->serialize($model)
         );
+
+        $this->assertSame(1, $retrieved, 'retrieved once');
     }
 
     /**

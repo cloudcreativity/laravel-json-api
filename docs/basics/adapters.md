@@ -655,6 +655,20 @@ class Adapter extends AbstractAdapter
 }
 ```
 
+Or if your resource uses a client-generated ID, you can assign the id in the `creating` hook:
+
+```php
+class Adapter extends AbstractAdapter
+{
+    // ...
+    
+    protected function creating(Comment $comment, $resource): void
+    {
+        $comment->{$comment->getRouteKeyName()} = $resource['id']; 
+    }
+}
+```
+
 There are two additional hooks that are invoked when an adapter is deleting a resource: `deleting` and `deleted`.
 These receive the record being deleted as the first function argument.
 

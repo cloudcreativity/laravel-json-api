@@ -93,8 +93,7 @@ class JsonApiController extends Controller
     public function read(StoreInterface $store, FetchResource $request)
     {
         $record = $store->readRecord(
-            $request->getResourceType(),
-            $request->getResourceId(),
+            $request->getRecord(),
             $request->getParameters()
         );
 
@@ -308,8 +307,7 @@ class JsonApiController extends Controller
     public function process(StoreInterface $store, FetchProcess $request)
     {
         $record = $store->readRecord(
-            $request->getProcessType(),
-            $request->getProcessId(),
+            $request->getProcess(),
             $request->getEncodingParameters()
         );
 
