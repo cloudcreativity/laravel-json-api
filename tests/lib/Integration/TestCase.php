@@ -54,6 +54,7 @@ abstract class TestCase extends BaseTestCase
     protected function setUp()
     {
         parent::setUp();
+        $this->withBaseApiUrl('/api/v1');
         $this->artisan('migrate');
 
         if ($this->appRoutes) {

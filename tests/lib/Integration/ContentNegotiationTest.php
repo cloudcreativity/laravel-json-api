@@ -33,7 +33,7 @@ class ContentNegotiationTest extends TestCase
     {
         $data = $this->willPatch();
 
-        $this->patchJsonApi("/api/v1/posts/{$data['id']}", ['data' => $data])->assertStatus(200);
+        $this->patchJsonApi("/api/v1/posts/{$data['id']}", [], ['data' => $data])->assertStatus(200);
     }
 
     public function testNotOkWithoutBody()

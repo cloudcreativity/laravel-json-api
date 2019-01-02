@@ -53,6 +53,16 @@ class TestResponse extends BaseTestResponse
     }
 
     /**
+     * Get the resource ID from the `/data/id` member.
+     *
+     * @return string|null
+     */
+    public function getId(): ?string
+    {
+        return $this->jsonApi('/data/id');
+    }
+
+    /**
      * @return string|null
      */
     public function getContentType(): ?string
@@ -97,7 +107,7 @@ class TestResponse extends BaseTestResponse
      * @param array|null $meta
      * @param string|null $metaKey
      * @param bool $strict
-     * @return TestResponse
+     * @return $this
      */
     public function assertFetchedPage(
         $expected,
@@ -120,7 +130,7 @@ class TestResponse extends BaseTestResponse
      * @param array|null $meta
      * @param string|null $metaKey
      * @param bool $strict
-     * @return TestResponse
+     * @return $this
      */
     public function assertFetchedPageInOrder(
         $expected,
@@ -142,7 +152,7 @@ class TestResponse extends BaseTestResponse
      * @param array|null $meta
      * @param string|null $metaKey
      * @param bool $strict
-     * @return TestResponse
+     * @return $this
      */
     public function assertFetchedEmptyPage(
         ?array $links,
@@ -188,7 +198,7 @@ class TestResponse extends BaseTestResponse
 
     /**
      * @param string[]|string|null $expected
-     * @return TestResponse
+     * @return $this
      * @deprecated 2.0.0 use assertFetchedMany() or assertFetchManyInOrder()
      */
     public function assertFetchedManyTypes($expected = null): self
@@ -312,7 +322,7 @@ class TestResponse extends BaseTestResponse
     public function assertCreatedWithId(array $expected = []): string
     {
         $this->assertCreated($expected);
-        $id = $this->jsonApi('/data/id');
+        $id = $this->getId();
 
         Assert::assertNotEmpty($id, 'Create response does not include a valid id.');
         Assert::assertInternalType('string', $id);

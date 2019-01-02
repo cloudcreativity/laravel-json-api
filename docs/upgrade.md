@@ -166,8 +166,15 @@ prime example of this is the assertions are stricter about the *type* of a value
 You may need to tweak existing tests accordingly. If you have an existing test that is now not passing,
 and you are unsure why, please create a Github issue.
 
-If you are using the `getJsonApi()` test helper method, it now only has two arguments: URI and headers.
-Previously it accepted data as the second argument.
+If you are using any of the `{method}JsonApi` methods - e.g. `getJsonApi`, `patchJsonApi` etc, the
+method arguments have been amended. All of them now have JSON API query parameters as the second
+function argument (after the URI and before any JSON data). This makes it easier to test JSON API
+endpoints with query parameters, but may mean that you need to amend your tests if you are
+using any of these methods. The main change is moving JSON data from the second function argument to
+the third.
+
+If you are using the `getJsonApi()` test helper method, note that the data function argument has
+been removed as it is not used for a `GET` request.
 
 As part of these changes we have removed all previously deprecated methods on the test response and the
 `InteractsWithModels` test trait. These were deprecated some time ago so hopefully will not require any

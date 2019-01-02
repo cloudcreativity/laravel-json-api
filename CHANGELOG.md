@@ -31,7 +31,8 @@ Adapters now receive the JSON API document (HTTP content) as an array.
 - Renamed `Http\Requests\IlluminateRequest` to `Http\Requests\JsonApiRequest`.
 - The `getJsonApi()` test helper method now only has two arguments: URI and headers. Previously it
 accepted data as the second argument.
-- Improved test assertions and tidied up the test response class.
+- Improved test assertions and tidied up the test response class. Also added PHP 7 type-hinting to the
+methods.
 - Improve the store aware trait so that it returns a store even if one has not been injected.
 
 ### Fixed
@@ -79,6 +80,9 @@ because these were not in use.
 ### Deprecated
 - All interfaces in the `Contracts\Object` namespace will be removed for `2.0`.
 - All classes in the `Object` namespace will be removed for `2.0`.
+- A number of methods on the `MakesJsonApiRequests` and `TestResponse` classes have been deprecated as
+they are better named equivalents or they are not applicable to the current testing approach. These will
+be removed in `2.0`.
 
 ## [1.0.0-beta.5] - 2018-10-13
 

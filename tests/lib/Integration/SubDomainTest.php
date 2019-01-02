@@ -65,7 +65,7 @@ class SubDomainTest extends TestCase
             ],
         ];
 
-        $this->patchJsonApi($uri, compact('data'))->assertStatus(200);
+        $this->patchJsonApi($uri, [], compact('data'))->assertStatus(200);
     }
 
     public function testDelete()
@@ -103,7 +103,7 @@ class SubDomainTest extends TestCase
             'id' => (string) $user->getRouteKey(),
         ];
 
-        $this->patchJsonApi($uri, compact('data'))->assertStatus(204);
+        $this->patchJsonApi($uri, [], compact('data'))->assertStatus(204);
     }
 
     /**
