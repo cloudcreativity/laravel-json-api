@@ -23,7 +23,9 @@ use CloudCreativity\LaravelJsonApi\Contracts\Http\Responses\ErrorResponseInterfa
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PageInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Queue\AsynchronousProcess;
 use CloudCreativity\LaravelJsonApi\Contracts\Repositories\ErrorRepositoryInterface;
+use CloudCreativity\LaravelJsonApi\Document\Error;
 use Illuminate\Http\Response;
+use Illuminate\Support\Arr;
 use Neomerx\JsonApi\Contracts\Codec\CodecMatcherInterface;
 use Neomerx\JsonApi\Contracts\Document\DocumentInterface;
 use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
@@ -336,17 +338,31 @@ class Responses extends BaseResponses
     }
 
     /**
-     * @param mixed $errors
+     * Create a response containing a single error.
+     *
+     * @param string|array|ErrorInterface $error
      * @param int|null $defaultStatusCode
      * @param array $headers
      * @return mixed
      */
-    public function error($errors, $defaultStatusCode = null, array $headers = [])
+    public function error($error, $defaultStatusCode = null, array $headers = [])
     {
-        return $this->errors($errors, $defaultStatusCode, $headers);
+        if (is_string($error)) {
+            $error = $this->errorRepository->error($error);
+        } else if (is_array($error)) {
+            $error = Error::create($error);
+        }
+
+        if (!$error instanceof ErrorInterface) {
+            throw new \InvalidArgumentException('Expecting a string, array or error object.');
+        }
+
+        return $this->errors($error, $defaultStatusCode, $headers);
     }
 
     /**
+     * Create a response containing multiple errors.
+     *
      * @param mixed $errors
      * @param int|null $defaultStatusCode
      * @param array $headers
@@ -356,10 +372,6 @@ class Responses extends BaseResponses
     {
         if ($errors instanceof ErrorResponseInterface) {
             return $this->getErrorResponse($errors);
-        }
-
-        if (is_string($errors)) {
-            $errors = $this->errorRepository->error($errors);
         }
 
         if (is_array($errors)) {

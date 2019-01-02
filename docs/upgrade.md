@@ -50,14 +50,24 @@ to:
 
 #### `delete`/`destroy`
 
-Previously you have needed to implement the public `delete` method. This is now implemented on the
-abstract adapter, and you will instead need to add a protected `destroy` method. The destroy method
-must remove the provided record from storage (e.g. the database) and return a boolean to indicate success.
+On custom (non-Eloquent) adapters, previously you needed to implement the public `delete` method. 
+This is now implemented on the abstract adapter, and you will instead need to add a protected `destroy` method. 
+The destroy method must remove the provided record from storage (e.g. the database) and return a boolean 
+to indicate success.
 
 Note that we have added this method so that we can implement the new `deleting` and `deleted` adapter
 hooks.
 
-For example, remove the `delete` method from your adapter and add:
+For example, change this:
+
+```php
+public function delete($record, EncodingParametersInterface $params)
+{
+    return $record->delete();
+}
+```
+
+to this:
 
 ```php
 protected function destroy($record)
