@@ -9,22 +9,31 @@ fix remaining issues, most of which relate to validation.
 
 ### Adapters
 
-We have modified the adapter interface to ensure that Laravel's transformation middleware (e.g. trim strings) 
-work with this package. This means that adapters now receives the JSON API document (the HTTP request body) as
-an array. This has also resulted in some changes to the method signatures of methods on our abstract adapters.
+This release marks the final changes to the adapter classes before `1.0.0`. We have made changes to:
 
-An advantage is it has enabled us to deprecated the document object interface/classes
+- Ensure that Laravel's transformation middleware (e.g. trim strings) work with this package.
+- Add adapter hooks to allow easier integration of custom logic to fill domain records.
+- Ensure the `read` method is consistent with other methods on the adapter.
+
+As a result, adapters now receives the JSON API document (the HTTP request body) as an array, which is
+far more consistent with how Laravel normally handles JSON data.
+
+An advantage of these changes is it has enabled us to deprecated the document object interface/classes
 (in the `Contracts\Object` and `Object` namespaces). These were in this package for historic reasons and we 
 have wanted to remove them for some time. They are marked as deprecated and will be removed for good in `2.0.0`.
 
 Below are the main changes if you have extended our abstract adapters. Your adapters may not have all
-of these methods.
+of these methods. For example, a lot of these changes do not affect Eloquent adapters unless you have
+overloaded any of the methods.
 
 > If you have overridden any of the internals of the abstract adapters you may need to make additional changes.
 If you have directly implemented the interface to write your own adapter, you will need to refer to the updated
 adapter interface for changes.
 
 #### `createRecord()`
+
+**This change only affects Eloquent adapters if you have overloaded the `createRecord` method. If you have,
+we advise using the `creating` adapter hook instead of overloading this method.**
 
 The method signature has changed from:
 
@@ -38,15 +47,65 @@ The new resource object class represents the resource sent by the client. Values
 JSON API field name (i.e. the attribute or relationship name). For example `$value = $resource['title']` 
 would access the `title` attribute. This is far simpler than the previous resource object class.
 
-#### `fillAttributes()`
+#### `fillAttributes()` and `hydrateRelated`
 
-The method signature has changed from:
+The `fillAttributes` method signature has changed from:
 
 `fillAttributes($record, \CloudCreativity\Utils\Object\StandardObjectInterface $attributes)`
 
 to:
 
 `fillAttributes($record, \Illuminate\Support\Collection $attributes)`
+
+The `hydrateRelated` method has been renamed `fillRelated` and the method signature has changed from:
+
+```
+hydrateRelated(
+  $record, 
+  \CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectInterface $resource,
+  \Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface
+)`
+```
+
+to:
+
+```
+fillRelated(
+  $record, 
+  \CloudCreativity\LaravelJsonApi\Document\ResourceObject $resource,
+  \Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface
+)`
+```
+
+#### `read`
+
+We have changed the method signature of the `read` method. Instead of taking the resource ID, it now
+receives the record that is being read. We have made this change because the record is already loaded
+via the substitution of route bindings. It also makes it consistent with all the other public methods
+on the adapters that receive the record being read, rather than the resource ID.
+
+The `read` method was already implemented on the abstract adapter so you will not need to make any changes
+unless you have overloaded the method. If you have, change the following:
+
+```php
+public function read($resourceId, EncodingParametersInterface $params)
+{
+    // ...
+}
+```
+
+to this:
+
+```php
+public function read($record, EncodingParametersInterface $params)
+{
+    // ...
+}
+```
+
+> Even though the record is already loaded, it is passed to the adapter in case there is any other
+adapter logic to apply. For example in the Eloquent adapter we eager load relationships or filter
+the record based on the supplied parameters.
 
 #### `delete`/`destroy`
 
@@ -74,28 +133,6 @@ protected function destroy($record)
 {
     return $record->delete();
 }
-```
-
-#### `hydrateRelated`
-
-This method has been renamed `fillRelated` and the method signature has changed from:
-
-```
-hydrateRelated(
-  $record, 
-  \CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectInterface $resource,
-  \Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface
-)`
-```
-
-to:
-
-```
-fillRelated(
-  $record, 
-  \CloudCreativity\LaravelJsonApi\Document\ResourceObject $resource,
-  \Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface
-)`
 ```
 
 ### Client-Generated IDs
