@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2018 Cloud Creativity Limited
+ * Copyright 2019 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,64 +18,12 @@
 
 namespace CloudCreativity\LaravelJsonApi\Api;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
-use CloudCreativity\LaravelJsonApi\Resolver\NamespaceResolver;
-use CloudCreativity\LaravelJsonApi\Routing\ApiGroup;
-use Illuminate\Contracts\Routing\Registrar;
-
 /**
  * Class ResourceProvider
  *
  * @package CloudCreativity\LaravelJsonApi
+ * @deprecated 2.0.0 extend AbstractProvider directly.
  */
-abstract class ResourceProvider
+abstract class ResourceProvider extends AbstractProvider
 {
-
-    /**
-     * @var array
-     */
-    protected $resources = [];
-
-    /**
-     * @var bool
-     */
-    protected $byResource = true;
-
-    /**
-     * @var array
-     * @deprecated 2.0.0 use package translations instead.
-     */
-    protected $errors = [];
-
-    /**
-     * Mount routes onto the provided API.
-     *
-     * @param ApiGroup $api
-     * @param Registrar $router
-     * @return void
-     */
-    abstract public function mount(ApiGroup $api, Registrar $router);
-
-    /**
-     * @return string
-     */
-    abstract protected function getRootNamespace();
-
-    /**
-     * @return ResolverInterface
-     */
-    public function getResolver()
-    {
-        return new NamespaceResolver($this->getRootNamespace(), $this->resources, $this->byResource);
-    }
-
-    /**
-     * @return array
-     * @deprecated 2.0.0
-     */
-    public function getErrors()
-    {
-        return $this->errors;
-    }
-
 }

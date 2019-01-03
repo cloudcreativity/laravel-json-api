@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2018 Cloud Creativity Limited
+ * Copyright 2019 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ use Neomerx\JsonApi\Contracts\Document\DocumentInterface;
  * Class IdentifiableTrait
  *
  * @package CloudCreativity\LaravelJsonApi
+ * @deprecated 2.0.0
  */
 trait IdentifiableTrait
 {

@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright 2018 Cloud Creativity Limited
+ * Copyright 2019 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,18 +37,28 @@ class CreateResourceValidator extends AbstractValidator
     private $expectedType;
 
     /**
+     * Whether client ids are supported.
+     *
+     * @var bool
+     */
+    private $clientIds;
+
+    /**
      * CreateResourceValidator constructor.
      *
      * @param StoreInterface $store
      * @param ErrorTranslator $translator
      * @param object $document
      * @param string $expectedType
+     * @param bool $clientIds
+     *      whether client ids are supported.
      */
     public function __construct(
         StoreInterface $store,
         ErrorTranslator $translator,
         $document,
-        string $expectedType
+        string $expectedType,
+        bool $clientIds = false
     ) {
         if (empty($expectedType)) {
             throw new InvalidArgumentException('Expecting type to be a non-empty string.');
@@ -56,6 +66,7 @@ class CreateResourceValidator extends AbstractValidator
 
         parent::__construct($store, $translator, $document);
         $this->expectedType = $expectedType;
+        $this->clientIds = $clientIds;
     }
 
     /**
@@ -68,22 +79,7 @@ class CreateResourceValidator extends AbstractValidator
             return false;
         }
 
-        /** Validate the resource... */
-        $valid = true;
-
-        if (!$this->validateTypeAndId()) {
-            $valid = false;
-        }
-
-        if ($this->dataHas('attributes') && !$this->validateAttributes()) {
-            $valid = false;
-        }
-
-        if ($this->dataHas('relationships') && !$this->validateRelationships()) {
-            $valid = false;
-        }
-
-        return $valid;
+        return $this->validateResource();
     }
 
     /**
@@ -106,6 +102,24 @@ class CreateResourceValidator extends AbstractValidator
         }
 
         return true;
+    }
+
+    /**
+     * Validate the resource object.
+     *
+     * @return bool
+     */
+    protected function validateResource(): bool
+    {
+        $identifier = $this->validateTypeAndId();
+        $attributes = $this->validateAttributes();
+        $relationships = $this->validateRelationships();
+
+        if ($attributes && $relationships) {
+            return $this->validateAllFields() && $identifier;
+        }
+
+        return $identifier && $attributes && $relationships;
     }
 
     /**
@@ -167,7 +181,14 @@ class CreateResourceValidator extends AbstractValidator
             return true;
         }
 
-        return $this->validateIdMember($this->dataGet('id'), '/data');
+        $valid = $this->validateIdMember($this->dataGet('id'), '/data');
+
+        if (!$this->supportsClientIds()) {
+            $valid = false;
+            $this->resourceDoesNotSupportClientIds($this->expectedType);
+        }
+
+        return $valid;
     }
 
     /**
@@ -177,6 +198,10 @@ class CreateResourceValidator extends AbstractValidator
      */
     protected function validateAttributes(): bool
     {
+        if (!$this->dataHas('attributes')) {
+            return true;
+        }
+
         $attrs = $this->dataGet('attributes');
 
         if (!is_object($attrs)) {
@@ -184,7 +209,13 @@ class CreateResourceValidator extends AbstractValidator
             return false;
         }
 
-        return true;
+        $disallowed = collect(['type', 'id'])->filter(function ($field) use ($attrs) {
+            return property_exists($attrs, $field);
+        });
+
+        $this->memberFieldsNotAllowed('/data', 'attributes', $disallowed);
+
+        return $disallowed->isEmpty();
     }
 
     /**
@@ -194,6 +225,10 @@ class CreateResourceValidator extends AbstractValidator
      */
     protected function validateRelationships(): bool
     {
+        if (!$this->dataHas('relationships')) {
+            return true;
+        }
+
         $relationships = $this->dataGet('relationships');
 
         if (!is_object($relationships)) {
@@ -201,7 +236,12 @@ class CreateResourceValidator extends AbstractValidator
             return false;
         }
 
-        $valid = true;
+        $disallowed = collect(['type', 'id'])->filter(function ($field) use ($relationships) {
+            return property_exists($relationships, $field);
+        });
+
+        $valid = $disallowed->isEmpty();
+        $this->memberFieldsNotAllowed('/data', 'relationships', $disallowed);
 
         foreach ($relationships as $field => $relation) {
             if (!$this->validateRelationship($relation, $field)) {
@@ -210,6 +250,34 @@ class CreateResourceValidator extends AbstractValidator
         }
 
         return $valid;
+    }
+
+    /**
+     * Validate the resource's attributes and relationships collectively.
+     *
+     * @return bool
+     */
+    protected function validateAllFields(): bool
+    {
+        $duplicates = collect(
+            (array) $this->dataGet('attributes', [])
+        )->intersectByKeys(
+            (array) $this->dataGet('relationships', [])
+        )->keys();
+
+        $this->resourceFieldsExistInAttributesAndRelationships($duplicates);
+
+        return $duplicates->isEmpty();
+    }
+
+    /**
+     * Are client ids supported?
+     *
+     * @return bool
+     */
+    protected function supportsClientIds(): bool
+    {
+        return $this->clientIds;
     }
 
 }

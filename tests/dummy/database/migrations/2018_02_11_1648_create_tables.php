@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright 2018 Cloud Creativity Limited
+ * Copyright 2019 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,6 +42,7 @@ class CreateTables extends Migration
         Schema::create('posts', function (Blueprint $table) {
             $table->increments('id');
             $table->timestamps();
+            $table->softDeletes();
             $table->timestamp('published_at')->nullable();
             $table->string('title');
             $table->string('slug');
@@ -92,6 +93,12 @@ class CreateTables extends Migration
             $table->string('name');
             $table->string('code');
         });
+
+        Schema::create('downloads', function (Blueprint $table) {
+            $table->increments('id');
+            $table->timestamps();
+            $table->string('category');
+        });
     }
 
     /**
@@ -106,5 +113,6 @@ class CreateTables extends Migration
         Schema::dropIfExists('taggables');
         Schema::dropIfExists('phones');
         Schema::dropIfExists('countries');
+        Schema::dropIfExists('downloads');
     }
 }

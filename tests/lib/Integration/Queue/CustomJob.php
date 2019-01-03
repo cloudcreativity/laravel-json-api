@@ -1,7 +1,6 @@
 <?php
-
 /**
- * Copyright 2018 Cloud Creativity Limited
+ * Copyright 2019 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,16 +15,10 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\LaravelJsonApi\Contracts\Store;
+namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Queue;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Adapter\ResourceAdapterInterface;
+use CloudCreativity\LaravelJsonApi\Queue\ClientJob;
 
-/**
- * Interface AdapterInterface
- *
- * @package CloudCreativity\LaravelJsonApi
- * @deprecated extend `ResourceAdapterInterface` directly.
- */
-interface AdapterInterface extends ResourceAdapterInterface
+class CustomJob extends ClientJob
 {
 }

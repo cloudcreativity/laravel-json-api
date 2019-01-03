@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright 2018 Cloud Creativity Limited
+ * Copyright 2019 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,13 @@
 
 namespace CloudCreativity\LaravelJsonApi\Document;
 
+use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectInterface;
+use CloudCreativity\LaravelJsonApi\Object\ResourceObject as LegacyResourceObject;
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 
-class ResourceObject implements Arrayable, \IteratorAggregate
+class ResourceObject implements Arrayable, \IteratorAggregate, \JsonSerializable, \ArrayAccess
 {
 
     /**
@@ -77,11 +80,11 @@ class ResourceObject implements Arrayable, \IteratorAggregate
 
         return new self(
             $data['type'],
-            isset($data['id']) ? $data['id'] : null,
-            isset($data['attributes']) ? $data['attributes'] : [],
-            isset($data['relationships']) ? $data['relationships'] : [],
-            isset($data['meta']) ? $data['meta'] : [],
-            isset($data['links']) ? $data['links'] : []
+            $data['id'] ?? null,
+            $data['attributes'] ?? [],
+            $data['relationships'] ?? [],
+            $data['meta'] ?? [],
+            $data['links'] ?? []
         );
     }
 
@@ -123,6 +126,73 @@ class ResourceObject implements Arrayable, \IteratorAggregate
     {
         $this->fieldNames = clone $this->fieldNames;
         $this->fieldValues = clone $this->fieldValues;
+    }
+
+    /**
+     * @param string $field
+     * @return mixed
+     */
+    public function __get($field)
+    {
+        return $this->offsetGet($field);
+    }
+
+    /**
+     * @param $field
+     * @param $value
+     */
+    public function __set($field, $value)
+    {
+        throw new \LogicException('Resource object is immutable.');
+    }
+
+    /**
+     * @param $field
+     * @return bool
+     */
+    public function __isset($field)
+    {
+        return $this->offsetExists($field);
+    }
+
+    /**
+     * @param $field
+     */
+    public function __unset($field)
+    {
+        throw new \LogicException('Resource object is immutable.');
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function offsetExists($offset)
+    {
+        return $this->fieldValues->offsetExists($offset);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function offsetGet($offset)
+    {
+        return $this->fieldValues->offsetGet($offset);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function offsetSet($offset, $value)
+    {
+        throw new \LogicException('Resource object is immutable.');
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function offsetUnset($offset)
+    {
+        throw new \LogicException('Resource object is immutable.');
     }
 
     /**
@@ -281,7 +351,7 @@ class ResourceObject implements Arrayable, \IteratorAggregate
     public function getRelations(): Collection
     {
         return $this->getRelationships()->filter(function (array $relation) {
-            return isset($relation['data']);
+            return array_key_exists('data', $relation);
         })->map(function (array $relation) {
             return $relation['data'];
         });
@@ -370,7 +440,7 @@ class ResourceObject implements Arrayable, \IteratorAggregate
      */
     public function get(string $field, $default = null)
     {
-        return $this->fieldValues->get($field, $default);
+        return Arr::get($this->all(), $field, $default);
     }
 
     /**
@@ -431,6 +501,14 @@ class ResourceObject implements Arrayable, \IteratorAggregate
      */
     public function replace(string $field, $value): self
     {
+        if ('type' === $field) {
+            return $this->putIdentifier($value, $this->id);
+        }
+
+        if ('id' === $field) {
+            return $this->putIdentifier($this->type, $value);
+        }
+
         if ($this->isAttribute($field)) {
             return $this->putAttr($field, $value);
         }
@@ -446,31 +524,34 @@ class ResourceObject implements Arrayable, \IteratorAggregate
      * Convert a validation key to a JSON pointer.
      *
      * @param string $key
+     * @param string $prefix
      * @return string
      */
-    public function pointer(string $key): string
+    public function pointer(string $key, string $prefix = ''): string
     {
+        $prefix = rtrim($prefix, '/');
+
         if ('type' === $key) {
-            return '/data/type';
+            return $prefix . '/type';
         }
 
         if ('id' === $key) {
-            return '/data/id';
+            return $prefix . '/id';
         }
 
         $parts = collect(explode('.', $key));
         $field = $parts->first();
 
         if ($this->isAttribute($field)) {
-            return '/data/attributes/' . $parts->implode('/');
+            return $prefix . '/attributes/' . $parts->implode('/');
         }
 
         if ($this->isRelationship($field)) {
             $name = 1 < $parts->count() ? $field . '/' . $parts->put(0, 'data')->implode('/') : $field;
-            return "/data/relationships/{$name}";
+            return $prefix . "/relationships/{$name}";
         }
 
-        return '/data';
+        return $prefix ? $prefix : '/';
     }
 
     /**
@@ -504,6 +585,27 @@ class ResourceObject implements Arrayable, \IteratorAggregate
             'links' => $this->links,
             'meta' => $this->meta,
         ])->filter()->all();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function jsonSerialize()
+    {
+        return $this->toArray();
+    }
+
+    /**
+     * Convert the object to a legacy resource object.
+     *
+     * @return ResourceObjectInterface
+     * @deprecated 2.0.0
+     */
+    public function toObject(): ResourceObjectInterface
+    {
+        $json = json_encode($this);
+
+        return new LegacyResourceObject(json_decode($json, false));
     }
 
     /**
@@ -542,8 +644,27 @@ class ResourceObject implements Arrayable, \IteratorAggregate
      */
     private function normalize(): void
     {
+        if (collect($this->attributes)->intersectByKeys($this->relationships)->isNotEmpty()) {
+            throw new \LogicException('Attributes and relationships cannot have the same field names.');
+        }
+
         $this->fieldValues = $this->fieldValues();
         $this->fieldNames = $this->fieldNames();
+    }
+
+    /**
+     * @param string $type
+     * @param string|null $id
+     * @return ResourceObject
+     */
+    private function putIdentifier(string $type, ?string $id): self
+    {
+        $copy = clone $this;
+        $copy->type = $type;
+        $copy->id = $id;
+        $copy->normalize();
+
+        return $copy;
     }
 
     /**
@@ -562,10 +683,10 @@ class ResourceObject implements Arrayable, \IteratorAggregate
 
     /**
      * @param string $field
-     * @param array $value
+     * @param array|null $value
      * @return ResourceObject
      */
-    private function putRelation(string $field, array $value): self
+    private function putRelation(string $field, ?array $value): self
     {
         $copy = clone $this;
         $copy->relationships[$field] = $copy->relationships[$field] ?? [];

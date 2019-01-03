@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright 2018 Cloud Creativity Limited
+ * Copyright 2019 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,6 +58,12 @@ return [
         'code' => '',
     ],
 
+    'member_field_not_allowed' => [
+        'title' => 'Non-Compliant JSON API Document',
+        'detail' => "The member :member cannot have a :field field.",
+        'code' => '',
+    ],
+
     'resource_type_not_supported' => [
         'title' => 'Not Supported',
         'detail' => "Resource type :type is not supported by this endpoint.",
@@ -76,6 +82,12 @@ return [
         'code' => '',
     ],
 
+    'resource_client_ids_not_supported' => [
+        'title' => 'Not Supported',
+        'detail' => 'Resource type :type does not support client-generated IDs.',
+        'code' => '',
+    ],
+
     'resource_exists' => [
         'title' => 'Conflict',
         'detail' => "Resource :id already exists.",
@@ -85,6 +97,12 @@ return [
     'resource_not_found' => [
         'title' => 'Not Found',
         'detail' => "The related resource does not exist.",
+        'code' => '',
+    ],
+
+    'resource_field_exists_in_attributes_and_relationships' => [
+        'title' => 'Non-Compliant JSON API Document',
+        'detail' => 'The :field field cannot exist as an attribute and a relationship.',
         'code' => '',
     ],
 

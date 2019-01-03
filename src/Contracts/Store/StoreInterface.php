@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2018 Cloud Creativity Limited
+ * Copyright 2019 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,11 @@
 namespace CloudCreativity\LaravelJsonApi\Contracts\Store;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\ResourceAdapterInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Object\RelationshipInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceIdentifierCollectionInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceIdentifierInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\RecordNotFoundException;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
+use Illuminate\Support\Collection;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 /**
@@ -64,45 +63,43 @@ interface StoreInterface
      * Create a domain record using data from the supplied resource object.
      *
      * @param string $resourceType
-     * @param ResourceObjectInterface $resource
+     * @param array $document
+     *      the JSON API document received from the client.
      * @param EncodingParametersInterface $params
      * @return object
      *      the created domain record.
      */
-    public function createRecord(
-        $resourceType,
-        ResourceObjectInterface $resource,
-        EncodingParametersInterface $params
-    );
+    public function createRecord($resourceType, array $document, EncodingParametersInterface $params);
 
     /**
      * Query the store for a single record using the supplied parameters.
      *
-     * @param string $resourceType
-     * @param string $resourceId
+     * @param object $record
+     *      the domain record being read.
      * @param EncodingParametersInterface $params
      * @return object|null
      */
-    public function readRecord($resourceType, $resourceId, EncodingParametersInterface $params);
+    public function readRecord($record, EncodingParametersInterface $params);
 
     /**
      * Update a domain record with data from the supplied resource object.
      *
-     * @param ResourceObjectInterface $resource
      * @param object $record
      *      the domain record to update.
+     * @param array $document
+     *      the JSON API document received from the client.
      * @param EncodingParametersInterface $params
      * @return object
      *      the updated domain record.
      */
-    public function updateRecord($record, ResourceObjectInterface $resource, EncodingParametersInterface $params);
+    public function updateRecord($record, array $document, EncodingParametersInterface $params);
 
     /**
      * Delete a domain record.
      *
      * @param $record
      * @param EncodingParametersInterface $params
-     * @return void
+     * @return mixed|null
      */
     public function deleteRecord($record, EncodingParametersInterface $params);
 
@@ -161,8 +158,8 @@ interface StoreInterface
      *      the object to hydrate.
      * @param $relationshipKey
      *      the key of the relationship to hydrate.
-     * @param RelationshipInterface $relationship
-     *      the relationship object to use for the hydration.
+     * @param array $document
+     *      the JSON API document received from the client.
      * @param EncodingParametersInterface $params
      * @return object
      *      the updated domain record.
@@ -170,7 +167,7 @@ interface StoreInterface
     public function replaceRelationship(
         $record,
         $relationshipKey,
-        RelationshipInterface $relationship,
+        array $document,
         EncodingParametersInterface $params
     );
 
@@ -183,7 +180,8 @@ interface StoreInterface
      * @param object $record
      *      the domain record to update.
      * @param $relationshipKey
-     * @param RelationshipInterface $relationship
+     * @param array $document
+     *      the JSON API document received from the client.
      * @param EncodingParametersInterface $params
      * @return object
      *      the updated domain record.
@@ -193,7 +191,7 @@ interface StoreInterface
     public function addToRelationship(
         $record,
         $relationshipKey,
-        RelationshipInterface $relationship,
+        array $document,
         EncodingParametersInterface $params
     );
 
@@ -206,7 +204,8 @@ interface StoreInterface
      * @param object $record
      *      the domain record to update.
      * @param $relationshipKey
-     * @param RelationshipInterface $relationship
+     * @param array $document
+     *      the JSON API document received from the client.
      * @param EncodingParametersInterface $params
      * @return object
      *      the updated domain record.
@@ -216,26 +215,32 @@ interface StoreInterface
     public function removeFromRelationship(
         $record,
         $relationshipKey,
-        RelationshipInterface $relationship,
+        array $document,
         EncodingParametersInterface $params
     );
 
     /**
-     * Does the domain record this resource identifier refers to exist?
+     * Does the specified resource exist?
      *
-     * @param ResourceIdentifierInterface $identifier
+     * @param ResourceIdentifierInterface|string $type
+     * @param string|null $id
      * @return bool
+     * @todo in 2.0.0 this will only accept type and id, not a resource identifier object.
      */
-    public function exists(ResourceIdentifierInterface $identifier);
+    public function exists($type, $id = null);
 
     /**
-     * Find the domain record that this resource identifier refers to.
+     * Find the domain record for the specified resource.
      *
-     * @param ResourceIdentifierInterface $identifier
+     * @param ResourceIdentifierInterface|array|string $type
+     *      the resource identifier, or the string resource type.
+     * @param string|null $id
+     *      the resource id, required if `$type` is a string.
      * @return object|null
      *      the record, or null if it does not exist.
+     * @todo in 2.0.0 this will only accept type and id, not a resource identifier object.
      */
-    public function find(ResourceIdentifierInterface $identifier);
+    public function find($type, $id = null);
 
     /**
      * Find the domain record that this resource identifier refers to, or fail if it cannot be found.
@@ -245,6 +250,7 @@ interface StoreInterface
      *      the record
      * @throws RecordNotFoundException
      *      if the record does not exist.
+     * @deprecated 2.0.0 use `find`.
      */
     public function findOrFail(ResourceIdentifierInterface $identifier);
 
@@ -254,9 +260,27 @@ interface StoreInterface
      *      the record
      * @throws RecordNotFoundException
      *      if the record does not exist.
-     * @deprecated use `findOrFail`
+     * @deprecated 2.0.0 use `find`
      */
     public function findRecord(ResourceIdentifierInterface $identifier);
+
+    /**
+     * Find a related record for a to-one relationship.
+     *
+     * @param array $relationship
+     * @return mixed|null
+     *      the domain record or null.
+     */
+    public function findToOne(array $relationship);
+
+    /**
+     * Find related records for a to-many relationship.
+     *
+     * @param array $relationship
+     * @return Collection
+     *      containing the related domain records.
+     */
+    public function findToMany(array $relationship);
 
     /**
      * Find many domain records using the supplied resource identifiers.
@@ -267,11 +291,11 @@ interface StoreInterface
      * identifiers, it must still return a collection - i.e. the returned collection can
      * be of a length shorter than the collection of identifiers.
      *
-     * @param ResourceIdentifierCollectionInterface $identifiers
+     * @param ResourceIdentifierCollectionInterface|array $identifiers
      * @return array
      *      an array of domain records that match the supplied identifiers.
      */
-    public function findMany(ResourceIdentifierCollectionInterface $identifiers);
+    public function findMany($identifiers);
 
     /**
      * Get the adapter for the supplied JSON API resource type or domain record.

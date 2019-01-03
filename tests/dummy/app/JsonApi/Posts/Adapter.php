@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright 2018 Cloud Creativity Limited
+ * Copyright 2019 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ namespace DummyApp\JsonApi\Posts;
 
 use CloudCreativity\LaravelJsonApi\Eloquent\AbstractAdapter;
 use CloudCreativity\LaravelJsonApi\Eloquent\BelongsTo;
+use CloudCreativity\LaravelJsonApi\Eloquent\Concerns\SoftDeletesModels;
 use CloudCreativity\LaravelJsonApi\Eloquent\HasMany;
 use CloudCreativity\LaravelJsonApi\Eloquent\QueriesMany;
 use CloudCreativity\LaravelJsonApi\Eloquent\QueriesOne;
@@ -29,6 +30,8 @@ use Illuminate\Support\Collection;
 
 class Adapter extends AbstractAdapter
 {
+
+    use SoftDeletesModels;
 
     /**
      * @var array

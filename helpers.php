@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2018 Cloud Creativity Limited
+ * Copyright 2019 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,9 +65,8 @@ namespace CloudCreativity\LaravelJsonApi {
 namespace {
 
     use CloudCreativity\LaravelJsonApi\Api\Api;
-    use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestInterface;
     use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
-    use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
+    use CloudCreativity\LaravelJsonApi\Http\Requests\JsonApiRequest;
 
     if (!function_exists('json_api')) {
         /**
@@ -79,26 +78,20 @@ namespace {
          * @throws RuntimeException
          */
         function json_api($apiName = null) {
-            /** @var JsonApiService $service */
-            $service = app('json-api');
-
             if ($apiName) {
-                return $service->api($apiName);
+                return app('json-api')->api($apiName);
             }
 
-            return $service->requestApiOrDefault();
+            return app('json-api')->requestApiOrDefault();
         }
 
         /**
          * Get the inbound JSON API request.
          *
-         * @return RequestInterface|null
+         * @return JsonApiRequest|null
          */
         function json_api_request() {
-            /** @var JsonApiService $service */
-            $service = app('json-api');
-
-            return $service->request();
+            return app('json-api')->request();
         }
     }
 }

@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright 2018 Cloud Creativity Limited
+ * Copyright 2019 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,7 +51,7 @@ class ResourceValidator extends AbstractValidator
     protected function createError(string $key, string $detail): ErrorInterface
     {
         return $this->errors->invalidResource(
-            $this->resource->pointer($key),
+            $this->resource->pointer($key, '/data'),
             $detail
         );
     }

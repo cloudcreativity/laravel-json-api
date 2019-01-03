@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright 2018 Cloud Creativity Limited
+ * Copyright 2019 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,6 +53,13 @@ $factory->define(DummyApp\Country::class, function (Faker $faker) {
     return [
         'name' => $faker->country,
         'code' => $faker->countryCode,
+    ];
+});
+
+/** Download */
+$factory->define(DummyApp\Download::class, function (Faker $faker) {
+    return [
+        'category' => $faker->randomElement(['my-posts', 'my-comments', 'my-videos']),
     ];
 });
 

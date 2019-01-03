@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright 2018 Cloud Creativity Limited
+ * Copyright 2019 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,11 +36,9 @@ class QueryParameterValidationTest extends TestCase
         $comment = factory(Comment::class)->states('post')->make();
         $data = $this->serialize($comment);
 
-        $this->actingAs($comment->user)
-            ->doCreate($data, ['sort' => 'created-at'])
-            ->assertStatus(400)
-            ->assertErrors()
-            ->assertParameters('sort');
+        $this->actingAs($comment->user)->doCreate($data, ['sort' => 'created-at'])->assertError(400, [
+            'source' => ['parameter' => 'sort'],
+        ]);
     }
 
     /**
@@ -52,11 +50,9 @@ class QueryParameterValidationTest extends TestCase
         $comment = factory(Comment::class)->states('post')->make();
         $data = $this->serialize($comment);
 
-        $this->actingAs($comment->user)
-            ->doCreate($data, ['filter' => ['created-by' => '1']])
-            ->assertStatus(400)
-            ->assertErrors()
-            ->assertParameters('filter');
+        $this->actingAs($comment->user)->doCreate($data, ['filter' => ['created-by' => '1']])->assertError(400, [
+            'source' => ['parameter' => 'filter'],
+        ]);
     }
 
     /**
@@ -68,11 +64,9 @@ class QueryParameterValidationTest extends TestCase
         $comment = factory(Comment::class)->states('post')->make();
         $data = $this->serialize($comment);
 
-        $this->actingAs($comment->user)
-            ->doCreate($data, ['page' => ['size' => 12]])
-            ->assertStatus(400)
-            ->assertErrors()
-            ->assertParameters('page');
+        $this->actingAs($comment->user)->doCreate($data, ['page' => ['size' => 12]])->assertError(400, [
+            'source' => ['parameter' => 'page'],
+        ]);
     }
 
     /**
@@ -83,11 +77,9 @@ class QueryParameterValidationTest extends TestCase
     {
         $comment = factory(Comment::class)->states('post')->create();
 
-        $this->actingAs($comment->user)
-            ->doRead($comment, ['sort' => 'created-at'])
-            ->assertStatus(400)
-            ->assertErrors()
-            ->assertParameters('sort');
+        $this->actingAs($comment->user)->doRead($comment, ['sort' => 'created-at'])->assertError(400, [
+            'source' => ['parameter' => 'sort'],
+        ]);
     }
 
     /**
@@ -98,11 +90,9 @@ class QueryParameterValidationTest extends TestCase
     {
         $comment = factory(Comment::class)->states('post')->create();
 
-        $this->actingAs($comment->user)
-            ->doRead($comment, ['page' => ['size' => 12]])
-            ->assertStatus(400)
-            ->assertErrors()
-            ->assertParameters('page');
+        $this->actingAs($comment->user)->doRead($comment, ['page' => ['size' => 12]])->assertError(400, [
+            'source' => ['parameter' => 'page'],
+        ]);
     }
 
     /**
@@ -114,11 +104,9 @@ class QueryParameterValidationTest extends TestCase
         $comment = factory(Comment::class)->states('post')->create();
         $data = $this->serialize($comment);
 
-        $this->actingAs($comment->user)
-            ->doUpdate($data, ['sort' => 'created-at'])
-            ->assertStatus(400)
-            ->assertErrors()
-            ->assertParameters('sort');
+        $this->actingAs($comment->user)->doUpdate($data, ['sort' => 'created-at'])->assertError(400, [
+            'source' => ['parameter' => 'sort'],
+        ]);
     }
 
     /**
@@ -130,11 +118,9 @@ class QueryParameterValidationTest extends TestCase
         $comment = factory(Comment::class)->states('post')->create();
         $data = $this->serialize($comment);
 
-        $this->actingAs($comment->user)
-            ->doUpdate($data, ['filter' => ['created-by' => '1']])
-            ->assertStatus(400)
-            ->assertErrors()
-            ->assertParameters('filter');
+        $this->actingAs($comment->user)->doUpdate($data, ['filter' => ['created-by' => '1']])->assertError(400, [
+            'source' => ['parameter' => 'filter'],
+        ]);
     }
 
     /**
@@ -146,11 +132,9 @@ class QueryParameterValidationTest extends TestCase
         $comment = factory(Comment::class)->states('post')->create();
         $data = $this->serialize($comment);
 
-        $this->actingAs($comment->user)
-            ->doUpdate($data, ['page' => ['size' => 12]])
-            ->assertStatus(400)
-            ->assertErrors()
-            ->assertParameters('page');
+        $this->actingAs($comment->user)->doUpdate($data, ['page' => ['size' => 12]])->assertError(400, [
+            'source' => ['parameter' => 'page'],
+        ]);
     }
 
     /**
@@ -161,11 +145,9 @@ class QueryParameterValidationTest extends TestCase
     {
         $comment = factory(Comment::class)->states('post')->create();
 
-        $this->actingAs($comment->user)
-            ->doDelete($comment, ['sort' => 'created-at'])
-            ->assertStatus(400)
-            ->assertErrors()
-            ->assertParameters('sort');
+        $this->actingAs($comment->user)->doDelete($comment, ['sort' => 'created-at'])->assertError(400, [
+            'source' => ['parameter' => 'sort'],
+        ]);
     }
 
     /**
@@ -176,11 +158,9 @@ class QueryParameterValidationTest extends TestCase
     {
         $comment = factory(Comment::class)->states('post')->create();
 
-        $this->actingAs($comment->user)
-            ->doDelete($comment, ['filter' => ['created-by' => '1']])
-            ->assertStatus(400)
-            ->assertErrors()
-            ->assertParameters('filter');
+        $this->actingAs($comment->user)->doDelete($comment, ['filter' => ['created-by' => '1']])->assertError(400, [
+            'source' => ['parameter' => 'filter'],
+        ]);
     }
 
     /**
@@ -191,11 +171,9 @@ class QueryParameterValidationTest extends TestCase
     {
         $comment = factory(Comment::class)->states('post')->create();
 
-        $this->actingAs($comment->user)
-            ->doDelete($comment, ['page' => ['size' => 12]])
-            ->assertStatus(400)
-            ->assertErrors()
-            ->assertParameters('page');
+        $this->actingAs($comment->user)->doDelete($comment, ['page' => ['size' => 12]])->assertError(400, [
+            'source' => ['parameter' => 'page'],
+        ]);
     }
 
     /**

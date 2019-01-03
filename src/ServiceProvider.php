@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2018 Cloud Creativity Limited
+ * Copyright 2019 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,9 @@
 namespace CloudCreativity\LaravelJsonApi;
 
 use CloudCreativity\LaravelJsonApi\Api\Repository;
-use CloudCreativity\LaravelJsonApi\Console\Commands;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Exceptions\ExceptionParserInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Factories\FactoryInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Repositories\ErrorRepositoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
@@ -32,22 +30,26 @@ use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use CloudCreativity\LaravelJsonApi\Http\Middleware\Authorize;
 use CloudCreativity\LaravelJsonApi\Http\Middleware\BootJsonApi;
 use CloudCreativity\LaravelJsonApi\Http\Middleware\SubstituteBindings;
-use CloudCreativity\LaravelJsonApi\Http\Requests\IlluminateRequest;
+use CloudCreativity\LaravelJsonApi\Http\Requests\JsonApiRequest;
 use CloudCreativity\LaravelJsonApi\Http\Responses\Responses;
+use CloudCreativity\LaravelJsonApi\Queue\UpdateClientProcess;
 use CloudCreativity\LaravelJsonApi\Routing\ResourceRegistrar;
 use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
 use CloudCreativity\LaravelJsonApi\View\Renderer;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Routing\Router;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 use Illuminate\View\Compilers\BladeCompiler;
 use Neomerx\JsonApi\Contracts\Document\DocumentFactoryInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Handlers\HandlerFactoryInterface;
+use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Parser\ParserFactoryInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Stack\StackFactoryInterface;
 use Neomerx\JsonApi\Contracts\Factories\FactoryInterface as NeomerxFactoryInterface;
 use Neomerx\JsonApi\Contracts\Http\HttpFactoryInterface;
+use Neomerx\JsonApi\Contracts\Http\Query\QueryParametersParserInterface;
 use Neomerx\JsonApi\Contracts\Schema\SchemaFactoryInterface;
 use Psr\Log\LoggerInterface;
 
@@ -60,18 +62,6 @@ class ServiceProvider extends BaseServiceProvider
 {
 
     /**
-     * @var array
-     */
-    protected $generatorCommands = [
-        Commands\MakeAdapter::class,
-        Commands\MakeApi::class,
-        Commands\MakeAuthorizer::class,
-        Commands\MakeResource::class,
-        Commands\MakeSchema::class,
-        Commands\MakeValidators::class,
-    ];
-
-    /**
      * @param Router $router
      */
     public function boot(Router $router)
@@ -80,6 +70,28 @@ class ServiceProvider extends BaseServiceProvider
         $this->bootResponseMacro();
         $this->bootBladeDirectives();
         $this->bootTranslations();
+
+        if (LaravelJsonApi::$queueBindings) {
+            Queue::after(UpdateClientProcess::class);
+            Queue::failing(UpdateClientProcess::class);
+        }
+
+        if ($this->app->runningInConsole()) {
+            $this->bootMigrations();
+
+            $this->publishes([
+                __DIR__ . '/../database/migrations' => database_path('migrations'),
+            ], 'json-api-migrations');
+
+            $this->commands([
+                Console\Commands\MakeAdapter::class,
+                Console\Commands\MakeApi::class,
+                Console\Commands\MakeAuthorizer::class,
+                Console\Commands\MakeResource::class,
+                Console\Commands\MakeSchema::class,
+                Console\Commands\MakeValidators::class,
+            ]);
+        }
     }
 
     /**
@@ -96,7 +108,6 @@ class ServiceProvider extends BaseServiceProvider
         $this->bindApiRepository();
         $this->bindExceptionParser();
         $this->bindRenderer();
-        $this->registerArtisanCommands();
         $this->mergePackageConfig();
     }
 
@@ -143,6 +154,18 @@ class ServiceProvider extends BaseServiceProvider
         $compiler = $this->app->make(BladeCompiler::class);
         $compiler->directive('jsonapi', Renderer::class . '::compileWith');
         $compiler->directive('encode', Renderer::class . '::compileEncode');
+    }
+
+    /**
+     * Register package migrations.
+     *
+     * @return void
+     */
+    protected function bootMigrations()
+    {
+        if (LaravelJsonApi::$runMigrations) {
+            $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+        }
     }
 
     /**
@@ -204,8 +227,8 @@ class ServiceProvider extends BaseServiceProvider
      */
     protected function bindInboundRequest()
     {
-        $this->app->singleton(RequestInterface::class, IlluminateRequest::class);
-        $this->app->alias(RequestInterface::class, 'json-api.request');
+        $this->app->singleton(JsonApiRequest::class);
+        $this->app->alias(JsonApiRequest::class, 'json-api.request');
 
         $this->app->bind(StoreInterface::class, function () {
             return json_api()->getStore();
@@ -221,6 +244,15 @@ class ServiceProvider extends BaseServiceProvider
 
         $this->app->bind(ContainerInterface::class, function () {
             return json_api()->getContainer();
+        });
+
+        $this->app->singleton(EncodingParametersInterface::class, function (Application $app) {
+            /** @var QueryParametersParserInterface $parser */
+            $parser = $app->make(HttpFactoryInterface::class)->createQueryParametersParser();
+
+            return $parser->parseQueryParameters(
+                request()->query()
+            );
         });
     }
 
@@ -248,16 +280,6 @@ class ServiceProvider extends BaseServiceProvider
     {
         $this->app->singleton(Renderer::class);
         $this->app->alias(Renderer::class, 'json-api.renderer');
-    }
-
-    /**
-     * Register generator commands with artisan
-     */
-    protected function registerArtisanCommands()
-    {
-        if ($this->app->runningInConsole()) {
-            $this->commands($this->generatorCommands);
-        }
     }
 
     /**

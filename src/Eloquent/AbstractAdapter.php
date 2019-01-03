@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2018 Cloud Creativity Limited
+ * Copyright 2019 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,13 +21,11 @@ namespace CloudCreativity\LaravelJsonApi\Eloquent;
 use CloudCreativity\LaravelJsonApi\Adapter\AbstractResourceAdapter;
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\HasManyAdapterInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\RelationshipAdapterInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Object\RelationshipInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PageInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PagingStrategyInterface;
+use CloudCreativity\LaravelJsonApi\Document\ResourceObject;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Pagination\CursorStrategy;
-use CloudCreativity\Utils\Object\StandardObjectInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations;
@@ -183,16 +181,17 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     /**
      * @inheritDoc
      */
-    public function read($resourceId, EncodingParametersInterface $parameters)
+    public function read($record, EncodingParametersInterface $parameters)
     {
         $parameters = $this->getQueryParameters($parameters);
 
         if (!empty($parameters->getFilteringParameters())) {
-            return $this->readWithFilters($resourceId, $parameters);
+            $record = $this->readWithFilters($record, $parameters);
         }
 
-        $record = parent::read($resourceId, $parameters);
-        $this->load($record, $parameters);
+        if ($record) {
+            $this->load($record, $parameters);
+        }
 
         return $record;
     }
@@ -200,24 +199,15 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     /**
      * @inheritdoc
      */
-    public function update($record, ResourceObjectInterface $resource, EncodingParametersInterface $parameters)
+    public function update($record, array $document, EncodingParametersInterface $parameters)
     {
         $parameters = $this->getQueryParameters($parameters);
 
         /** @var Model $record */
-        $record = parent::update($record, $resource, $parameters);
+        $record = parent::update($record, $document, $parameters);
         $this->load($record, $parameters);
 
         return $record;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function delete($record, EncodingParametersInterface $params)
-    {
-        /** @var Model $record */
-        return (bool) $record->delete();
     }
 
     /**
@@ -225,7 +215,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      */
     public function exists($resourceId)
     {
-        return $this->newQuery()->where($this->getQualifiedKeyName(), $resourceId)->exists();
+        return $this->findQuery($resourceId)->exists();
     }
 
     /**
@@ -233,7 +223,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      */
     public function find($resourceId)
     {
-        return $this->newQuery()->where($this->getQualifiedKeyName(), $resourceId)->first();
+        return $this->findQuery($resourceId)->first();
     }
 
     /**
@@ -241,7 +231,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      */
     public function findMany(array $resourceIds)
     {
-        return $this->newQuery()->whereIn($this->getQualifiedKeyName(), $resourceIds)->get()->all();
+        return $this->findManyQuery($resourceIds)->get()->all();
     }
 
     /**
@@ -258,17 +248,42 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     }
 
     /**
-     * Read by resource id and filters.
-     *
      * @param $resourceId
-     * @param EncodingParametersInterface $parameters
-     * @return Model
+     * @return Builder
      */
-    protected function readWithFilters($resourceId, EncodingParametersInterface $parameters)
+    protected function findQuery($resourceId)
     {
-        $query = $this->newQuery()->where($this->getQualifiedKeyName(), $resourceId);
+        return $this->newQuery()->where(
+            $this->getQualifiedKeyName(),
+            $resourceId
+        );
+    }
 
-        return $this->queryOne($query, $parameters);
+    /**
+     * @param array $resourceIds
+     * @return Builder
+     */
+    protected function findManyQuery(array $resourceIds)
+    {
+        return $this->newQuery()->whereIn(
+            $this->getQualifiedKeyName(),
+            $resourceIds
+        );
+    }
+
+    /**
+     * Does the record match the supplied filters?
+     *
+     * @param Model $record
+     * @param EncodingParametersInterface $parameters
+     * @return Model|null
+     */
+    protected function readWithFilters($record, EncodingParametersInterface $parameters)
+    {
+        $query = $this->newQuery()->whereKey($record->getKey());
+        $this->applyFilters($query, collect($parameters->getFilteringParameters()));
+
+        return $query->exists() ? $record : null;
     }
 
     /**
@@ -291,7 +306,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     /**
      * @inheritDoc
      */
-    protected function createRecord(ResourceObjectInterface $resource)
+    protected function createRecord(ResourceObject $resource)
     {
         return $this->model->newInstance();
     }
@@ -299,38 +314,10 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     /**
      * @inheritDoc
      */
-    protected function hydrateAttributes($record, StandardObjectInterface $attributes)
+    protected function destroy($record)
     {
-        if (!$record instanceof Model) {
-            throw new \InvalidArgumentException('Expecting an Eloquent model.');
-        }
-
-        $data = [];
-
-        foreach ($attributes as $field => $value) {
-            /** Skip any JSON API fields that are not to be filled. */
-            if ($this->isNotFillable($field, $record)) {
-                continue;
-            }
-
-            $key = $this->keyForAttribute($field, $record);
-            $data[$key] = $this->deserializeAttribute($value, $field, $record);
-         }
-
-        $record->fill($data);
-    }
-
-    /**
-     * Convert a JSON API attribute key into a model attribute key.
-     *
-     * @param $resourceKey
-     * @param Model $model
-     * @return string
-     * @deprecated use `modelKeyForField`
-     */
-    protected function keyForAttribute($resourceKey, Model $model)
-    {
-        return $this->modelKeyForField($resourceKey, $model);
+        /** @var Model $record */
+        return (bool) $record->delete();
     }
 
     /**
@@ -339,7 +326,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     protected function fillRelationship(
         $record,
         $field,
-        RelationshipInterface $relationship,
+        array $relationship,
         EncodingParametersInterface $parameters
     ) {
         $relation = $this->getRelated($field);
@@ -353,18 +340,18 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      * Hydrate related models after the primary record has been persisted.
      *
      * @param Model $record
-     * @param ResourceObjectInterface $resource
+     * @param ResourceObject $resource
      * @param EncodingParametersInterface $parameters
      */
-    protected function hydrateRelated(
+    protected function fillRelated(
         $record,
-        ResourceObjectInterface $resource,
+        ResourceObject $resource,
         EncodingParametersInterface $parameters
     ) {
         $relationships = $resource->getRelationships();
         $changed = false;
 
-        foreach ($relationships->getAll() as $field => $value) {
+        foreach ($relationships as $field => $value) {
             /** Skip any fields that are not fillable. */
             if ($this->isNotFillable($field, $record)) {
                 continue;
@@ -378,7 +365,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
             $relation = $this->getRelated($field);
 
             if ($this->requiresPrimaryRecordPersistence($relation)) {
-                $relation->update($record, $relationships->getRelationship($field), $parameters);
+                $relation->update($record, $value, $parameters);
                 $changed = true;
             }
         }
@@ -401,14 +388,11 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     }
 
     /**
-     * @param Model $record
-     * @return Model
+     * @inheritdoc
      */
     protected function persist($record)
     {
         $record->save();
-
-        return $record;
     }
 
     /**
@@ -502,11 +486,10 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
 
     /**
      * @return string
-     * @todo on Laravel >=5.5 can use `qualifyColumn` method.
      */
     protected function getQualifiedKeyName()
     {
-        return $this->model->getTable() . '.' . $this->getKeyName();
+        return $this->model->qualifyColumn($this->getKeyName());
     }
 
     /**

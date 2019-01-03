@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright 2018 Cloud Creativity Limited
+ * Copyright 2019 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,17 +18,15 @@
 namespace DummyApp\JsonApi\Sites;
 
 use CloudCreativity\LaravelJsonApi\Adapter\AbstractResourceAdapter;
-use CloudCreativity\LaravelJsonApi\Adapter\HydratesAttributesTrait;
-use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectInterface;
+use CloudCreativity\LaravelJsonApi\Document\ResourceObject;
 use CloudCreativity\LaravelJsonApi\Utils\Str;
 use DummyApp\Entities\Site;
 use DummyApp\Entities\SiteRepository;
+use Illuminate\Support\Collection;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 class Adapter extends AbstractResourceAdapter
 {
-
-    use HydratesAttributesTrait;
 
     /**
      * @var array
@@ -62,18 +60,6 @@ class Adapter extends AbstractResourceAdapter
     }
 
     /**
-     * @param Site $record
-     * @param EncodingParametersInterface $params
-     * @return bool
-     */
-    public function delete($record, EncodingParametersInterface $params)
-    {
-        $this->repository->remove($record);
-
-        return true;
-    }
-
-    /**
      * @inheritdoc
      */
     public function exists($resourceId)
@@ -102,26 +88,46 @@ class Adapter extends AbstractResourceAdapter
     /**
      * @inheritDoc
      */
-    protected function createRecord(ResourceObjectInterface $resource)
+    protected function createRecord(ResourceObject $resource)
     {
         return new Site($resource->getId());
     }
 
     /**
+     * @inheritDoc
+     */
+    protected function destroy($record)
+    {
+        $this->repository->remove($record);
+
+        return true;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function fillAttributes($record, Collection $attributes)
+    {
+        foreach ($attributes as $field => $value) {
+            $this->fillAttribute($record, $field, $value);
+        }
+    }
+
+    /**
      * @param object $record
-     * @param string $attrKey
+     * @param string $field
      * @param mixed $value
      * @return void
      */
-    protected function hydrateAttribute($record, $attrKey, $value)
+    protected function fillAttribute($record, $field, $value)
     {
-        $method = 'set' . Str::classify($attrKey);
+        $method = 'set' . Str::classify($field);
 
         call_user_func([$record, $method], $value);
     }
 
     /**
-     * @param Site $record
+     * @inheritdoc
      */
     protected function persist($record)
     {

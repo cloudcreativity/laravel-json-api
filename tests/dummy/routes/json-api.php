@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright 2018 Cloud Creativity Limited
+ * Copyright 2019 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,9 +30,15 @@ JsonApi::register('v1', [], function (ApiGroup $api) {
         'middleware' => 'auth',
         'has-one' => 'commentable',
     ]);
+
     $api->resource('countries', [
         'has-many' => ['users', 'posts'],
     ]);
+
+    $api->resource('downloads', [
+        'async' => true,
+    ]);
+
     $api->resource('posts', [
         'controller' => true,
         'has-one' => [
@@ -45,10 +51,13 @@ JsonApi::register('v1', [], function (ApiGroup $api) {
             'related-video' => ['only' => ['read', 'related']],
         ],
     ]);
+
     $api->resource('users', [
         'has-one' => 'phone',
     ]);
+
     $api->resource('videos');
+
     $api->resource('tags', [
         'has-many' => 'taggables',
     ]);

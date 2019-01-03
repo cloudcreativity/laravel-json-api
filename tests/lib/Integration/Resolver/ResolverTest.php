@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright 2018 Cloud Creativity Limited
+ * Copyright 2019 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,7 +71,7 @@ class ResolverTest extends TestCase
 
         $this->doRead($post)->assertRead([
             'type' => 'foobars',
-            'id' => $post->getRouteKey(),
+            'id' => $post,
             'attributes' => [
                 'title' => $post->title,
             ],
@@ -92,7 +92,7 @@ class ResolverTest extends TestCase
 
         $this->doRead($post)->assertRead([
             'type' => 'foobars',
-            'id' => $post->getRouteKey(),
+            'id' => $post,
             'attributes' => [
                 'title' => $post->title,
             ],

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2018 Cloud Creativity Limited
+ * Copyright 2019 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,10 +31,13 @@ class ResourceRegistrar
 {
 
     const KEYWORD_RELATIONSHIPS = 'relationships';
+    const KEYWORD_PROCESSES = 'queue-jobs';
     const PARAM_RESOURCE_TYPE = 'resource_type';
     const PARAM_RESOURCE_ID = 'record';
     const PARAM_RELATIONSHIP_NAME = 'relationship_name';
     const PARAM_RELATIONSHIP_INVERSE_TYPE = 'relationship_inverse_type';
+    const PARAM_PROCESS_TYPE = 'process_type';
+    const PARAM_PROCESS_ID = 'process';
 
     /**
      * @var Registrar

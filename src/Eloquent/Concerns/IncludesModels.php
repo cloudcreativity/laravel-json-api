@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright 2018 Cloud Creativity Limited
+ * Copyright 2019 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -102,14 +102,7 @@ trait IncludesModels
     protected function load($record, EncodingParametersInterface $parameters)
     {
         $relationshipPaths = $this->getRelationshipPaths($parameters->getIncludePaths());
-
-        /** Eager load anything that needs to be loaded. */
-        if (method_exists($record, 'loadMissing')) {
-            $record->loadMissing($relationshipPaths);
-        } else {
-            /** @todo remove this when dropping support for Laravel 5.4 */
-            $record->load($relationshipPaths);
-        }
+        $record->loadMissing($relationshipPaths);
     }
 
     /**

@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright 2018 Cloud Creativity Limited
+ * Copyright 2019 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Eloquent;
 
+use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
 use DummyApp\Comment;
 use DummyApp\Post;
 use DummyApp\Video;
@@ -72,6 +73,7 @@ class MorphToTest extends TestCase
         ];
 
         $id = $this
+            ->actingAs($comment->user)
             ->doCreate($data)
             ->assertCreatedWithId($data);
 
@@ -206,7 +208,7 @@ class MorphToTest extends TestCase
 
         $expected = [
             'type' => 'posts',
-            'id' => $post->getKey(),
+            'id' => (string) $post->getKey(),
             'attributes' => [
                 'title' => $post->title,
             ],

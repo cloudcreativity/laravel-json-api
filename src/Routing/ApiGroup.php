@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2018 Cloud Creativity Limited
+ * Copyright 2019 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -99,6 +99,7 @@ class ApiGroup
     {
         return [
             'default-authorizer' => $this->options->get('authorizer'),
+            'processes' => $this->api->getJobs()->getResource(),
             'prefix' => $this->api->getUrl()->getNamespace(),
             'id' => $this->options->get('id'),
         ];

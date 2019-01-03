@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright 2018 Cloud Creativity Limited
+ * Copyright 2019 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,25 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Eloquent;
+namespace CloudCreativity\LaravelJsonApi\Queue;
 
-use CloudCreativity\LaravelJsonApi\Testing\InteractsWithModels;
-use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase as BaseTestCase;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Scope;
 
-abstract class TestCase extends BaseTestCase
+class ClientJobScope implements Scope
 {
 
-    use InteractsWithModels;
+    /**
+     * @inheritDoc
+     */
+    public function apply(Builder $builder, Model $model)
+    {
+        $request = json_api_request();
+
+        if ($request->getProcessType()) {
+            $builder->where('resource_type', $request->getResourceType());
+        }
+    }
+
 }

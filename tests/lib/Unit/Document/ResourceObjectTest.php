@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright 2018 Cloud Creativity Limited
+ * Copyright 2019 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,11 @@ class ResourceObjectTest extends TestCase
     /**
      * @var array
      */
+    private $values;
+
+    /**
+     * @var ResourceObject
+     */
     private $resource;
 
     /**
@@ -35,12 +40,13 @@ class ResourceObjectTest extends TestCase
     {
         parent::setUp();
 
-        $this->resource = [
+        $this->values = [
             'type' => 'posts',
             'id' => '1',
             'attributes' => [
                 'title' => 'Hello World',
                 'content' => '...',
+                'published' => null,
             ],
             'relationships' => [
                 'author' => [
@@ -68,9 +74,11 @@ class ResourceObjectTest extends TestCase
                 ],
             ],
         ];
+        
+        $this->resource = ResourceObject::create($this->values);
     }
 
-    public function testFields()
+    public function testFields(): array
     {
         $expected = [
             'author' => [
@@ -79,6 +87,7 @@ class ResourceObjectTest extends TestCase
             ],
             'content' => '...',
             'id' => '1',
+            'published' => null,
             'tags' => [
                 [
                     'type' => 'tags',
@@ -93,199 +102,335 @@ class ResourceObjectTest extends TestCase
             'type' => 'posts',
         ];
 
-        $resource = ResourceObject::create($this->resource);
-
-        $this->assertSame($expected, $resource->all(), 'all');
-        $this->assertSame($expected, iterator_to_array($resource), 'iterator');
+        $this->assertSame($expected, $this->resource->all(), 'all');
+        $this->assertSame($expected, iterator_to_array($this->resource), 'iterator');
 
         $this->assertSame($fields = [
             'author',
             'comments', // we expect comments to be included even though it has no data.
             'content',
             'id',
+            'published',
             'tags',
             'title',
             'type',
-        ], $resource->fields()->all(), 'fields');
+        ], $this->resource->fields()->all(), 'fields');
 
-        $this->assertTrue($resource->has(...$fields), 'has all fields');
-        $this->assertFalse($resource->has('title', 'foobar'), 'does not have field');
+        $this->assertTrue($this->resource->has(...$fields), 'has all fields');
+        $this->assertFalse($this->resource->has('title', 'foobar'), 'does not have field');
+
+        return $expected;
+    }
+
+    public function testFieldsWithEmptyToOne(): void
+    {
+        $this->values['relationships']['author']['data'] = null;
+
+        $expected = [
+            'author' => null,
+            'content' => '...',
+            'id' => '1',
+            'published' => null,
+            'tags' => [
+                [
+                    'type' => 'tags',
+                    'id' => '4',
+                ],
+                [
+                    'type' => 'tags',
+                    'id' => '5',
+                ],
+            ],
+            'title' => 'Hello World',
+            'type' => 'posts',
+        ];
+
+        $resource = ResourceObject::create($this->values);
+        $this->assertSame($expected, $resource->all());
+        $this->assertNull($resource['author']);
+        $this->assertNull($resource->get('author', true));
+    }
+
+    /**
+     * @param array $expected
+     * @depends testFields
+     */
+    public function testGetValue(array $expected): void
+    {
+        foreach ($expected as $field => $value) {
+            $this->assertTrue(isset($this->resource[$field]), "$field exists as array");
+            $this->assertTrue(isset($this->resource[$field]), "$field exists as object");
+            $this->assertSame($value, $this->resource[$field], "$field array value");
+            $this->assertSame($value, $this->resource->{$field}, "$field object value");
+            $this->assertSame($value, $this->resource->get($field), "$field get value");
+        }
+
+        $this->assertFalse(isset($this->resource['foo']), 'foo does not exist');
+    }
+
+    public function testGetWithDotNotation(): void
+    {
+        $this->assertSame('123', $this->resource->get('author.id'));
+    }
+
+    public function testGetWithDefault(): void
+    {
+        $this->assertSame('123', $this->resource->get('author.id', true));
+        $this->assertNull($this->resource->get('published', true));
+        $this->assertTrue($this->resource->get('foobar', true));
+    }
+
+    /**
+     * Fields share a common namespace, so if there is a duplicate field
+     * name in the attributes and relationships, we expect an exception as the resource
+     * is not valid.
+     */
+    public function testDuplicateFields(): void
+    {
+        $this->values['attributes']['author'] = null;
+
+        $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage('same field names');
+        ResourceObject::create($this->values);
+    }
+
+    public function testCannotSetOffset(): void
+    {
+        $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage('immutable');
+        $this->resource['foo'] = 'bar';
+    }
+
+    public function testCannotUnsetOffset(): void
+    {
+        $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage('immutable');
+        unset($this->resource['content']);
+    }
+
+    public function testCannotUnset(): void
+    {
+        $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage('immutable');
+        unset($this->resource->content);
+    }
+
+    public function testCannotSet(): void
+    {
+        $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage('immutable');
+        $this->resource['foo'] = 'bar';
     }
 
     /**
      * @return array
      */
-    public function pointerProvider()
+    public function pointerProvider(): array
     {
         return [
-            ['type', '/data/type'],
-            ['id', '/data/id'],
-            ['title', '/data/attributes/title'],
-            ['title.foo.bar', '/data/attributes/title/foo/bar'],
-            ['author', '/data/relationships/author'],
-            ['author.type', '/data/relationships/author/data/type'],
-            ['tags.0.id', '/data/relationships/tags/data/0/id'],
-            ['comments', '/data/relationships/comments'],
-            ['foo', '/data'],
+            ['type', '/type'],
+            ['id', '/id'],
+            ['title', '/attributes/title'],
+            ['title.foo.bar', '/attributes/title/foo/bar'],
+            ['author', '/relationships/author'],
+            ['author.type', '/relationships/author/data/type'],
+            ['tags.0.id', '/relationships/tags/data/0/id'],
+            ['comments', '/relationships/comments'],
+            ['foo', '/'],
         ];
     }
 
     /**
-     * @param $key
-     * @param $expected
+     * @param string $key
+     * @param string $expected
      * @dataProvider pointerProvider
      */
-    public function testPointer($key, $expected)
+    public function testPointer(string $key, string $expected): void
     {
-        $resource = ResourceObject::create($this->resource);
-
-        $this->assertSame($expected, $resource->pointer($key));
+        $this->assertSame($expected, $this->resource->pointer($key));
+        $this->assertSame($expected, $this->resource->pointer($key, '/'), 'with slash prefix');
     }
 
-    public function testForget()
+    /**
+     * @param string $key
+     * @param string $expected
+     * @dataProvider pointerProvider
+     */
+    public function testPointerWithPrefix(string $key, string $expected): void
     {
-        $expected = $this->resource;
+        // @see https://github.com/cloudcreativity/laravel-json-api/issues/255
+        $expected = rtrim("/data" . $expected, '/');
+
+        $this->assertSame($expected, $this->resource->pointer($key, '/data'));
+    }
+
+    public function testForget(): void
+    {
+        $expected = $this->values;
         unset($expected['attributes']['content']);
         unset($expected['relationships']['comments']);
 
-        $resource = ResourceObject::create($this->resource);
-
-        $this->assertNotSame($resource, $actual = $resource->forget('content', 'comments'));
-        $this->assertSame($this->resource, $resource->toArray(), 'original resource is not modified');
+        $this->assertNotSame($this->resource, $actual = $this->resource->forget('content', 'comments'));
+        $this->assertSame($this->values, $this->resource->toArray(), 'original resource is not modified');
         $this->assertSame($expected, $actual->toArray());
     }
 
-    public function testOnly()
+    public function testOnly(): void
     {
         $expected = [
-            'type' => $this->resource['type'],
-            'id' => $this->resource['id'],
+            'type' => $this->values['type'],
+            'id' => $this->values['id'],
             'attributes' => [
-                'content' => $this->resource['attributes']['content'],
+                'content' => $this->values['attributes']['content'],
             ],
             'relationships' => [
-                'comments' => $this->resource['relationships']['comments'],
+                'comments' => $this->values['relationships']['comments'],
             ],
         ];
 
-        $resource = ResourceObject::create($this->resource);
-
-        $this->assertNotSame($resource, $actual = $resource->only('content', 'comments'));
-        $this->assertSame($this->resource, $resource->toArray(), 'original resource is not modified');
+        $this->assertNotSame($this->resource, $actual = $this->resource->only('content', 'comments'));
+        $this->assertSame($this->values, $this->resource->toArray(), 'original resource is not modified');
         $this->assertSame($expected, $actual->toArray());
     }
 
-    public function testReplaceAttribute()
+    public function testReplaceTypeAndId(): void
     {
-        $expected = $this->resource;
+        $expected = $this->values;
+        $expected['type'] = 'foobars';
+        $expected['id'] = '999';
+
+        $actual = $this->resource
+            ->replace('type', 'foobars')
+            ->replace('id', '999');
+
+        $this->assertNotSame($this->resource, $actual);
+        $this->assertSame($this->values, $this->resource->toArray(), 'original resource is not modified');
+        $this->assertSame($expected, $actual->toArray());
+    }
+
+    public function testReplaceAttribute(): void
+    {
+        $expected = $this->values;
         $expected['attributes']['content'] = 'My first post.';
 
-        $resource = ResourceObject::create($this->resource);
-
-        $this->assertNotSame($resource, $actual = $resource->replace('content', 'My first post.'));
-        $this->assertSame($this->resource, $resource->toArray(), 'original resource is not modified');
+        $this->assertNotSame($this->resource, $actual = $this->resource->replace('content', 'My first post.'));
+        $this->assertSame($this->values, $this->resource->toArray(), 'original resource is not modified');
         $this->assertSame($expected, $actual->toArray());
     }
 
-    public function testReplaceRelationship()
+    public function testReplaceToOne(): void
+    {
+        $author = ['type' => 'users', 'id' => '999'];
+
+        $expected = $this->values;
+        $expected['relationships']['author']['data'] = $author;
+
+        $this->assertNotSame($this->resource, $actual = $this->resource->replace('author', $author));
+        $this->assertSame($this->values, $this->resource->toArray(), 'original resource is not modified');
+        $this->assertSame($expected, $actual->toArray());
+    }
+
+    public function testReplaceToOneNull(): void
+    {
+        $expected = $this->values;
+        $expected['relationships']['author']['data'] = null;
+
+        $this->assertNotSame($this->resource, $actual = $this->resource->replace('author', null));
+        $this->assertSame($this->values, $this->resource->toArray(), 'original resource is not modified');
+        $this->assertSame($expected, $actual->toArray());
+    }
+
+    public function testReplaceToMany(): void
     {
         $comments = [
             ['type' => 'comments', 'id' => '123456'],
         ];
 
-        $expected = $this->resource;
+        $expected = $this->values;
         $expected['relationships']['comments']['data'] = $comments;
 
-        $resource = ResourceObject::create($this->resource);
-
-        $this->assertNotSame($resource, $actual = $resource->replace('comments', $comments));
-        $this->assertSame($this->resource, $resource->toArray(), 'original resource is not modified');
+        $this->assertNotSame($this->resource, $actual = $this->resource->replace('comments', $comments));
+        $this->assertSame($this->values, $this->resource->toArray(), 'original resource is not modified');
         $this->assertSame($expected, $actual->toArray());
     }
 
-    public function testWithType()
+    public function testWithType(): void
     {
-        $expected = $this->resource;
+        $expected = $this->values;
         $expected['type'] = 'foobar';
 
-        $resource = ResourceObject::create($this->resource);
-
-        $this->assertNotSame($resource, $actual = $resource->withType('foobar'));
-        $this->assertSame($this->resource, $resource->toArray(), 'original resource is not modified');
+        $this->assertNotSame($this->resource, $actual = $this->resource->withType('foobar'));
+        $this->assertSame($this->values, $this->resource->toArray(), 'original resource is not modified');
         $this->assertSame($expected, $actual->toArray());
     }
 
-    public function testWithoutId()
+    public function testWithoutId(): void
     {
-        $expected = $this->resource;
+        $expected = $this->values;
         unset($expected['id']);
 
-        $resource = ResourceObject::create($this->resource);
-
-        $this->assertNotSame($resource, $actual = $resource->withoutId());
-        $this->assertSame($this->resource, $resource->toArray(), 'original resource is not modified');
+        $this->assertNotSame($this->resource, $actual = $this->resource->withoutId());
+        $this->assertSame($this->values, $this->resource->toArray(), 'original resource is not modified');
         $this->assertSame($expected, $actual->toArray());
     }
 
-    public function testWithId()
+    public function testWithId(): void
     {
-        $expected = $this->resource;
+        $expected = $this->values;
         $expected['id'] = '99';
 
-        $resource = ResourceObject::create($this->resource);
-
-        $this->assertNotSame($resource, $actual = $resource->withId('99'));
-        $this->assertSame($this->resource, $resource->toArray(), 'original resource is not modified');
+        $this->assertNotSame($this->resource, $actual = $this->resource->withId('99'));
+        $this->assertSame($this->values, $this->resource->toArray(), 'original resource is not modified');
         $this->assertSame($expected, $actual->toArray());
     }
 
-    public function testWithAttributes()
+    public function testWithAttributes(): void
     {
-        $expected = $this->resource;
+        $expected = $this->values;
         $expected['attributes'] = ['foo' => 'bar'];
 
-        $resource = ResourceObject::create($this->resource);
-
-        $this->assertNotSame($resource, $actual = $resource->withAttributes($expected['attributes']));
-        $this->assertSame($this->resource, $resource->toArray(), 'original resource is not modified');
+        $this->assertNotSame($this->resource, $actual = $this->resource->withAttributes($expected['attributes']));
+        $this->assertSame($this->values, $this->resource->toArray(), 'original resource is not modified');
         $this->assertSame($expected, $actual->toArray());
     }
 
-    public function testWithoutAttributes()
+    public function testWithoutAttributes(): void
     {
-        $expected = $this->resource;
+        $expected = $this->values;
         unset($expected['attributes']);
 
-        $resource = ResourceObject::create($this->resource);
-
-        $this->assertNotSame($resource, $actual = $resource->withoutAttributes());
-        $this->assertSame($this->resource, $resource->toArray(), 'original resource is not modified');
+        $this->assertNotSame($this->resource, $actual = $this->resource->withoutAttributes());
+        $this->assertSame($this->values, $this->resource->toArray(), 'original resource is not modified');
         $this->assertSame($expected, $actual->toArray());
     }
 
-    public function testWithRelationships()
+    public function testWithRelationships(): void
     {
-        $expected = $this->resource;
+        $expected = $this->values;
         $expected['relationships'] = [
             'foo' => ['data' => ['type' => 'foos', 'id' => 'bar']]
         ];
 
-        $resource = ResourceObject::create($this->resource);
-
-        $this->assertNotSame($resource, $actual = $resource->withRelationships($expected['relationships']));
-        $this->assertSame($this->resource, $resource->toArray(), 'original resource is not modified');
+        $this->assertNotSame($this->resource, $actual = $this->resource->withRelationships($expected['relationships']));
+        $this->assertSame($this->values, $this->resource->toArray(), 'original resource is not modified');
         $this->assertSame($expected, $actual->toArray());
     }
 
-    public function testWithoutRelationships()
+    public function testWithoutRelationships(): void
     {
-        $expected = $this->resource;
+        $expected = $this->values;
         unset($expected['relationships']);
 
-        $resource = ResourceObject::create($this->resource);
-
-        $this->assertNotSame($resource, $actual = $resource->withoutRelationships());
-        $this->assertSame($this->resource, $resource->toArray(), 'original resource is not modified');
+        $this->assertNotSame($this->resource, $actual = $this->resource->withoutRelationships());
+        $this->assertSame($this->values, $this->resource->toArray(), 'original resource is not modified');
         $this->assertSame($expected, $actual->toArray());
+    }
+
+    public function testJsonSerialize(): void
+    {
+        $this->assertJsonStringEqualsJsonString(
+            json_encode($this->values),
+            json_encode($this->resource)
+        );
     }
 }

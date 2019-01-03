@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2018 Cloud Creativity Limited
+ * Copyright 2019 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,10 +21,11 @@ namespace CloudCreativity\LaravelJsonApi\Services;
 use Closure;
 use CloudCreativity\LaravelJsonApi\Api\Api;
 use CloudCreativity\LaravelJsonApi\Api\Repository;
-use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\Responses\ErrorResponseInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Utils\ErrorReporterInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
+use CloudCreativity\LaravelJsonApi\Http\Requests\JsonApiRequest;
+use CloudCreativity\LaravelJsonApi\LaravelJsonApi;
 use CloudCreativity\LaravelJsonApi\Routing\ResourceRegistrar;
 use Exception;
 use Illuminate\Contracts\Container\Container;
@@ -43,11 +44,6 @@ class JsonApiService
     private $container;
 
     /**
-     * @var string
-     */
-    private $default;
-
-    /**
      * JsonApiService constructor.
      *
      * @param Container $container
@@ -55,7 +51,6 @@ class JsonApiService
     public function __construct(Container $container)
     {
         $this->container = $container;
-        $this->default = 'default';
     }
 
     /**
@@ -63,18 +58,17 @@ class JsonApiService
      *
      * @param string|null $apiName
      * @return string
+     * @deprecated 2.0.0 setting the API name via this method will be removed (getter will remain).
      */
     public function defaultApi($apiName = null)
     {
         if (is_null($apiName)) {
-            return $this->default;
+            return LaravelJsonApi::$defaultApi;
         }
 
-        if (!is_string($apiName) || empty($apiName)) {
-            throw new \InvalidArgumentException('Expecting a non-empty string API name.');
-        }
+        LaravelJsonApi::defaultApi($apiName);
 
-        return $this->default = $apiName;
+        return $apiName;
     }
 
     /**
@@ -90,13 +84,13 @@ class JsonApiService
         /** @var Repository $repo */
         $repo = $this->container->make(Repository::class);
 
-        return $repo->createApi($apiName ?: $this->default);
+        return $repo->createApi($apiName ?: $this->defaultApi());
     }
 
     /**
      * Get the JSON API request, if there is an inbound API handling the request.
      *
-     * @return RequestInterface|null
+     * @return JsonApiRequest|null
      */
     public function request()
     {
@@ -110,7 +104,7 @@ class JsonApiService
     /**
      * Get the inbound JSON API request.
      *
-     * @return RequestInterface
+     * @return JsonApiRequest
      */
     public function requestOrFail()
     {
@@ -219,7 +213,7 @@ class JsonApiService
     /**
      * Get the current JSON API request, if one has been bound into the container.
      *
-     * @return RequestInterface
+     * @return JsonApiRequest
      * @deprecated 1.0.0 use `request()`
      */
     public function getRequest()

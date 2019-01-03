@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright 2018 Cloud Creativity Limited
+ * Copyright 2019 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Eloquent;
 
+use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
 use DummyApp\Post;
 use DummyApp\User;
 
@@ -209,7 +210,7 @@ class BelongsToTest extends TestCase
 
         $expected = [
             'type' => 'users',
-            'id' => $user->getKey(),
+            'id' => (string) $user->getKey(),
             'attributes' => [
                 'name' => $user->name,
             ],
@@ -235,7 +236,7 @@ class BelongsToTest extends TestCase
         $post = factory(Post::class)->create();
 
         $this->doReadRelationship($post, 'author')
-            ->assertReadHasOneIdentifier('users', $post->author_id);
+            ->assertReadHasOneIdentifier('users', (string) $post->author_id);
     }
 
     public function testReadEmptyRelationship()

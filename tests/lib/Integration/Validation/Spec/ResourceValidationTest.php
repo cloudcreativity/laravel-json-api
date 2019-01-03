@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright 2018 Cloud Creativity Limited
+ * Copyright 2019 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -107,6 +107,21 @@ class ResourceValidationTest extends TestCase
                     'source' => ['pointer' => '/data/type'],
                 ],
             ],
+            'data.id:client id not allowed' => [
+                [
+                    'data' => [
+                        'type' => 'posts',
+                        'id' => 'foobar',
+                        'attributes' => ['title' => 'Hello World'],
+                    ],
+                ],
+                [
+                    'title' => 'Not Supported',
+                    'detail' => 'Resource type posts does not support client-generated IDs.',
+                    'status' => '403',
+                    'source' => ['pointer' => '/data/id'],
+                ],
+            ],
             'data.attributes:not object' => [
                 [
                     'data' => [
@@ -117,6 +132,38 @@ class ResourceValidationTest extends TestCase
                 [
                     'title' => 'Non-Compliant JSON API Document',
                     'detail' => "The member attributes must be an object.",
+                    'status' => '400',
+                    'source' => ['pointer' => '/data/attributes'],
+                ],
+            ],
+            'data.attributes:type not allowed' => [
+                [
+                    'data' => [
+                        'type' => 'posts',
+                        'attributes' => [
+                            'type' => 'foo',
+                        ],
+                    ],
+                ],
+                [
+                    'title' => 'Non-Compliant JSON API Document',
+                    'detail' => "The member attributes cannot have a type field.",
+                    'status' => '400',
+                    'source' => ['pointer' => '/data/attributes'],
+                ],
+            ],
+            'data.attributes:id not allowed' => [
+                [
+                    'data' => [
+                        'type' => 'posts',
+                        'attributes' => [
+                            'id' => '123',
+                        ],
+                    ],
+                ],
+                [
+                    'title' => 'Non-Compliant JSON API Document',
+                    'detail' => "The member attributes cannot have a id field.",
                     'status' => '400',
                     'source' => ['pointer' => '/data/attributes'],
                 ],
@@ -136,6 +183,42 @@ class ResourceValidationTest extends TestCase
                 [
                     'title' => 'Non-Compliant JSON API Document',
                     'detail' => "The member relationships must be an object.",
+                    'status' => '400',
+                    'source' => ['pointer' => '/data/relationships'],
+                ],
+            ],
+            'data.relationships:type not allowed' => [
+                [
+                    'data' => [
+                        'type' => 'posts',
+                        'relationships' => [
+                            'type' => [
+                                'data' => null,
+                            ],
+                        ],
+                    ],
+                ],
+                [
+                    'title' => 'Non-Compliant JSON API Document',
+                    'detail' => "The member relationships cannot have a type field.",
+                    'status' => '400',
+                    'source' => ['pointer' => '/data/relationships'],
+                ],
+            ],
+            'data.relationships:id not allowed' => [
+                [
+                    'data' => [
+                        'type' => 'posts',
+                        'relationships' => [
+                            'id' => [
+                                'data' => null,
+                            ],
+                        ],
+                    ],
+                ],
+                [
+                    'title' => 'Non-Compliant JSON API Document',
+                    'detail' => "The member relationships cannot have a id field.",
                     'status' => '400',
                     'source' => ['pointer' => '/data/relationships'],
                 ],
@@ -268,6 +351,9 @@ class ResourceValidationTest extends TestCase
                             'slug' => 'hello-world',
                         ],
                         'relationships' => [
+                            'author' => [
+                                'data' => null,
+                            ],
                             'tags' => [
                                 'data' => [
                                     [
@@ -283,6 +369,27 @@ class ResourceValidationTest extends TestCase
                     'detail' => "The member type is required.",
                     'status' => '400',
                     'source' => ['pointer' => '/data/relationships/tags/data/0'],
+                ],
+            ],
+            'fields:duplicate' => [
+                [
+                    'data' => [
+                        'type' => 'posts',
+                        'attributes' => [
+                            'author' => null,
+                        ],
+                        'relationships' => [
+                            'author' => [
+                                'data' => null,
+                            ],
+                        ],
+                    ],
+                ],
+                [
+                    'title' => 'Non-Compliant JSON API Document',
+                    'detail' => 'The author field cannot exist as an attribute and a relationship.',
+                    'status' => '400',
+                    'source' => ['pointer' => '/data'],
                 ],
             ],
         ];
@@ -379,8 +486,7 @@ class ResourceValidationTest extends TestCase
     public function testPost($data, array $error)
     {
         $this->doInvalidRequest('/api/v1/posts', $data)
-            ->assertStatus((int) $error['status'])
-            ->assertExactJson(['errors' => [$error]]);
+            ->assertErrorStatus($error);
     }
 
     /**
@@ -397,8 +503,7 @@ class ResourceValidationTest extends TestCase
         }
 
         $this->doInvalidRequest("/api/v1/posts/{$post->getKey()}", $data, 'PATCH')
-            ->assertStatus((int) $error['status'])
-            ->assertExactJson(['errors' => [$error]]);
+            ->assertErrorStatus($error);
     }
 
     /**

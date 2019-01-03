@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright 2018 Cloud Creativity Limited
+ * Copyright 2019 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,17 @@ use Illuminate\Support\Str;
  */
 abstract class AbstractValidators implements ValidatorFactoryInterface
 {
+
+    /**
+     * Whether the resource supports client-generated ids.
+     *
+     * A boolean to indicate whether client-generated ids are accepted. If
+     * null, this will be worked out based on whether there are any validation
+     * rules for the resource's `id` member.
+     *
+     * @var bool|null
+     */
+    protected $clientIds;
 
     /**
      * Custom messages for the resource validator.
@@ -122,6 +133,16 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
     protected $allowedFieldSets = null;
 
     /**
+     * Whether existing resource attributes should be validated on for an update.
+     *
+     * If this is set to false, the validator instance will not be provided with the
+     * resource's existing attribute values when validating an update (PATCH) request.
+     *
+     * @var bool
+     */
+    protected $validateExisting = true;
+
+    /**
      * @var Factory
      */
     private $factory;
@@ -157,6 +178,18 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
     {
         $this->factory = $factory;
         $this->container = $container;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function supportsClientIds(): bool
+    {
+        if (is_bool($this->clientIds)) {
+            return $this->clientIds;
+        }
+
+        return $this->clientIds = collect($this->rules())->has('id');
     }
 
     /**
@@ -303,7 +336,7 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
      * > attributes as null values.
      *
      * So that the validator has access to the current values of attributes, we
-     * merge to provided new attributes over the top of the existing attribute
+     * merge attributes provided by the client over the top of the existing attribute
      * values.
      *
      * @param mixed $record
@@ -316,12 +349,36 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
     {
         $resource = $document['data'];
 
-        $resource['attributes'] = $this->extractAttributes(
-            $record,
-            isset($resource['attributes']) ? $resource['attributes'] : []
-        )->all();
+        if ($this->mustValidateExisting($record, $document)) {
+            $resource['attributes'] = $this->extractAttributes(
+                $record,
+                $resource['attributes'] ?? []
+            );
+
+            $resource['relationships'] = $this->extractRelationships(
+                $record,
+                $resource['relationships'] ?? []
+            );
+        }
 
         return $resource;
+    }
+
+    /**
+     * Should existing resource values be provided to the validator for an update request?
+     *
+     * Child classes can overload this method if they need to programmatically work out
+     * if existing values must be provided to the validator instance for an update request.
+     *
+     * @param mixed $record
+     *      the record being updated
+     * @param array $document
+     *      the JSON API document provided by the client.
+     * @return bool
+     */
+    protected function mustValidateExisting($record, array $document): bool
+    {
+        return false !== $this->validateExisting;
     }
 
     /**
@@ -329,22 +386,49 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
      *
      * @param $record
      * @param array $new
-     * @return Collection
+     * @return array
      */
-    protected function extractAttributes($record, array $new): Collection
+    protected function extractAttributes($record, array $new): array
     {
-        return $this->existingValues($record)->merge($new);
+        return collect($this->existingAttributes($record))->merge($new)->all();
     }
 
     /**
-     * Get any existing values for the provided record.
+     * Get any existing attributes for the provided record.
      *
      * @param $record
-     * @return Collection
+     * @return iterable
      */
-    protected function existingValues($record): Collection
+    protected function existingAttributes($record): iterable
     {
-        return collect($this->container->getSchema($record)->getAttributes($record));
+        return $this->container->getSchema($record)->getAttributes($record);
+    }
+
+    /**
+     * Extract relationships for a resource update.
+     *
+     * @param $record
+     * @param array $new
+     * @return array
+     */
+    protected function extractRelationships($record, array $new): array
+    {
+        return collect($this->existingRelationships($record))->merge($new)->all();
+    }
+
+    /**
+     * Get any existing relationships for the provided record.
+     *
+     * As there is no reliable way for us to work this out (as we do not
+     * know the relationship keys), child classes should overload this method
+     * to add existing relationship data.
+     *
+     * @param $record
+     * @return iterable
+     */
+    protected function existingRelationships($record): iterable
+    {
+        return [];
     }
 
     /**

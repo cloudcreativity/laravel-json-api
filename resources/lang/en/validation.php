@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright 2018 Cloud Creativity Limited
+ * Copyright 2019 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,6 +56,8 @@ return [
         'singular' => 'Page parameter :values is not allowed.',
         'plural' => 'Page parameters :values are not allowed.',
     ],
+
+    'date_time_iso_8601' => 'The :attribute is not a valid ISO 8601 date and time.',
 
     'disallowed_parameter' => 'Parameter :name is not allowed.',
 ];

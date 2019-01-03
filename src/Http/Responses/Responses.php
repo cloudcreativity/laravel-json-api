@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2018 Cloud Creativity Limited
+ * Copyright 2019 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,10 @@ namespace CloudCreativity\LaravelJsonApi\Http\Responses;
 use CloudCreativity\LaravelJsonApi\Contracts\Factories\FactoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\Responses\ErrorResponseInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PageInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Queue\AsynchronousProcess;
 use CloudCreativity\LaravelJsonApi\Contracts\Repositories\ErrorRepositoryInterface;
+use CloudCreativity\LaravelJsonApi\Document\Error;
+use Illuminate\Http\Response;
 use Neomerx\JsonApi\Contracts\Codec\CodecMatcherInterface;
 use Neomerx\JsonApi\Contracts\Document\DocumentInterface;
 use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
@@ -87,10 +90,8 @@ class Responses extends BaseResponses
      */
     public static function create($apiName = null)
     {
-        $api = json_api($apiName);
-        $request = json_api_request();
-
-        return $api->response($request ? $request->getParameters() : null);
+        return json_api($apiName)
+            ->response(app(EncodingParametersInterface::class));
     }
 
     /**
@@ -147,9 +148,24 @@ class Responses extends BaseResponses
      * @param array $headers
      * @return mixed
      */
-    public function meta($meta, $statusCode = 200, array $headers = [])
+    public function meta($meta, $statusCode = self::HTTP_OK, array $headers = [])
     {
         return $this->getMetaResponse($meta, $statusCode, $headers);
+    }
+
+    /**
+     * @param array $links
+     * @param $meta
+     * @param int $statusCode
+     * @param array $headers
+     * @return mixed
+     */
+    public function noData(array $links = [], $meta = null, $statusCode = self::HTTP_OK, array $headers = [])
+    {
+        $encoder = $this->getEncoder();
+        $content = $encoder->withLinks($links)->encodeMeta($meta ?: []);
+
+        return $this->createJsonApiResponse($content, $statusCode, $headers, true);
     }
 
     /**
@@ -194,9 +210,88 @@ class Responses extends BaseResponses
      * @param array $headers
      * @return mixed
      */
-    public function created($resource, array $links = [], $meta = null, array $headers = [])
+    public function created($resource = null, array $links = [], $meta = null, array $headers = [])
     {
+        if ($this->isNoContent($resource, $links, $meta)) {
+            return $this->noContent();
+        }
+
+        if (is_null($resource)) {
+            return $this->noData($links, $meta, self::HTTP_OK, $headers);
+        }
+
+        if ($this->isAsync($resource)) {
+            return $this->accepted($resource, $links, $meta, $headers);
+        }
+
         return $this->getCreatedResponse($resource, $links, $meta, $headers);
+    }
+
+    /**
+     * Return a response for a resource update request.
+     *
+     * @param $resource
+     * @param array $links
+     * @param mixed $meta
+     * @param array $headers
+     * @return mixed
+     */
+    public function updated(
+        $resource = null,
+        array $links = [],
+        $meta = null,
+        array $headers = []
+    ) {
+        return $this->getResourceResponse($resource, $links, $meta, $headers);
+    }
+
+    /**
+     * Return a response for a resource delete request.
+     *
+     * @param mixed|null $resource
+     * @param array $links
+     * @param mixed|null $meta
+     * @param array $headers
+     * @return mixed
+     */
+    public function deleted(
+        $resource = null,
+        array $links = [],
+        $meta = null,
+        array $headers = []
+    ) {
+        return $this->getResourceResponse($resource, $links, $meta, $headers);
+    }
+
+    /**
+     * @param AsynchronousProcess $job
+     * @param array $links
+     * @param null $meta
+     * @param array $headers
+     * @return mixed
+     */
+    public function accepted(AsynchronousProcess $job, array $links = [], $meta = null, array $headers = [])
+    {
+        $headers['Content-Location'] = $this->getResourceLocationUrl($job);
+
+        return $this->getContentResponse($job, Response::HTTP_ACCEPTED, $links, $meta, $headers);
+    }
+
+    /**
+     * @param AsynchronousProcess $job
+     * @param array $links
+     * @param null $meta
+     * @param array $headers
+     * @return \Illuminate\Http\RedirectResponse|mixed
+     */
+    public function process(AsynchronousProcess $job, array $links = [], $meta = null, array $headers = [])
+    {
+        if (!$job->isPending() && $location = $job->getLocation()) {
+            $headers['Location'] = $location;
+            return $this->createJsonApiResponse(null, Response::HTTP_SEE_OTHER, $headers);
+        }
+
+        return $this->getContentResponse($job, self::HTTP_OK, $links, $meta, $headers);
     }
 
     /**
@@ -240,17 +335,31 @@ class Responses extends BaseResponses
     }
 
     /**
-     * @param mixed $errors
+     * Create a response containing a single error.
+     *
+     * @param string|array|ErrorInterface $error
      * @param int|null $defaultStatusCode
      * @param array $headers
      * @return mixed
      */
-    public function error($errors, $defaultStatusCode = null, array $headers = [])
+    public function error($error, $defaultStatusCode = null, array $headers = [])
     {
-        return $this->errors($errors, $defaultStatusCode, $headers);
+        if (is_string($error)) {
+            $error = $this->errorRepository->error($error);
+        } else if (is_array($error)) {
+            $error = Error::create($error);
+        }
+
+        if (!$error instanceof ErrorInterface) {
+            throw new \InvalidArgumentException('Expecting a string, array or error object.');
+        }
+
+        return $this->errors($error, $defaultStatusCode, $headers);
     }
 
     /**
+     * Create a response containing multiple errors.
+     *
      * @param mixed $errors
      * @param int|null $defaultStatusCode
      * @param array $headers
@@ -262,12 +371,8 @@ class Responses extends BaseResponses
             return $this->getErrorResponse($errors);
         }
 
-        if (is_string($errors)) {
-            $errors = $this->errorRepository->error($errors);
-        }
-
         if (is_array($errors)) {
-            $errors = $this->errorRepository->errors($errors);
+            $errors = $this->errorRepository->errors(...$errors);
         }
 
         return $this->errors(
@@ -293,6 +398,30 @@ class Responses extends BaseResponses
         }
 
         return parent::getErrorResponse($errors, $statusCode, $headers);
+    }
+
+    /**
+     * @param $resource
+     * @param array $links
+     * @param null $meta
+     * @param array $headers
+     * @return mixed
+     */
+    protected function getResourceResponse($resource, array $links = [], $meta = null, array $headers = [])
+    {
+        if ($this->isNoContent($resource, $links, $meta)) {
+            return $this->noContent();
+        }
+
+        if (is_null($resource)) {
+            return $this->noData($links, $meta, self::HTTP_OK, $headers);
+        }
+
+        if ($this->isAsync($resource)) {
+            return $this->accepted($resource, $links, $meta, $headers);
+        }
+
+        return $this->getContentResponse($resource, self::HTTP_OK, $links, $meta, $headers);
     }
 
     /**
@@ -360,6 +489,30 @@ class Responses extends BaseResponses
     protected function createResponse($content, $statusCode, array $headers)
     {
         return response($content, $statusCode, $headers);
+    }
+
+    /**
+     * Does a no content response need to be returned?
+     *
+     * @param $resource
+     * @param $links
+     * @param $meta
+     * @return bool
+     */
+    protected function isNoContent($resource, $links, $meta)
+    {
+        return is_null($resource) && empty($links) && empty($meta);
+    }
+
+    /**
+     * Does the data represent an asynchronous process?
+     *
+     * @param $data
+     * @return bool
+     */
+    protected function isAsync($data)
+    {
+        return $data instanceof AsynchronousProcess;
     }
 
     /**

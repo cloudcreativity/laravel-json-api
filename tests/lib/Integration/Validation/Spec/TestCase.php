@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright 2018 Cloud Creativity Limited
+ * Copyright 2019 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Validation\Spec;
 
+use CloudCreativity\LaravelJsonApi\Testing\TestResponse;
 use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase as BaseTestCase;
 
 abstract class TestCase extends BaseTestCase
@@ -26,7 +27,7 @@ abstract class TestCase extends BaseTestCase
      * @param $uri
      * @param $content
      * @param $method
-     * @return \Illuminate\Foundation\Testing\TestResponse
+     * @return TestResponse
      */
     protected function doInvalidRequest($uri, $content, $method = 'POST')
     {

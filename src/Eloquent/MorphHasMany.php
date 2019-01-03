@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright 2018 Cloud Creativity Limited
+ * Copyright 2019 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@
 namespace CloudCreativity\LaravelJsonApi\Eloquent;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\HasManyAdapterInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Object\RelationshipInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PageInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreAwareInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
@@ -107,7 +106,7 @@ class MorphHasMany implements HasManyAdapterInterface, StoreAwareInterface
     /**
      * @inheritdoc
      */
-    public function update($record, RelationshipInterface $relationship, EncodingParametersInterface $parameters)
+    public function update($record, array $relationship, EncodingParametersInterface $parameters)
     {
         foreach ($this->adapters as $adapter) {
             $adapter->update($record, $relationship, $parameters);
@@ -119,7 +118,7 @@ class MorphHasMany implements HasManyAdapterInterface, StoreAwareInterface
     /**
      * @inheritDoc
      */
-    public function replace($record, RelationshipInterface $relationship, EncodingParametersInterface $parameters)
+    public function replace($record, array $relationship, EncodingParametersInterface $parameters)
     {
         foreach ($this->adapters as $adapter) {
             $adapter->replace($record, $relationship, $parameters);
@@ -131,7 +130,7 @@ class MorphHasMany implements HasManyAdapterInterface, StoreAwareInterface
     /**
      * @inheritDoc
      */
-    public function add($record, RelationshipInterface $relationship, EncodingParametersInterface $parameters)
+    public function add($record, array $relationship, EncodingParametersInterface $parameters)
     {
         foreach ($this->adapters as $adapter) {
             $adapter->add($record, $relationship, $parameters);
@@ -143,7 +142,7 @@ class MorphHasMany implements HasManyAdapterInterface, StoreAwareInterface
     /**
      * @inheritDoc
      */
-    public function remove($record, RelationshipInterface $relationship, EncodingParametersInterface $parameters)
+    public function remove($record, array $relationship, EncodingParametersInterface $parameters)
     {
         foreach ($this->adapters as $adapter) {
             $adapter->remove($record, $relationship, $parameters);

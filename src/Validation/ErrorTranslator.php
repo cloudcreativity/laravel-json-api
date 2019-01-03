@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright 2018 Cloud Creativity Limited
+ * Copyright 2019 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,6 +81,27 @@ class ErrorTranslator
             $this->trans('member_object_expected', 'code'),
             $this->trans('member_object_expected', 'title'),
             $this->trans('member_object_expected', 'detail', compact('member')),
+            $this->pointer($path, $member)
+        );
+    }
+
+    /**
+     * Create an error for when a member has a field that is not allowed.
+     *
+     * @param string $path
+     * @param string $member
+     * @param string $field
+     * @return ErrorInterface
+     */
+    public function memberFieldNotAllowed(string $path, string $member, string $field): ErrorInterface
+    {
+        return new Error(
+            null,
+            null,
+            Response::HTTP_BAD_REQUEST,
+            $this->trans('member_field_not_allowed', 'code'),
+            $this->trans('member_field_not_allowed', 'title'),
+            $this->trans('member_field_not_allowed', 'detail', compact('member', 'field')),
             $this->pointer($path, $member)
         );
     }
@@ -189,6 +210,26 @@ class ErrorTranslator
     }
 
     /**
+     * Create an error for when a resource does not support client-generated ids.
+     *
+     * @param string $type
+     * @param string $path
+     * @return ErrorInterface
+     */
+    public function resourceDoesNotSupportClientIds(string $type, string $path = '/data'): ErrorInterface
+    {
+        return new Error(
+            null,
+            null,
+            Response::HTTP_FORBIDDEN,
+            $this->trans('resource_client_ids_not_supported', 'code'),
+            $this->trans('resource_client_ids_not_supported', 'title'),
+            $this->trans('resource_client_ids_not_supported', 'detail', compact('type')),
+            $this->pointer($path, 'id')
+        );
+    }
+
+    /**
      * Create an error for a resource already existing.
      *
      * @param string $type
@@ -226,6 +267,29 @@ class ErrorTranslator
             $this->trans('resource_not_found', 'code'),
             $this->trans('resource_not_found', 'title'),
             $this->trans('resource_not_found', 'detail'),
+            $this->pointer($path)
+        );
+    }
+
+    /**
+     * Create an error for when a resource field exists in both the attributes and relationships members.
+     *
+     * @param string $field
+     * @param string $path
+     * @return ErrorInterface
+     */
+    public function resourceFieldExistsInAttributesAndRelationships(
+        string $field,
+        string $path = '/data'
+    ): ErrorInterface
+    {
+        return new Error(
+            null,
+            null,
+            Response::HTTP_BAD_REQUEST,
+            $this->trans('resource_field_exists_in_attributes_and_relationships', 'code'),
+            $this->trans('resource_field_exists_in_attributes_and_relationships', 'title'),
+            $this->trans('resource_field_exists_in_attributes_and_relationships', 'detail', compact('field')),
             $this->pointer($path)
         );
     }
@@ -304,8 +368,7 @@ class ErrorTranslator
         if (!$member) {
             $pointer = $path;
         } else {
-            $path = rtrim($path, '/');
-            $pointer = $member ? sprintf('%s/%s', $path, $member) : $path;
+            $pointer = $member ? sprintf('%s/%s', rtrim($path, '/'), $member) : $path;
         }
 
         return [Error::SOURCE_POINTER => $pointer];

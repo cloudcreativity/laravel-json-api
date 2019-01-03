@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright 2018 Cloud Creativity Limited
+ * Copyright 2019 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -82,7 +82,11 @@ class CreateResource extends ValidatedRequest
 
         /** Check the document is compliant with the JSON API spec. */
         $this->passes(
-            $this->factory->createResourceDocumentValidator($document, $this->getResourceType())
+            $this->factory->createNewResourceDocumentValidator(
+                $document,
+                $this->getResourceType(),
+                $validators && $validators->supportsClientIds()
+            )
         );
 
         /** Check the document is logically correct. */

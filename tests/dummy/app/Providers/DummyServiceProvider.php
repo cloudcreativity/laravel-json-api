@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright 2018 Cloud Creativity Limited
+ * Copyright 2019 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@
 namespace DummyApp\Providers;
 
 use CloudCreativity\LaravelJsonApi\Facades\JsonApi;
+use CloudCreativity\LaravelJsonApi\LaravelJsonApi;
 use DummyApp\Entities\SiteRepository;
 use DummyApp\Policies\PostPolicy;
 use DummyApp\Policies\UserPolicy;
@@ -60,6 +61,7 @@ class DummyServiceProvider extends ServiceProvider
      */
     public function register()
     {
+        LaravelJsonApi::runMigrations();
         $this->app->singleton(SiteRepository::class);
     }
 

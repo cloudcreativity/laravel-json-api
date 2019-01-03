@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2018 Cloud Creativity Limited
+ * Copyright 2019 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,12 +26,31 @@ use CloudCreativity\Utils\Object\StandardObject;
  * Class ResourceIdentifier
  *
  * @package CloudCreativity\LaravelJsonApi
+ * @deprecated 2.0.0
  */
 class ResourceIdentifier extends StandardObject implements ResourceIdentifierInterface
 {
 
     use IdentifiableTrait,
         MetaMemberTrait;
+
+    /**
+     * @param $type
+     * @param string|null $id
+     * @return ResourceIdentifier
+     */
+    public static function cast($type, $id = null)
+    {
+        if ($type instanceof self) {
+            return $type;
+        }
+
+        if (is_array($type)) {
+            return static::fromArray($type);
+        }
+
+        return static::create($type, $id);
+    }
 
     /**
      * @param $type
@@ -46,6 +65,18 @@ class ResourceIdentifier extends StandardObject implements ResourceIdentifierInt
             ->set(self::ID, $id);
 
         return $identifier;
+    }
+
+    /**
+     * @param array $identifier
+     * @return ResourceIdentifier
+     */
+    public static function fromArray(array $identifier)
+    {
+        return static::create(
+            $identifier[self::TYPE] ?? null,
+            $identifier[self::ID] ?? null
+        );
     }
 
     /**

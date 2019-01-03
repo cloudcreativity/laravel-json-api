@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright 2018 Cloud Creativity Limited
+ * Copyright 2019 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 
 namespace DummyApp\JsonApi\Comments;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectInterface;
 use CloudCreativity\LaravelJsonApi\Eloquent\AbstractAdapter;
 use CloudCreativity\LaravelJsonApi\Eloquent\BelongsTo;
 use CloudCreativity\LaravelJsonApi\Pagination\CursorStrategy;
@@ -71,22 +70,20 @@ class Adapter extends AbstractAdapter
     /**
      * @inheritDoc
      */
-    protected function createRecord(ResourceObjectInterface $resource)
-    {
-        $record = new Comment();
-        $record->user()->associate(Auth::user());
-
-        return $record;
-    }
-
-    /**
-     * @inheritDoc
-     */
     protected function filter($query, Collection $filters)
     {
         if ($createdBy = $filters->get('created-by')) {
             $query->where('comments.user_id', $createdBy);
         }
+    }
+
+    /**
+     * @param Comment $comment
+     * @return void
+     */
+    protected function creating(Comment $comment)
+    {
+        $comment->user()->associate(Auth::user());
     }
 
 }

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2018 Cloud Creativity Limited
+ * Copyright 2019 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,8 @@
 
 namespace CloudCreativity\LaravelJsonApi\Exceptions;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Document\MutableErrorInterface;
 use CloudCreativity\LaravelJsonApi\Document\Error;
+use CloudCreativity\LaravelJsonApi\Utils\Helpers;
 use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
 use Neomerx\JsonApi\Exceptions\ErrorCollection;
 use Neomerx\JsonApi\Exceptions\JsonApiException;
@@ -119,27 +119,7 @@ class MutableErrorCollection extends ErrorCollection
     public function getHttpStatus($default = null)
     {
         $default = $default ?: JsonApiException::DEFAULT_HTTP_CODE;
-        $request = null;
-        $internal = null;
 
-        /** @var MutableErrorInterface $error */
-        foreach ($this as $error) {
-
-            $status = $error->getStatus();
-
-            if (400 <= $status && 499 >= $status) {
-                $request = is_null($request) ? $status : ($request == $status) ? $status : 400;
-            } elseif (500 <= $status && 599 >= $status) {
-                $internal = is_null($internal) ? $status : ($internal == $status) ? $status : 500;
-            }
-        }
-
-        if (!$request && !$internal) {
-            return $default;
-        } elseif ($request && $internal) {
-            return 500;
-        }
-
-        return $request ?: $internal;
+        return Helpers::httpErrorStatus($this, $default);
     }
 }

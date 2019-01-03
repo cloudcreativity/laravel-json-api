@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright 2018 Cloud Creativity Limited
+ * Copyright 2019 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,6 +55,7 @@ return [
     'resources' => [
         'comments' => \DummyApp\Comment::class,
         'countries' => \DummyApp\Country::class,
+        'downloads' => \DummyApp\Download::class,
         'phones' => \DummyApp\Phone::class,
         'posts' => \DummyApp\Post::class,
         'sites' => \DummyApp\Entities\Site::class,
@@ -99,6 +100,24 @@ return [
         'host' => null,
         'namespace' => '/api/v1',
         'name' => 'api:v1:',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Jobs
+    |--------------------------------------------------------------------------
+    |
+    | Defines settings for the asynchronous processing feature. We recommend
+    | referring to the documentation on asynchronous processing if you are
+    | using this feature.
+    |
+    | Note that if you use a different model class, it must implement the
+    | asynchronous process interface.
+    |
+    */
+    'jobs' => [
+        'resource' => 'queue-jobs',
+        'model' => \CloudCreativity\LaravelJsonApi\Queue\ClientJob::class,
     ],
 
     /*

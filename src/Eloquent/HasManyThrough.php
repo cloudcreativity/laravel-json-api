@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright 2018 Cloud Creativity Limited
+ * Copyright 2019 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 
 namespace CloudCreativity\LaravelJsonApi\Eloquent;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Object\RelationshipInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use Illuminate\Database\Eloquent\Relations;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
@@ -33,7 +32,7 @@ class HasManyThrough extends AbstractManyRelation
     /**
      * @inheritdoc
      */
-    public function update($record, RelationshipInterface $relationship, EncodingParametersInterface $parameters)
+    public function update($record, array $relationship, EncodingParametersInterface $parameters)
     {
         throw new RuntimeException('Modifying a has-many-through Eloquent relation is not supported.');
     }
@@ -41,7 +40,7 @@ class HasManyThrough extends AbstractManyRelation
     /**
      * @inheritdoc
      */
-    public function replace($record, RelationshipInterface $relationship, EncodingParametersInterface $parameters)
+    public function replace($record, array $relationship, EncodingParametersInterface $parameters)
     {
         throw new RuntimeException('Modifying a has-many-through Eloquent relation is not supported.');
     }
@@ -49,7 +48,7 @@ class HasManyThrough extends AbstractManyRelation
     /**
      * @inheritdoc
      */
-    public function add($record, RelationshipInterface $relationship, EncodingParametersInterface $parameters)
+    public function add($record, array $relationship, EncodingParametersInterface $parameters)
     {
         throw new RuntimeException('Modifying a has-many-through Eloquent relation is not supported.');
     }
@@ -57,7 +56,7 @@ class HasManyThrough extends AbstractManyRelation
     /**
      * @inheritdoc
      */
-    public function remove($record, RelationshipInterface $relationship, EncodingParametersInterface $parameters)
+    public function remove($record, array $relationship, EncodingParametersInterface $parameters)
     {
         throw new RuntimeException('Modifying a has-many-through Eloquent relation is not supported.');
     }

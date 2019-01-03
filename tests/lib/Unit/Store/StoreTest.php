@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2018 Cloud Creativity Limited
+ * Copyright 2019 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@
 namespace CloudCreativity\LaravelJsonApi\Tests\Unit\Store;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\RelationshipAdapterInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Adapter\ResourceAdapterInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Store\AdapterInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\RecordNotFoundException;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
@@ -32,7 +32,7 @@ use CloudCreativity\LaravelJsonApi\Store\Store;
 use CloudCreativity\LaravelJsonApi\Tests\Unit\TestCase;
 use CloudCreativity\Utils\Object\StandardObject;
 use Neomerx\JsonApi\Encoder\Parameters\EncodingParameters;
-use PHPUnit_Framework_MockObject_MockObject;
+use PHPUnit\Framework\MockObject\MockObject;
 
 /**
  * Class StoreTest
@@ -43,7 +43,7 @@ class StoreTest extends TestCase
 {
 
     /**
-     * @var ContainerInterface|PHPUnit_Framework_MockObject_MockObject
+     * @var ContainerInterface|MockObject
      */
     private $container;
 
@@ -85,23 +85,24 @@ class StoreTest extends TestCase
 
     public function testCreateRecord()
     {
+        $document = ['foo' => 'bar'];
+
         $params = new EncodingParameters();
-        $resource = new ResourceObject();
-        $expected = new StandardObject();
+        $expected = new \stdClass();
 
         $store = $this->store([
             'posts' => $this->willNotQuery(),
-            'comments' => $this->willCreateRecord($resource, $params, $expected)
+            'comments' => $this->willCreateRecord($document, $params, $expected)
         ]);
 
-        $this->assertSame($expected, $store->createRecord('comments', $resource, $params));
+        $this->assertSame($expected, $store->createRecord('comments', $document, $params));
     }
 
     public function testCannotCreate()
     {
         $store = $this->store(['posts' => $this->willNotQuery()]);
         $this->expectException(RuntimeException::class);
-        $store->createRecord('comments', new ResourceObject(), new EncodingParameters());
+        $store->createRecord('comments', [], new EncodingParameters());
     }
 
     /**
@@ -111,41 +112,31 @@ class StoreTest extends TestCase
     public function testReadRecord()
     {
         $params = new EncodingParameters();
-        $expected = new StandardObject();
+        $expected = new \stdClass();
 
-        $store = $this->store([
-            'posts' => $this->willNotQuery(),
-            'comments' => $this->willReadRecord('1', $params, $expected)
+        $store = $this->storeByTypes([
+            \DateTime::class => $this->willNotQuery(),
+            \stdClass::class => $this->willReadRecord($expected, $params),
         ]);
 
-        $this->assertSame($expected, $store->readRecord('comments', '1', $params));
-    }
-
-    /**
-     * If there is no adapter for the resource type, an exception must be thrown.
-     */
-    public function testCannotReadRecord()
-    {
-        $store = $this->store(['posts' => $this->willNotQuery()]);
-        $this->expectException(RuntimeException::class);
-        $store->readRecord('users', '1', new EncodingParameters());
+        $this->assertSame($expected, $store->readRecord($expected, $params));
     }
 
     public function testUpdateRecord()
     {
         $params = new EncodingParameters();
-        $resource = new ResourceObject();
-        $record = new StandardObject();
+        $document = ['foo' => 'bar'];
+        $record = new \stdClass();
         $expected = clone $record;
 
-        $adapter = $this->willUpdateRecord($record, $resource, $params, $expected);
+        $adapter = $this->willUpdateRecord($record, $document, $params, $expected);
 
         $store = $this->storeByTypes([
-            ResourceObject::class => $this->willNotQuery(),
-            StandardObject::class => $adapter,
+            \DateTime::class => $this->willNotQuery(),
+            \stdClass::class => $adapter,
         ]);
 
-        $this->assertSame($expected, $store->updateRecord($record, $resource, $params));
+        $this->assertSame($expected, $store->updateRecord($record, $document, $params));
     }
 
     public function testDeleteRecord()
@@ -217,6 +208,17 @@ class StoreTest extends TestCase
 
     public function testExists()
     {
+        $store = $this->store([
+            'posts' => $this->adapter(),
+            'users' => $this->willExist('99')
+        ]);
+
+        $this->assertTrue($store->isType('users'));
+        $this->assertTrue($store->exists('users', '99'));
+    }
+
+    public function testExistsWithIdentifier()
+    {
         $identifier = ResourceIdentifier::create('users', '99');
 
         $store = $this->store([
@@ -252,6 +254,18 @@ class StoreTest extends TestCase
     }
 
     public function testFind()
+    {
+        $expected = new \stdClass();
+
+        $store = $this->store([
+            'posts' => $this->adapter(),
+            'users' => $this->willFind('99', $expected)
+        ]);
+
+        $this->assertSame($expected, $store->find('users', '99'));
+    }
+
+    public function testFindWithIdentifier()
     {
         $identifier = ResourceIdentifier::create('users', '99');
         $expected = new StandardObject();
@@ -391,6 +405,30 @@ class StoreTest extends TestCase
      */
     public function testFindMany()
     {
+        $post = (object) ['foo' => 'bar'];
+        $user = (object) ['baz' => 'bat'];
+
+        $identifiers = [
+            ['type' => 'posts', 'id' => '1'],
+            ['type' => 'posts', 'id' => '3'],
+            ['type' => 'users', 'id' => '99'],
+        ];
+
+        $store = $this->store([
+            'posts' => $this->willFindMany(['1', '3'], [$post]),
+            'users' => $this->willFindMany(['99'], [$user]),
+            'tags' => $this->willNotFindMany(),
+        ]);
+
+        $this->assertSame([$post, $user], $store->findMany($identifiers));
+    }
+
+    /**
+     * A find many request hands the ids off to the adapter of each resource type,
+     * and returns an array containing all found records.
+     */
+    public function testFindManyWithIdentifiers()
+    {
         $identifiers = ResourceIdentifierCollection::create([
             $post = (object) ['type' => 'posts', 'id' => '1'],
             (object) ['type' => 'posts', 'id' => '3'],
@@ -467,7 +505,7 @@ class StoreTest extends TestCase
      * @param string $resourceId
      * @param bool $exists
      * @param $expectation
-     * @return PHPUnit_Framework_MockObject_MockObject
+     * @return MockObject
      */
     private function willExist($resourceId, $exists = true, $expectation = null)
     {
@@ -485,7 +523,7 @@ class StoreTest extends TestCase
     /**
      * @param $resourceId
      * @param $expectation
-     * @return PHPUnit_Framework_MockObject_MockObject
+     * @return MockObject
      */
     private function willNotExist($resourceId, $expectation = null)
     {
@@ -496,7 +534,7 @@ class StoreTest extends TestCase
      * @param $resourceId
      * @param $record
      * @param $expectation
-     * @return PHPUnit_Framework_MockObject_MockObject
+     * @return MockObject
      */
     private function willFind($resourceId, $record, $expectation = null)
     {
@@ -512,7 +550,7 @@ class StoreTest extends TestCase
     /**
      * @param $resourceId
      * @param $expectation
-     * @return PHPUnit_Framework_MockObject_MockObject
+     * @return MockObject
      */
     private function willNotFind($resourceId, $expectation = null)
     {
@@ -522,7 +560,7 @@ class StoreTest extends TestCase
     /**
      * @param array $resourceIds
      * @param array $results
-     * @return PHPUnit_Framework_MockObject_MockObject
+     * @return MockObject
      */
     private function willFindMany(array $resourceIds, array $results = [])
     {
@@ -536,7 +574,7 @@ class StoreTest extends TestCase
     }
 
     /**
-     * @return PHPUnit_Framework_MockObject_MockObject
+     * @return MockObject
      */
     private function willNotFindMany()
     {
@@ -550,7 +588,7 @@ class StoreTest extends TestCase
      * @param $params
      * @param $results
      * @param null $expectation
-     * @return PHPUnit_Framework_MockObject_MockObject
+     * @return MockObject
      */
     private function willQuery($params, $results, $expectation = null)
     {
@@ -565,46 +603,46 @@ class StoreTest extends TestCase
     }
 
     /**
-     * @param $resourceObject
+     * @param $document
      * @param $params
      * @param $expected
-     * @return PHPUnit_Framework_MockObject_MockObject
+     * @return MockObject
      */
-    private function willCreateRecord($resourceObject, $params, $expected)
+    private function willCreateRecord($document, $params, $expected)
     {
         $mock = $this->adapter();
 
         $mock->expects($this->once())
             ->method('create')
-            ->with($resourceObject, $params)
+            ->with($document, $params)
             ->willReturn($expected);
 
         return $mock;
     }
 
     /**
-     * @param $resourceId
-     * @param $params
      * @param $record
-     * @return PHPUnit_Framework_MockObject_MockObject
+     * @param $params
+     * @return MockObject
      */
-    private function willReadRecord($resourceId, $params, $record)
+    private function willReadRecord($record, $params)
     {
         $mock = $this->adapter();
 
         $mock->expects($this->atLeastOnce())
             ->method('read')
-            ->with($resourceId, $params)
+            ->with($record, $params)
             ->willReturn($record);
 
         return $mock;
     }
 
     /**
+     * @param $record
      * @param $resourceObject
      * @param $params
      * @param $expected
-     * @return PHPUnit_Framework_MockObject_MockObject
+     * @return MockObject
      */
     private function willUpdateRecord($record, $resourceObject, $params, $expected)
     {
@@ -622,7 +660,7 @@ class StoreTest extends TestCase
      * @param $record
      * @param $params
      * @param bool $result
-     * @return PHPUnit_Framework_MockObject_MockObject
+     * @return MockObject
      */
     private function willDeleteRecord($record, $params, $result = true)
     {
@@ -641,7 +679,7 @@ class StoreTest extends TestCase
      * @param $relationshipName
      * @param $parameters
      * @param $expected
-     * @return PHPUnit_Framework_MockObject_MockObject
+     * @return MockObject
      */
     private function willQueryRelated($record, $relationshipName, $parameters, $expected)
     {
@@ -660,7 +698,7 @@ class StoreTest extends TestCase
      * @param $relationshipName
      * @param $parameters
      * @param $expected
-     * @return PHPUnit_Framework_MockObject_MockObject
+     * @return MockObject
      */
     private function willQueryRelationship($record, $relationshipName, $parameters, $expected)
     {
@@ -674,7 +712,7 @@ class StoreTest extends TestCase
     }
 
     /**
-     * @return PHPUnit_Framework_MockObject_MockObject
+     * @return MockObject
      */
     private function willNotQuery()
     {
@@ -691,11 +729,11 @@ class StoreTest extends TestCase
 
     /**
      * @param array $relationships
-     * @return PHPUnit_Framework_MockObject_MockObject
+     * @return MockObject
      */
     private function adapter(array $relationships = [])
     {
-        $mock = $this->createMock(AdapterInterface::class);
+        $mock = $this->createMock(ResourceAdapterInterface::class);
 
         $mock->method('getRelated')->willReturnCallback(function ($name) use ($relationships) {
             return $relationships[$name];
@@ -705,7 +743,7 @@ class StoreTest extends TestCase
     }
 
     /**
-     * @return PHPUnit_Framework_MockObject_MockObject
+     * @return MockObject
      */
     private function relationshipAdapter()
     {

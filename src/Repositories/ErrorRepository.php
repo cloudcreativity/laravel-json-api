@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2018 Cloud Creativity Limited
+ * Copyright 2019 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -84,6 +84,10 @@ class ErrorRepository implements ErrorRepositoryInterface
         foreach ($keys as $error) {
             if (is_string($error)) {
                 $error = $this->error($error);
+            }
+
+            if (is_array($error)) {
+                $error = Error::create($error);
             }
 
             $errors->add($error);

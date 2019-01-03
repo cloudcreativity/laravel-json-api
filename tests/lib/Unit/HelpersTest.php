@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright 2018 Cloud Creativity Limited
+ * Copyright 2019 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ use CloudCreativity\LaravelJsonApi\Utils\Helpers;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
 use Illuminate\Http\Request as IlluminateRequest;
+use Neomerx\JsonApi\Document\Error;
 use function CloudCreativity\LaravelJsonApi\http_contains_body;
 use function CloudCreativity\LaravelJsonApi\json_decode;
 
@@ -162,6 +163,69 @@ class HelpersTest extends TestCase
         $request->headers->set('Content-Type', $contentType);
 
         $this->assertSame($expected, Helpers::isJsonApi($request));
+    }
+
+    /**
+     * @return array
+     */
+    public function httpErrorProvider(): array
+    {
+        return [
+            'empty' => [
+                [],
+                400,
+            ],
+            'only 4xx' => [
+                [400, 422, 419],
+                400,
+            ],
+            'only 422' => [
+                [422, 422],
+                422,
+            ],
+            'only 5xx' => [
+                [500, 502],
+                500,
+            ],
+            'only 502' => [
+                [502, 502],
+                502,
+            ],
+            'only null' => [
+                [null, null],
+                400,
+            ],
+            '4xx with null' => [
+                [422, 419, null],
+                400,
+            ],
+            '422 with null' => [
+                [422, 422, null],
+                422,
+            ],
+            '5xx with null' => [
+                [null, 500, 502],
+                500,
+            ],
+            '502 with null' => [
+                [502, null, 502],
+                502,
+            ],
+        ];
+    }
+
+    /**
+     * @param array $errors
+     * @param int $expected
+     * @dataProvider httpErrorProvider
+     */
+    public function testHttpErrorStatus(array $errors, int $expected): void
+    {
+        $errors = collect($errors)->map(function (?int $status) {
+            return new Error(null, null, $status);
+        })->all();
+
+        $this->assertSame(Helpers::httpErrorStatus($errors), $expected);
     }
 
     /**

@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright 2018 Cloud Creativity Limited
+ * Copyright 2019 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@
 namespace CloudCreativity\LaravelJsonApi\Adapter;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\RelationshipAdapterInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Object\RelationshipInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreAwareInterface;
 use CloudCreativity\LaravelJsonApi\Store\StoreAwareTrait;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
@@ -61,24 +60,21 @@ abstract class AbstractRelationshipAdapter implements RelationshipAdapterInterfa
     /**
      * Find the related record for a to-one relationship.
      *
-     * @param RelationshipInterface $relationship
+     * @param array $relationship
      * @return mixed|null
      */
-    protected function findOne(RelationshipInterface $relationship)
+    protected function findToOne(array $relationship)
     {
-        $identifier = $relationship->hasIdentifier() ? $relationship->getIdentifier() : null;
-
-        return $identifier ? $this->getStore()->find($identifier) : null;
+        return $this->getStore()->findToOne($relationship);
     }
 
     /**
-     * Find the related records for a to-many relationship.
-     *
-     * @param RelationshipInterface $relationship
+     * @param array $relationship
      * @return array
      */
-    protected function findMany(RelationshipInterface $relationship)
+    protected function findToMany(array $relationship)
     {
-        return $this->getStore()->findMany($relationship->getIdentifiers());
+        return $this->getStore()->findToMany($relationship);
     }
+
 }

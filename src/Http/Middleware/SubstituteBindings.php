@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright 2018 Cloud Creativity Limited
+ * Copyright 2019 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,9 @@
 
 namespace CloudCreativity\LaravelJsonApi\Http\Middleware;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\NotFoundException;
+use CloudCreativity\LaravelJsonApi\Http\Requests\JsonApiRequest;
 use CloudCreativity\LaravelJsonApi\Routing\ResourceRegistrar;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
@@ -38,7 +38,7 @@ class SubstituteBindings
     private $store;
 
     /**
-     * @var RequestInterface
+     * @var JsonApiRequest
      */
     private $jsonApiRequest;
 
@@ -46,9 +46,9 @@ class SubstituteBindings
      * SubstituteBindings constructor.
      *
      * @param StoreInterface $store
-     * @param RequestInterface $request
+     * @param JsonApiRequest $request
      */
-    public function __construct(StoreInterface $store, RequestInterface $request)
+    public function __construct(StoreInterface $store, JsonApiRequest $request)
     {
         $this->store = $store;
         $this->jsonApiRequest = $request;
@@ -64,7 +64,11 @@ class SubstituteBindings
     public function handle($request, \Closure $next)
     {
         if ($this->jsonApiRequest->getResourceId()) {
-            $this->bind($request->route());
+            $this->bindResource($request->route());
+        }
+
+        if ($this->jsonApiRequest->getProcessId()) {
+            $this->bindProcess($request->route());
         }
 
         return $next($request);
@@ -76,7 +80,7 @@ class SubstituteBindings
      * @param Route $route
      * @return void
      */
-    private function bind(Route $route)
+    private function bindResource(Route $route): void
     {
         $record = $this->store->find($this->jsonApiRequest->getResourceIdentifier());
 
@@ -85,6 +89,23 @@ class SubstituteBindings
         }
 
         $route->setParameter(ResourceRegistrar::PARAM_RESOURCE_ID, $record);
+    }
+
+    /**
+     * Bind the process to the route.
+     *
+     * @param Route $route
+     * @return void
+     */
+    private function bindProcess(Route $route): void
+    {
+        $process = $this->store->find($this->jsonApiRequest->getProcessIdentifier());
+
+        if (!$process) {
+            throw new NotFoundException();
+        }
+
+        $route->setParameter(ResourceRegistrar::PARAM_PROCESS_ID, $process);
     }
 
 }

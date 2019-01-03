@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright 2018 Cloud Creativity Limited
+ * Copyright 2019 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -454,7 +454,7 @@ class RoutingTest extends TestCase
                 $api->resource('posts', [
                     'has-one' => ['author'],
                     'has-many' => ['tags', 'comments'],
-                    'id' => '[A-Z]+',
+                    'id' => '^[A-Z]+$',
                 ]);
             });
         });
@@ -470,7 +470,7 @@ class RoutingTest extends TestCase
     public function testDefaultIdConstraint($method, $url)
     {
         $this->withRoutes(function () {
-            JsonApi::register('v1', ['id' => '[A-Z]+'], function (ApiGroup $api) {
+            JsonApi::register('v1', ['id' => '^[A-Z]+$'], function (ApiGroup $api) {
                 $api->resource('posts', [
                     'has-one' => ['author'],
                     'has-many' => ['tags', 'comments'],
@@ -491,7 +491,7 @@ class RoutingTest extends TestCase
     public function testDefaultIdConstraintCanBeIgnoredByResource($method, $url)
     {
         $this->withRoutes(function () {
-            JsonApi::register('v1', ['id' => '[A-Z]+'], function (ApiGroup $api) {
+            JsonApi::register('v1', ['id' => '^[A-Z]+$'], function (ApiGroup $api) {
                 $api->resource('posts', [
                     'has-one' => ['author'],
                     'has-many' => ['tags', 'comments'],
@@ -513,11 +513,11 @@ class RoutingTest extends TestCase
     public function testResourceIdConstraintOverridesDefaultIdConstraint($method, $url)
     {
         $this->withRoutes(function () {
-            JsonApi::register('v1', ['id' => '[0-9]+'], function (ApiGroup $api) {
+            JsonApi::register('v1', ['id' => '^[0-9]+$'], function (ApiGroup $api) {
                 $api->resource('posts', [
                     'has-one' => ['author'],
                     'has-many' => ['tags', 'comments'],
-                    'id' => '[A-Z]+',
+                    'id' => '^[A-Z]+$',
                 ]);
             });
         });
@@ -577,6 +577,69 @@ class RoutingTest extends TestCase
 
         $this->assertMatch('GET', $self, '\\' . JsonApiController::class . '@readRelationship');
         $this->assertMatch('GET', $related, '\\' . JsonApiController::class . '@readRelatedResource');
+    }
+
+    /**
+     * @return array
+     */
+    public function processProvider(): array
+    {
+        return [
+            'fetch-many' => ['GET', '/api/v1/photos/queue-jobs', '@processes'],
+            'fetch-one' => ['GET', '/api/v1/photos/queue-jobs/839765f4-7ff4-4625-8bf7-eecd3ab44946', '@process'],
+        ];
+    }
+
+    /**
+     * @param string $method
+     * @param string $url
+     * @param string $action
+     * @dataProvider processProvider
+     */
+    public function testAsync(string $method, string $url, string $action): void
+    {
+        $this->withRoutes(function () {
+            JsonApi::register('v1', ['id' => '^\d+$'], function (ApiGroup $api) {
+                $api->resource('photos', [
+                    'async' => true,
+                ]);
+            });
+        });
+
+        $this->assertMatch($method, $url, '\\' . JsonApiController::class . $action);
+    }
+
+    /**
+     * Test that the default async job id constraint is a UUID.
+     */
+    public function testAsyncDefaultConstraint(): void
+    {
+        $this->withRoutes(function () {
+            JsonApi::register('v1', [], function (ApiGroup $api) {
+                $api->resource('photos', [
+                    'async' => true,
+                ]);
+            });
+        });
+
+        $this->assertNotFound('GET', '/api/v1/photos/queue-jobs/123456');
+    }
+
+    /**
+     * Test that the default async job id constraint is a UUID.
+     */
+    public function testAsyncCustomConstraint(): void
+    {
+        $this->withRoutes(function () {
+            JsonApi::register('v1', [], function (ApiGroup $api) {
+                $api->resource('photos', [
+                    'async' => true,
+                    'async_id' => '^\d+$',
+                ]);
+            });
+        });
+
+        $this->assertMatch('GET', '/api/v1/photos/queue-jobs/123456');
     }
 
     /**

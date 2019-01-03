@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright 2018 Cloud Creativity Limited
+ * Copyright 2019 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ class CreateTest extends TestCase
             'attributes' => [
                 'created-at' => null,
                 'updated-at' => null,
+                'deleted-at' => null,
                 'title' => $post->title,
                 'slug' => $post->slug,
                 'content' => $post->content,
@@ -67,6 +68,7 @@ class CreateTest extends TestCase
             'attributes' => [
                 'created-at' => null,
                 'updated-at' => null,
+                'deleted-at' => null,
                 'title' => $post->title,
                 'slug' => $post->slug,
                 'content' => $post->content,
@@ -147,6 +149,7 @@ class CreateTest extends TestCase
                 'attributes' => [
                     'created-at' => null,
                     'updated-at' => null,
+                    'deleted-at' => null,
                     'title' => $post->title,
                     'slug' => $post->slug,
                     'content' => $post->content,
@@ -192,6 +195,7 @@ class CreateTest extends TestCase
                 'attributes' => [
                     'created-at' => $post->created_at->toAtomString(),
                     'updated-at' => $post->updated_at->toAtomString(),
+                    'deleted-at' => null,
                     'title' => $post->title,
                     'slug' => $post->slug,
                     'content' => $post->content,

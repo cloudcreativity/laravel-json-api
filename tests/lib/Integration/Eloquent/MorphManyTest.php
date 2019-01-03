@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright 2018 Cloud Creativity Limited
+ * Copyright 2019 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Eloquent;
 
 use Carbon\Carbon;
+use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
 use DummyApp\Comment;
 use DummyApp\Post;
 use DummyApp\User;
@@ -273,10 +274,9 @@ class MorphManyTest extends TestCase
     {
         $post = factory(Post::class)->create();
 
-        $this->doReadRelated($post, 'comments', ['filter' => ['created-by' => 'foo']])
-            ->assertStatus(400)
-            ->assertErrors()
-            ->assertParameters('filter.created-by');
+        $this->doReadRelated($post, 'comments', ['filter' => ['created-by' => 'foo']])->assertError(400, [
+            'source' => ['parameter' => 'filter.created-by'],
+        ]);
     }
 
     public function testReadRelatedWithSort()
@@ -303,10 +303,9 @@ class MorphManyTest extends TestCase
         $post = factory(Post::class)->create();
 
         /** `slug` is a valid sort parameter on the posts resource, but not the comments resource. */
-        $this->doReadRelated($post, 'comments', ['sort' => 'slug'])
-            ->assertStatus(400)
-            ->assertErrors()
-            ->assertParameters('sort');
+        $this->doReadRelated($post, 'comments', ['sort' => 'slug'])->assertError(400, [
+            'source' => ['parameter' => 'sort'],
+        ]);
     }
 
     public function testReadRelatedWithInclude()
@@ -317,17 +316,14 @@ class MorphManyTest extends TestCase
             'commentable_id' => $post->getKey(),
         ]);
 
-        $response = $this
-            ->doReadRelated($post, 'comments', ['include' => 'created-by'])
-            ->assertReadHasMany('comments', $comments);
 
         $expected = $comments->map(function (Comment $comment) {
-            return $comment->user;
-        });
+            return ['type' => 'users', 'id' => (string) $comment->user_id];
+        })->all();
 
-        $response->assertDocument()
-            ->assertIncluded()
-            ->assertContainsOnly(['users' => $this->normalizeIds($expected)]);
+        $this->doReadRelated($post, 'comments', ['include' => 'created-by'])
+            ->assertReadHasMany('comments', $comments)
+            ->assertIncluded($expected);
     }
 
     public function testReadRelatedWithInvalidInclude()
@@ -335,10 +331,9 @@ class MorphManyTest extends TestCase
         $post = factory(Post::class)->create();
 
         /** `author` is valid on a post but not on a comment. */
-        $this->doReadRelated($post, 'comments', ['include' => 'author'])
-            ->assertStatus(400)
-            ->assertErrors()
-            ->assertParameters('include');
+        $this->doReadRelated($post, 'comments', ['include' => 'author'])->assertError(400, [
+            'source' => ['parameter' => 'include'],
+        ]);
     }
 
     public function testReadRelatedWithPagination()
@@ -350,28 +345,23 @@ class MorphManyTest extends TestCase
             'commentable_id' => $post->getKey(),
         ])->sortByDesc('id')->values();
 
-        $response = $this
-            ->doReadRelated($post, 'comments', ['page' => ['limit' => 2]])
-            ->assertReadHasMany('comments', $comments->take(2));
-
-        $response->assertDocument()->assertMetaSubset([
-            'page' => [
+        $this->doReadRelated($post, 'comments', ['page' => ['limit' => 2]])
+            ->willSeeType('comments')
+            ->assertFetchedPage($comments->take(2), null, [
                 'per-page' => 2,
-                'from' => $comments->first()->getRouteKey(),
-                'to' => $comments->get(1)->getRouteKey(),
+                'from' => (string) $comments->first()->getRouteKey(),
+                'to' => (string) $comments->get(1)->getRouteKey(),
                 'has-more' => true,
-            ],
-        ]);
+            ]);
     }
 
     public function testReadRelatedWithInvalidPagination()
     {
         $post = factory(Post::class)->create();
 
-        $this->doReadRelated($post, 'comments', ['page' => ['limit' => 100]])
-            ->assertStatus(400)
-            ->assertErrors()
-            ->assertParameters('page.limit');
+        $this->doReadRelated($post, 'comments', ['page' => ['limit' => 100]])->assertError(400, [
+            'source' => ['parameter' => 'page.limit'],
+        ]);
     }
 
     /**

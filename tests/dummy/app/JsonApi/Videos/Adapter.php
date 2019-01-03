@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright 2018 Cloud Creativity Limited
+ * Copyright 2019 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 
 namespace DummyApp\JsonApi\Videos;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectInterface;
+use CloudCreativity\LaravelJsonApi\Document\ResourceObject;
 use CloudCreativity\LaravelJsonApi\Store\EloquentAdapter;
 use DummyApp\Video;
 use Illuminate\Database\Eloquent\Model;
@@ -36,16 +36,14 @@ class Adapter extends EloquentAdapter
     }
 
     /**
-     * @param ResourceObjectInterface $resource
-     * @return Video
+     * @param Video $video
+     * @param ResourceObject $resource
+     * @return void
      */
-    protected function createRecord(ResourceObjectInterface $resource)
+    protected function creating(Video $video, ResourceObject $resource)
     {
-        $video = new Video();
         $video->{$video->getKeyName()} = $resource->getId();
         $video->user()->associate(Auth::user());
-
-        return $video;
     }
 
     /**

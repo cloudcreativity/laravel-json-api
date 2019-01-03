@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2018 Cloud Creativity Limited
+ * Copyright 2019 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ namespace CloudCreativity\LaravelJsonApi\Http\Middleware;
 use Closure;
 use CloudCreativity\LaravelJsonApi\Api\Api;
 use CloudCreativity\LaravelJsonApi\Api\Repository;
-use CloudCreativity\LaravelJsonApi\Contracts\Http\Requests\RequestInterface;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Http\Request;
@@ -114,11 +113,9 @@ class BootJsonApi
     {
         /** Override the current page resolution */
         AbstractPaginator::currentPageResolver(function ($pageName) {
-            /** @var RequestInterface $request */
-            $request = app(RequestInterface::class);
-            $pagination = (array) $request->getParameters()->getPaginationParameters();
+            $pagination = json_api_request()->getParameters()->getPaginationParameters() ?: [];
 
-            return isset($pagination[$pageName]) ? $pagination[$pageName] : null;
+            return $pagination[$pageName] ?? null;
         });
     }
 

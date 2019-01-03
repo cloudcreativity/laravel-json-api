@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright 2018 Cloud Creativity Limited
+ * Copyright 2019 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -95,10 +95,19 @@ class FilterTest extends TestCase
      * Must be able to filter a read resource request.
      *
      * @see https://github.com/cloudcreativity/laravel-json-api/issues/218
+     *      for the original issue to add this feature.
+     * @see https://github.com/cloudcreativity/laravel-json-api/issues/256
+     *      we expect the resource to be retrieved once.
      */
     public function testFilterResource()
     {
         $post = factory(Post::class)->states('published')->create();
+
+        $retrieved = 0;
+
+        Post::retrieved(function () use (&$retrieved) {
+            $retrieved++;
+        });
 
         $expected = [
             'type' => 'posts',
@@ -110,7 +119,9 @@ class FilterTest extends TestCase
 
         $this->resourceType = 'posts';
         $this->doRead($post, ['filter' => ['published' => 1]])
-            ->assertSearchedOne($expected);
+            ->assertFetchedOne($expected);
+
+        $this->assertSame(1, $retrieved, 'retrieved once');
     }
 
     public function testFilterResourceDoesNotMatch()

@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright 2018 Cloud Creativity Limited
+ * Copyright 2019 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,13 @@ namespace CloudCreativity\LaravelJsonApi\Contracts\Validation;
  */
 interface ValidatorFactoryInterface
 {
+
+    /**
+     * Does the resource support client-generated ids?
+     *
+     * @return bool
+     */
+    public function supportsClientIds(): bool;
 
     /**
      * Get a document validator for a create resource request.

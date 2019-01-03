@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2018 Cloud Creativity Limited
+ * Copyright 2019 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ use InvalidArgumentException;
  * Class ResourceIdentifierCollection
  *
  * @package CloudCreativity\LaravelJsonApi
+ * @deprecated 2.0.0
  */
 class ResourceIdentifierCollection implements ResourceIdentifierCollectionInterface
 {
@@ -35,6 +36,21 @@ class ResourceIdentifierCollection implements ResourceIdentifierCollectionInterf
      * @var array
      */
     private $stack = [];
+
+    /**
+     * @param array $identifiers
+     * @return ResourceIdentifierCollection
+     */
+    public static function fromArray(array $identifiers)
+    {
+        $collection = new self();
+
+        foreach ($identifiers as $identifier) {
+            $collection->add(ResourceIdentifier::fromArray($identifier));
+        }
+
+        return $collection;
+    }
 
     /**
      * @param array $identifiers

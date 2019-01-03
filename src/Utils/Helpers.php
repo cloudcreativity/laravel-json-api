@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright 2018 Cloud Creativity Limited
+ * Copyright 2019 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,9 @@ namespace CloudCreativity\LaravelJsonApi\Utils;
 use CloudCreativity\LaravelJsonApi\Exceptions\DocumentRequiredException;
 use CloudCreativity\LaravelJsonApi\Exceptions\InvalidJsonException;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Str as IlluminateStr;
+use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
 use Neomerx\JsonApi\Http\Headers\MediaType;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -148,6 +150,37 @@ class Helpers
     public static function isJsonApi($request)
     {
         return IlluminateStr::contains($request->header('Content-Type'), MediaType::JSON_API_SUB_TYPE);
+    }
+
+    /**
+     * Get the most applicable HTTP status code.
+     *
+     * When a server encounters multiple problems for a single request, the most generally applicable HTTP error
+     * code SHOULD be used in the response. For instance, 400 Bad Request might be appropriate for multiple
+     * 4xx errors or 500 Internal Server Error might be appropriate for multiple 5xx errors.
+     *
+     * @param iterable $errors
+     * @param int $default
+     * @return int
+     * @see https://jsonapi.org/format/#errors
+     */
+    public static function httpErrorStatus(iterable $errors, int $default = Response::HTTP_BAD_REQUEST): int
+    {
+        $statuses = collect($errors)->reject(function (ErrorInterface $error) {
+            return is_null($error->getStatus());
+        })->map(function (ErrorInterface $error) {
+            return (int) $error->getStatus();
+        })->unique();
+
+        if (2 > count($statuses)) {
+            return $statuses->first() ?: $default;
+        }
+
+        $only4xx = $statuses->every(function (int $status) {
+            return 400 <= $status && 499 >= $status;
+        });
+
+        return $only4xx ? Response::HTTP_BAD_REQUEST : Response::HTTP_INTERNAL_SERVER_ERROR;
     }
 
 }

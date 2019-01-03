@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright 2018 Cloud Creativity Limited
+ * Copyright 2019 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@
 namespace CloudCreativity\LaravelJsonApi\Eloquent;
 
 use CloudCreativity\LaravelJsonApi\Adapter\AbstractRelationshipAdapter;
-use CloudCreativity\LaravelJsonApi\Contracts\Object\RelationshipInterface;
 use CloudCreativity\LaravelJsonApi\Eloquent\Concerns\QueriesRelations;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use Illuminate\Database\Eloquent\Builder;
@@ -81,7 +80,7 @@ class QueriesOne extends AbstractRelationshipAdapter
     /**
      * @inheritDoc
      */
-    public function update($record, RelationshipInterface $relationship, EncodingParametersInterface $parameters)
+    public function update($record, array $relationship, EncodingParametersInterface $parameters)
     {
         throw new RuntimeException('Modifying a queries-one relation is not supported.');
     }
@@ -89,7 +88,7 @@ class QueriesOne extends AbstractRelationshipAdapter
     /**
      * @inheritDoc
      */
-    public function replace($record, RelationshipInterface $relationship, EncodingParametersInterface $parameters)
+    public function replace($record, array $relationship, EncodingParametersInterface $parameters)
     {
         throw new RuntimeException('Modifying a queries-one relation is not supported.');
     }

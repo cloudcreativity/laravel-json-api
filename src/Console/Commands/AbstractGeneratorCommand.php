@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2018 Cloud Creativity Limited
+ * Copyright 2019 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -95,11 +95,6 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
         if (!$this->apiRepository->exists($api = $this->getApiName())) {
             $this->error("JSON API '$api' does not exist.");
             return 1;
-        }
-
-        /** @todo remove when removing support for Laravel 5.4 */
-        if (method_exists($this, 'fire')) {
-            return ($this->fire() !== false) ? 0 : 1;
         }
 
         return (parent::handle() !== false) ? 0 : 1;

@@ -3,7 +3,189 @@
 ## Beta Release Cycle
 
 We are now on `1.0.0` beta releases. Changes during this cycle will be kept to the minimum required to
-fix remaining issues, most of which relate to validation.
+fix remaining issues.
+
+## 1.0.0-beta.5 to 1.0.0-beta.6
+
+### Adapters
+
+This release marks the final changes to the adapter classes before `1.0.0`. We have made changes to:
+
+- Ensure that Laravel's transformation middleware (e.g. trim strings) work with this package.
+- Add adapter hooks to allow easier integration of custom logic to fill domain records.
+- Ensure the `read` method is consistent with other methods on the adapter.
+
+As a result, adapters now receives the JSON API document (the HTTP request body) as an array, which is
+far more consistent with how Laravel normally handles JSON data.
+
+An advantage of these changes is it has enabled us to deprecated the document object interface/classes
+(in the `Contracts\Object` and `Object` namespaces). These were in this package for historic reasons and we 
+have wanted to remove them for some time. They are marked as deprecated and will be removed for good in `2.0.0`.
+
+Below are the main changes if you have extended our abstract adapters. Your adapters may not have all
+of these methods. For example, a lot of these changes do not affect Eloquent adapters unless you have
+overloaded any of the methods.
+
+> If you have overridden any of the internals of the abstract adapters you may need to make additional changes.
+If you have directly implemented the interface to write your own adapter, you will need to refer to the updated
+adapter interface for changes.
+
+#### `createRecord()`
+
+**This change only affects Eloquent adapters if you have overloaded the `createRecord` method. If you have,
+we advise using the `creating` adapter hook instead of overloading this method.**
+
+The method signature has changed from:
+
+`createRecord(\CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectInterface $resource)`
+
+to:
+
+`createRecord(\CloudCreativity\LaravelJsonApi\Document\ResourceObject $resource)`
+
+The new resource object class represents the resource sent by the client. Values can be accessed using the
+JSON API field name (i.e. the attribute or relationship name). For example `$value = $resource['title']` 
+would access the `title` attribute. This is far simpler than the previous resource object class.
+
+#### `fillAttributes()` and `hydrateRelated`
+
+The `fillAttributes` method signature has changed from:
+
+`fillAttributes($record, \CloudCreativity\Utils\Object\StandardObjectInterface $attributes)`
+
+to:
+
+`fillAttributes($record, \Illuminate\Support\Collection $attributes)`
+
+The `hydrateRelated` method has been renamed `fillRelated` and the method signature has changed from:
+
+```
+hydrateRelated(
+  $record, 
+  \CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectInterface $resource,
+  \Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface
+)`
+```
+
+to:
+
+```
+fillRelated(
+  $record, 
+  \CloudCreativity\LaravelJsonApi\Document\ResourceObject $resource,
+  \Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface
+)`
+```
+
+#### `read`
+
+We have changed the method signature of the `read` method. Instead of taking the resource ID, it now
+receives the record that is being read. We have made this change because the record is already loaded
+via the substitution of route bindings. It also makes it consistent with all the other public methods
+on the adapters that receive the record being read, rather than the resource ID.
+
+The `read` method was already implemented on the abstract adapter so you will not need to make any changes
+unless you have overloaded the method. If you have, change the following:
+
+```php
+public function read($resourceId, EncodingParametersInterface $params)
+{
+    // ...
+}
+```
+
+to this:
+
+```php
+public function read($record, EncodingParametersInterface $params)
+{
+    // ...
+}
+```
+
+> Even though the record is already loaded, it is passed to the adapter in case there is any other
+adapter logic to apply. For example in the Eloquent adapter we eager load relationships or filter
+the record based on the supplied parameters.
+
+#### `delete`/`destroy`
+
+On custom (non-Eloquent) adapters, previously you needed to implement the public `delete` method. 
+This is now implemented on the abstract adapter, and you will instead need to add a protected `destroy` method. 
+The destroy method must remove the provided record from storage (e.g. the database) and return a boolean 
+to indicate success.
+
+Note that we have added this method so that we can implement the new `deleting` and `deleted` adapter
+hooks.
+
+For example, change this:
+
+```php
+public function delete($record, EncodingParametersInterface $params)
+{
+    return $record->delete();
+}
+```
+
+to this:
+
+```php
+protected function destroy($record)
+{
+    return $record->delete();
+}
+```
+
+### Client-Generated IDs
+
+The JSON API spec says that a server must send a `403 Forbidden` response if a create resource request
+includes a client-generated ID, but the resource does not support client-generated IDs. Previously
+we did not reject these requests.
+
+We now need to know whether your resource supports client-generated IDs. This is worked out on your
+resource's `Validators` class. If you have a validation rule for the `id` member, we assume that you
+do support client-generated IDs. You can also specify this yourself using the `$clientIds` property
+on your `Validators` class.
+
+This change will not affect your resources unless you supported client-generated IDs without defining
+a validation rule for the `id` member. If you encounter this scenario, add a validation rule for
+the `id` member. For example if you accept UUID client-generated IDs, a regex validation rule would
+be appropriate.
+
+### Testing
+
+You will need to update the JSON API test dependency to `1.0.0-rc.1`:
+
+```bash
+$ composer require --dev cloudcreativity/json-api-testing:1.0.0-rc.1
+```
+
+This new version improves test assertions and feedback that you receive via PHP Unit.
+
+As a result of improving the assertions, some of your tests that previously passed may now fail. The
+prime example of this is the assertions are stricter about the *type* of a value in the response's JSON.
+You may need to tweak existing tests accordingly. If you have an existing test that is now not passing,
+and you are unsure why, please create a Github issue.
+
+If you are using any of the `{method}JsonApi` methods - e.g. `getJsonApi`, `patchJsonApi` etc, the
+method arguments have been amended. All of them now have JSON API query parameters as the second
+function argument (after the URI and before any JSON data). This makes it easier to test JSON API
+endpoints with query parameters, but may mean that you need to amend your tests if you are
+using any of these methods. The main change is moving JSON data from the second function argument to
+the third.
+
+If you are using the `getJsonApi()` test helper method, note that the data function argument has
+been removed as it is not used for a `GET` request.
+
+As part of these changes we have removed all previously deprecated methods on the test response and the
+`InteractsWithModels` test trait. These were deprecated some time ago so hopefully will not require any
+major refactoring. For a full list of deprecated methods, refer to the package changelog.
+
+There were two methods that we had to remove from the test response that were not previously deprecated:
+  - `assertSearchedPolymorphIds`: use `assertFetchedMany`
+  - `assertReadPolymorphHasMany`: use `assertFetchedToMany`
+
+All other methods that we wanted to remove, but were not previously marked as deprecated, have been left.
+We have marked them as deprecated and will remove them in `2.0.0`.
 
 ## 1.0.0-beta.3 to 1.0.0-beta.5
 

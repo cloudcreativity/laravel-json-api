@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2018 Cloud Creativity Limited
+ * Copyright 2019 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,14 +20,14 @@ namespace CloudCreativity\LaravelJsonApi\Adapter;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\RelationshipAdapterInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\ResourceAdapterInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Object\RelationshipInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Object\RelationshipsInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceObjectInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Queue\AsynchronousProcess;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreAwareInterface;
+use CloudCreativity\LaravelJsonApi\Document\ResourceObject;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Store\StoreAwareTrait;
+use CloudCreativity\LaravelJsonApi\Utils\InvokesHooks;
 use CloudCreativity\LaravelJsonApi\Utils\Str;
-use CloudCreativity\Utils\Object\StandardObjectInterface;
+use Illuminate\Support\Collection;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 /**
@@ -39,6 +39,7 @@ abstract class AbstractResourceAdapter implements ResourceAdapterInterface, Stor
 {
 
     use StoreAwareTrait,
+        InvokesHooks,
         Concerns\GuardsFields,
         Concerns\FindsManyResources;
 
@@ -47,69 +48,86 @@ abstract class AbstractResourceAdapter implements ResourceAdapterInterface, Stor
      *
      * Implementing classes need only implement the logic to transfer the minimum
      * amount of data from the resource that is required to construct a new record
-     * instance. The adapter will then hydrate the object after it has been
+     * instance. The adapter will then fill the object after it has been
      * created.
      *
-     * @param ResourceObjectInterface $resource
-     * @return object
+     * @param ResourceObject $resource
+     * @return mixed
+     *      the new domain record.
      */
-    abstract protected function createRecord(ResourceObjectInterface $resource);
+    abstract protected function createRecord(ResourceObject $resource);
 
     /**
      * @param $record
-     * @param StandardObjectInterface $attributes
+     * @param Collection $attributes
      * @return void
-     * @todo rename this `fillAttributes` to use more Laravel terminology.
      */
-    abstract protected function hydrateAttributes($record, StandardObjectInterface $attributes);
+    abstract protected function fillAttributes($record, Collection $attributes);
 
     /**
      * Persist changes to the record.
      *
      * @param $record
-     * @return object|void
+     * @return AsynchronousProcess|null
      */
     abstract protected function persist($record);
 
     /**
+     * Delete a record from storage.
+     *
+     * @param $record
+     * @return bool
+     *      whether the record was successfully destroyed.
+     */
+    abstract protected function destroy($record);
+
+    /**
      * @inheritdoc
      */
-    public function create(ResourceObjectInterface $resource, EncodingParametersInterface $parameters)
+    public function create(array $document, EncodingParametersInterface $parameters)
     {
+        $resource = ResourceObject::create($document['data']);
         $record = $this->createRecord($resource);
-        $this->hydrateAttributes($record, $resource->getAttributes());
-        $this->hydrateRelationships($record, $resource->getRelationships(), $parameters);
-        $record = $this->persist($record) ?: $record;
 
-        if (method_exists($this, 'hydrateRelated')) {
-            $record = $this->hydrateRelated($record, $resource, $parameters) ?: $record;
-        }
-
-        return $record;
+        return $this->fillAndPersist($record, $resource, $parameters, false);
     }
 
     /**
      * @inheritDoc
      */
-    public function read($resourceId, EncodingParametersInterface $parameters)
+    public function read($record, EncodingParametersInterface $parameters)
     {
-        return $this->find($resourceId);
+        return $record;
     }
 
     /**
      * @inheritdoc
      */
-    public function update($record, ResourceObjectInterface $resource, EncodingParametersInterface $parameters)
+    public function update($record, array $document, EncodingParametersInterface $parameters)
     {
-        $this->hydrateAttributes($record, $resource->getAttributes());
-        $this->hydrateRelationships($record, $resource->getRelationships(), $parameters);
-        $record = $this->persist($record) ?: $record;
+        $resource = ResourceObject::create($document['data']);
 
-        if (method_exists($this, 'hydrateRelated')) {
-            $record = $this->hydrateRelated($record, $resource, $parameters) ?: $record;
+        return $this->fillAndPersist($record, $resource, $parameters, true) ?: $record;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function delete($record, EncodingParametersInterface $params)
+    {
+        if ($result = $this->invoke('deleting', $record)) {
+            return $result;
         }
 
-        return $record;
+        if (true !== $this->destroy($record)) {
+            return false;
+        }
+
+        if ($result = $this->invoke('deleted', $record)) {
+            return $result;
+        }
+
+        return true;
     }
 
     /**
@@ -146,6 +164,18 @@ abstract class AbstractResourceAdapter implements ResourceAdapterInterface, Stor
     }
 
     /**
+     * Is the field a fillable relation?
+     *
+     * @param $field
+     * @param $record
+     * @return bool
+     */
+    protected function isFillableRelation($field, $record)
+    {
+        return $this->isRelation($field) && $this->isFillable($field, $record);
+    }
+
+    /**
      * @param $field
      * @return string|null
      */
@@ -157,51 +187,37 @@ abstract class AbstractResourceAdapter implements ResourceAdapterInterface, Stor
     }
 
     /**
+     * Fill the domain record with data from the supplied resource object.
+     *
      * @param $record
-     * @param RelationshipsInterface $relationships
+     * @param ResourceObject $resource
      * @param EncodingParametersInterface $parameters
      * @return void
-     * @deprecated 2.0.0 use `fillRelationships` directly.
      */
-    protected function hydrateRelationships(
-        $record,
-        RelationshipsInterface $relationships,
-        EncodingParametersInterface $parameters
-    ) {
-        $this->fillRelationships($record, $relationships, $parameters);
+    protected function fill($record, ResourceObject $resource, EncodingParametersInterface $parameters)
+    {
+        $this->fillAttributes($record, $resource->getAttributes());
+        $this->fillRelationships($record, $resource->getRelationships(), $parameters);
     }
 
     /**
      * Fill relationships from a resource object.
      *
      * @param $record
-     * @param RelationshipsInterface $relationships
+     * @param Collection $relationships
      * @param EncodingParametersInterface $parameters
      * @return void
      */
     protected function fillRelationships(
         $record,
-        RelationshipsInterface $relationships,
+        Collection $relationships,
         EncodingParametersInterface $parameters
     ) {
-        foreach ($relationships->getAll() as $field => $relationship) {
-            /** Skip any fields that are not fillable. */
-            if ($this->isNotFillable($field, $record)) {
-                continue;
-            }
-
-            /** Skip any fields that are not relations */
-            if (!$this->isRelation($field)) {
-                continue;
-            }
-
-            $this->fillRelationship(
-                $record,
-                $field,
-                $relationships->getRelationship($field),
-                $parameters
-            );
-        }
+        $relationships->filter(function ($value, $field) use ($record) {
+            return $this->isFillableRelation($field, $record);
+        })->each(function ($value, $field) use ($record, $parameters) {
+            $this->fillRelationship($record, $field, $value, $parameters);
+        });
     }
 
     /**
@@ -209,18 +225,103 @@ abstract class AbstractResourceAdapter implements ResourceAdapterInterface, Stor
      *
      * @param $record
      * @param $field
-     * @param RelationshipInterface $relationship
+     * @param array $relationship
      * @param EncodingParametersInterface $parameters
      */
     protected function fillRelationship(
         $record,
         $field,
-        RelationshipInterface $relationship,
+        array $relationship,
         EncodingParametersInterface $parameters
     ) {
         $relation = $this->getRelated($field);
 
         $relation->update($record, $relationship, $parameters);
+    }
+
+    /**
+     * Fill any related records that need to be filled after the primary record has been persisted.
+     *
+     * E.g. this is useful for hydrating many-to-many Eloquent relations, where `$record` must
+     * be persisted before the many-to-many database link can be created.
+     *
+     * @param $record
+     * @param ResourceObject $resource
+     * @param EncodingParametersInterface $parameters
+     */
+    protected function fillRelated($record, ResourceObject $resource, EncodingParametersInterface $parameters)
+    {
+        // no-op
+    }
+
+    /**
+     * @param mixed $record
+     * @param ResourceObject $resource
+     * @param EncodingParametersInterface $parameters
+     * @param bool $updating
+     * @return AsynchronousProcess|mixed
+     */
+    protected function fillAndPersist(
+        $record,
+        ResourceObject $resource,
+        EncodingParametersInterface $parameters,
+        $updating
+    ) {
+        $this->fill($record, $resource, $parameters);
+
+        if ($result = $this->beforePersist($record, $resource, $updating)) {
+            return $result;
+        }
+
+        $async = $this->persist($record);
+
+        if ($async instanceof AsynchronousProcess) {
+            return $async;
+        }
+
+        $this->fillRelated($record, $resource, $parameters);
+
+        if ($result = $this->afterPersist($record, $resource, $updating)) {
+            return $result;
+        }
+
+        return $record;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function isInvokedResult($result): bool
+    {
+        return $result instanceof AsynchronousProcess;
+    }
+
+    /**
+     * @param $record
+     * @param ResourceObject $resource
+     * @param $updating
+     * @return AsynchronousProcess|null
+     */
+    private function beforePersist($record, ResourceObject $resource, $updating)
+    {
+        return $this->invokeMany([
+            'saving',
+            $updating ? 'updating' : 'creating',
+        ], $record, $resource);
+    }
+
+    /**
+     * @param $record
+     * @param ResourceObject $resource
+     * @param $updating
+     * @return AsynchronousProcess|null
+     */
+    private function afterPersist($record, ResourceObject $resource, $updating)
+    {
+        return $this->invokeMany([
+            $updating ? 'updated' : 'created',
+            'saved',
+        ], $record, $resource);
     }
 
 }
