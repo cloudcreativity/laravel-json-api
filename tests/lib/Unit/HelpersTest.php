@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright 2018 Cloud Creativity Limited
+ * Copyright 2019 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,9 +22,9 @@ use CloudCreativity\LaravelJsonApi\Utils\Helpers;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
 use Illuminate\Http\Request as IlluminateRequest;
+use Neomerx\JsonApi\Document\Error;
 use function CloudCreativity\LaravelJsonApi\http_contains_body;
 use function CloudCreativity\LaravelJsonApi\json_decode;
-use Neomerx\JsonApi\Document\Error;
 
 class HelpersTest extends TestCase
 {

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2018 Cloud Creativity Limited
+ * Copyright 2019 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ use CloudCreativity\LaravelJsonApi\Contracts\Adapter\HasManyAdapterInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\RelationshipAdapterInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PageInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PagingStrategyInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Queue\AsynchronousProcess;
 use CloudCreativity\LaravelJsonApi\Document\ResourceObject;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Pagination\CursorStrategy;

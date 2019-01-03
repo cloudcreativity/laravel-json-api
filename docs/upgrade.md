@@ -3,7 +3,7 @@
 ## Beta Release Cycle
 
 We are now on `1.0.0` beta releases. Changes during this cycle will be kept to the minimum required to
-fix remaining issues, most of which relate to validation.
+fix remaining issues.
 
 ## 1.0.0-beta.5 to 1.0.0-beta.6
 
@@ -153,10 +153,10 @@ be appropriate.
 
 ### Testing
 
-You will need to update the JSON API test dependency to `1.0`:
+You will need to update the JSON API test dependency to `1.0.0-rc.1`:
 
 ```bash
-$ composer require --dev cloudcreativity/json-api-testing:^1.0
+$ composer require --dev cloudcreativity/json-api-testing:1.0.0-rc.1
 ```
 
 This new version improves test assertions and feedback that you receive via PHP Unit.

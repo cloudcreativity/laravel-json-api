@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2018 Cloud Creativity Limited
+ * Copyright 2019 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ use CloudCreativity\LaravelJsonApi\Exceptions\RecordNotFoundException;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Object\ResourceIdentifier;
 use CloudCreativity\LaravelJsonApi\Object\ResourceIdentifierCollection;
-use Illuminate\Support\Collection;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 /**
