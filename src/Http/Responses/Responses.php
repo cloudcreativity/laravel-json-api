@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2018 Cloud Creativity Limited
+ * Copyright 2019 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ use CloudCreativity\LaravelJsonApi\Contracts\Queue\AsynchronousProcess;
 use CloudCreativity\LaravelJsonApi\Contracts\Repositories\ErrorRepositoryInterface;
 use CloudCreativity\LaravelJsonApi\Document\Error;
 use Illuminate\Http\Response;
-use Illuminate\Support\Arr;
 use Neomerx\JsonApi\Contracts\Codec\CodecMatcherInterface;
 use Neomerx\JsonApi\Contracts\Document\DocumentInterface;
 use Neomerx\JsonApi\Contracts\Document\ErrorInterface;

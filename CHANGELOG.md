@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
-## Unreleased
+## [1.0.0-beta.6] - 2019-01-03
 
 ### Added
 - [#277](https://github.com/cloudcreativity/laravel-json-api/pull/277)
@@ -10,12 +10,15 @@ Eloquent adapter can now support soft-deleting, restoring and force-deleting res
 a trait to the adapter. See the soft-deletes documentation chapter for details.
 - [#247](https://github.com/cloudcreativity/laravel-json-api/issues/247) 
 New date time rule object to validate a JSON date string is a valid ISO 8601 date and time format.
-- [#246](https://github.com/cloudcreativity/laravel-json-api/issues/246)
-Can now disable providing the existing resource attributes to the resource validator for an update
-request.
+- [#261](https://github.com/cloudcreativity/laravel-json-api/pull/261)
+Package now supports the JSON API recommendation for asynchronous processing. See the
+[Asynchronous Processing](./docs/features/async.md) chapter for details.
 - [#267](https://github.com/cloudcreativity/laravel-json-api/issues/267)
 New adapter hooks are invoked to allow either the filling of additional attributes or dispatching
 asynchronous processes from within an adapter.
+- [#246](https://github.com/cloudcreativity/laravel-json-api/issues/246)
+Can now disable providing the existing resource attributes to the resource validator for an update
+request.
 - Added an `existingRelationships` method to the abstract validators class. Child classes can overload
 this method if they need the validator to have access to any existing relationship values for an
 update request.
@@ -28,6 +31,10 @@ common field names, as field names share a common namespace.
 ### Changed
 - [#248](https://github.com/cloudcreativity/laravel-json-api/pull/248)
 Adapters now receive the JSON API document (HTTP content) as an array.
+- [#278](https://github.com/cloudcreativity/laravel-json-api/pull/278)
+The adapter's `read` method now receives the record being read as its first argument rather than
+the resource ID. This makes it consistent with all other adapter methods that receive the record being
+read.
 - Renamed `Http\Requests\IlluminateRequest` to `Http\Requests\JsonApiRequest`.
 - The `getJsonApi()` test helper method now only has two arguments: URI and headers. Previously it
 accepted data as the second argument.
@@ -36,6 +43,8 @@ methods.
 - Improve the store aware trait so that it returns a store even if one has not been injected.
 - Encoding parameters are now resolved as a singleton in the Laravel container and are bound into the
 responses factory even in custom routes.
+- The responses factory `error` method now only creates a response for a single error. For multi-error
+responses, the `errors` method should be used.
 
 ### Fixed
 - [#201](https://github.com/cloudcreativity/laravel-json-api/issues/201)
