@@ -97,17 +97,11 @@ class Store implements StoreInterface
     /**
      * @inheritDoc
      */
-    public function readRecord($resourceType, $resourceId, EncodingParametersInterface $params)
+    public function readRecord($record, EncodingParametersInterface $params)
     {
-        $record = $this
-            ->adapterFor($resourceType)
-            ->read($resourceId, $params);
-
-        if ($record) {
-            $this->identityMap->add(ResourceIdentifier::create($resourceType, $resourceId), $record);
-        }
-
-        return $record;
+        return $this
+            ->adapterFor($record)
+            ->read($record, $params);
     }
 
     /**

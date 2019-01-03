@@ -37,17 +37,17 @@ class DummyClass extends AbstractResourceAdapter
     /**
      * @inheritDoc
      */
-    public function query(EncodingParametersInterface $parameters)
+    protected function destroy($record)
     {
-        // TODO: Implement query() method.
+        // TODO: Implement destroy() method.
     }
 
     /**
      * @inheritDoc
      */
-    public function delete($record, EncodingParametersInterface $params)
+    public function query(EncodingParametersInterface $parameters)
     {
-        // TODO: Implement delete() method.
+        // TODO: Implement query() method.
     }
 
     /**

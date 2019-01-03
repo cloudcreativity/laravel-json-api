@@ -74,12 +74,12 @@ interface StoreInterface
     /**
      * Query the store for a single record using the supplied parameters.
      *
-     * @param string $resourceType
-     * @param string $resourceId
+     * @param object $record
+     *      the domain record being read.
      * @param EncodingParametersInterface $params
      * @return object|null
      */
-    public function readRecord($resourceType, $resourceId, EncodingParametersInterface $params);
+    public function readRecord($record, EncodingParametersInterface $params);
 
     /**
      * Update a domain record with data from the supplied resource object.

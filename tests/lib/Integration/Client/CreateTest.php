@@ -33,6 +33,7 @@ class CreateTest extends TestCase
             'attributes' => [
                 'created-at' => null,
                 'updated-at' => null,
+                'deleted-at' => null,
                 'title' => $post->title,
                 'slug' => $post->slug,
                 'content' => $post->content,
@@ -67,6 +68,7 @@ class CreateTest extends TestCase
             'attributes' => [
                 'created-at' => null,
                 'updated-at' => null,
+                'deleted-at' => null,
                 'title' => $post->title,
                 'slug' => $post->slug,
                 'content' => $post->content,
@@ -147,6 +149,7 @@ class CreateTest extends TestCase
                 'attributes' => [
                     'created-at' => null,
                     'updated-at' => null,
+                    'deleted-at' => null,
                     'title' => $post->title,
                     'slug' => $post->slug,
                     'content' => $post->content,
@@ -192,6 +195,7 @@ class CreateTest extends TestCase
                 'attributes' => [
                     'created-at' => $post->created_at->toAtomString(),
                     'updated-at' => $post->updated_at->toAtomString(),
+                    'deleted-at' => null,
                     'title' => $post->title,
                     'slug' => $post->slug,
                     'content' => $post->content,

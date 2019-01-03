@@ -487,6 +487,14 @@ protected function methodForRelation($field)
 }
 ```
 
+### Soft-Deleting
+
+By default the Eloquent resource adapter uses the model's `delete` method when the client sends a `DELETE`
+request. It also does not find soft-deleted models for a `GET` request. This package provides a trait to
+modify this default behaviour and expose soft-deleting capabilities to the client.
+
+See the [Soft Deleting](../features/soft-deletes.md) for information on implementing this.
+
 ## Custom Adapters
 
 Custom adapters can be used for any domain record that is not an Eloquent model. Adapters will work with this
@@ -545,6 +553,14 @@ class DummyClass extends AbstractResourceAdapter
     {
         // TODO: Implement persist() method.
     }
+  
+    /**
+     * @inheritDoc
+     */  
+    protected function destroy($record)
+    {
+        // TODO: Implement destroy() method.
+    }
 
     /**
      * @inheritDoc
@@ -552,14 +568,6 @@ class DummyClass extends AbstractResourceAdapter
     public function query(EncodingParametersInterface $parameters)
     {
         // TODO: Implement query() method.
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function delete($record, EncodingParametersInterface $params)
-    {
-        // TODO: Implement delete() method.
     }
 
     /**
@@ -622,3 +630,50 @@ class Adapter extends AbstractAdapter
     }
 }
 ```
+
+## Adapter Hooks
+
+Adapter provide a number of hooks that allow you to perform custom filling logic when a resource is being
+created or updated.
+
+When a resource is being created, the `saving`, `creating`, `created` and `saved` hooks will be invoked.
+For an update, the `saving`, `updating`, `updated` and `saved` hooks are invoked. All these hooks received the
+record as the first object, and the resource object sent by the client as the second argument.
+
+For example, if we wanted to store the user creating a comment resource, we could use the `creating` hook
+on our adapter:
+
+```php
+class Adapter extends AbstractAdapter
+{
+    // ...
+    
+    protected function creating(Comment $comment): void
+    {
+        $comment->createdBy()->associate(Auth::user());
+    }
+}
+```
+
+Or if your resource uses a client-generated ID, you can assign the id in the `creating` hook:
+
+```php
+class Adapter extends AbstractAdapter
+{
+    // ...
+    
+    protected function creating(Comment $comment, $resource): void
+    {
+        $comment->{$comment->getRouteKeyName()} = $resource['id']; 
+    }
+}
+```
+
+There are two additional hooks that are invoked when an adapter is deleting a resource: `deleting` and `deleted`.
+These receive the record being deleted as the first function argument.
+
+> As the adapter is the place where records are filled with values provided by a client, adapter hooks are
+primarily intended for additional *filling* logic. I.e. to fill values that are not provided by the client.
+[Controllers](./controllers.md) provided an extensive list of hooks that are intended for dispatching jobs
+and events. Additionally, you can use [Asynchronous Processing](../features/async.md) for complex job
+processing.

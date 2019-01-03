@@ -114,22 +114,12 @@ class StoreTest extends TestCase
         $params = new EncodingParameters();
         $expected = new \stdClass();
 
-        $store = $this->store([
-            'posts' => $this->willNotQuery(),
-            'comments' => $this->willReadRecord('1', $params, $expected)
+        $store = $this->storeByTypes([
+            \DateTime::class => $this->willNotQuery(),
+            \stdClass::class => $this->willReadRecord($expected, $params),
         ]);
 
-        $this->assertSame($expected, $store->readRecord('comments', '1', $params));
-    }
-
-    /**
-     * If there is no adapter for the resource type, an exception must be thrown.
-     */
-    public function testCannotReadRecord()
-    {
-        $store = $this->store(['posts' => $this->willNotQuery()]);
-        $this->expectException(RuntimeException::class);
-        $store->readRecord('users', '1', new EncodingParameters());
+        $this->assertSame($expected, $store->readRecord($expected, $params));
     }
 
     public function testUpdateRecord()
@@ -631,24 +621,24 @@ class StoreTest extends TestCase
     }
 
     /**
-     * @param $resourceId
-     * @param $params
      * @param $record
+     * @param $params
      * @return MockObject
      */
-    private function willReadRecord($resourceId, $params, $record)
+    private function willReadRecord($record, $params)
     {
         $mock = $this->adapter();
 
         $mock->expects($this->atLeastOnce())
             ->method('read')
-            ->with($resourceId, $params)
+            ->with($record, $params)
             ->willReturn($record);
 
         return $mock;
     }
 
     /**
+     * @param $record
      * @param $resourceObject
      * @param $params
      * @param $expected

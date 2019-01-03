@@ -102,14 +102,7 @@ trait IncludesModels
     protected function load($record, EncodingParametersInterface $parameters)
     {
         $relationshipPaths = $this->getRelationshipPaths($parameters->getIncludePaths());
-
-        /** Eager load anything that needs to be loaded. */
-        if (method_exists($record, 'loadMissing')) {
-            $record->loadMissing($relationshipPaths);
-        } else {
-            /** @todo remove this when dropping support for Laravel 5.4 */
-            $record->load($relationshipPaths);
-        }
+        $record->loadMissing($relationshipPaths);
     }
 
     /**

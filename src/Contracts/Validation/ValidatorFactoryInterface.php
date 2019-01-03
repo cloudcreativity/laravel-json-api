@@ -26,6 +26,13 @@ interface ValidatorFactoryInterface
 {
 
     /**
+     * Does the resource support client-generated ids?
+     *
+     * @return bool
+     */
+    public function supportsClientIds(): bool;
+
+    /**
      * Get a document validator for a create resource request.
      *
      * @param array $document

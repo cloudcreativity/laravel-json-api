@@ -210,6 +210,26 @@ class ErrorTranslator
     }
 
     /**
+     * Create an error for when a resource does not support client-generated ids.
+     *
+     * @param string $type
+     * @param string $path
+     * @return ErrorInterface
+     */
+    public function resourceDoesNotSupportClientIds(string $type, string $path = '/data'): ErrorInterface
+    {
+        return new Error(
+            null,
+            null,
+            Response::HTTP_FORBIDDEN,
+            $this->trans('resource_client_ids_not_supported', 'code'),
+            $this->trans('resource_client_ids_not_supported', 'title'),
+            $this->trans('resource_client_ids_not_supported', 'detail', compact('type')),
+            $this->pointer($path, 'id')
+        );
+    }
+
+    /**
      * Create an error for a resource already existing.
      *
      * @param string $type
@@ -348,8 +368,7 @@ class ErrorTranslator
         if (!$member) {
             $pointer = $path;
         } else {
-            $path = rtrim($path, '/');
-            $pointer = $member ? sprintf('%s/%s', $path, $member) : $path;
+            $pointer = $member ? sprintf('%s/%s', rtrim($path, '/'), $member) : $path;
         }
 
         return [Error::SOURCE_POINTER => $pointer];

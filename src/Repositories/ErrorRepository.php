@@ -86,6 +86,10 @@ class ErrorRepository implements ErrorRepositoryInterface
                 $error = $this->error($error);
             }
 
+            if (is_array($error)) {
+                $error = Error::create($error);
+            }
+
             $errors->add($error);
         }
 

@@ -98,10 +98,9 @@ class ErrorsTest extends TestCase
     public function testDocumentRequired($content, $method = 'POST')
     {
         if ('POST' === $method) {
-            $uri = $this->apiUrl()->getResourceTypeUrl('posts');
+            $uri = $this->resourceUrl();
         } else {
-            $model = factory(Post::class)->create();
-            $uri = $this->apiUrl()->getResourceUrl('posts', $model);
+            $uri = $this->resourceUrl(factory(Post::class)->create());
         }
 
         $expected = [
@@ -155,7 +154,7 @@ class ErrorsTest extends TestCase
      */
     public function testCustomDocumentRequired()
     {
-        $uri = $this->apiUrl()->getResourceTypeUrl('posts');
+        $uri = $this->resourceUrl();
         $expected = $this->withCustomError(DocumentRequiredException::class);
 
         $this->doInvalidRequest($uri, '')
@@ -169,7 +168,7 @@ class ErrorsTest extends TestCase
      */
     public function testInvalidJson()
     {
-        $uri = $this->api()->url()->create('posts');
+        $uri = $this->resourceUrl();
         $content = '{"data": {}';
 
         $this->doInvalidRequest($uri, $content)->assertStatus(400)->assertExactJson([
@@ -189,7 +188,7 @@ class ErrorsTest extends TestCase
      */
     public function testCustomInvalidJson()
     {
-        $uri = $this->api()->url()->create('posts');
+        $uri = $this->resourceUrl();
         $expected = $this->withCustomError(InvalidJsonException::class);
         $content = '{"data": {}';
 

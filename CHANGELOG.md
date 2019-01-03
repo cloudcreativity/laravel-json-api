@@ -5,11 +5,17 @@ All notable changes to this project will be documented in this file. This projec
 ## Unreleased
 
 ### Added
+- [#277](https://github.com/cloudcreativity/laravel-json-api/pull/277)
+Eloquent adapter can now support soft-deleting, restoring and force-deleting resources by applying
+a trait to the adapter. See the soft-deletes documentation chapter for details.
 - [#247](https://github.com/cloudcreativity/laravel-json-api/issues/247) 
 New date time rule object to validate a JSON date string is a valid ISO 8601 date and time format.
 - [#246](https://github.com/cloudcreativity/laravel-json-api/issues/246)
 Can now disable providing the existing resource attributes to the resource validator for an update
 request.
+- [#267](https://github.com/cloudcreativity/laravel-json-api/issues/267)
+New adapter hooks are invoked to allow either the filling of additional attributes or dispatching
+asynchronous processes from within an adapter.
 - Added an `existingRelationships` method to the abstract validators class. Child classes can overload
 this method if they need the validator to have access to any existing relationship values for an
 update request.
@@ -25,12 +31,24 @@ Adapters now receive the JSON API document (HTTP content) as an array.
 - Renamed `Http\Requests\IlluminateRequest` to `Http\Requests\JsonApiRequest`.
 - The `getJsonApi()` test helper method now only has two arguments: URI and headers. Previously it
 accepted data as the second argument.
-- Improved test assertions and tidied up the test response class.
+- Improved test assertions and tidied up the test response class. Also added PHP 7 type-hinting to the
+methods.
 - Improve the store aware trait so that it returns a store even if one has not been injected.
+- Encoding parameters are now resolved as a singleton in the Laravel container and are bound into the
+responses factory even in custom routes.
 
 ### Fixed
 - [#201](https://github.com/cloudcreativity/laravel-json-api/issues/201)
 Adapters now receive the array that has been transformed by Laravel's middleware, e.g. trim strings.
+- Legacy validators now correctly receive the record when validating a document for an update resource
+or update relationship request. This matches previous behaviour which was removed by accident in `beta.4`.
+- [#255](https://github.com/cloudcreativity/laravel-json-api/issues/255)
+Fix invalid pointer for a required resource field when the client does not supply the field.
+- [#273](https://github.com/cloudcreativity/laravel-json-api/issues/273)
+Responses class now correctly passes an array of errors to the error repository.
+- [#259](https://github.com/cloudcreativity/laravel-json-api/issues/259)
+If a client sends a client-generated ID for a resource that does not support client-generated IDs, a
+`403 Forbidden` response will be sent, as defined in the JSON API spec.
 
 ### Removed
 - The deprecated `Contracts\Store\AdapterInterface` was removed. Use 
@@ -64,6 +82,9 @@ because these were not in use.
 ### Deprecated
 - All interfaces in the `Contracts\Object` namespace will be removed for `2.0`.
 - All classes in the `Object` namespace will be removed for `2.0`.
+- A number of methods on the `MakesJsonApiRequests` and `TestResponse` classes have been deprecated as
+they are better named equivalents or they are not applicable to the current testing approach. These will
+be removed in `2.0`.
 
 ## [1.0.0-beta.5] - 2018-10-13
 

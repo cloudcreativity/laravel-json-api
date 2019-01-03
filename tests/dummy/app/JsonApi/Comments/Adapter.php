@@ -17,7 +17,6 @@
 
 namespace DummyApp\JsonApi\Comments;
 
-use CloudCreativity\LaravelJsonApi\Document\ResourceObject;
 use CloudCreativity\LaravelJsonApi\Eloquent\AbstractAdapter;
 use CloudCreativity\LaravelJsonApi\Eloquent\BelongsTo;
 use CloudCreativity\LaravelJsonApi\Pagination\CursorStrategy;
@@ -71,22 +70,20 @@ class Adapter extends AbstractAdapter
     /**
      * @inheritDoc
      */
-    protected function createRecord(ResourceObject $resource)
-    {
-        $record = new Comment();
-        $record->user()->associate(Auth::user());
-
-        return $record;
-    }
-
-    /**
-     * @inheritDoc
-     */
     protected function filter($query, Collection $filters)
     {
         if ($createdBy = $filters->get('created-by')) {
             $query->where('comments.user_id', $createdBy);
         }
+    }
+
+    /**
+     * @param Comment $comment
+     * @return void
+     */
+    protected function creating(Comment $comment)
+    {
+        $comment->user()->associate(Auth::user());
     }
 
 }

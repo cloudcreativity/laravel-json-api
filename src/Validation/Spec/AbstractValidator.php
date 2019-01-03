@@ -438,6 +438,18 @@ abstract class AbstractValidator implements DocumentValidatorInterface
     }
 
     /**
+     * Add an error for when the resource does not support client-generated ids.
+     *
+     * @param string $type
+     * @param string $path
+     * @return void
+     */
+    protected function resourceDoesNotSupportClientIds(string $type, string $path = '/data'): void
+    {
+        $this->errors->add($this->translator->resourceDoesNotSupportClientIds($type, $path));
+    }
+
+    /**
      * Add an error for when a resource already exists.
      *
      * @param string $type

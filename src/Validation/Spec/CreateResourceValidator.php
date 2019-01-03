@@ -37,18 +37,28 @@ class CreateResourceValidator extends AbstractValidator
     private $expectedType;
 
     /**
+     * Whether client ids are supported.
+     *
+     * @var bool
+     */
+    private $clientIds;
+
+    /**
      * CreateResourceValidator constructor.
      *
      * @param StoreInterface $store
      * @param ErrorTranslator $translator
      * @param object $document
      * @param string $expectedType
+     * @param bool $clientIds
+     *      whether client ids are supported.
      */
     public function __construct(
         StoreInterface $store,
         ErrorTranslator $translator,
         $document,
-        string $expectedType
+        string $expectedType,
+        bool $clientIds = false
     ) {
         if (empty($expectedType)) {
             throw new InvalidArgumentException('Expecting type to be a non-empty string.');
@@ -56,6 +66,7 @@ class CreateResourceValidator extends AbstractValidator
 
         parent::__construct($store, $translator, $document);
         $this->expectedType = $expectedType;
+        $this->clientIds = $clientIds;
     }
 
     /**
@@ -170,7 +181,14 @@ class CreateResourceValidator extends AbstractValidator
             return true;
         }
 
-        return $this->validateIdMember($this->dataGet('id'), '/data');
+        $valid = $this->validateIdMember($this->dataGet('id'), '/data');
+
+        if (!$this->supportsClientIds()) {
+            $valid = false;
+            $this->resourceDoesNotSupportClientIds($this->expectedType);
+        }
+
+        return $valid;
     }
 
     /**
@@ -250,6 +268,16 @@ class CreateResourceValidator extends AbstractValidator
         $this->resourceFieldsExistInAttributesAndRelationships($duplicates);
 
         return $duplicates->isEmpty();
+    }
+
+    /**
+     * Are client ids supported?
+     *
+     * @return bool
+     */
+    protected function supportsClientIds(): bool
+    {
+        return $this->clientIds;
     }
 
 }

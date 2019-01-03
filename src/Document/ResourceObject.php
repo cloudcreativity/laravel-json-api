@@ -551,7 +551,7 @@ class ResourceObject implements Arrayable, \IteratorAggregate, \JsonSerializable
             return $prefix . "/relationships/{$name}";
         }
 
-        return $prefix . '/';
+        return $prefix ? $prefix : '/';
     }
 
     /**

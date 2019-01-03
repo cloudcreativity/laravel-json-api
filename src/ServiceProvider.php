@@ -45,11 +45,16 @@ use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 use Illuminate\View\Compilers\BladeCompiler;
 use Neomerx\JsonApi\Contracts\Document\DocumentFactoryInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Handlers\HandlerFactoryInterface;
+use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Parser\ParserFactoryInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Stack\StackFactoryInterface;
 use Neomerx\JsonApi\Contracts\Factories\FactoryInterface as NeomerxFactoryInterface;
+use Neomerx\JsonApi\Contracts\Http\Headers\HeaderParametersInterface;
+use Neomerx\JsonApi\Contracts\Http\Headers\HeaderParametersParserInterface;
 use Neomerx\JsonApi\Contracts\Http\HttpFactoryInterface;
+use Neomerx\JsonApi\Contracts\Http\Query\QueryParametersParserInterface;
 use Neomerx\JsonApi\Contracts\Schema\SchemaFactoryInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -142,7 +147,7 @@ class ServiceProvider extends BaseServiceProvider
     {
         Response::macro('jsonApi', function ($api = null) {
             return json_api($api)->getResponses()->withEncodingParameters(
-                json_api_request()->getParameters()
+                app(EncodingParametersInterface::class)
             );
         });
     }
@@ -246,6 +251,24 @@ class ServiceProvider extends BaseServiceProvider
 
         $this->app->bind(ContainerInterface::class, function () {
             return json_api()->getContainer();
+        });
+
+        $this->app->singleton(HeaderParametersInterface::class, function (Application $app) {
+            /** @var HeaderParametersParserInterface $parser */
+            $parser = $app->make(HttpFactoryInterface::class)->createHeaderParametersParser();
+            /** @var ServerRequestInterface $serverRequest */
+            $serverRequest = $app->make(ServerRequestInterface::class);
+
+            return $parser->parse($serverRequest, http_contains_body($serverRequest));
+        });
+
+        $this->app->singleton(EncodingParametersInterface::class, function (Application $app) {
+            /** @var QueryParametersParserInterface $parser */
+            $parser = $app->make(HttpFactoryInterface::class)->createQueryParametersParser();
+
+            return $parser->parseQueryParameters(
+                request()->query()
+            );
         });
     }
 

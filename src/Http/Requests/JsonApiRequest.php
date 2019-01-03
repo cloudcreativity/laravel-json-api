@@ -19,22 +19,22 @@ namespace CloudCreativity\LaravelJsonApi\Http\Requests;
 
 use CloudCreativity\LaravelJsonApi\Api\Codec;
 use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceIdentifierInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Queue\AsynchronousProcess;
 use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\InvalidJsonException;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Object\ResourceIdentifier;
 use CloudCreativity\LaravelJsonApi\Routing\ResourceRegistrar;
-use CloudCreativity\LaravelJsonApi\Utils\Helpers;
+use Illuminate\Contracts\Container\Container;
 use Illuminate\Http\Request;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use Neomerx\JsonApi\Contracts\Http\Headers\HeaderParametersInterface;
-use Neomerx\JsonApi\Contracts\Http\HttpFactoryInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use function CloudCreativity\LaravelJsonApi\http_contains_body;
 use function CloudCreativity\LaravelJsonApi\json_decode;
 
 /**
- * Class IlluminateRequest
+ * Class JsonApiRequest
  *
  * @package CloudCreativity\LaravelJsonApi
  */
@@ -47,19 +47,14 @@ class JsonApiRequest
     private $request;
 
     /**
-     * @var ServerRequestInterface
-     */
-    private $serverRequest;
-
-    /**
-     * @var HttpFactoryInterface
-     */
-    private $factory;
-
-    /**
      * @var ResolverInterface
      */
     private $resolver;
+
+    /**
+     * @var Container
+     */
+    private $container;
 
     /**
      * @var HeaderParametersInterface|null
@@ -95,20 +90,14 @@ class JsonApiRequest
      * IlluminateRequest constructor.
      *
      * @param Request $request
-     * @param ServerRequestInterface $serverRequest
      * @param ResolverInterface $resolver
-     * @param HttpFactoryInterface $factory
+     * @param Container $container
      */
-    public function __construct(
-        Request $request,
-        ServerRequestInterface $serverRequest,
-        ResolverInterface $resolver,
-        HttpFactoryInterface $factory
-    ) {
+    public function __construct(Request $request, ResolverInterface $resolver, Container $container)
+    {
         $this->request = $request;
-        $this->serverRequest = $serverRequest;
         $this->resolver = $resolver;
-        $this->factory = $factory;
+        $this->container = $container;
     }
 
     /**
@@ -122,9 +111,7 @@ class JsonApiRequest
             return $this->headers;
         }
 
-        return $this->headers = $this->factory
-            ->createHeaderParametersParser()
-            ->parse($this->serverRequest, Helpers::doesRequestHaveBody($this->serverRequest));
+        return $this->headers = $this->container->make(HeaderParametersInterface::class);
     }
 
     /**
@@ -284,6 +271,16 @@ class JsonApiRequest
     }
 
     /**
+     * @return AsynchronousProcess|null
+     */
+    public function getProcess(): ?AsynchronousProcess
+    {
+        $process = $this->request->route(ResourceRegistrar::PARAM_PROCESS_ID);
+
+        return ($process instanceof AsynchronousProcess) ? $process : null;
+    }
+
+    /**
      * Get the process identifier for the request.
      *
      * @return ResourceIdentifierInterface|null
@@ -309,7 +306,7 @@ class JsonApiRequest
             return $this->parameters;
         }
 
-        return $this->parameters = $this->parseParameters();
+        return $this->parameters = $this->container->make(EncodingParametersInterface::class);
     }
 
     /**
@@ -623,21 +620,14 @@ class JsonApiRequest
             return false;
         }
 
-        if (!http_contains_body($this->serverRequest)) {
+        $serverRequest = $this->container->make(ServerRequestInterface::class);
+
+        /** @todo allow a Laravel request to be passed to http_contains_body */
+        if (!http_contains_body($serverRequest)) {
             return false;
         }
 
-        return json_decode((string) $this->serverRequest->getBody());
-    }
-
-    /**
-     * @return EncodingParametersInterface
-     */
-    private function parseParameters(): EncodingParametersInterface
-    {
-        $parser = $this->factory->createQueryParametersParser();
-
-        return $parser->parseQueryParameters($this->serverRequest->getQueryParams());
+        return json_decode($this->request->getContent());
     }
 
     /**

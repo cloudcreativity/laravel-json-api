@@ -73,6 +73,7 @@ class MorphToTest extends TestCase
         ];
 
         $id = $this
+            ->actingAs($comment->user)
             ->doCreate($data)
             ->assertCreatedWithId($data);
 

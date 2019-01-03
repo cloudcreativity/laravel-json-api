@@ -50,6 +50,7 @@ class CreateTables extends Migration
         Schema::create('posts', function (Blueprint $table) {
             $table->increments('id');
             $table->timestamps();
+            $table->softDeletes();
             $table->timestamp('published_at')->nullable();
             $table->string('title');
             $table->string('slug');
