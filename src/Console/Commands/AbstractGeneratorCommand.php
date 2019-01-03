@@ -97,11 +97,6 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
             return 1;
         }
 
-        /** @todo remove when removing support for Laravel 5.4 */
-        if (method_exists($this, 'fire')) {
-            return ($this->fire() !== false) ? 0 : 1;
-        }
-
         return (parent::handle() !== false) ? 0 : 1;
     }
 

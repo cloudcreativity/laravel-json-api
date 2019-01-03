@@ -119,12 +119,7 @@ trait SortsModels
     {
         $key = $this->columnForField($field, $query->getModel());
 
-        /** @todo in Laravel >=5.5 can use `qualifyColumn` on the query builder. */
-        if (!str_contains($key, '.')) {
-            $key = $query->getModel()->getTable() . '.' . $key;
-        }
-
-        return $key;
+        return $query->qualifyColumn($key);
     }
 
     /**

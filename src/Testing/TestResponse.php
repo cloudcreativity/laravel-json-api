@@ -420,10 +420,8 @@ class TestResponse extends BaseTestResponse
         if (is_null($resourceType)) {
             $this->assertSearchedNone();
         } elseif (!is_null($expectedIds)) {
-            // @todo this checks for resources, not identifiers.
             $this->assertSearchedIds($expectedIds, $resourceType);
         } else {
-            // @todo this checks for resources, not identifiers.
             $this->assertSearchedMany($resourceType);
         }
 
