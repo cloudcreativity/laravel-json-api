@@ -18,9 +18,9 @@
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Queue;
 
 use CloudCreativity\LaravelJsonApi\Queue\ClientJob;
+use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
 use DummyApp\Jobs\CreateDownload;
 use DummyApp\JsonApi\QueueJobs;
-use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
 
 class CustomiseTest extends TestCase
 {

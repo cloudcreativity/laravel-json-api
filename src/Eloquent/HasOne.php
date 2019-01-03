@@ -17,7 +17,6 @@
 
 namespace CloudCreativity\LaravelJsonApi\Eloquent;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Object\RelationshipInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;

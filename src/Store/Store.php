@@ -27,7 +27,6 @@ use CloudCreativity\LaravelJsonApi\Exceptions\RecordNotFoundException;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Object\ResourceIdentifier;
 use CloudCreativity\LaravelJsonApi\Object\ResourceIdentifierCollection;
-use Illuminate\Support\Collection;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 /**
