@@ -91,10 +91,8 @@ class Responses extends BaseResponses
      */
     public static function create($apiName = null)
     {
-        $api = json_api($apiName);
-        $request = json_api_request();
-
-        return $api->response($request ? $request->getParameters() : null);
+        return json_api($apiName)
+            ->response(app(EncodingParametersInterface::class));
     }
 
     /**

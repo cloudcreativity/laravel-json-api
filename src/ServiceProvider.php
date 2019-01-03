@@ -44,10 +44,12 @@ use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 use Illuminate\View\Compilers\BladeCompiler;
 use Neomerx\JsonApi\Contracts\Document\DocumentFactoryInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Handlers\HandlerFactoryInterface;
+use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Parser\ParserFactoryInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Stack\StackFactoryInterface;
 use Neomerx\JsonApi\Contracts\Factories\FactoryInterface as NeomerxFactoryInterface;
 use Neomerx\JsonApi\Contracts\Http\HttpFactoryInterface;
+use Neomerx\JsonApi\Contracts\Http\Query\QueryParametersParserInterface;
 use Neomerx\JsonApi\Contracts\Schema\SchemaFactoryInterface;
 use Psr\Log\LoggerInterface;
 
@@ -242,6 +244,15 @@ class ServiceProvider extends BaseServiceProvider
 
         $this->app->bind(ContainerInterface::class, function () {
             return json_api()->getContainer();
+        });
+
+        $this->app->singleton(EncodingParametersInterface::class, function (Application $app) {
+            /** @var QueryParametersParserInterface $parser */
+            $parser = $app->make(HttpFactoryInterface::class)->createQueryParametersParser();
+
+            return $parser->parseQueryParameters(
+                request()->query()
+            );
         });
     }
 

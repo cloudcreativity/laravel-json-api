@@ -34,6 +34,8 @@ accepted data as the second argument.
 - Improved test assertions and tidied up the test response class. Also added PHP 7 type-hinting to the
 methods.
 - Improve the store aware trait so that it returns a store even if one has not been injected.
+- Encoding parameters are now resolved as a singleton in the Laravel container and are bound into the
+responses factory even in custom routes.
 
 ### Fixed
 - [#201](https://github.com/cloudcreativity/laravel-json-api/issues/201)
