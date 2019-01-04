@@ -2,11 +2,9 @@
 
 namespace CloudCreativity\LaravelJsonApi\Http;
 
-use CloudCreativity\LaravelJsonApi\Api\Api;
 use CloudCreativity\LaravelJsonApi\Api\Codec;
 use CloudCreativity\LaravelJsonApi\Api\Codecs;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\ContentNegotiatorInterface;
-use CloudCreativity\LaravelJsonApi\Http\Requests\JsonApiRequest;
 use CloudCreativity\LaravelJsonApi\Utils\Helpers;
 use Illuminate\Http\Request;
 use Neomerx\JsonApi\Contracts\Http\Headers\AcceptHeaderInterface;
@@ -18,31 +16,28 @@ class ContentNegotiator implements ContentNegotiatorInterface
 {
 
     /**
-     * @var JsonApiRequest
+     * @var HeaderParametersInterface
      */
-    private $jsonApiRequest;
+    private $headers;
 
     /**
      * ContentNegotiator constructor.
      *
-     * @param JsonApiRequest $jsonApiRequest
+     * @param HeaderParametersInterface $headers
      */
-    public function __construct(JsonApiRequest $jsonApiRequest)
+    public function __construct(HeaderParametersInterface $headers)
     {
-        $this->jsonApiRequest = $jsonApiRequest;
+        $this->headers = $headers;
     }
 
     /**
      * @inheritDoc
      */
-    public function negotiate(Api $api, $request, $record = null): Codec
+    public function negotiate(Codecs $codecs, $request, $record = null): Codec
     {
-        $headers = $this->extractHeaders($request);
-        $codecs = $this->willSeeOne($api, $request, $record);
-
         return $this->checkHeaders(
-            $headers->getAcceptHeader(),
-            $headers->getContentTypeHeader(),
+            $this->headers->getAcceptHeader(),
+            $this->headers->getContentTypeHeader(),
             $codecs,
             $request
         );
@@ -51,14 +46,11 @@ class ContentNegotiator implements ContentNegotiatorInterface
     /**
      * @inheritDoc
      */
-    public function negotiateMany(Api $api, $request): Codec
+    public function negotiateMany(Codecs $codecs, $request): Codec
     {
-        $headers = $this->extractHeaders($request);
-        $codecs = $this->willSeeMany($api, $request);
-
         return $this->checkHeaders(
-            $headers->getAcceptHeader(),
-            $headers->getContentTypeHeader(),
+            $this->headers->getAcceptHeader(),
+            $this->headers->getContentTypeHeader(),
             $codecs,
             $request
         );
@@ -116,31 +108,6 @@ class ContentNegotiator implements ContentNegotiatorInterface
     }
 
     /**
-     * Get the codecs that are accepted when the response will contain a specific resource
-     *
-     * @param Api $api
-     * @param Request $request
-     * @param mixed|null $record
-     * @return Codecs
-     */
-    protected function willSeeOne(Api $api, $request, $record = null): Codecs
-    {
-        return $api->getCodecs();
-    }
-
-    /**
-     * Get the codecs that are accepted when the response will contain zero to many resources.
-     *
-     * @param Api $api
-     * @param $request
-     * @return Codecs
-     */
-    protected function willSeeMany(Api $api, $request): Codecs
-    {
-        return $api->getCodecs();
-    }
-
-    /**
      * Get the exception if the Accept header is not acceptable.
      *
      * @param AcceptHeaderInterface $header
@@ -186,14 +153,4 @@ class ContentNegotiator implements ContentNegotiatorInterface
         );
     }
 
-    /**
-     * Extract JSON API headers from the request.
-     *
-     * @param Request $request
-     * @return HeaderParametersInterface
-     */
-    protected function extractHeaders($request): HeaderParametersInterface
-    {
-        return $this->jsonApiRequest->getHeaders();
-    }
 }

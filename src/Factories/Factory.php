@@ -63,6 +63,7 @@ use Illuminate\Contracts\Validation\Factory as ValidatorFactoryContract;
 use Illuminate\Contracts\Validation\Validator;
 use Neomerx\JsonApi\Contracts\Codec\CodecMatcherInterface;
 use Neomerx\JsonApi\Contracts\Document\LinkInterface;
+use Neomerx\JsonApi\Contracts\Http\Headers\HeaderParametersInterface;
 use Neomerx\JsonApi\Contracts\Schema\ContainerInterface as SchemaContainerInterface;
 use Neomerx\JsonApi\Encoder\EncoderOptions;
 use Neomerx\JsonApi\Factories\Factory as BaseFactory;
@@ -442,7 +443,7 @@ class Factory extends BaseFactory implements FactoryInterface
      */
     public function createContentNegotiator()
     {
-        return new ContentNegotiator($this->container->make('json-api.request'));
+        return new ContentNegotiator($this->container->make(HeaderParametersInterface::class));
     }
 
     /**

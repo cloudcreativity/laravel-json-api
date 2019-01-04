@@ -2,26 +2,25 @@
 
 namespace DummyApp\JsonApi\Avatars;
 
-use CloudCreativity\LaravelJsonApi\Api\Api;
 use CloudCreativity\LaravelJsonApi\Api\Codec;
 use CloudCreativity\LaravelJsonApi\Api\Codecs;
 use CloudCreativity\LaravelJsonApi\Http\ContentNegotiator as BaseContentNegotiator;
-use DummyApp\Avatar;
 
 class ContentNegotiator extends BaseContentNegotiator
 {
 
     /**
-     * @param Api $api
-     * @param \Illuminate\Http\Request $request
-     * @param Avatar|null $record
-     * @return Codecs
+     * @inheritdoc
      */
-    protected function willSeeOne(Api $api, $request, $record = null): Codecs
+    public function negotiate(Codecs $codecs, $request, $record = null): Codec
     {
-        $mediaType = optional($record)->media_type ?: 'image/jpeg';
+        $mediaType = optional($record)->media_type;
 
-        return parent::willSeeOne($api, $request, $record)
-            ->push(Codec::custom($mediaType));
+        $codecs = $codecs->when(!!$mediaType, function (Codecs $codecs) use ($mediaType) {
+            return $codecs->custom($mediaType);
+        });
+
+        return parent::negotiate($codecs, $request, $record);
     }
+
 }

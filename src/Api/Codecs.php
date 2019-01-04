@@ -33,6 +33,22 @@ class Codecs implements \IteratorAggregate, \Countable
     }
 
     /**
+     * Create codecs that will not encode JSON API content.
+     *
+     * @param string|MediaTypeInterface ...$mediaTypes
+     * @return Codecs
+     */
+    public static function createCustom(...$mediaTypes): self
+    {
+        $codecs = new self();
+        $codecs->stack = collect($mediaTypes)->map(function ($mediaType) {
+            return Codec::custom($mediaType);
+        })->all();
+
+        return $codecs;
+    }
+
+    /**
      * Codecs constructor.
      *
      * @param Codec ...$codecs
@@ -64,17 +80,44 @@ class Codecs implements \IteratorAggregate, \Countable
      */
     public function push(Codec ...$codecs): self
     {
-        $copy = clone $this;
+        $copy = new self();
         $copy->stack = collect($this->stack)->merge($codecs)->all();
 
         return $copy;
     }
 
     /**
-     * Push codecs if the truth test is met.
+     * Return a new instance with the supplied codecs merged.
+     *
+     * @param Codecs $codecs
+     * @return Codecs
+     */
+    public function merge(Codecs $codecs): self
+    {
+        $copy = new self();
+        $copy->stack = collect($this->stack)->merge($codecs->stack)->all();
+
+        return $copy;
+    }
+
+    /**
+     * Return a new instance with the supplied custom codecs added to the end of the stack.
+     *
+     * A custom codec is one that does not encode to JSON API.
+     *
+     * @param mixed ...$mediaTypes
+     * @return Codecs
+     */
+    public function custom(...$mediaTypes): self
+    {
+        return $this->merge(self::createCustom(...$mediaTypes));
+    }
+
+    /**
+     * Push codecs if the truth test evaluates to true.
      *
      * @param bool $test
-     * @param Codec|iterable $codecs
+     * @param Codec|iterable|\Closure $codecs
      * @return Codecs
      */
     public function when(bool $test, $codecs): self
@@ -83,9 +126,25 @@ class Codecs implements \IteratorAggregate, \Countable
             return $this;
         }
 
+        if ($codecs instanceof \Closure) {
+            return $codecs($this);
+        }
+
         $codecs = $codecs instanceof Codec ? [$codecs] : $codecs;
 
         return $this->push(...$codecs);
+    }
+
+    /**
+     * Push codecs if the truth test does not evaluate to true.
+     *
+     * @param bool $test
+     * @param $codecs
+     * @return Codecs
+     */
+    public function unless(bool $test, $codecs): self
+    {
+        return $this->when(true !== $test, $codecs);
     }
 
     /**

@@ -20,6 +20,7 @@ namespace CloudCreativity\LaravelJsonApi\Contracts\Http;
 
 use CloudCreativity\LaravelJsonApi\Api\Api;
 use CloudCreativity\LaravelJsonApi\Api\Codec;
+use CloudCreativity\LaravelJsonApi\Api\Codecs;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Neomerx\JsonApi\Exceptions\JsonApiException;
@@ -49,8 +50,8 @@ interface ContentNegotiatorInterface
      *
      * I.e. a response that will contain a specific resource.
      *
-     * @param Api $api
-     *      the API handling the request.
+     * @param Codecs $codecs
+     *      the default codecs for the API.
      * @param Request $request
      *      the request.
      * @param mixed|null $record
@@ -60,7 +61,7 @@ interface ContentNegotiatorInterface
      * @throws HttpException
      * @throws JsonApiException
      */
-    public function negotiate(Api $api, $request, $record = null): Codec;
+    public function negotiate(Codecs $codecs, $request, $record = null): Codec;
 
     /**
      * Negotiate content for a fetch many request.
@@ -72,8 +73,8 @@ interface ContentNegotiatorInterface
      *
      * I.e. a response that will contain zero to many of the posts resource.
      *
-     * @param Api $api
-     *      the API handling the request.
+     * @param Codecs $codecs
+     *      the default codecs for the API.
      * @param Request $request
      *      the request.
      * @return Codec
@@ -81,6 +82,6 @@ interface ContentNegotiatorInterface
      * @throws HttpException
      * @throws JsonApiException
      */
-    public function negotiateMany(Api $api, $request): Codec;
+    public function negotiateMany(Codecs $codecs, $request): Codec;
 
 }

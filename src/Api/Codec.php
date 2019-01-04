@@ -58,7 +58,7 @@ class Codec
     }
 
     /**
-     * Create a codec that will not encoded JSON API content.
+     * Create a codec that will not encode JSON API content.
      *
      * @param string|MediaTypeInterface $mediaType
      * @return Codec

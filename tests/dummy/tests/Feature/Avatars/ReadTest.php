@@ -39,7 +39,7 @@ class ReadTest extends TestCase
 
     /**
      * If the avatar model exists, but the file doesn't, we need to get an error back. As
-     * we have not requests JSON API, this should be the standard Laravel error i.e.
+     * we have not requested JSON API, this should be the standard Laravel error i.e.
      * `text/html`.
      */
     public function testDownloadFileDoesNotExist(): void

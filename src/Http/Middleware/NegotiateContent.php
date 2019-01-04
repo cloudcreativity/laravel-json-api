@@ -74,11 +74,13 @@ class NegotiateContent
      */
     protected function negotiate(ContentNegotiatorInterface $negotiator, $request): Codec
     {
+        $codecs = $this->api->getCodecs();
+
         if ($this->jsonApiRequest->willSeeMany()) {
-            return $negotiator->negotiateMany($this->api, $request);
+            return $negotiator->negotiateMany($codecs, $request);
         }
 
-        return $negotiator->negotiate($this->api, $request, $this->jsonApiRequest->getResource());
+        return $negotiator->negotiate($codecs, $request, $this->jsonApiRequest->getResource());
     }
 
     /**
