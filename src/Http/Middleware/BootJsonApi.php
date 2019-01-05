@@ -20,9 +20,12 @@ namespace CloudCreativity\LaravelJsonApi\Http\Middleware;
 use Closure;
 use CloudCreativity\LaravelJsonApi\Api\Api;
 use CloudCreativity\LaravelJsonApi\Api\Repository;
+use CloudCreativity\LaravelJsonApi\Exceptions\ResourceNotFoundException;
+use CloudCreativity\LaravelJsonApi\Routing\Route;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\AbstractPaginator;
+use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 /**
  * Class BootJsonApi
@@ -52,6 +55,7 @@ class BootJsonApi
      *
      * - Loads the configuration for the named API that this request is being routed to.
      * - Registers the API in the service container.
+     * - Substitutes bindings on the route.
      * - Overrides the Laravel current page resolver so that it uses the JSON API page parameter.
      *
      * @param Request $request
@@ -63,7 +67,10 @@ class BootJsonApi
     public function handle($request, Closure $next, string $namespace)
     {
         /** Build and register the API. */
-        $this->bindApi($namespace, $request->getSchemeAndHttpHost() . $request->getBaseUrl());
+        $api = $this->bindApi($namespace, $request->getSchemeAndHttpHost() . $request->getBaseUrl());
+
+        /** Substitute route bindings. */
+        $this->substituteBindings($api);
 
         /** Set up the Laravel paginator to read from JSON API request instead */
         $this->bindPageResolver();
@@ -91,6 +98,17 @@ class BootJsonApi
     }
 
     /**
+     * @param Api $api
+     * @throws ResourceNotFoundException
+     */
+    protected function substituteBindings(Api $api): void
+    {
+        /** @var Route $route */
+        $route = $this->container->make(Route::class);
+        $route->substituteBindings($api->getStore());
+    }
+
+    /**
      * Override the page resolver to read the page parameter from the JSON API request.
      *
      * @return void
@@ -99,7 +117,7 @@ class BootJsonApi
     {
         /** Override the current page resolution */
         AbstractPaginator::currentPageResolver(function ($pageName) {
-            $pagination = json_api_request()->getParameters()->getPaginationParameters() ?: [];
+            $pagination = app(EncodingParametersInterface::class)->getPaginationParameters() ?: [];
 
             return $pagination[$pageName] ?? null;
         });

@@ -20,6 +20,8 @@ namespace CloudCreativity\LaravelJsonApi\Routing;
 use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceIdentifierInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Queue\AsynchronousProcess;
 use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
+use CloudCreativity\LaravelJsonApi\Exceptions\ResourceNotFoundException;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Object\ResourceIdentifier;
 use Illuminate\Routing\Route as IlluminateRoute;
@@ -55,13 +57,44 @@ class Route
     /**
      * Route constructor.
      *
-     * @param IlluminateRoute $route
      * @param ResolverInterface $resolver
+     * @param IlluminateRoute|null $route
+     *      the route, if one was successfully matched.
      */
-    public function __construct(IlluminateRoute $route, ResolverInterface $resolver)
+    public function __construct(ResolverInterface $resolver, ?IlluminateRoute $route)
     {
-        $this->route = $route;
         $this->resolver = $resolver;
+        $this->route = $route;
+    }
+
+    /**
+     * Substitute the route bindings onto the Laravel route.
+     *
+     * @param StoreInterface $store
+     * @return void
+     * @throws ResourceNotFoundException
+     */
+    public function substituteBindings(StoreInterface $store): void
+    {
+        /** Cache the ID values so that we still have access to them. */
+        $this->resourceId = $this->getResourceId() ?: false;
+        $this->processId = $this->getProcessId() ?: false;
+
+        /** Bind the domain record. */
+        if ($this->resourceId) {
+            $this->route->setParameter(
+                ResourceRegistrar::PARAM_RESOURCE_ID,
+                $store->findOrFail($this->getResourceType(), $this->resourceId)
+            );
+        }
+
+        /** Bind the async process. */
+        if ($this->processId) {
+            $this->route->setParameter(
+                ResourceRegistrar::PARAM_PROCESS_ID,
+                $store->findOrFail($this->getProcessType(), $this->processId)
+            );
+        }
     }
 
     /**
@@ -92,7 +125,7 @@ class Route
      */
     public function getResourceType(): ?string
     {
-        return $this->route->parameter(ResourceRegistrar::PARAM_RESOURCE_TYPE);
+        return $this->parameter(ResourceRegistrar::PARAM_RESOURCE_TYPE);
     }
 
     /**
@@ -102,9 +135,8 @@ class Route
      */
     public function getResourceId(): ?string
     {
-        /** Cache the resource id because binding substitutions will override it. */
         if (is_null($this->resourceId)) {
-            $this->resourceId = $this->route->parameter(ResourceRegistrar::PARAM_RESOURCE_ID) ?: false;
+            return $this->parameter(ResourceRegistrar::PARAM_RESOURCE_ID);
         }
 
         return $this->resourceId ?: null;
@@ -132,7 +164,7 @@ class Route
      */
     public function getResource()
     {
-        $resource = $this->route->parameter(ResourceRegistrar::PARAM_RESOURCE_ID);
+        $resource = $this->parameter(ResourceRegistrar::PARAM_RESOURCE_ID);
 
         return is_object($resource) ? $resource : null;
     }
@@ -144,7 +176,7 @@ class Route
      */
     public function getRelationshipName(): ?string
     {
-        return $this->route->parameter(ResourceRegistrar::PARAM_RELATIONSHIP_NAME);
+        return $this->parameter(ResourceRegistrar::PARAM_RELATIONSHIP_NAME);
     }
 
     /**
@@ -157,7 +189,7 @@ class Route
      */
     public function getInverseResourceType(): ?string
     {
-        return $this->route->parameter(ResourceRegistrar::PARAM_RELATIONSHIP_INVERSE_TYPE);
+        return $this->parameter(ResourceRegistrar::PARAM_RELATIONSHIP_INVERSE_TYPE);
     }
 
     /**
@@ -167,7 +199,7 @@ class Route
      */
     public function getProcessType(): ?string
     {
-        return $this->route->parameter(ResourceRegistrar::PARAM_PROCESS_TYPE);
+        return $this->parameter(ResourceRegistrar::PARAM_PROCESS_TYPE);
     }
 
     /**
@@ -177,9 +209,8 @@ class Route
      */
     public function getProcessId(): ?string
     {
-        /** Cache the process id because binding substitutions will override it. */
         if (is_null($this->processId)) {
-            $this->processId = $this->route->parameter(ResourceRegistrar::PARAM_PROCESS_ID) ?: false;
+            return $this->parameter(ResourceRegistrar::PARAM_PROCESS_ID);
         }
 
         return $this->processId ?: null;
@@ -192,7 +223,7 @@ class Route
      */
     public function getProcess(): ?AsynchronousProcess
     {
-        $process = $this->route->parameter(ResourceRegistrar::PARAM_PROCESS_ID);
+        $process = $this->parameter(ResourceRegistrar::PARAM_PROCESS_ID);
 
         return ($process instanceof AsynchronousProcess) ? $process : null;
     }
@@ -274,6 +305,16 @@ class Route
     public function isNotProcess(): bool
     {
         return !$this->isProcess();
+    }
+
+    /**
+     * @param string $name
+     * @param mixed $default
+     * @return mixed
+     */
+    private function parameter(string $name, $default = null)
+    {
+        return $this->route ? $this->route->parameter($name, $default) : null;
     }
 
 }

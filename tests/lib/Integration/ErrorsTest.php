@@ -21,6 +21,7 @@ use Carbon\Carbon;
 use CloudCreativity\LaravelJsonApi\Exceptions\DocumentRequiredException;
 use CloudCreativity\LaravelJsonApi\Exceptions\InvalidJsonException;
 use CloudCreativity\LaravelJsonApi\Exceptions\NotFoundException;
+use CloudCreativity\LaravelJsonApi\Exceptions\ResourceNotFoundException;
 use DummyApp\Post;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\Exceptions\MaintenanceModeException;
@@ -52,13 +53,9 @@ class ErrorsTest extends TestCase
      */
     public function test404()
     {
-        $this->doRead('999')->assertStatus(404)->assertExactJson([
-            'errors' => [
-                [
-                    'title' => 'Not Found',
-                    'status' => '404',
-                ],
-            ],
+        $this->doRead('999')->assertStatus(404)->assertErrorStatus([
+            'title' => 'Not Found',
+            'status' => '404',
         ]);
     }
 
@@ -67,7 +64,7 @@ class ErrorsTest extends TestCase
      */
     public function testCustom404()
     {
-        $expected = $this->withCustomError(NotFoundException::class);
+        $expected = $this->withCustomError(ResourceNotFoundException::class);
 
         $this->doRead('999')->assertStatus(404)->assertExactJson($expected);
     }

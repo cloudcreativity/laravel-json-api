@@ -20,11 +20,9 @@ namespace CloudCreativity\LaravelJsonApi\Http\Requests;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\DecoderInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceIdentifierInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Queue\AsynchronousProcess;
-use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Http\Codec;
-use CloudCreativity\LaravelJsonApi\Object\ResourceIdentifier;
-use CloudCreativity\LaravelJsonApi\Routing\ResourceRegistrar;
+use CloudCreativity\LaravelJsonApi\Routing\Route;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Http\Request;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
@@ -44,9 +42,9 @@ class JsonApiRequest
     private $request;
 
     /**
-     * @var ResolverInterface
+     * @var Route
      */
-    private $resolver;
+    private $route;
 
     /**
      * @var Container
@@ -69,16 +67,6 @@ class JsonApiRequest
     private $decoder;
 
     /**
-     * @var string|null
-     */
-    private $resourceId;
-
-    /**
-     * @var string|null
-     */
-    private $processId;
-
-    /**
      * @var EncodingParametersInterface|null
      */
     private $parameters;
@@ -87,13 +75,16 @@ class JsonApiRequest
      * IlluminateRequest constructor.
      *
      * @param Request $request
-     * @param ResolverInterface $resolver
+     * @param Route $route
      * @param Container $container
      */
-    public function __construct(Request $request, ResolverInterface $resolver, Container $container)
-    {
+    public function __construct(
+        Request $request,
+        Route $route,
+        Container $container
+    ) {
         $this->request = $request;
-        $this->resolver = $resolver;
+        $this->route = $route;
         $this->container = $container;
     }
 
@@ -109,6 +100,14 @@ class JsonApiRequest
         }
 
         return $this->headers = $this->container->make(HeaderParametersInterface::class);
+    }
+
+    /**
+     * @return Route
+     */
+    public function getRoute(): Route
+    {
+        return $this->route;
     }
 
     /**
@@ -183,20 +182,11 @@ class JsonApiRequest
      * Get the domain record type that is subject of the request.
      *
      * @return string
+     * @deprecated 2.0.0 use `getRoute()`
      */
     public function getType(): string
     {
-        if ($resource = $this->getResource()) {
-            return get_class($resource);
-        }
-
-        $resourceType = $this->getResourceType();
-
-        if (!$type = $this->resolver->getType($resourceType)) {
-            throw new RuntimeException("JSON API resource type {$resourceType} is not registered.");
-        }
-
-        return $type;
+        return $this->getRoute()->getType();
     }
 
     /**
@@ -204,25 +194,22 @@ class JsonApiRequest
      *
      * @return string|null
      *      the requested resource type, or null if none was requested.
+     * @deprecated 2.0.0 use `getRoute()`
      */
     public function getResourceType(): ?string
     {
-        return $this->request->route(ResourceRegistrar::PARAM_RESOURCE_TYPE);
+        return $this->getRoute()->getResourceType();
     }
 
     /**
      * What resource id does the request relate to?
      *
      * @return string|null
+     * @deprecated 2.0.0 use `getRoute()`
      */
     public function getResourceId(): ?string
     {
-        /** Cache the resource id because binding substitutions will override it. */
-        if (is_null($this->resourceId)) {
-            $this->resourceId = $this->request->route(ResourceRegistrar::PARAM_RESOURCE_ID) ?: false;
-        }
-
-        return $this->resourceId ?: null;
+        return $this->getRoute()->getResourceId();
     }
 
     /**
@@ -233,33 +220,29 @@ class JsonApiRequest
      */
     public function getResourceIdentifier(): ?ResourceIdentifierInterface
     {
-        if (!$resourceId = $this->getResourceId()) {
-            return null;
-        }
-
-        return ResourceIdentifier::create($this->getResourceType(), $resourceId);
+        return $this->getRoute()->getResourceIdentifier();
     }
 
     /**
      * Get the domain object that the request relates to.
      *
      * @return mixed|null
+     * @deprecated 2.0.0 use `getRoute()`
      */
     public function getResource()
     {
-        $resource = $this->request->route(ResourceRegistrar::PARAM_RESOURCE_ID);
-
-        return is_object($resource) ? $resource : null;
+        return $this->getRoute()->getResource();
     }
 
     /**
      * What resource relationship does the request relate to?
      *
      * @return string|null
+     * @deprecated 2.0.0 use `getRoute()`
      */
     public function getRelationshipName(): ?string
     {
-        return $this->request->route(ResourceRegistrar::PARAM_RELATIONSHIP_NAME);
+        return $this->getRoute()->getRelationshipName();
     }
 
     /**
@@ -269,45 +252,42 @@ class JsonApiRequest
      * would be `users` if the related author is a `users` JSON API resource type.
      *
      * @return string|null
+     * @deprecated 2.0.0 use `getRoute()`
      */
     public function getInverseResourceType(): ?string
     {
-        return $this->request->route(ResourceRegistrar::PARAM_RELATIONSHIP_INVERSE_TYPE);
+        return $this->getRoute()->getInverseResourceType();
     }
 
     /**
      * What process resource type does the request relate to?
      *
      * @return string|null
+     * @deprecated 2.0.0 use `getRoute()`
      */
     public function getProcessType(): ?string
     {
-        return $this->request->route(ResourceRegistrar::PARAM_PROCESS_TYPE);
+        return $this->getRoute()->getProcessType();
     }
 
     /**
      * What process id does the request relate to?
      *
      * @return string|null
+     * @deprecated 2.0.0 use `getRoute()`
      */
     public function getProcessId(): ?string
     {
-        /** Cache the process id because binding substitutions will override it. */
-        if (is_null($this->processId)) {
-            $this->processId = $this->request->route(ResourceRegistrar::PARAM_PROCESS_ID) ?: false;
-        }
-
-        return $this->processId ?: null;
+        return $this->getRoute()->getProcessId();
     }
 
     /**
      * @return AsynchronousProcess|null
+     * @deprecated 2.0.0 use `getRoute()`
      */
     public function getProcess(): ?AsynchronousProcess
     {
-        $process = $this->request->route(ResourceRegistrar::PARAM_PROCESS_ID);
-
-        return ($process instanceof AsynchronousProcess) ? $process : null;
+        return $this->getRoute()->getProcess();
     }
 
     /**
@@ -318,11 +298,7 @@ class JsonApiRequest
      */
     public function getProcessIdentifier(): ?ResourceIdentifierInterface
     {
-        if (!$id = $this->getProcessId()) {
-            return null;
-        }
-
-        return ResourceIdentifier::create($this->getProcessType(), $id);
+        return $this->getRoute()->getProcessIdentifier();
     }
 
     /**
@@ -348,7 +324,9 @@ class JsonApiRequest
      */
     public function isIndex(): bool
     {
-        return $this->isMethod('get') && $this->isNotResource() && $this->isNotProcesses();
+        return $this->isMethod('get') &&
+            $this->getRoute()->isNotResource() &&
+            $this->getRoute()->isNotProcesses();
     }
 
     /**
@@ -360,7 +338,7 @@ class JsonApiRequest
      */
     public function isCreateResource(): bool
     {
-        return $this->isMethod('post') && $this->isNotResource();
+        return $this->isMethod('post') && $this->getRoute()->isNotResource();
     }
 
     /**
@@ -372,7 +350,9 @@ class JsonApiRequest
      */
     public function isReadResource(): bool
     {
-        return $this->isMethod('get') && $this->isResource() && !$this->isRelationship();
+        return $this->isMethod('get') &&
+            $this->getRoute()->isResource() &&
+            $this->getRoute()->isNotRelationship();
     }
 
     /**
@@ -384,7 +364,9 @@ class JsonApiRequest
      */
     public function isUpdateResource(): bool
     {
-        return $this->isMethod('patch') && $this->isResource() && !$this->isRelationship();
+        return $this->isMethod('patch') &&
+            $this->getRoute()->isResource() &&
+            $this->getRoute()->isNotRelationship();
     }
 
     /**
@@ -396,7 +378,9 @@ class JsonApiRequest
      */
     public function isDeleteResource(): bool
     {
-        return $this->isMethod('delete') && $this->isResource() && !$this->isRelationship();
+        return $this->isMethod('delete') &&
+            $this->getRoute()->isResource() &&
+            $this->getRoute()->isNotRelationship();
     }
 
     /**
@@ -408,7 +392,7 @@ class JsonApiRequest
      */
     public function isReadRelatedResource(): bool
     {
-        return $this->isRelationship() && !$this->hasRelationships();
+        return $this->getRoute()->isRelationship() && !$this->hasRelationships();
     }
 
     /**
@@ -504,7 +488,7 @@ class JsonApiRequest
      */
     public function willSeeOne(): bool
     {
-        return !$this->isIndex() && $this->isNotRelationship();
+        return !$this->isIndex() && $this->getRoute()->isNotRelationship();
     }
 
     /**
@@ -533,7 +517,9 @@ class JsonApiRequest
      */
     public function isReadProcesses(): bool
     {
-        return $this->isMethod('get') && $this->isProcesses() && $this->isNotProcess();
+        return $this->isMethod('get') &&
+            $this->getRoute()->isProcesses() &&
+            $this->getRoute()->isNotProcess();
     }
 
     /**
@@ -545,7 +531,7 @@ class JsonApiRequest
      */
     public function isReadProcess(): bool
     {
-        return $this->isMethod('get') && $this->isProcess();
+        return $this->isMethod('get') && $this->getRoute()->isProcess();
     }
 
     /**
@@ -569,70 +555,6 @@ class JsonApiRequest
             $this->isReplaceRelationship() ||
             $this->isAddToRelationship() ||
             $this->isRemoveFromRelationship();
-    }
-
-    /**
-     * @return bool
-     */
-    private function isResource(): bool
-    {
-        return !empty($this->getResourceId());
-    }
-
-    /**
-     * @return bool
-     */
-    private function isRelationship(): bool
-    {
-        return !empty($this->getRelationshipName());
-    }
-
-    /**
-     * @return bool
-     */
-    private function isNotResource(): bool
-    {
-        return !$this->isResource();
-    }
-
-    /**
-     * @return bool
-     */
-    private function isProcesses(): bool
-    {
-        return !empty($this->getProcessType());
-    }
-
-    /**
-     * @return bool
-     */
-    private function isNotProcesses(): bool
-    {
-        return !$this->isProcesses();
-    }
-
-    /**
-     * @return bool
-     */
-    private function isProcess(): bool
-    {
-        return !empty($this->getProcessId());
-    }
-
-    /**
-     * @return bool
-     */
-    private function isNotProcess(): bool
-    {
-        return !$this->isProcess();
-    }
-
-    /**
-     * @return bool
-     */
-    private function isNotRelationship(): bool
-    {
-        return !$this->isRelationship();
     }
 
     /**

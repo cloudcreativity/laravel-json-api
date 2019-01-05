@@ -24,6 +24,7 @@ use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceIdentifierInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreAwareInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\RecordNotFoundException;
+use CloudCreativity\LaravelJsonApi\Exceptions\ResourceNotFoundException;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Object\ResourceIdentifier;
 use CloudCreativity\LaravelJsonApi\Object\ResourceIdentifierCollection;
@@ -251,10 +252,16 @@ class Store implements StoreInterface
     /**
      * @inheritdoc
      */
-    public function findOrFail(ResourceIdentifierInterface $identifier)
+    public function findOrFail($type, $id = null)
     {
-        if (!$record = $this->find($identifier)) {
-            throw new RecordNotFoundException($identifier);
+        $record = $this->find($type, $id);
+
+        if (!$record && $type instanceof ResourceIdentifierInterface) {
+            throw new RecordNotFoundException($type);
+        }
+
+        if (!$record) {
+            throw new ResourceNotFoundException($type, $id);
         }
 
         return $record;
