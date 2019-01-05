@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Copyright 2019 Cloud Creativity Limited
  *
@@ -104,26 +103,6 @@ class BootJsonApi
 
             return $pagination[$pageName] ?? null;
         });
-    }
-
-    /**
-     * Perform content negotiation.
-     *
-     * @param HttpFactoryInterface $httpFactory
-     * @param ServerRequestInterface $request
-     * @param CodecMatcherInterface $codecMatcher
-     * @throws JsonApiException
-     * @see http://jsonapi.org/format/#content-negotiation
-     */
-    protected function doContentNegotiation(
-        HttpFactoryInterface $httpFactory,
-        ServerRequestInterface $request,
-        CodecMatcherInterface $codecMatcher
-    ) {
-        $parser = $httpFactory->createHeaderParametersParser();
-        $checker = $httpFactory->createHeadersChecker($codecMatcher);
-
-        $checker->checkHeaders($parser->parse($request, http_contains_body($request)));
     }
 
 }

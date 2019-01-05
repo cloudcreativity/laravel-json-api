@@ -27,6 +27,7 @@ use CloudCreativity\LaravelJsonApi\Rules\AllowedIncludePaths;
 use CloudCreativity\LaravelJsonApi\Rules\AllowedPageParameters;
 use CloudCreativity\LaravelJsonApi\Rules\AllowedSortParameters;
 use CloudCreativity\LaravelJsonApi\Rules\DisallowedParameter;
+use CloudCreativity\LaravelJsonApi\Utils\Helpers;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
@@ -322,7 +323,7 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
      */
     protected function createData(array $document): array
     {
-        return $document['data'];
+        return $document['data'] ?? [];
     }
 
     /**
@@ -347,7 +348,7 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
      */
     protected function updateData($record, array $document): array
     {
-        $resource = $document['data'];
+        $resource = $document['data'] ?? [];
 
         if ($this->mustValidateExisting($record, $document)) {
             $resource['attributes'] = $this->extractAttributes(
@@ -469,6 +470,8 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
     }
 
     /**
+     * Create a validator for a JSON API resource object.
+     *
      * @param array $data
      * @param array $rules
      * @param array $messages
@@ -480,13 +483,33 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
         array $rules,
         array $messages = [],
         array $customAttributes = []
-    ): ValidatorInterface {
+    ): ValidatorInterface
+    {
         return $this->factory->createResourceValidator(
             $data,
             $rules,
             $messages,
             $customAttributes
         );
+    }
+
+    /**
+     * Create a generic validator.
+     *
+     * @param array $data
+     * @param array $rules
+     * @param array $messages
+     * @param array $customAttributes
+     * @return ValidatorInterface
+     */
+    protected function createValidator(
+        array $data,
+        array $rules,
+        array $messages = [],
+        array $customAttributes = []
+    ): ValidatorInterface
+    {
+        return $this->factory->createValidator($data, $rules, $messages, $customAttributes);
     }
 
     /**

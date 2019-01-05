@@ -63,7 +63,6 @@ use Illuminate\Contracts\Validation\Factory as ValidatorFactoryContract;
 use Illuminate\Contracts\Validation\Validator;
 use Neomerx\JsonApi\Contracts\Codec\CodecMatcherInterface;
 use Neomerx\JsonApi\Contracts\Document\LinkInterface;
-use Neomerx\JsonApi\Contracts\Http\Headers\HeaderParametersInterface;
 use Neomerx\JsonApi\Contracts\Schema\ContainerInterface as SchemaContainerInterface;
 use Neomerx\JsonApi\Encoder\EncoderOptions;
 use Neomerx\JsonApi\Factories\Factory as BaseFactory;
@@ -443,11 +442,33 @@ class Factory extends BaseFactory implements FactoryInterface
      */
     public function createContentNegotiator()
     {
-        return new ContentNegotiator($this->container->make(HeaderParametersInterface::class));
+        return new ContentNegotiator();
     }
 
     /**
-     * Create a resource validator.
+     * Create a Laravel validator that has JSON API error objects.
+     *
+     * @param array $data
+     * @param array $rules
+     * @param array $messages
+     * @param array $customAttributes
+     * @return ValidatorInterface
+     */
+    public function createValidator(
+        array $data,
+        array $rules,
+        array $messages = [],
+        array $customAttributes = []
+    ): ValidatorInterface
+    {
+        return new Validation\Validator(
+            $this->makeValidator($data, $rules, $messages, $customAttributes),
+            $this->createErrorTranslator()
+        );
+    }
+
+    /**
+     * Create a JSON API resource object validator.
      *
      * @param array $data
      * @param array $rules

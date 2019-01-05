@@ -5,78 +5,60 @@ namespace CloudCreativity\LaravelJsonApi\Http;
 use CloudCreativity\LaravelJsonApi\Api\Codec;
 use CloudCreativity\LaravelJsonApi\Api\Codecs;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\ContentNegotiatorInterface;
-use CloudCreativity\LaravelJsonApi\Utils\Helpers;
-use Illuminate\Http\Request;
 use Neomerx\JsonApi\Contracts\Http\Headers\AcceptHeaderInterface;
 use Neomerx\JsonApi\Contracts\Http\Headers\HeaderInterface;
-use Neomerx\JsonApi\Contracts\Http\Headers\HeaderParametersInterface;
+use Neomerx\JsonApi\Contracts\Http\Headers\MediaTypeInterface;
+use Neomerx\JsonApi\Http\Headers\MediaType;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class ContentNegotiator implements ContentNegotiatorInterface
 {
 
     /**
-     * @var HeaderParametersInterface
-     */
-    private $headers;
-
-    /**
-     * ContentNegotiator constructor.
-     *
-     * @param HeaderParametersInterface $headers
-     */
-    public function __construct(HeaderParametersInterface $headers)
-    {
-        $this->headers = $headers;
-    }
-
-    /**
      * @inheritDoc
      */
-    public function negotiate(Codecs $codecs, $request, $record = null): Codec
+    public function codec(AcceptHeaderInterface $header, Codecs $codecs, $record = null): Codec
     {
-        return $this->checkHeaders(
-            $this->headers->getAcceptHeader(),
-            $this->headers->getContentTypeHeader(),
-            $codecs,
-            $request
-        );
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function negotiateMany(Codecs $codecs, $request): Codec
-    {
-        return $this->checkHeaders(
-            $this->headers->getAcceptHeader(),
-            $this->headers->getContentTypeHeader(),
-            $codecs,
-            $request
-        );
-    }
-
-    /**
-     * @param AcceptHeaderInterface $accept
-     * @param HeaderInterface|null $contentType
-     * @param Codecs $codecs
-     * @param $request
-     * @return Codec
-     */
-    protected function checkHeaders(
-        AcceptHeaderInterface $accept,
-        ?HeaderInterface $contentType,
-        Codecs $codecs,
-        $request
-    ): Codec
-    {
-        $codec = $this->checkAcceptTypes($accept, $codecs);
-
-        if ($contentType) {
-            $this->checkContentType($request);
+        if ($record) {
+            $codecs = $this->codecsFor($codecs, $record);
         }
 
-        return $codec;
+        return $this->checkAcceptTypes($header, $codecs);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function codecForMany(AcceptHeaderInterface $header, Codecs $codecs): Codec
+    {
+        return $this->checkAcceptTypes($header, $codecs);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function decoder(HeaderInterface $header, $record = null): Decoder
+    {
+        if ($this->isNotJsonApi($header)) {
+            throw $this->unsupportedMediaType();
+        }
+
+        return new Decoder();
+    }
+
+    /**
+     * Get codecs for the supplied record.
+     *
+     * Child classes can overload this method if they want to add codecs.
+     *
+     * @param Codecs $defaultCodecs
+     *      the API's default codecs.
+     * @param mixed $record
+     * @return Codecs
+     */
+    protected function codecsFor(Codecs $defaultCodecs, $record): Codecs
+    {
+        return $defaultCodecs;
     }
 
     /**
@@ -87,24 +69,11 @@ class ContentNegotiator implements ContentNegotiatorInterface
      */
     protected function checkAcceptTypes(AcceptHeaderInterface $header, Codecs $codecs): Codec
     {
-        if (!$codec = $this->accept($header, $codecs)) {
+        if (!$codec = $codecs->acceptable($header)) {
             throw $this->notAcceptable($header);
         }
 
         return $codec;
-    }
-
-
-    /**
-     * @param Request $request
-     * @return void
-     * @throws HttpException
-     */
-    protected function checkContentType($request): void
-    {
-        if (!$this->isJsonApi($request)) {
-            throw $this->unsupportedMediaType();
-        }
     }
 
     /**
@@ -119,24 +88,37 @@ class ContentNegotiator implements ContentNegotiatorInterface
     }
 
     /**
-     * @param AcceptHeaderInterface $header
-     * @param Codecs $codecs
-     * @return Codec|null
+     * @param HeaderInterface $header
+     * @param string $mediaType
+     * @return bool
      */
-    protected function accept(AcceptHeaderInterface $header, Codecs $codecs): ?Codec
+    protected function isMediaType(HeaderInterface $header, string $mediaType): bool
     {
-        return $codecs->acceptable($header);
+        $mediaType = MediaType::parse(0, $mediaType);
+
+        return collect($header->getMediaTypes())->contains(function (MediaTypeInterface $check) use ($mediaType) {
+            return $check->equalsTo($mediaType);
+        });
     }
 
     /**
-     * Has the request sent JSON API content?
+     * Is the header the JSON API media-type?
      *
-     * @param $request
+     * @param HeaderInterface $header
      * @return bool
      */
-    protected function isJsonApi($request): bool
+    protected function isJsonApi(HeaderInterface $header): bool
     {
-        return Helpers::isJsonApi($request);
+        return $this->isMediaType($header, MediaTypeInterface::JSON_API_MEDIA_TYPE);
+    }
+
+    /**
+     * @param HeaderInterface $header
+     * @return bool
+     */
+    protected function isNotJsonApi(HeaderInterface $header): bool
+    {
+        return !$this->isJsonApi($header);
     }
 
     /**

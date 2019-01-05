@@ -21,16 +21,14 @@ use CloudCreativity\LaravelJsonApi\Api\Codec;
 use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceIdentifierInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Queue\AsynchronousProcess;
 use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
-use CloudCreativity\LaravelJsonApi\Exceptions\InvalidJsonException;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
+use CloudCreativity\LaravelJsonApi\Http\Decoder;
 use CloudCreativity\LaravelJsonApi\Object\ResourceIdentifier;
 use CloudCreativity\LaravelJsonApi\Routing\ResourceRegistrar;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Http\Request;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use Neomerx\JsonApi\Contracts\Http\Headers\HeaderParametersInterface;
-use function CloudCreativity\LaravelJsonApi\http_contains_body;
-use function CloudCreativity\LaravelJsonApi\json_decode;
 
 /**
  * Class JsonApiRequest
@@ -66,6 +64,11 @@ class JsonApiRequest
     private $codec;
 
     /**
+     * @var Decoder|null
+     */
+    private $decoder;
+
+    /**
      * @var string|null
      */
     private $resourceId;
@@ -74,11 +77,6 @@ class JsonApiRequest
      * @var string|null
      */
     private $processId;
-
-    /**
-     * @var object|bool|null
-     */
-    private $document;
 
     /**
      * @var EncodingParametersInterface|null
@@ -146,6 +144,39 @@ class JsonApiRequest
     public function hasCodec(): bool
     {
         return !!$this->codec;
+    }
+
+    /**
+     * Set the matched decoder.
+     *
+     * @param Decoder|null $decoder
+     * @return $this
+     */
+    public function setDecoder(?Decoder $decoder): self
+    {
+        $this->decoder = $decoder;
+
+        return $this;
+    }
+
+    /**
+     * @return Decoder
+     */
+    public function getDecoder(): Decoder
+    {
+        if (!$this->hasDecoder()) {
+            throw new RuntimeException('Request decoder has not been matched.');
+        }
+
+        return $this->decoder;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasDecoder(): bool
+    {
+        return !!$this->decoder;
     }
 
     /**
@@ -306,20 +337,6 @@ class JsonApiRequest
         }
 
         return $this->parameters = $this->container->make(EncodingParametersInterface::class);
-    }
-
-    /**
-     * Get the JSON API document from the request, if there is one.
-     *
-     * @return object|null
-     */
-    public function getDocument()
-    {
-        if (is_null($this->document)) {
-            $this->document = $this->decodeDocument();
-        }
-
-        return $this->document ? clone $this->document : null;
     }
 
     /**
@@ -532,6 +549,29 @@ class JsonApiRequest
     }
 
     /**
+     * Is data expected for the supplied request?
+     *
+     * If the JSON API request is any of the following, a JSON API document
+     * is expected to be set on the request:
+     *
+     * - Create resource
+     * - Update resource
+     * - Replace resource relationship
+     * - Add to resource relationship
+     * - Remove from resource relationship
+     *
+     * @return bool
+     */
+    public function isExpectingContent(): bool
+    {
+        return $this->isCreateResource() ||
+            $this->isUpdateResource() ||
+            $this->isReplaceRelationship() ||
+            $this->isAddToRelationship() ||
+            $this->isRemoveFromRelationship();
+    }
+
+    /**
      * @return bool
      */
     private function isResource(): bool
@@ -604,49 +644,7 @@ class JsonApiRequest
      */
     private function isMethod($method): bool
     {
-        return strtoupper($this->request->method()) === strtoupper($method);
-    }
-
-    /**
-     * Extract the JSON API document from the request.
-     *
-     * @return object|false
-     * @throws InvalidJsonException
-     */
-    private function decodeDocument()
-    {
-        if (!$this->expectsData()) {
-            return false;
-        }
-
-        if (!http_contains_body($this->request)) {
-            return false;
-        }
-
-        return json_decode($this->request->getContent());
-    }
-
-    /**
-     * Is data expected for the supplied request?
-     *
-     * If the JSON API request is any of the following, a JSON API document
-     * is expected to be set on the request:
-     *
-     * - Create resource
-     * - Update resource
-     * - Replace resource relationship
-     * - Add to resource relationship
-     * - Remove from resource relationship
-     *
-     * @return bool
-     */
-    private function expectsData(): bool
-    {
-        return $this->isCreateResource() ||
-            $this->isUpdateResource() ||
-            $this->isReplaceRelationship() ||
-            $this->isAddToRelationship() ||
-            $this->isRemoveFromRelationship();
+        return $this->request->isMethod($method);
     }
 
 }

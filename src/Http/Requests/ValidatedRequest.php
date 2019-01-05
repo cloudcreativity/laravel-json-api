@@ -33,6 +33,7 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Validation\ValidatesWhenResolved;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use Neomerx\JsonApi\Exceptions\JsonApiException;
 
@@ -58,6 +59,11 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
      * @var ContainerInterface
      */
     protected $container;
+
+    /**
+     * @var array|null
+     */
+    private $data;
 
     /**
      * Authorize the request.
@@ -105,7 +111,7 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
      */
     public function get($key, $default = null)
     {
-        return $this->request->json($key, $default);
+        return array_get($this->all(), $key, $default);
     }
 
     /**
@@ -115,7 +121,26 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
      */
     public function all()
     {
-        return $this->request->json()->all();
+        if (is_array($this->data)) {
+            return $this->data;
+        }
+
+        if (!$this->jsonApiRequest->hasDecoder()) {
+            return $this->data = [];
+        }
+
+        return $this->data = $this->jsonApiRequest->getDecoder()->extract($this->request);
+    }
+
+    /**
+     * @param $key
+     * @return UploadedFile|null
+     */
+    public function file($key): ?UploadedFile
+    {
+        $file = $this->get($key);
+
+        return ($file instanceof UploadedFile) ? $file : null;
     }
 
     /**
@@ -131,11 +156,13 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
     /**
      * Get the JSON API document as an object.
      *
-     * @return object|null
+     * @return object
      */
     public function decode()
     {
-        return $this->jsonApiRequest->getDocument();
+        return $this->jsonApiRequest
+            ->getDecoder()
+            ->decode($this->request);
     }
 
     /**
@@ -210,7 +237,7 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
      */
     public function getDocument()
     {
-        if (!$document = $this->jsonApiRequest->getDocument()) {
+        if (!$document = $this->decode()) {
             return null;
         }
 

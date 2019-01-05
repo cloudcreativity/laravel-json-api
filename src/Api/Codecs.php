@@ -108,7 +108,7 @@ class Codecs implements \IteratorAggregate, \Countable
      * @param mixed ...$mediaTypes
      * @return Codecs
      */
-    public function custom(...$mediaTypes): self
+    public function withCustom(...$mediaTypes): self
     {
         return $this->merge(self::createCustom(...$mediaTypes));
     }

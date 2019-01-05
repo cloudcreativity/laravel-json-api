@@ -18,8 +18,6 @@ class CreateTest extends TestCase
      */
     public function test(): void
     {
-        $this->markTestSkipped('@todo');
-
         $user = factory(User::class)->create();
         $file = UploadedFile::fake()->create('avatar.jpg');
 
@@ -29,7 +27,7 @@ class CreateTest extends TestCase
         ];
 
         /** @var TestResponse $response */
-        $response = $this->actingAs($user, 'api')->postJsonApi(
+        $response = $this->actingAs($user, 'api')->post(
             '/api/v1/avatars',
             ['avatar' => $file],
             ['Content-Type' => 'multipart/form-data', 'Content-Length' => '1']

@@ -18,11 +18,12 @@
 
 namespace CloudCreativity\LaravelJsonApi\Contracts\Http;
 
-use CloudCreativity\LaravelJsonApi\Api\Api;
 use CloudCreativity\LaravelJsonApi\Api\Codec;
 use CloudCreativity\LaravelJsonApi\Api\Codecs;
-use Illuminate\Http\Request;
+use CloudCreativity\LaravelJsonApi\Http\Decoder;
 use Illuminate\Http\Response;
+use Neomerx\JsonApi\Contracts\Http\Headers\AcceptHeaderInterface;
+use Neomerx\JsonApi\Contracts\Http\Headers\HeaderInterface;
 use Neomerx\JsonApi\Exceptions\JsonApiException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
@@ -39,7 +40,7 @@ interface ContentNegotiatorInterface
     const HTTP_UNSUPPORTED_MEDIA_TYPE = Response::HTTP_UNSUPPORTED_MEDIA_TYPE;
 
     /**
-     * Negotiate content for a fetch resource request.
+     * Get a codec for a resource response.
      *
      * E.g. for a `posts` resource, this is invoked on the following URLs:
      *
@@ -50,38 +51,58 @@ interface ContentNegotiatorInterface
      *
      * I.e. a response that will contain a specific resource.
      *
+     * @param AcceptHeaderInterface $header
+     *      the Accept header provided by the client.
      * @param Codecs $codecs
      *      the default codecs for the API.
-     * @param Request $request
-     *      the request.
      * @param mixed|null $record
-     *      the domain record (if it already exists).
+     *      the domain record the request relates to, unless one is being created.
      * @return Codec
      *      the matching codec.
      * @throws HttpException
      * @throws JsonApiException
      */
-    public function negotiate(Codecs $codecs, $request, $record = null): Codec;
+    public function codec(AcceptHeaderInterface $header, Codecs $codecs, $record = null): Codec;
 
     /**
-     * Negotiate content for a fetch many request.
+     * Get a codec for a zero-to-many resources response.
      *
      * E.g. for a `posts` resource, this is invoked on the following URLs:
      *
      * - `/posts`
-     * - `/comments/1/posts`
+     * - `/comments/1/post`
+     * - `/users/123/posts`
      *
      * I.e. a response that will contain zero to many of the posts resource.
      *
+     * @param AcceptHeaderInterface $header
+     *      the Accept header provided by the client.
      * @param Codecs $codecs
      *      the default codecs for the API.
-     * @param Request $request
-     *      the request.
      * @return Codec
      *      the matching codec.
      * @throws HttpException
      * @throws JsonApiException
      */
-    public function negotiateMany(Codecs $codecs, $request): Codec;
+    public function codecForMany(AcceptHeaderInterface $header, Codecs $codecs): Codec;
+
+    /**
+     * Get a decoder for a request that contains content.
+     *
+     * E.g. for the `posts` resource, this is invoked on the following:
+     *
+     * - `POST /posts`
+     * - `PATCH /posts/1`
+     * - `POST /posts/1/tags`
+     * - `PATCH /posts/1/tags`
+     * - `DELETE /posts/1/tags`
+     *
+     * @param HeaderInterface $header
+     *      the Content-Type header provided by the client.
+     * @param mixed|null $record
+     *      the domain record the request relates to, unless one is being created.
+     * @return Decoder
+     */
+    public function decoder(HeaderInterface $header, $record = null): Decoder;
 
 }

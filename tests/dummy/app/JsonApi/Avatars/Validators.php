@@ -2,6 +2,7 @@
 
 namespace DummyApp\JsonApi\Avatars;
 
+use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorInterface;
 use CloudCreativity\LaravelJsonApi\Validation\AbstractValidators;
 
 class Validators extends AbstractValidators
@@ -22,6 +23,17 @@ class Validators extends AbstractValidators
      *      the allowed fields, an empty array for none allowed, or null to allow all fields.
      */
     protected $allowedSortParameters = [];
+
+    /**
+     * @inheritdoc
+     */
+    public function create(array $document): ValidatorInterface
+    {
+        return $this->createValidator(
+            $document,
+            ['avatar' => 'required']
+        );
+    }
 
     /**
      * Get resource validation rules.
