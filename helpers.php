@@ -91,6 +91,7 @@ namespace {
          * Get the inbound JSON API request.
          *
          * @return JsonApiRequest
+         * @deprecated 2.0.0 use `\JsonApi::current()`
          */
         function json_api_request() {
             return app('json-api')->request();

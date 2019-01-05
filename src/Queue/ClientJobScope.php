@@ -17,6 +17,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Queue;
 
+use CloudCreativity\LaravelJsonApi\Routing\Route;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Scope;
@@ -29,10 +30,11 @@ class ClientJobScope implements Scope
      */
     public function apply(Builder $builder, Model $model)
     {
-        $request = json_api_request();
+        /** @var Route $route */
+        $route = app('json-api')->current();
 
-        if ($request->getProcessType()) {
-            $builder->where('resource_type', $request->getResourceType());
+        if ($route->getProcessType()) {
+            $builder->where('resource_type', $route->getResourceType());
         }
     }
 

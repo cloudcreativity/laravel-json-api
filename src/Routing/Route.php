@@ -17,12 +17,14 @@
 
 namespace CloudCreativity\LaravelJsonApi\Routing;
 
+use CloudCreativity\LaravelJsonApi\Contracts\Http\DecoderInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceIdentifierInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Queue\AsynchronousProcess;
 use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\ResourceNotFoundException;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
+use CloudCreativity\LaravelJsonApi\Http\Codec;
 use CloudCreativity\LaravelJsonApi\Object\ResourceIdentifier;
 use Illuminate\Routing\Route as IlluminateRoute;
 
@@ -53,6 +55,16 @@ class Route
      * @var string|null
      */
     private $processId;
+
+    /**
+     * @var Codec|null
+     */
+    private $codec;
+
+    /**
+     * @var DecoderInterface|null
+     */
+    private $decoder;
 
     /**
      * Route constructor.
@@ -95,6 +107,74 @@ class Route
                 $store->findOrFail($this->getProcessType(), $this->processId)
             );
         }
+    }
+
+    /**
+     * Set the matched codec.
+     *
+     * @param Codec $codec
+     * @return $this
+     */
+    public function setCodec(Codec $codec): self
+    {
+        $this->codec = $codec;
+
+        return $this;
+    }
+
+    /**
+     * Get the matched codec.
+     *
+     * @return Codec
+     */
+    public function getCodec(): Codec
+    {
+        if (!$this->hasCodec()) {
+            throw new RuntimeException('Request codec has not been matched.');
+        }
+
+        return $this->codec;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasCodec(): bool
+    {
+        return !!$this->codec;
+    }
+
+    /**
+     * Set the matched decoder.
+     *
+     * @param DecoderInterface|null $decoder
+     * @return $this
+     */
+    public function setDecoder(?DecoderInterface $decoder): self
+    {
+        $this->decoder = $decoder;
+
+        return $this;
+    }
+
+    /**
+     * @return DecoderInterface
+     */
+    public function getDecoder(): DecoderInterface
+    {
+        if (!$this->hasDecoder()) {
+            throw new RuntimeException('Request decoder has not been matched.');
+        }
+
+        return $this->decoder;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasDecoder(): bool
+    {
+        return !!$this->decoder;
     }
 
     /**

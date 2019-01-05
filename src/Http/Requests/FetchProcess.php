@@ -17,7 +17,6 @@
 
 namespace CloudCreativity\LaravelJsonApi\Http\Requests;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Queue\AsynchronousProcess;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorProviderInterface;
 
 /**
@@ -28,21 +27,7 @@ use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorProviderInterfa
 class FetchProcess extends FetchProcesses
 {
 
-    /**
-     * @return string
-     */
-    public function getProcessId(): string
-    {
-        return $this->jsonApiRequest->getProcessId();
-    }
-
-    /**
-     * @return AsynchronousProcess|null
-     */
-    public function getProcess(): ?AsynchronousProcess
-    {
-        return $this->jsonApiRequest->getProcess();
-    }
+    use Concerns\ProcessRequest;
 
     /**
      * @inheritDoc

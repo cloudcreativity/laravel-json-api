@@ -18,7 +18,6 @@
 namespace CloudCreativity\LaravelJsonApi\Http\Requests;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorProviderInterface;
-use CloudCreativity\LaravelJsonApi\Exceptions\DocumentRequiredException;
 use CloudCreativity\LaravelJsonApi\Exceptions\ValidationException;
 use CloudCreativity\LaravelJsonApi\Object\Document;
 
@@ -29,6 +28,8 @@ use CloudCreativity\LaravelJsonApi\Object\Document;
  */
 class UpdateResource extends ValidatedRequest
 {
+
+    use Concerns\ResourceRequest;
 
     /**
      * @inheritDoc

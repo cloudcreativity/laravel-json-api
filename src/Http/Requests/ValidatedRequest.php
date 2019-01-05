@@ -17,7 +17,6 @@
 
 namespace CloudCreativity\LaravelJsonApi\Http\Requests;
 
-use CloudCreativity\LaravelJsonApi\Api\Codec;
 use CloudCreativity\LaravelJsonApi\Contracts\Auth\AuthorizerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Object\DocumentInterface;
@@ -28,7 +27,9 @@ use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorProviderInterfa
 use CloudCreativity\LaravelJsonApi\Exceptions\DocumentRequiredException;
 use CloudCreativity\LaravelJsonApi\Exceptions\ValidationException;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
+use CloudCreativity\LaravelJsonApi\Http\Codec;
 use CloudCreativity\LaravelJsonApi\Object\Document;
+use CloudCreativity\LaravelJsonApi\Routing\Route;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Validation\ValidatesWhenResolved;
@@ -46,9 +47,9 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
     protected $request;
 
     /**
-     * @var JsonApiRequest
+     * @var Route
      */
-    protected $jsonApiRequest;
+    protected $route;
 
     /**
      * @var Factory
@@ -64,6 +65,11 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
      * @var array|null
      */
     private $data;
+
+    /**
+     * @var EncodingParametersInterface|null
+     */
+    private $parameters;
 
     /**
      * Authorize the request.
@@ -88,18 +94,18 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
      * @param Request $httpRequest
      * @param ContainerInterface $container
      * @param Factory $factory
-     * @param JsonApiRequest $jsonApiRequest
+     * @param Route $route
      */
     public function __construct(
         Request $httpRequest,
         ContainerInterface $container,
         Factory $factory,
-        JsonApiRequest $jsonApiRequest
+        Route $route
     ) {
         $this->request = $httpRequest;
         $this->factory = $factory;
         $this->container = $container;
-        $this->jsonApiRequest = $jsonApiRequest;
+        $this->route = $route;
     }
 
     /**
@@ -125,11 +131,11 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
             return $this->data;
         }
 
-        if (!$this->jsonApiRequest->hasDecoder()) {
+        if (!$this->route->hasDecoder()) {
             return $this->data = [];
         }
 
-        return $this->data = $this->jsonApiRequest->getDecoder()->extract($this->request);
+        return $this->data = $this->route->getDecoder()->extract($this->request);
     }
 
     /**
@@ -160,7 +166,7 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
      */
     public function decode()
     {
-        return $this->jsonApiRequest
+        return $this->route
             ->getDecoder()
             ->decode($this->request);
     }
@@ -186,7 +192,7 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
      */
     public function getType()
     {
-        return $this->jsonApiRequest->getType();
+        return $this->route->getType();
     }
 
     /**
@@ -196,37 +202,7 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
      */
     public function getResourceType()
     {
-        return $this->jsonApiRequest->getResourceType();
-    }
-
-    /**
-     * Get the resource id that the request is for.
-     *
-     * @return string|null
-     */
-    public function getResourceId()
-    {
-        return $this->jsonApiRequest->getResourceId();
-    }
-
-    /**
-     * Get the relationship name that the request is for.
-     *
-     * @return string|null
-     */
-    public function getRelationshipName()
-    {
-        return $this->jsonApiRequest->getRelationshipName();
-    }
-
-    /**
-     * Get the record that the request relates to.
-     *
-     * @return object|null
-     */
-    public function getRecord()
-    {
-        return $this->jsonApiRequest->getResource();
+        return $this->route->getResourceType();
     }
 
     /**
@@ -260,7 +236,15 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
      */
     public function getEncodingParameters()
     {
-        return $this->jsonApiRequest->getParameters();
+        if ($this->parameters) {
+            return $this->parameters;
+        }
+
+        $parser = $this->factory->createQueryParametersParser();
+
+        return $this->parameters = $parser->parseQueryParameters(
+            $this->request->query()
+        );
     }
 
     /**
@@ -270,7 +254,7 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
      */
     public function getCodec()
     {
-        return $this->jsonApiRequest->getCodec();
+        return $this->route->getCodec();
     }
 
     /**
@@ -294,6 +278,14 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
         $this->authorize();
         $this->validateQuery();
         $this->validateDocument();
+    }
+
+    /**
+     * @return Route
+     */
+    protected function getRoute(): Route
+    {
+        return $this->route;
     }
 
     /**
@@ -355,7 +347,7 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
     protected function getInverseValidators()
     {
         return $this->container->getValidatorsByResourceType(
-            $this->jsonApiRequest->getInverseResourceType()
+            $this->route->getInverseResourceType()
         );
     }
 

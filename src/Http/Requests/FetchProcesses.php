@@ -32,7 +32,7 @@ class FetchProcesses extends ValidatedRequest
      */
     public function getProcessType(): string
     {
-        return $this->jsonApiRequest->getProcessType();
+        return $this->route->getProcessType();
     }
 
     /**

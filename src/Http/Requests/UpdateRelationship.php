@@ -25,6 +25,8 @@ use CloudCreativity\LaravelJsonApi\Object\Document;
 class UpdateRelationship extends ValidatedRequest
 {
 
+    use Concerns\RelationshipRequest;
+
     /**
      * @inheritDoc
      */

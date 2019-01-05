@@ -26,7 +26,7 @@ use CloudCreativity\LaravelJsonApi\Contracts\Queue\AsynchronousProcess;
 use CloudCreativity\LaravelJsonApi\Document\Error;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use CloudCreativity\LaravelJsonApi\Http\Codec;
-use CloudCreativity\LaravelJsonApi\Http\Requests\JsonApiRequest;
+use CloudCreativity\LaravelJsonApi\Routing\Route;
 use Illuminate\Http\Response;
 use Neomerx\JsonApi\Contracts\Document\DocumentInterface;
 use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
@@ -55,9 +55,9 @@ class Responses extends BaseResponses
     private $api;
 
     /**
-     * @var JsonApiRequest
+     * @var Route
      */
-    private $jsonApiRequest;
+    private $route;
 
     /**
      * @var ExceptionParserInterface
@@ -80,18 +80,18 @@ class Responses extends BaseResponses
      * @param Factory $factory
      * @param Api $api
      *      the API that is sending the responses.
-     * @param JsonApiRequest $request
+     * @param Route $route
      * @param $exceptions
      */
     public function __construct(
         Factory $factory,
         Api $api,
-        JsonApiRequest $request,
+        Route $route,
         ExceptionParserInterface $exceptions
     ) {
         $this->factory = $factory;
         $this->api = $api;
-        $this->jsonApiRequest = $request;
+        $this->route = $route;
         $this->exceptions = $exceptions;
     }
 
@@ -503,8 +503,8 @@ class Responses extends BaseResponses
      */
     protected function getDefaultCodec()
     {
-        if ($this->jsonApiRequest->hasCodec()) {
-            return $this->jsonApiRequest->getCodec();
+        if ($this->route->hasCodec()) {
+            return $this->route->getCodec();
         }
 
         return $this->api->getDefaultCodec();

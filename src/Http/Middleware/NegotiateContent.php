@@ -9,8 +9,9 @@ use CloudCreativity\LaravelJsonApi\Contracts\Http\DecoderInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\DocumentRequiredException;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use CloudCreativity\LaravelJsonApi\Http\Codec;
-use CloudCreativity\LaravelJsonApi\Http\Requests\JsonApiRequest;
+use CloudCreativity\LaravelJsonApi\Routing\Route;
 use Illuminate\Http\Request;
+use Neomerx\JsonApi\Contracts\Http\Headers\HeaderParametersInterface;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use function CloudCreativity\LaravelJsonApi\http_contains_body;
 
@@ -28,22 +29,29 @@ class NegotiateContent
     private $api;
 
     /**
-     * @var JsonApiRequest
+     * @var HeaderParametersInterface
      */
-    private $jsonApiRequest;
+    private $headers;
+
+    /**
+     * @var Route
+     */
+    private $route;
 
     /**
      * NegotiateContent constructor.
      *
      * @param Factory $factory
      * @param Api $api
-     * @param JsonApiRequest $request
+     * @param HeaderParametersInterface $headers
+     * @param Route $route
      */
-    public function __construct(Factory $factory, Api $api, JsonApiRequest $request)
+    public function __construct(Factory $factory, Api $api, HeaderParametersInterface $headers, Route $route)
     {
         $this->factory = $factory;
         $this->api = $api;
-        $this->jsonApiRequest = $request;
+        $this->headers = $headers;
+        $this->route = $route;
     }
 
     /**
@@ -65,7 +73,7 @@ class NegotiateContent
             $decoder = $body ? $this->matchDecoder($request, $default) : null
         );
 
-        if (!$body && $this->jsonApiRequest->isExpectingContent()) {
+        if (!$body && $this->isExpectingContent($request)) {
             throw new DocumentRequiredException();
         }
 
@@ -84,13 +92,13 @@ class NegotiateContent
             ->withRequest($request)
             ->withDefaultCodecs($this->api->getCodecs());
 
-        $accept = $this->jsonApiRequest->getHeaders()->getAcceptHeader();
+        $accept = $this->headers->getAcceptHeader();
 
-        if ($this->jsonApiRequest->willSeeMany()) {
+        if ($this->willSeeMany($request)) {
             return $negotiator->codecForMany($accept);
         }
 
-        return $negotiator->codec($accept, $this->jsonApiRequest->getResource());
+        return $negotiator->codec($accept, $this->route->getResource());
     }
 
     /**
@@ -101,14 +109,14 @@ class NegotiateContent
     protected function matchDecoder($request, ?string $defaultNegotiator): ?DecoderInterface
     {
         $negotiator = $this->negotiator(
-            $this->jsonApiRequest->getResourceType(),
+            $this->route->getResourceType(),
             $defaultNegotiator
         )->withRequest($request);
 
-        $contentType = $this->jsonApiRequest->getHeaders()->getContentTypeHeader();
-        $resource = $this->jsonApiRequest->getResource();
+        $contentType = $this->headers->getContentTypeHeader();
+        $resource = $this->route->getResource();
 
-        if ($resource && $field = $this->jsonApiRequest->getRelationshipName()) {
+        if ($resource && $field = $this->route->getRelationshipName()) {
             return $negotiator->decoderForRelationship($contentType, $resource, $field);
         }
 
@@ -126,7 +134,7 @@ class NegotiateContent
      */
     protected function responseResourceType(): string
     {
-        return $this->jsonApiRequest->getInverseResourceType() ?: $this->jsonApiRequest->getResourceType();
+        return $this->route->getInverseResourceType() ?: $this->route->getResourceType();
     }
 
     /**
@@ -166,9 +174,7 @@ class NegotiateContent
      */
     protected function matched(Codec $codec, ?DecoderInterface $decoder): void
     {
-        $this->jsonApiRequest
-            ->setCodec($codec)
-            ->setDecoder($decoder);
+        $this->route->setCodec($codec)->setDecoder($decoder);
     }
 
     /**
@@ -177,6 +183,74 @@ class NegotiateContent
     protected function getContainer(): ContainerInterface
     {
         return $this->api->getContainer();
+    }
+
+    /**
+     * Will the response contain a specific resource?
+     *
+     * E.g. for a `posts` resource, this is invoked on the following URLs:
+     *
+     * - `POST /posts`
+     * - `GET /posts/1`
+     * - `PATCH /posts/1`
+     * - `DELETE /posts/1`
+     *
+     * I.e. a response that may contain a specified resource.
+     *
+     * @param Request $request
+     * @return bool
+     */
+    public function willSeeOne($request): bool
+    {
+        if ($this->route->isRelationship()) {
+            return false;
+        }
+
+        if ($this->route->isResource()) {
+            return true;
+        }
+
+        return $request->isMethod('POST');
+    }
+
+    /**
+     * Will the response contain zero-to-many of a resource?
+     *
+     * E.g. for a `posts` resource, this is invoked on the following URLs:
+     *
+     * - `/posts`
+     * - `/comments/1/posts`
+     *
+     * I.e. a response that will contain zero to many of the posts resource.
+     *
+     * @param Request $request
+     * @return bool
+     */
+    public function willSeeMany($request): bool
+    {
+        return !$this->willSeeOne($request);
+    }
+
+    /**
+     * Is data expected for the supplied request?
+     *
+     * If the JSON API request is any of the following, a JSON API document
+     * is expected to be set on the request:
+     *
+     * - Create resource
+     * - Update resource
+     * - Replace resource relationship
+     * - Add to resource relationship
+     * - Remove from resource relationship
+     *
+     * @param Request $request
+     * @return bool
+     */
+    protected function isExpectingContent($request): bool
+    {
+        $methods = $this->route->isNotRelationship() ? ['POST', 'PATCH'] : ['POST', 'PATCH', 'DELETE'];
+
+        return \in_array($request->getMethod(), $methods);
     }
 
 }

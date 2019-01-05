@@ -51,6 +51,7 @@ use CloudCreativity\LaravelJsonApi\Object\Document;
 use CloudCreativity\LaravelJsonApi\Pagination\Page;
 use CloudCreativity\LaravelJsonApi\Repositories\ErrorRepository;
 use CloudCreativity\LaravelJsonApi\Resolver\ResolverFactory;
+use CloudCreativity\LaravelJsonApi\Routing\Route;
 use CloudCreativity\LaravelJsonApi\Store\Store;
 use CloudCreativity\LaravelJsonApi\Utils\Replacer;
 use CloudCreativity\LaravelJsonApi\Validation;
@@ -295,7 +296,7 @@ class Factory extends BaseFactory implements FactoryInterface
         return new Responses(
             $this,
             $api,
-            $this->container->make('json-api.request'),
+            $this->container->make(Route::class),
             $this->container->make('json-api.exceptions')
         );
     }

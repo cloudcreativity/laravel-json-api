@@ -27,6 +27,7 @@ use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Http\Requests\JsonApiRequest;
 use CloudCreativity\LaravelJsonApi\LaravelJsonApi;
 use CloudCreativity\LaravelJsonApi\Routing\ResourceRegistrar;
+use CloudCreativity\LaravelJsonApi\Routing\Route;
 use Exception;
 use Illuminate\Contracts\Container\Container;
 
@@ -88,9 +89,20 @@ class JsonApiService
     }
 
     /**
+     * Get the current JSON API route.
+     *
+     * @return Route
+     */
+    public function current(): Route
+    {
+        return $this->container->make(Route::class);
+    }
+
+    /**
      * Get the JSON API request.
      *
      * @return JsonApiRequest
+     * @deprecated 2.0.0 use `current()`
      */
     public function request()
     {

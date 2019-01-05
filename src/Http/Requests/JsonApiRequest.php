@@ -20,7 +20,6 @@ namespace CloudCreativity\LaravelJsonApi\Http\Requests;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\DecoderInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceIdentifierInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Queue\AsynchronousProcess;
-use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Http\Codec;
 use CloudCreativity\LaravelJsonApi\Routing\Route;
 use Illuminate\Contracts\Container\Container;
@@ -32,6 +31,7 @@ use Neomerx\JsonApi\Contracts\Http\Headers\HeaderParametersInterface;
  * Class JsonApiRequest
  *
  * @package CloudCreativity\LaravelJsonApi
+ * @deprecated 2.0.0
  */
 class JsonApiRequest
 {
@@ -89,93 +89,11 @@ class JsonApiRequest
     }
 
     /**
-     * Get the content negotiation headers.
-     *
-     * @return HeaderParametersInterface
-     */
-    public function getHeaders(): HeaderParametersInterface
-    {
-        if ($this->headers) {
-            return $this->headers;
-        }
-
-        return $this->headers = $this->container->make(HeaderParametersInterface::class);
-    }
-
-    /**
      * @return Route
      */
     public function getRoute(): Route
     {
         return $this->route;
-    }
-
-    /**
-     * Set the matched codec.
-     *
-     * @param Codec $codec
-     * @return $this
-     */
-    public function setCodec(Codec $codec): self
-    {
-        $this->codec = $codec;
-
-        return $this;
-    }
-
-    /**
-     * Get the matched codec.
-     *
-     * @return Codec
-     */
-    public function getCodec(): Codec
-    {
-        if (!$this->hasCodec()) {
-            throw new RuntimeException('Request codec has not been matched.');
-        }
-
-        return $this->codec;
-    }
-
-    /**
-     * @return bool
-     */
-    public function hasCodec(): bool
-    {
-        return !!$this->codec;
-    }
-
-    /**
-     * Set the matched decoder.
-     *
-     * @param DecoderInterface|null $decoder
-     * @return $this
-     */
-    public function setDecoder(?DecoderInterface $decoder): self
-    {
-        $this->decoder = $decoder;
-
-        return $this;
-    }
-
-    /**
-     * @return DecoderInterface
-     */
-    public function getDecoder(): DecoderInterface
-    {
-        if (!$this->hasDecoder()) {
-            throw new RuntimeException('Request decoder has not been matched.');
-        }
-
-        return $this->decoder;
-    }
-
-    /**
-     * @return bool
-     */
-    public function hasDecoder(): bool
-    {
-        return !!$this->decoder;
     }
 
     /**
@@ -473,42 +391,6 @@ class JsonApiRequest
     }
 
     /**
-     * Will the response contain a specific resource?
-     *
-     * E.g. for a `posts` resource, this is invoked on the following URLs:
-     *
-     * - `POST /posts`
-     * - `GET /posts/1`
-     * - `PATCH /posts/1`
-     * - `DELETE /posts/1`
-     *
-     * I.e. a response that may contain a specified resource.
-     *
-     * @return bool
-     */
-    public function willSeeOne(): bool
-    {
-        return !$this->isIndex() && $this->getRoute()->isNotRelationship();
-    }
-
-    /**
-     * Will the response contain zero-to-many of a resource?
-     *
-     * E.g. for a `posts` resource, this is invoked on the following URLs:
-     *
-     * - `/posts`
-     * - `/comments/1/posts`
-     *
-     * I.e. a response that will contain zero to many of the posts resource.
-     *
-     * @return bool
-     */
-    public function willSeeMany(): bool
-    {
-        return !$this->willSeeOne();
-    }
-
-    /**
      * Is this a request to read all processes for a resource type?
      *
      * E.g. `GET /posts/queue-jobs`
@@ -532,29 +414,6 @@ class JsonApiRequest
     public function isReadProcess(): bool
     {
         return $this->isMethod('get') && $this->getRoute()->isProcess();
-    }
-
-    /**
-     * Is data expected for the supplied request?
-     *
-     * If the JSON API request is any of the following, a JSON API document
-     * is expected to be set on the request:
-     *
-     * - Create resource
-     * - Update resource
-     * - Replace resource relationship
-     * - Add to resource relationship
-     * - Remove from resource relationship
-     *
-     * @return bool
-     */
-    public function isExpectingContent(): bool
-    {
-        return $this->isCreateResource() ||
-            $this->isUpdateResource() ||
-            $this->isReplaceRelationship() ||
-            $this->isAddToRelationship() ||
-            $this->isRemoveFromRelationship();
     }
 
     /**

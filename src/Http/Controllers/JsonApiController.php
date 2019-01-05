@@ -507,7 +507,7 @@ class JsonApiController extends Controller
      */
     private function beforeCommit(ValidatedRequest $request)
     {
-        $record = $request->getRecord();
+        $record = ($request instanceof UpdateResource) ? $request->getRecord() : null;
 
         if ($result = $this->invoke('saving', $record, $request)) {
             return $result;
