@@ -25,6 +25,7 @@ use CloudCreativity\LaravelJsonApi\Contracts\Validation\DocumentValidatorInterfa
 use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorProviderInterface;
+use CloudCreativity\LaravelJsonApi\Exceptions\DocumentRequiredException;
 use CloudCreativity\LaravelJsonApi\Exceptions\ValidationException;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use CloudCreativity\LaravelJsonApi\Object\Document;
@@ -135,6 +136,20 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
     public function decode()
     {
         return $this->jsonApiRequest->getDocument();
+    }
+
+    /**
+     * Get the JSON API document as an object.
+     *
+     * @return object
+     */
+    public function decodeOrFail()
+    {
+        if (!$document = $this->decode()) {
+            throw new DocumentRequiredException();
+        }
+
+        return $document;
     }
 
     /**

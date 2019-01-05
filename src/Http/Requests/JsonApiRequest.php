@@ -29,7 +29,6 @@ use Illuminate\Contracts\Container\Container;
 use Illuminate\Http\Request;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use Neomerx\JsonApi\Contracts\Http\Headers\HeaderParametersInterface;
-use Psr\Http\Message\ServerRequestInterface;
 use function CloudCreativity\LaravelJsonApi\http_contains_body;
 use function CloudCreativity\LaravelJsonApi\json_decode;
 
@@ -620,10 +619,7 @@ class JsonApiRequest
             return false;
         }
 
-        $serverRequest = $this->container->make(ServerRequestInterface::class);
-
-        /** @todo allow a Laravel request to be passed to http_contains_body */
-        if (!http_contains_body($serverRequest)) {
+        if (!http_contains_body($this->request)) {
             return false;
         }
 
