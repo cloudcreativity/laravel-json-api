@@ -2,7 +2,8 @@
 
 namespace DummyApp\JsonApi\Avatars;
 
-use CloudCreativity\LaravelJsonApi\Api\Codecs;
+use CloudCreativity\LaravelJsonApi\Http\Codec;
+use CloudCreativity\LaravelJsonApi\Http\Codecs;
 use CloudCreativity\LaravelJsonApi\Http\ContentNegotiator as BaseContentNegotiator;
 use CloudCreativity\LaravelJsonApi\Http\Decoders;
 use DummyApp\Avatar;
@@ -12,13 +13,16 @@ class ContentNegotiator extends BaseContentNegotiator
 {
 
     /**
-     * @param Codecs $defaultCodecs
      * @param Avatar $record
      * @return Codecs
      */
-    protected function codecsFor(Codecs $defaultCodecs, $record): Codecs
+    protected function resourceCodecs($record): Codecs
     {
-        return $defaultCodecs->withCustom($record->media_type);
+        $mediaType = $record->media_type;
+
+        return $this
+            ->defaultCodecs()
+            ->optional($mediaType ? Codec::custom($mediaType) : null);
     }
 
     /**
@@ -26,7 +30,7 @@ class ContentNegotiator extends BaseContentNegotiator
      */
     protected function decoders(): Decoders
     {
-        return parent::decoders()->when(
+        return $this->defaultDecoders()->when(
             $this->request->isMethod('POST'),
             new FileDecoder()
         );

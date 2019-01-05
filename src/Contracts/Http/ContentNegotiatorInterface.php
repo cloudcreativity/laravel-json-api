@@ -18,8 +18,8 @@
 
 namespace CloudCreativity\LaravelJsonApi\Contracts\Http;
 
-use CloudCreativity\LaravelJsonApi\Api\Codec;
-use CloudCreativity\LaravelJsonApi\Api\Codecs;
+use CloudCreativity\LaravelJsonApi\Http\Codec;
+use CloudCreativity\LaravelJsonApi\Http\Codecs;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Neomerx\JsonApi\Contracts\Http\Headers\AcceptHeaderInterface;
@@ -48,6 +48,14 @@ interface ContentNegotiatorInterface
     public function withRequest(Request $request): ContentNegotiatorInterface;
 
     /**
+     * Set the default codecs.
+     *
+     * @param Codecs $codecs
+     * @return $this
+     */
+    public function withDefaultCodecs(Codecs $codecs): ContentNegotiatorInterface;
+
+    /**
      * Get a codec for a resource response.
      *
      * E.g. for a `posts` resource, this is invoked on the following URLs:
@@ -61,8 +69,6 @@ interface ContentNegotiatorInterface
      *
      * @param AcceptHeaderInterface $header
      *      the Accept header provided by the client.
-     * @param Codecs $codecs
-     *      the default codecs for the API.
      * @param mixed|null $record
      *      the domain record the request relates to, unless one is being created.
      * @return Codec
@@ -70,7 +76,7 @@ interface ContentNegotiatorInterface
      * @throws HttpException
      * @throws JsonApiException
      */
-    public function codec(AcceptHeaderInterface $header, Codecs $codecs, $record = null): Codec;
+    public function codec(AcceptHeaderInterface $header, $record = null): Codec;
 
     /**
      * Get a codec for a zero-to-many resources response.
@@ -85,14 +91,12 @@ interface ContentNegotiatorInterface
      *
      * @param AcceptHeaderInterface $header
      *      the Accept header provided by the client.
-     * @param Codecs $codecs
-     *      the default codecs for the API.
      * @return Codec
      *      the matching codec.
      * @throws HttpException
      * @throws JsonApiException
      */
-    public function codecForMany(AcceptHeaderInterface $header, Codecs $codecs): Codec;
+    public function codecForMany(AcceptHeaderInterface $header): Codec;
 
     /**
      * Get a decoder for a request that contains content.

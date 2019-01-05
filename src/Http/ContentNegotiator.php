@@ -2,8 +2,6 @@
 
 namespace CloudCreativity\LaravelJsonApi\Http;
 
-use CloudCreativity\LaravelJsonApi\Api\Codec;
-use CloudCreativity\LaravelJsonApi\Api\Codecs;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\ContentNegotiatorInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\DecoderInterface;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
@@ -28,6 +26,11 @@ class ContentNegotiator implements ContentNegotiatorInterface
     private $factory;
 
     /**
+     * @var Codecs
+     */
+    private $defaultCodecs;
+
+    /**
      * ContentNegotiator constructor.
      *
      * @param Factory $factory
@@ -35,6 +38,7 @@ class ContentNegotiator implements ContentNegotiatorInterface
     public function __construct(Factory $factory)
     {
         $this->factory = $factory;
+        $this->defaultCodecs = new Codecs();
     }
 
     /**
@@ -51,11 +55,19 @@ class ContentNegotiator implements ContentNegotiatorInterface
     /**
      * @inheritDoc
      */
-    public function codec(AcceptHeaderInterface $header, Codecs $codecs, $record = null): Codec
+    public function withDefaultCodecs(Codecs $codecs): ContentNegotiatorInterface
     {
-        if ($record) {
-            $codecs = $this->codecsFor($codecs, $record);
-        }
+        $this->defaultCodecs = $codecs;
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function codec(AcceptHeaderInterface $header, $record = null): Codec
+    {
+        $codecs = $record ? $this->resourceCodecs($record) : $this->createResourceCodecs();
 
         return $this->checkAcceptTypes($header, $codecs);
     }
@@ -63,8 +75,10 @@ class ContentNegotiator implements ContentNegotiatorInterface
     /**
      * @inheritDoc
      */
-    public function codecForMany(AcceptHeaderInterface $header, Codecs $codecs): Codec
+    public function codecForMany(AcceptHeaderInterface $header): Codec
     {
+        $codecs = $this->codecsForMany();
+
         return $this->checkAcceptTypes($header, $codecs);
     }
 
@@ -99,18 +113,42 @@ class ContentNegotiator implements ContentNegotiatorInterface
     }
 
     /**
-     * Get codecs for the supplied record.
+     * Get codecs for a create resource response.
      *
-     * Child classes can overload this method if they want to add codecs.
+     * @return Codecs
+     */
+    protected function createResourceCodecs(): Codecs
+    {
+        return $this->defaultCodecs();
+    }
+
+    /**
+     * Get codecs for a resource response.
      *
-     * @param Codecs $defaultCodecs
-     *      the API's default codecs.
      * @param mixed $record
      * @return Codecs
      */
-    protected function codecsFor(Codecs $defaultCodecs, $record): Codecs
+    protected function resourceCodecs($record): Codecs
     {
-        return $defaultCodecs;
+        return $this->defaultCodecs();
+    }
+
+    /**
+     * Get codecs for a zero-to-many resource response.
+     *
+     * @return Codecs
+     */
+    protected function codecsForMany(): Codecs
+    {
+        return $this->defaultCodecs();
+    }
+
+    /**
+     * @return Codecs
+     */
+    protected function defaultCodecs(): Codecs
+    {
+        return $this->defaultCodecs;
     }
 
     /**

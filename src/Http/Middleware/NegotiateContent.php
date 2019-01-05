@@ -3,12 +3,12 @@
 namespace CloudCreativity\LaravelJsonApi\Http\Middleware;
 
 use CloudCreativity\LaravelJsonApi\Api\Api;
-use CloudCreativity\LaravelJsonApi\Api\Codec;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\ContentNegotiatorInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\DecoderInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\DocumentRequiredException;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
+use CloudCreativity\LaravelJsonApi\Http\Codec;
 use CloudCreativity\LaravelJsonApi\Http\Requests\JsonApiRequest;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -81,16 +81,16 @@ class NegotiateContent
     {
         $negotiator = $this
             ->negotiator($this->responseResourceType(), $defaultNegotiator)
-            ->withRequest($request);
+            ->withRequest($request)
+            ->withDefaultCodecs($this->api->getCodecs());
 
         $accept = $this->jsonApiRequest->getHeaders()->getAcceptHeader();
-        $codecs = $this->api->getCodecs();
 
         if ($this->jsonApiRequest->willSeeMany()) {
-            return $negotiator->codecForMany($accept, $codecs);
+            return $negotiator->codecForMany($accept);
         }
 
-        return $negotiator->codec($accept, $codecs, $this->jsonApiRequest->getResource());
+        return $negotiator->codec($accept, $this->jsonApiRequest->getResource());
     }
 
     /**
@@ -105,18 +105,18 @@ class NegotiateContent
             $defaultNegotiator
         )->withRequest($request);
 
-        $header = $this->jsonApiRequest->getHeaders()->getContentTypeHeader();
+        $contentType = $this->jsonApiRequest->getHeaders()->getContentTypeHeader();
         $resource = $this->jsonApiRequest->getResource();
 
         if ($resource && $field = $this->jsonApiRequest->getRelationshipName()) {
-            return $negotiator->decoderForRelationship($header, $resource, $field);
+            return $negotiator->decoderForRelationship($contentType, $resource, $field);
         }
 
         if ($resource) {
-            return $negotiator->decoderForResource($header, $resource);
+            return $negotiator->decoderForResource($contentType, $resource);
         }
 
-        return $negotiator->decoder($header);
+        return $negotiator->decoder($contentType);
     }
 
     /**

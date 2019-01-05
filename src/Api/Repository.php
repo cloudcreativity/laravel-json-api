@@ -20,6 +20,7 @@ namespace CloudCreativity\LaravelJsonApi\Api;
 
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
+use CloudCreativity\LaravelJsonApi\Http\Codecs;
 use CloudCreativity\LaravelJsonApi\Resolver\AggregateResolver;
 use Illuminate\Contracts\Config\Repository as Config;
 
