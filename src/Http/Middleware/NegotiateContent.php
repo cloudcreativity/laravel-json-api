@@ -6,9 +6,9 @@ use CloudCreativity\LaravelJsonApi\Api\Api;
 use CloudCreativity\LaravelJsonApi\Api\Codec;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\ContentNegotiatorInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\DecoderInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\DocumentRequiredException;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
-use CloudCreativity\LaravelJsonApi\Http\Decoder;
 use CloudCreativity\LaravelJsonApi\Http\Requests\JsonApiRequest;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -61,8 +61,8 @@ class NegotiateContent
         $body = http_contains_body($request);
 
         $this->matched(
-            $this->matchCodec($default),
-            $decoder = $body ? $this->matchDecoder($default) : null
+            $this->matchCodec($request, $default),
+            $decoder = $body ? $this->matchDecoder($request, $default) : null
         );
 
         if (!$body && $this->jsonApiRequest->isExpectingContent()) {
@@ -73,12 +73,16 @@ class NegotiateContent
     }
 
     /**
+     * @param Request $request
      * @param string|null $defaultNegotiator
      * @return Codec
      */
-    protected function matchCodec(?string $defaultNegotiator): Codec
+    protected function matchCodec($request, ?string $defaultNegotiator): Codec
     {
-        $negotiator = $this->negotiator($this->responseResourceType(), $defaultNegotiator);
+        $negotiator = $this
+            ->negotiator($this->responseResourceType(), $defaultNegotiator)
+            ->withRequest($request);
+
         $accept = $this->jsonApiRequest->getHeaders()->getAcceptHeader();
         $codecs = $this->api->getCodecs();
 
@@ -90,20 +94,29 @@ class NegotiateContent
     }
 
     /**
+     * @param Request $request
      * @param string|null $defaultNegotiator
-     * @return Decoder|null
+     * @return DecoderInterface|null
      */
-    protected function matchDecoder(?string $defaultNegotiator): ?Decoder
+    protected function matchDecoder($request, ?string $defaultNegotiator): ?DecoderInterface
     {
         $negotiator = $this->negotiator(
             $this->jsonApiRequest->getResourceType(),
             $defaultNegotiator
-        );
+        )->withRequest($request);
 
-        return $negotiator->decoder(
-            $this->jsonApiRequest->getHeaders()->getContentTypeHeader(),
-            $this->jsonApiRequest->getResource()
-        );
+        $header = $this->jsonApiRequest->getHeaders()->getContentTypeHeader();
+        $resource = $this->jsonApiRequest->getResource();
+
+        if ($resource && $field = $this->jsonApiRequest->getRelationshipName()) {
+            return $negotiator->decoderForRelationship($header, $resource, $field);
+        }
+
+        if ($resource) {
+            return $negotiator->decoderForResource($header, $resource);
+        }
+
+        return $negotiator->decoder($header);
     }
 
     /**
@@ -148,10 +161,10 @@ class NegotiateContent
      * Apply the matched codec.
      *
      * @param Codec $codec
-     * @param Decoder $decoder
+     * @param DecoderInterface $decoder
      * @return void
      */
-    protected function matched(Codec $codec, ?Decoder $decoder): void
+    protected function matched(Codec $codec, ?DecoderInterface $decoder): void
     {
         $this->jsonApiRequest
             ->setCodec($codec)

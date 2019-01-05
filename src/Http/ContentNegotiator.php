@@ -5,6 +5,9 @@ namespace CloudCreativity\LaravelJsonApi\Http;
 use CloudCreativity\LaravelJsonApi\Api\Codec;
 use CloudCreativity\LaravelJsonApi\Api\Codecs;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\ContentNegotiatorInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\DecoderInterface;
+use CloudCreativity\LaravelJsonApi\Factories\Factory;
+use Illuminate\Http\Request;
 use Neomerx\JsonApi\Contracts\Http\Headers\AcceptHeaderInterface;
 use Neomerx\JsonApi\Contracts\Http\Headers\HeaderInterface;
 use Neomerx\JsonApi\Contracts\Http\Headers\MediaTypeInterface;
@@ -13,6 +16,37 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class ContentNegotiator implements ContentNegotiatorInterface
 {
+
+    /**
+     * @var Request
+     */
+    protected $request;
+
+    /**
+     * @var Factory
+     */
+    private $factory;
+
+    /**
+     * ContentNegotiator constructor.
+     *
+     * @param Factory $factory
+     */
+    public function __construct(Factory $factory)
+    {
+        $this->factory = $factory;
+    }
+
+    /**
+     * @param Request $request
+     * @return ContentNegotiatorInterface
+     */
+    public function withRequest(Request $request): ContentNegotiatorInterface
+    {
+        $this->request = $request;
+
+        return $this;
+    }
 
     /**
      * @inheritDoc
@@ -37,13 +71,31 @@ class ContentNegotiator implements ContentNegotiatorInterface
     /**
      * @inheritdoc
      */
-    public function decoder(HeaderInterface $header, $record = null): Decoder
+    public function decoder(HeaderInterface $header): DecoderInterface
     {
-        if ($this->isNotJsonApi($header)) {
-            throw $this->unsupportedMediaType();
-        }
+        return $this->checkContentType($header, $this->decoders());
+    }
 
-        return new Decoder();
+    /**
+     * @inheritDoc
+     */
+    public function decoderForResource(HeaderInterface $header, $record): DecoderInterface
+    {
+        return $this->checkContentType(
+            $header,
+            $this->resourceDecoders($record)
+        );
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function decoderForRelationship(HeaderInterface $header, $record, string $field): DecoderInterface
+    {
+        return $this->checkContentType(
+            $header,
+            $this->relationshipDecoders($record, $field)
+        );
     }
 
     /**
@@ -62,6 +114,47 @@ class ContentNegotiator implements ContentNegotiatorInterface
     }
 
     /**
+     * Get decoders.
+     *
+     * @return Decoders
+     */
+    protected function decoders(): Decoders
+    {
+        return $this->defaultDecoders();
+    }
+
+    /**
+     * Get decoders for a specific record.
+     *
+     * @param mixed $record
+     * @return Decoders
+     */
+    protected function resourceDecoders($record): Decoders
+    {
+        return $this->defaultDecoders();
+    }
+
+    /**
+     * Get decoders for a relationship on a specific record.
+     *
+     * @param mixed $record
+     * @param string $field
+     * @return Decoders
+     */
+    protected function relationshipDecoders($record, string $field): Decoders
+    {
+        return $this->defaultDecoders();
+    }
+
+    /**
+     * @return Decoders
+     */
+    protected function defaultDecoders(): Decoders
+    {
+        return new Decoders($this->factory->createDecoder());
+    }
+
+    /**
      * @param AcceptHeaderInterface $header
      * @param Codecs $codecs
      * @return Codec
@@ -74,6 +167,21 @@ class ContentNegotiator implements ContentNegotiatorInterface
         }
 
         return $codec;
+    }
+
+    /**
+     * @param HeaderInterface $header
+     * @param Decoders $decoders
+     * @return DecoderInterface
+     * @throws HttpException
+     */
+    protected function checkContentType(HeaderInterface $header, Decoders $decoders): DecoderInterface
+    {
+        if (!$decoder = $decoders->forHeader($header)) {
+            throw $this->unsupportedMediaType();
+        }
+
+        return $decoder;
     }
 
     /**

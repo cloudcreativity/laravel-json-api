@@ -20,7 +20,7 @@ namespace CloudCreativity\LaravelJsonApi\Contracts\Http;
 
 use CloudCreativity\LaravelJsonApi\Api\Codec;
 use CloudCreativity\LaravelJsonApi\Api\Codecs;
-use CloudCreativity\LaravelJsonApi\Http\Decoder;
+use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Neomerx\JsonApi\Contracts\Http\Headers\AcceptHeaderInterface;
 use Neomerx\JsonApi\Contracts\Http\Headers\HeaderInterface;
@@ -38,6 +38,14 @@ interface ContentNegotiatorInterface
 
     const HTTP_NOT_ACCEPTABLE = Response::HTTP_NOT_ACCEPTABLE;
     const HTTP_UNSUPPORTED_MEDIA_TYPE = Response::HTTP_UNSUPPORTED_MEDIA_TYPE;
+
+    /**
+     * Set the request for which content is being negotiated.
+     *
+     * @param Request $request
+     * @return $this
+     */
+    public function withRequest(Request $request): ContentNegotiatorInterface;
 
     /**
      * Get a codec for a resource response.
@@ -89,10 +97,51 @@ interface ContentNegotiatorInterface
     /**
      * Get a decoder for a request that contains content.
      *
+     * This is invoked for any request that contains HTTP content body, and
+     * the request does not relate to a specific resource.
+     *
+     * E.g. for the `posts` resource, this is invoked if the client sends
+     * content for any of the following:
+     *
+     * - `GET /posts`
+     * - `POST /posts`
+     *
+     * @param HeaderInterface $header
+     *      the Content-Type header provided by the client.
+     * @return DecoderInterface
+     */
+    public function decoder(HeaderInterface $header): DecoderInterface;
+
+    /**
+     * Get a decoder for a resource request that contains content.
+     *
+     * This is invoked for any request that contains HTTP content body, and
+     * the request relates to a specific resource (but not any of its relationships).
+     *
+     * E.g. for the `posts` resource, this is invoked if the client sends
+     * content for any of the following:
+     *
+     * - `GET /posts/1`
+     * - `PATCH /posts/1`
+     * - `DELETE /posts/1`
+     *
+     * @param HeaderInterface $header
+     *      the Content-Type header provided by the client.
+     * @param mixed $record
+     *      the domain record the request relates to.
+     * @return DecoderInterface
+     */
+    public function decoderForResource(HeaderInterface $header, $record): DecoderInterface;
+
+    /**
+     * Get a decoder for a relationship request that contains content.
+     *
+     * This is invoked for any request that contains HTTP content body, and
+     * the request relates to a relationship of a specific resource.
+     *
      * E.g. for the `posts` resource, this is invoked on the following:
      *
-     * - `POST /posts`
-     * - `PATCH /posts/1`
+     * - `GET /posts/1/tags`
      * - `POST /posts/1/tags`
      * - `PATCH /posts/1/tags`
      * - `DELETE /posts/1/tags`
@@ -100,9 +149,11 @@ interface ContentNegotiatorInterface
      * @param HeaderInterface $header
      *      the Content-Type header provided by the client.
      * @param mixed|null $record
-     *      the domain record the request relates to, unless one is being created.
-     * @return Decoder
+     *      the domain record the request relates to.
+     * @param string $field
+     *      the relationship field name.
+     * @return DecoderInterface
      */
-    public function decoder(HeaderInterface $header, $record = null): Decoder;
+    public function decoderForRelationship(HeaderInterface $header, $record, string $field): DecoderInterface;
 
 }

@@ -18,11 +18,11 @@
 namespace CloudCreativity\LaravelJsonApi\Http\Requests;
 
 use CloudCreativity\LaravelJsonApi\Api\Codec;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\DecoderInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceIdentifierInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Queue\AsynchronousProcess;
 use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
-use CloudCreativity\LaravelJsonApi\Http\Decoder;
 use CloudCreativity\LaravelJsonApi\Object\ResourceIdentifier;
 use CloudCreativity\LaravelJsonApi\Routing\ResourceRegistrar;
 use Illuminate\Contracts\Container\Container;
@@ -64,7 +64,7 @@ class JsonApiRequest
     private $codec;
 
     /**
-     * @var Decoder|null
+     * @var DecoderInterface|null
      */
     private $decoder;
 
@@ -149,10 +149,10 @@ class JsonApiRequest
     /**
      * Set the matched decoder.
      *
-     * @param Decoder|null $decoder
+     * @param DecoderInterface|null $decoder
      * @return $this
      */
-    public function setDecoder(?Decoder $decoder): self
+    public function setDecoder(?DecoderInterface $decoder): self
     {
         $this->decoder = $decoder;
 
@@ -160,9 +160,9 @@ class JsonApiRequest
     }
 
     /**
-     * @return Decoder
+     * @return DecoderInterface
      */
-    public function getDecoder(): Decoder
+    public function getDecoder(): DecoderInterface
     {
         if (!$this->hasDecoder()) {
             throw new RuntimeException('Request decoder has not been matched.');

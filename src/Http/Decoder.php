@@ -2,20 +2,29 @@
 
 namespace CloudCreativity\LaravelJsonApi\Http;
 
-use CloudCreativity\LaravelJsonApi\Exceptions\InvalidJsonException;
-use Illuminate\Http\Request;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\DecoderInterface;
+use Neomerx\JsonApi\Contracts\Http\Headers\MediaTypeInterface;
+use Neomerx\JsonApi\Http\Headers\MediaType;
 use function CloudCreativity\LaravelJsonApi\json_decode;
 
-class Decoder
+/**
+ * Class Decoder
+ *
+ * @package CloudCreativity\LaravelJsonApi
+ */
+class Decoder implements DecoderInterface
 {
 
     /**
-     * Decode a JSON API document from a request.
-     *
-     * @param Request $request
-     * @return \stdClass|null
-     *      the JSON API document, or null if the request is not providing JSON API content.
-     * @throws InvalidJsonException
+     * @inheritdoc
+     */
+    public function getMediaType(): MediaTypeInterface
+    {
+        return MediaType::parse(0, MediaTypeInterface::JSON_API_MEDIA_TYPE);
+    }
+
+    /**
+     * @inheritdoc
      */
     public function decode($request): ?\stdClass
     {
@@ -23,10 +32,7 @@ class Decoder
     }
 
     /**
-     * Extract content data from a request.
-     *
-     * @param Request $request
-     * @return array
+     * @inheritdoc
      */
     public function extract($request): array
     {

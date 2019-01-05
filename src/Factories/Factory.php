@@ -42,6 +42,7 @@ use CloudCreativity\LaravelJsonApi\Encoder\Encoder;
 use CloudCreativity\LaravelJsonApi\Encoder\Parameters\EncodingParameters;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Http\ContentNegotiator;
+use CloudCreativity\LaravelJsonApi\Http\Decoder;
 use CloudCreativity\LaravelJsonApi\Http\Headers\RestrictiveHeadersChecker;
 use CloudCreativity\LaravelJsonApi\Http\Query\ValidationQueryChecker;
 use CloudCreativity\LaravelJsonApi\Http\Responses\ErrorResponse;
@@ -442,7 +443,15 @@ class Factory extends BaseFactory implements FactoryInterface
      */
     public function createContentNegotiator()
     {
-        return new ContentNegotiator();
+        return new ContentNegotiator($this);
+    }
+
+    /**
+     * @return Decoder
+     */
+    public function createDecoder()
+    {
+        return new Decoder();
     }
 
     /**
