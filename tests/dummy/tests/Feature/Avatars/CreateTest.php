@@ -35,7 +35,7 @@ class CreateTest extends TestCase
 
         $id = $response
             ->assertCreatedWithServerId(url('/api/v1/avatars'), $expected)
-            ->json('data.id');
+            ->id();
 
         $this->assertDatabaseHas('avatars', [
             'id' => $id,

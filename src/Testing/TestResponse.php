@@ -57,6 +57,16 @@ class TestResponse extends BaseTestResponse
      *
      * @return string|null
      */
+    public function id(): ?string
+    {
+        return $this->getId();
+    }
+
+    /**
+     * Get the resource ID from the `/data/id` member.
+     *
+     * @return string|null
+     */
     public function getId(): ?string
     {
         return $this->jsonApi('/data/id');
