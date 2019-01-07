@@ -19,13 +19,14 @@
 namespace CloudCreativity\LaravelJsonApi\Http\Responses;
 
 use CloudCreativity\LaravelJsonApi\Api\Api;
+use CloudCreativity\LaravelJsonApi\Codec\Codec;
+use CloudCreativity\LaravelJsonApi\Codec\Encoding;
 use CloudCreativity\LaravelJsonApi\Contracts\Exceptions\ExceptionParserInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\Responses\ErrorResponseInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PageInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Queue\AsynchronousProcess;
 use CloudCreativity\LaravelJsonApi\Document\Error;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
-use CloudCreativity\LaravelJsonApi\Http\Codec;
 use CloudCreativity\LaravelJsonApi\Routing\Route;
 use Illuminate\Http\Response;
 use Neomerx\JsonApi\Contracts\Document\DocumentInterface;
@@ -33,7 +34,6 @@ use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use Neomerx\JsonApi\Contracts\Http\Headers\MediaTypeInterface;
 use Neomerx\JsonApi\Exceptions\ErrorCollection;
-use Neomerx\JsonApi\Http\Headers\MediaType;
 use Neomerx\JsonApi\Http\Responses as BaseResponses;
 
 /**
@@ -107,18 +107,24 @@ class Responses extends BaseResponses
     }
 
     /**
-     * Send a response with the supplied media type.
+     * Send a response with the supplied media type content.
      *
      * @param string $mediaType
      * @return $this
      */
     public function withMediaType(string $mediaType): self
     {
-        if (!$codec = $this->api->getCodecs()->find($mediaType)) {
+        if (!$encoding = $this->api->getEncodings()->find($mediaType)) {
             throw new \InvalidArgumentException(
                 "Media type {$mediaType} is not valid for API {$this->api->getName()}."
             );
         }
+
+        $codec = $this->factory->createCodec(
+            $this->api->getContainer(),
+            $encoding,
+            null
+        );
 
         return $this->withCodec($codec);
     }
@@ -131,12 +137,25 @@ class Responses extends BaseResponses
      * @param string|null $mediaType
      * @return Responses
      */
-    public function withEncoding($options = 0, $depth = 512, $mediaType = MediaTypeInterface::JSON_API_MEDIA_TYPE)
-    {
-        return $this->withCodec(new Codec(
-            MediaType::parse(0, $mediaType),
-            $this->api->encoderOptions($options, $depth)
-        ));
+    public function withEncoding(
+        int $options = 0,
+        int $depth = 512,
+        string $mediaType = MediaTypeInterface::JSON_API_MEDIA_TYPE
+    ) {
+        $encoding = Encoding::create(
+            $mediaType,
+            $options,
+            $this->api->getUrl()->toString(),
+            $depth
+        );
+
+        $codec = $this->factory->createCodec(
+            $this->api->getContainer(),
+            $encoding,
+            null
+        );
+
+        return $this->withCodec($codec);
     }
 
     /**
@@ -473,9 +492,7 @@ class Responses extends BaseResponses
      */
     protected function getEncoder()
     {
-        return $this->api->encoder(
-            $this->getCodec()->getOptions()
-        );
+        return $this->getCodec()->getEncoder();
     }
 
     /**
@@ -483,7 +500,7 @@ class Responses extends BaseResponses
      */
     protected function getMediaType()
     {
-        return $this->getCodec()->getMediaType();
+        return $this->getCodec()->getEncodingMediaType();
     }
 
     /**

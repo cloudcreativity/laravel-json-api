@@ -18,8 +18,9 @@
 
 namespace CloudCreativity\LaravelJsonApi\Contracts\Http;
 
-use CloudCreativity\LaravelJsonApi\Http\Codec;
-use CloudCreativity\LaravelJsonApi\Http\Codecs;
+use CloudCreativity\LaravelJsonApi\Api\Api;
+use CloudCreativity\LaravelJsonApi\Codec\Decoding;
+use CloudCreativity\LaravelJsonApi\Codec\Encoding;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Neomerx\JsonApi\Contracts\Http\Headers\AcceptHeaderInterface;
@@ -48,15 +49,15 @@ interface ContentNegotiatorInterface
     public function withRequest(Request $request): ContentNegotiatorInterface;
 
     /**
-     * Set the default codecs.
+     * Set the API for which content is being negotiated.
      *
-     * @param Codecs $codecs
-     * @return $this
+     * @param Api $api
+     * @return ContentNegotiatorInterface
      */
-    public function withDefaultCodecs(Codecs $codecs): ContentNegotiatorInterface;
+    public function withApi(Api $api): ContentNegotiatorInterface;
 
     /**
-     * Get a codec for a resource response.
+     * Get an encoding for a resource response.
      *
      * E.g. for a `posts` resource, this is invoked on the following URLs:
      *
@@ -71,15 +72,15 @@ interface ContentNegotiatorInterface
      *      the Accept header provided by the client.
      * @param mixed|null $record
      *      the domain record the request relates to, unless one is being created.
-     * @return Codec
-     *      the matching codec.
+     * @return Encoding
+     *      the encoding to use.
      * @throws HttpException
      * @throws JsonApiException
      */
-    public function codec(AcceptHeaderInterface $header, $record = null): Codec;
+    public function encoding(AcceptHeaderInterface $header, $record): Encoding;
 
     /**
-     * Get a codec for a zero-to-many resources response.
+     * Get an encoding for a zero-to-many resources response.
      *
      * E.g. for a `posts` resource, this is invoked on the following URLs:
      *
@@ -91,33 +92,15 @@ interface ContentNegotiatorInterface
      *
      * @param AcceptHeaderInterface $header
      *      the Accept header provided by the client.
-     * @return Codec
-     *      the matching codec.
+     * @return Encoding
+     *      the encoding to use.
      * @throws HttpException
      * @throws JsonApiException
      */
-    public function codecForMany(AcceptHeaderInterface $header): Codec;
+    public function encodingForMany(AcceptHeaderInterface $header): Encoding;
 
     /**
-     * Get a decoder for a request that contains content.
-     *
-     * This is invoked for any request that contains HTTP content body, and
-     * the request does not relate to a specific resource.
-     *
-     * E.g. for the `posts` resource, this is invoked if the client sends
-     * content for any of the following:
-     *
-     * - `GET /posts`
-     * - `POST /posts`
-     *
-     * @param HeaderInterface $header
-     *      the Content-Type header provided by the client.
-     * @return DecoderInterface
-     */
-    public function decoder(HeaderInterface $header): DecoderInterface;
-
-    /**
-     * Get a decoder for a resource request that contains content.
+     * Get a decoding for a resource request that contains content.
      *
      * This is invoked for any request that contains HTTP content body, and
      * the request relates to a specific resource (but not any of its relationships).
@@ -125,20 +108,23 @@ interface ContentNegotiatorInterface
      * E.g. for the `posts` resource, this is invoked if the client sends
      * content for any of the following:
      *
+     * - `GET /posts`
+     * - `POST /posts`
      * - `GET /posts/1`
      * - `PATCH /posts/1`
      * - `DELETE /posts/1`
      *
      * @param HeaderInterface $header
      *      the Content-Type header provided by the client.
-     * @param mixed $record
+     * @param mixed|null $record
      *      the domain record the request relates to.
-     * @return DecoderInterface
+     * @return Decoding
+     *      the decoding to use.
      */
-    public function decoderForResource(HeaderInterface $header, $record): DecoderInterface;
+    public function decoding(HeaderInterface $header, $record): Decoding;
 
     /**
-     * Get a decoder for a relationship request that contains content.
+     * Get a decoding for a relationship request that contains content.
      *
      * This is invoked for any request that contains HTTP content body, and
      * the request relates to a relationship of a specific resource.
@@ -156,8 +142,9 @@ interface ContentNegotiatorInterface
      *      the domain record the request relates to.
      * @param string $field
      *      the relationship field name.
-     * @return DecoderInterface
+     * @return Decoding
+     *      the decoding to use.
      */
-    public function decoderForRelationship(HeaderInterface $header, $record, string $field): DecoderInterface;
+    public function decodingForRelationship(HeaderInterface $header, $record, string $field): Decoding;
 
 }

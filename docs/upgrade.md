@@ -36,7 +36,7 @@ return [
     'codecs' => [
         'encoders' => [
             'application/vnd.api+json',
-            'text/plain' => JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES,
+            'text/plain' => JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_PRESERVE_ZERO_FRACTION,
         ],
         'decoders' => [
             'application/vnd.api+json',
@@ -53,7 +53,7 @@ return [
     
     /*
     |--------------------------------------------------------------------------
-    | Response Encoding
+    | Encoding Media Types
     |--------------------------------------------------------------------------
     |
     | This defines the JSON API encoding used for particular media
@@ -73,6 +73,28 @@ return [
     'encoding' => [
         'application/vnd.api+json',
         'text/plain' => JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_PRESERVE_ZERO_FRACTION,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Decoding Media Types
+    |--------------------------------------------------------------------------
+    |
+    | This defines the media types that your API can receive from clients.
+    | This array is keyed by expected media types, with the value being the
+    | service binding that decodes the media type.
+    |
+    | These values are also used for Content Negotiation. If a client sends
+    | a content type not listed here, it will receive a
+    | 415 Unsupported Media Type response.
+    |
+    | Decoders can also be calculated at runtime, and/or you can add support
+    | for media types for specific resources or requests. Refer to the
+    | Content Negotiation chapter in the docs for details.
+    |
+    */
+    'decoding' => [
+        'application/vnd.api+json' => \CloudCreativity\LaravelJsonApi\Decoder\JsonDecoder::class,
     ],
 ];
 ```

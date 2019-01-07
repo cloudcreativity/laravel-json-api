@@ -3,18 +3,23 @@
 namespace CloudCreativity\LaravelJsonApi\Http\Middleware;
 
 use CloudCreativity\LaravelJsonApi\Api\Api;
+use CloudCreativity\LaravelJsonApi\Codec\Decoding;
+use CloudCreativity\LaravelJsonApi\Codec\Encoding;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\ContentNegotiatorInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Http\DecoderInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\DocumentRequiredException;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
-use CloudCreativity\LaravelJsonApi\Http\Codec;
 use CloudCreativity\LaravelJsonApi\Routing\Route;
 use Illuminate\Http\Request;
 use Neomerx\JsonApi\Contracts\Http\Headers\HeaderParametersInterface;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use function CloudCreativity\LaravelJsonApi\http_contains_body;
 
+/**
+ * Class NegotiateContent
+ *
+ * @package CloudCreativity\LaravelJsonApi
+ */
 class NegotiateContent
 {
 
@@ -69,7 +74,7 @@ class NegotiateContent
         $body = http_contains_body($request);
 
         $this->matched(
-            $this->matchCodec($request, $default),
+            $this->matchEncoding($request, $default),
             $decoder = $body ? $this->matchDecoder($request, $default) : null
         );
 
@@ -83,48 +88,44 @@ class NegotiateContent
     /**
      * @param Request $request
      * @param string|null $defaultNegotiator
-     * @return Codec
+     * @return Encoding
      */
-    protected function matchCodec($request, ?string $defaultNegotiator): Codec
+    protected function matchEncoding($request, ?string $defaultNegotiator): Encoding
     {
         $negotiator = $this
             ->negotiator($this->responseResourceType(), $defaultNegotiator)
             ->withRequest($request)
-            ->withDefaultCodecs($this->api->getCodecs());
+            ->withApi($this->api);
 
         $accept = $this->headers->getAcceptHeader();
 
         if ($this->willSeeMany($request)) {
-            return $negotiator->codecForMany($accept);
+            return $negotiator->encodingForMany($accept);
         }
 
-        return $negotiator->codec($accept, $this->route->getResource());
+        return $negotiator->encoding($accept, $this->route->getResource());
     }
 
     /**
      * @param Request $request
      * @param string|null $defaultNegotiator
-     * @return DecoderInterface|null
+     * @return Decoding|null
      */
-    protected function matchDecoder($request, ?string $defaultNegotiator): ?DecoderInterface
+    protected function matchDecoder($request, ?string $defaultNegotiator): ?Decoding
     {
-        $negotiator = $this->negotiator(
-            $this->route->getResourceType(),
-            $defaultNegotiator
-        )->withRequest($request);
+        $negotiator = $this
+            ->negotiator($this->route->getResourceType(), $defaultNegotiator)
+            ->withRequest($request)
+            ->withApi($this->api);
 
         $contentType = $this->headers->getContentTypeHeader();
         $resource = $this->route->getResource();
 
         if ($resource && $field = $this->route->getRelationshipName()) {
-            return $negotiator->decoderForRelationship($contentType, $resource, $field);
+            return $negotiator->decodingForRelationship($contentType, $resource, $field);
         }
 
-        if ($resource) {
-            return $negotiator->decoderForResource($contentType, $resource);
-        }
-
-        return $negotiator->decoder($contentType);
+        return $negotiator->decoding($contentType, $resource);
     }
 
     /**
@@ -166,15 +167,20 @@ class NegotiateContent
     }
 
     /**
-     * Apply the matched codec.
+     * Apply the matched encoding and decoding.
      *
-     * @param Codec $codec
-     * @param DecoderInterface $decoder
-     * @return void
+     * @param Encoding $encoding
+     * @param Decoding|null $decoding
      */
-    protected function matched(Codec $codec, ?DecoderInterface $decoder): void
+    protected function matched(Encoding $encoding, ?Decoding $decoding): void
     {
-        $this->route->setCodec($codec)->setDecoder($decoder);
+        $codec = $this->factory->createCodec(
+            $this->getContainer(),
+            $encoding,
+            $decoding
+        );
+
+        $this->route->setCodec($codec);
     }
 
     /**

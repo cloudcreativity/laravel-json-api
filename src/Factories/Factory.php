@@ -26,6 +26,9 @@ use CloudCreativity\LaravelJsonApi\Api\Url;
 use CloudCreativity\LaravelJsonApi\Api\UrlGenerator;
 use CloudCreativity\LaravelJsonApi\Client\ClientSerializer;
 use CloudCreativity\LaravelJsonApi\Client\GuzzleClient;
+use CloudCreativity\LaravelJsonApi\Codec\Codec;
+use CloudCreativity\LaravelJsonApi\Codec\Decoding;
+use CloudCreativity\LaravelJsonApi\Codec\Encoding;
 use CloudCreativity\LaravelJsonApi\Container;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Encoder\SerializerInterface;
@@ -42,7 +45,6 @@ use CloudCreativity\LaravelJsonApi\Encoder\Encoder;
 use CloudCreativity\LaravelJsonApi\Encoder\Parameters\EncodingParameters;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Http\ContentNegotiator;
-use CloudCreativity\LaravelJsonApi\Http\Decoder;
 use CloudCreativity\LaravelJsonApi\Http\Headers\RestrictiveHeadersChecker;
 use CloudCreativity\LaravelJsonApi\Http\Query\ValidationQueryChecker;
 use CloudCreativity\LaravelJsonApi\Http\Responses\ErrorResponse;
@@ -448,11 +450,14 @@ class Factory extends BaseFactory implements FactoryInterface
     }
 
     /**
-     * @return Decoder
+     * @param ContainerInterface $container
+     * @param Encoding $encoding
+     * @param Decoding|null $decoding
+     * @return Codec
      */
-    public function createDecoder()
+    public function createCodec(ContainerInterface $container, Encoding $encoding, ?Decoding $decoding)
     {
-        return new Decoder();
+        return new Codec($this, $container, $encoding, $decoding);
     }
 
     /**

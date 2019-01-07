@@ -15,15 +15,19 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\LaravelJsonApi\Http;
+namespace CloudCreativity\LaravelJsonApi\Codec;
 
-use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use Neomerx\JsonApi\Contracts\Http\Headers\AcceptMediaTypeInterface;
 use Neomerx\JsonApi\Contracts\Http\Headers\MediaTypeInterface;
 use Neomerx\JsonApi\Encoder\EncoderOptions;
 use Neomerx\JsonApi\Http\Headers\MediaType;
 
-class Codec
+/**
+ * Class Encoding
+ *
+ * @package CloudCreativity\LaravelJsonApi
+ */
+class Encoding
 {
 
     /**
@@ -37,28 +41,15 @@ class Codec
     private $options;
 
     /**
-     * Create a codec for the JSON API media type.
-     *
-     * @param int $options
-     * @param string|null $urlPrefix
-     * @param int $depth
-     * @return Codec
-     */
-    public static function jsonApi(int $options = 0, string $urlPrefix = null, int $depth = 512): self
-    {
-        return self::encoder(MediaTypeInterface::JSON_API_MEDIA_TYPE, $options, $urlPrefix, $depth);
-    }
-
-    /**
-     * Create a codec that will encode JSON API content.
+     * Create an encoding that will encode JSON API content.
      *
      * @param string|MediaTypeInterface $mediaType
      * @param int $options
      * @param string|null $urlPrefix
      * @param int $depth
-     * @return Codec
+     * @return Encoding
      */
-    public static function encoder(
+    public static function create(
         $mediaType,
         int $options = 0,
         string $urlPrefix = null,
@@ -73,10 +64,28 @@ class Codec
     }
 
     /**
-     * Create a codec that will not encode JSON API content.
+     * Create an encoding for the JSON API media type.
+     *
+     * @param int $options
+     * @param string|null $urlPrefix
+     * @param int $depth
+     * @return Encoding
+     */
+    public static function jsonApi(int $options = 0, string $urlPrefix = null, int $depth = 512): self
+    {
+        return self::create(
+            MediaTypeInterface::JSON_API_MEDIA_TYPE,
+            $options,
+            $urlPrefix,
+            $depth
+        );
+    }
+
+    /**
+     * Create an encoding that will not encode JSON API content.
      *
      * @param string|MediaTypeInterface $mediaType
-     * @return Codec
+     * @return Encoding
      */
     public static function custom($mediaType): self
     {
@@ -88,7 +97,7 @@ class Codec
     }
 
     /**
-     * Codec constructor.
+     * Encoding constructor.
      *
      * @param MediaTypeInterface $mediaType
      * @param EncoderOptions|null $options
@@ -111,35 +120,25 @@ class Codec
     /**
      * Get the options, if the media type returns JSON API encoded content.
      *
-     * @return EncoderOptions
+     * @return EncoderOptions|null
      */
-    public function getOptions(): EncoderOptions
+    public function getOptions(): ?EncoderOptions
     {
-        if ($this->willNotEncode()) {
-            throw new RuntimeException('Codec does not support encoding to JSON API.');
-        }
-
         return $this->options;
     }
 
     /**
+     * Will the encoding encode JSON API content?
+     *
      * @return bool
      */
-    public function willEncode(): bool
+    public function hasOptions(): bool
     {
         return !is_null($this->options);
     }
 
     /**
-     * @return bool
-     */
-    public function willNotEncode(): bool
-    {
-        return !$this->willEncode();
-    }
-
-    /**
-     * Is the codec for any of the supplied media types?
+     * Is the encoding for any of the supplied media types?
      *
      * @param string ...$mediaTypes
      * @return bool
@@ -160,7 +159,7 @@ class Codec
     public function any(MediaTypeInterface ...$mediaTypes): bool
     {
         foreach ($mediaTypes as $mediaType) {
-            if ($this->matches($mediaType)) {
+            if ($this->matchesTo($mediaType)) {
                 return true;
             }
         }
@@ -169,18 +168,18 @@ class Codec
     }
 
     /**
-     * Does the codec match the supplied media type?
+     * Does the encoding match the supplied media type?
      *
      * @param MediaTypeInterface $mediaType
      * @return bool
      */
-    public function matches(MediaTypeInterface $mediaType): bool
+    public function matchesTo(MediaTypeInterface $mediaType): bool
     {
         return $this->getMediaType()->matchesTo($mediaType);
     }
 
     /**
-     * Is the codec acceptable?
+     * Is the encoding acceptable?
      *
      * @param AcceptMediaTypeInterface $mediaType
      * @return bool
@@ -192,7 +191,7 @@ class Codec
             return false;
         }
 
-        return $this->matches($mediaType);
+        return $this->matchesTo($mediaType);
     }
 
 }

@@ -18,6 +18,10 @@
 
 namespace CloudCreativity\LaravelJsonApi\Api;
 
+use CloudCreativity\LaravelJsonApi\Codec\Codec;
+use CloudCreativity\LaravelJsonApi\Codec\DecodingList;
+use CloudCreativity\LaravelJsonApi\Codec\Encoding;
+use CloudCreativity\LaravelJsonApi\Codec\EncodingList;
 use CloudCreativity\LaravelJsonApi\Contracts\Client\ClientInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Encoder\SerializerInterface;
@@ -26,8 +30,6 @@ use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
-use CloudCreativity\LaravelJsonApi\Http\Codec;
-use CloudCreativity\LaravelJsonApi\Http\Codecs;
 use CloudCreativity\LaravelJsonApi\Http\Responses\Responses;
 use CloudCreativity\LaravelJsonApi\Resolver\AggregateResolver;
 use CloudCreativity\LaravelJsonApi\Resolver\NamespaceResolver;
@@ -62,9 +64,14 @@ class Api
     private $name;
 
     /**
-     * @var array
+     * @var EncodingList
      */
-    private $codecs;
+    private $encodings;
+
+    /**
+     * @var DecodingList
+     */
+    private $decodings;
 
     /**
      * @var array
@@ -124,7 +131,8 @@ class Api
      * @param Factory $factory
      * @param AggregateResolver $resolver
      * @param $apiName
-     * @param Codecs $codecs
+     * @param EncodingList $encodings
+     * @param DecodingList $decodings
      * @param Url $url
      * @param Jobs $jobs
      * @param bool $useEloquent
@@ -135,21 +143,19 @@ class Api
         Factory $factory,
         AggregateResolver $resolver,
         $apiName,
-        Codecs $codecs,
+        EncodingList $encodings,
+        DecodingList $decodings,
         Url $url,
         Jobs $jobs,
         $useEloquent = true,
         $supportedExt = null,
         array $errors = []
     ) {
-        if ($codecs->isEmpty()) {
-            throw new \InvalidArgumentException('API must have codecs.');
-        }
-
         $this->factory = $factory;
         $this->resolver = $resolver;
         $this->name = $apiName;
-        $this->codecs = $codecs;
+        $this->encodings = $encodings;
+        $this->decodings = $decodings;
         $this->url = $url;
         $this->jobs = $jobs;
         $this->useEloquent = $useEloquent;
@@ -280,13 +286,19 @@ class Api
     }
 
     /**
-     * Get the supported encoder media types.
-     *
-     * @return Codecs
+     * @return EncodingList
      */
-    public function getCodecs()
+    public function getEncodings(): EncodingList
     {
-        return $this->codecs;
+        return $this->encodings;
+    }
+
+    /**
+     * @return DecodingList
+     */
+    public function getDecodings(): DecodingList
+    {
+        return $this->decodings;
     }
 
     /**
@@ -294,9 +306,13 @@ class Api
      *
      * @return Codec
      */
-    public function getDefaultCodec()
+    public function getDefaultCodec(): Codec
     {
-        return $this->codecs->find(MediaTypeInterface::JSON_API_MEDIA_TYPE) ?: Codec::jsonApi();
+        return $this->factory->createCodec(
+            $this->getContainer(),
+            $this->encodings->find(MediaTypeInterface::JSON_API_MEDIA_TYPE) ?: Encoding::jsonApi(),
+            $this->decodings->find(MediaTypeInterface::JSON_API_MEDIA_TYPE)
+        );
     }
 
     /**
@@ -327,29 +343,21 @@ class Api
     /**
      * Create an encoder for the API.
      *
-     * @param int|EncoderOptions $options
+     * @param int|EncoderOptions|Encoding $options
      * @param int $depth
      * @return SerializerInterface
      */
     public function encoder($options = 0, $depth = 512)
     {
+        if ($options instanceof Encoding) {
+            $options = $options->getOptions();
+        }
+
         if (!$options instanceof EncoderOptions) {
-            $options = $this->encoderOptions($options, $depth);
+            $options = new EncoderOptions($options, $this->getUrl()->toString(), $depth);
         }
 
         return $this->factory->createEncoder($this->getContainer(), $options);
-    }
-
-    /**
-     * Create encoder options.
-     *
-     * @param int $options
-     * @param int $depth
-     * @return EncoderOptions
-     */
-    public function encoderOptions($options = 0, $depth = 512)
-    {
-        return new EncoderOptions($options, $this->getUrl()->toString(), $depth);
     }
 
     /**

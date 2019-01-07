@@ -2,33 +2,30 @@
 
 namespace DummyApp\JsonApi;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Http\DecoderInterface;
-use Neomerx\JsonApi\Contracts\Http\Headers\MediaTypeInterface;
-use Neomerx\JsonApi\Http\Headers\MediaType;
+use CloudCreativity\LaravelJsonApi\Contracts\Decoder\DecoderInterface;
 
 class FileDecoder implements DecoderInterface
 {
-
     /**
      * @inheritDoc
      */
-    public function getMediaType(): MediaTypeInterface
+    public function isJsonApi(): bool
     {
-        return MediaType::parse(0, 'multipart/form-data');
+        return false;
     }
 
     /**
      * @inheritdoc
      */
-    public function decode($request): ?\stdClass
+    public function decode($request): \stdClass
     {
-        return null;
+        throw new \LogicException('Not supported.');
     }
 
     /**
      * @inheritdoc
      */
-    public function extract($request): array
+    public function toArray($request): array
     {
         return $request->allFiles();
     }

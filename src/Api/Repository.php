@@ -18,9 +18,10 @@
 
 namespace CloudCreativity\LaravelJsonApi\Api;
 
+use CloudCreativity\LaravelJsonApi\Codec\DecodingList;
+use CloudCreativity\LaravelJsonApi\Codec\EncodingList;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
-use CloudCreativity\LaravelJsonApi\Http\Codecs;
 use CloudCreativity\LaravelJsonApi\Resolver\AggregateResolver;
 use Illuminate\Contracts\Config\Repository as Config;
 
@@ -79,7 +80,8 @@ class Repository
             $this->factory,
             $resolver,
             $apiName,
-            Codecs::fromArray($config['encoding'] ?? [], $url->toString()),
+            EncodingList::fromArray($config['encoding'] ?? [], $url->toString()),
+            DecodingList::fromArray($config['decoding'] ?? []),
             $url,
             Jobs::fromArray($config['jobs'] ?? []),
             $config['use-eloquent'],

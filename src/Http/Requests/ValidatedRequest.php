@@ -27,7 +27,6 @@ use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorProviderInterfa
 use CloudCreativity\LaravelJsonApi\Exceptions\DocumentRequiredException;
 use CloudCreativity\LaravelJsonApi\Exceptions\ValidationException;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
-use CloudCreativity\LaravelJsonApi\Http\Codec;
 use CloudCreativity\LaravelJsonApi\Object\Document;
 use CloudCreativity\LaravelJsonApi\Routing\Route;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -37,6 +36,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use Neomerx\JsonApi\Exceptions\JsonApiException;
+use Neomerx\JsonApi\Http\Headers\MediaType;
 
 abstract class ValidatedRequest implements ValidatesWhenResolved
 {
@@ -109,6 +109,49 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
     }
 
     /**
+     * Is the decoded request content any of the supplied media types?
+     *
+     * @param string ...$mediaTypes
+     * @return bool
+     */
+    public function didDecode(string ...$mediaTypes): bool
+    {
+        if (!$decoding = $this->route->getCodec()->getDecodingMediaType()) {
+            return false;
+        }
+
+        return collect($mediaTypes)->contains(function ($mediaType, $index) use ($decoding) {
+            return $decoding->equalsTo(MediaType::parse($index, $mediaType));
+        });
+    }
+
+    /**
+     * Will the request receive any of the supplied media types?
+     *
+     * @param string ...$mediaTypes
+     * @return bool
+     */
+    public function receives(string ...$mediaTypes): bool
+    {
+        $encoding = $this->route->getCodec()->getEncodingMediaType();
+
+        return collect($mediaTypes)->contains(function ($mediaType, $index) use ($encoding) {
+            return $encoding->equalsTo(MediaType::parse($index, $mediaType));
+        });
+    }
+
+    /**
+     * Will the request not receive any of the supplied media types?
+     *
+     * @param string ...$mediaTypes
+     * @return bool
+     */
+    public function doesNotReceive(string ...$mediaTypes): bool
+    {
+        return !$this->receives(...$mediaTypes);
+    }
+
+    /**
      * Get an item from the JSON API document using "dot" notation.
      *
      * @param string $key
@@ -131,11 +174,7 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
             return $this->data;
         }
 
-        if (!$this->route->hasDecoder()) {
-            return $this->data = [];
-        }
-
-        return $this->data = $this->route->getDecoder()->extract($this->request);
+        return $this->data = $this->route->getCodec()->all($this->request);
     }
 
     /**
@@ -167,7 +206,7 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
     public function decode()
     {
         return $this->route
-            ->getDecoder()
+            ->getCodec()
             ->decode($this->request);
     }
 
@@ -245,16 +284,6 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
         return $this->parameters = $parser->parseQueryParameters(
             $this->request->query()
         );
-    }
-
-    /**
-     * Get the request codec.
-     *
-     * @return Codec
-     */
-    public function getCodec()
-    {
-        return $this->route->getCodec();
     }
 
     /**

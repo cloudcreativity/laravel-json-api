@@ -35,7 +35,7 @@ class AvatarsController extends JsonApiController
      */
     protected function reading(Avatar $avatar, ValidatedRequest $request): ?StreamedResponse
     {
-        if (!$request->getCodec()->is($avatar->media_type)) {
+        if ($request->doesNotReceive($avatar->media_type)) {
             return null;
         }
 
