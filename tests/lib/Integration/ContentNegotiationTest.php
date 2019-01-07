@@ -105,9 +105,8 @@ class ContentNegotiationTest extends TestCase
      */
     public function testCanChangeMediaType1()
     {
-        app('config')->set('json-api-v1.codecs', [
-            'encoders' => ['application/json'],
-            'decoders' => ['application/json'],
+        app('config')->set('json-api-v1.encoding', [
+            'application/json',
         ]);
 
         $this->get('/api/v1/posts', ['Accept' => 'application/json'])
@@ -120,9 +119,8 @@ class ContentNegotiationTest extends TestCase
      */
     public function testCanChangeMediaType2()
     {
-        app('config')->set('json-api-v1.codecs', [
-            'encoders' => ['application/json'],
-            'decoders' => ['application/json'],
+        app('config')->set('json-api-v1.encoding', [
+            'application/json',
         ]);
 
         $this->get('/api/v1/posts', ['Accept' => 'application/vnd.api+json'])

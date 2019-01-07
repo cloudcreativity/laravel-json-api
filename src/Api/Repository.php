@@ -79,9 +79,9 @@ class Repository
             $this->factory,
             $resolver,
             $apiName,
-            Codecs::fromArray($config['codecs'], $url->toString()),
+            Codecs::fromArray($config['encoding'] ?? [], $url->toString()),
             $url,
-            Jobs::fromArray($config['jobs'] ?: []),
+            Jobs::fromArray($config['jobs'] ?? []),
             $config['use-eloquent'],
             $config['supported-ext'],
             $config['errors']
@@ -130,13 +130,8 @@ class Repository
         $config = array_replace([
             'namespace' => null,
             'by-resource' => true,
-            'resources' => [],
             'use-eloquent' => true,
-            'codecs' => null,
             'supported-ext' => null,
-            'url' => null,
-            'errors' => null,
-            'jobs' => null,
         ], $config);
 
         if (!$config['namespace']) {
@@ -144,9 +139,8 @@ class Repository
         }
 
         $config['resources'] = $this->normalizeResources($config['resources'] ?? [], $config);
-        $config['url'] = $this->normalizeUrl((array) $config['url'], $host);
-        $config['errors'] = array_replace($this->defaultErrors(), (array) $config['errors']);
-        $config['codecs'] = $config['codecs']['encoders'] ?? $config['codecs'];
+        $config['url'] = $this->normalizeUrl($config['url'] ?? [], $host);
+        $config['errors'] = array_replace($this->defaultErrors(), $config['errors'] ?? []);
 
         return $config;
     }

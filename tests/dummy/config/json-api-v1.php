@@ -133,26 +133,26 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Content Negotiation
+    | Response Encoding
     |--------------------------------------------------------------------------
     |
-    | This is where you register how different media types are mapped to
-    | encoders and decoders. Encoders do the work of converting your records
-    | into JSON API resources. Decoders are used to convert incoming request
-    | body content into objects.
+    | This defines the JSON API encoding used for particular media
+    | types supported by your API. This array can contain either
+    | media types as values, or can be keyed by a media type with the value
+    | being the options that are passed to the `json_encode` method.
     |
-    | If there is not an encoder/decoder registered for a specific media-type,
-    | then an error will be sent to the client as per the JSON-API spec.
+    | These values are also used for Content Negotiation. If a client requests
+    | via the HTTP Accept header a media type that is not listed here,
+    | a 406 Not Acceptable response will be sent.
+    |
+    | If you want to support media types that do not return responses with JSON
+    | API encoded data, you can do this at runtime. Refer to the
+    | Content Negotiation chapter in the docs for details.
     |
     */
-    'codecs' => [
-        'encoders' => [
-            'application/vnd.api+json',
-            'text/plain' => JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES,
-        ],
-        'decoders' => [
-            'application/vnd.api+json',
-        ],
+    'encoding' => [
+        'application/vnd.api+json',
+        'text/plain' => JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_PRESERVE_ZERO_FRACTION,
     ],
 
     /*
