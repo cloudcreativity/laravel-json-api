@@ -17,6 +17,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Validation;
 
+use CloudCreativity\LaravelJsonApi\Codec\ChecksMediaTypes;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorInterface;
@@ -27,7 +28,6 @@ use CloudCreativity\LaravelJsonApi\Rules\AllowedIncludePaths;
 use CloudCreativity\LaravelJsonApi\Rules\AllowedPageParameters;
 use CloudCreativity\LaravelJsonApi\Rules\AllowedSortParameters;
 use CloudCreativity\LaravelJsonApi\Rules\DisallowedParameter;
-use CloudCreativity\LaravelJsonApi\Utils\Helpers;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
@@ -38,6 +38,8 @@ use Illuminate\Support\Str;
  */
 abstract class AbstractValidators implements ValidatorFactoryInterface
 {
+
+    use ChecksMediaTypes;
 
     /**
      * Whether the resource supports client-generated ids.

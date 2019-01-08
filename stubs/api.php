@@ -143,7 +143,6 @@ return [
     */
     'encoding' => [
         'application/vnd.api+json',
-        'text/plain' => JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_PRESERVE_ZERO_FRACTION,
     ],
 
     /*
@@ -165,7 +164,7 @@ return [
     |
     */
     'decoding' => [
-        'application/vnd.api+json' => \CloudCreativity\LaravelJsonApi\Decoder\JsonDecoder::class,
+        'application/vnd.api+json',
     ],
 
     /*

@@ -76,7 +76,7 @@ class DefaultTest extends TestCase
         ])->assertErrorStatus([
             'title' => 'Unsupported Media Type',
             'status' => '415',
-            'detail' => 'The specified content type is not supported.',
+            'detail' => 'The request entity has a media type which the server or resource does not support.',
         ]);
     }
 
@@ -98,7 +98,14 @@ class DefaultTest extends TestCase
      */
     public function testNotAcceptable()
     {
-        $this->get('/api/v1/posts', ['Accept' => 'application/json'])->assertStatus(406);
+        $expected = ['message' =>
+            "The requested resource is capable of generating only content not acceptable "
+            . "according to the Accept headers sent in the request."
+        ];
+
+        $this->get('/api/v1/posts', ['Accept' => 'application/json'])
+            ->assertStatus(406)
+            ->assertExactJson($expected);
     }
 
     /**

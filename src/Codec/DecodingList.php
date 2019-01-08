@@ -41,8 +41,8 @@ class DecodingList implements \IteratorAggregate, \Countable
     public static function fromArray(iterable $input): self
     {
         $list = new self();
-        $list->stack = collect($input)->map(function ($decoder, $mediaType) {
-            return Decoding::create($mediaType, $decoder);
+        $list->stack = collect($input)->map(function ($value, $key) {
+            return Decoding::fromArray($key, $value);
         })->all();
 
         return $list;

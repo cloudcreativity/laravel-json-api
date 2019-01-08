@@ -1,0 +1,413 @@
+# Content Negotiation
+
+The JSON API spec defines [content negotiation](http://jsonapi.org/format/#content-negotiation) that must occur
+between the client and the server. When you generate a new JSON API in your application, it is configured
+to support the JSON API media type - `application/vnd.api+json`.
+
+If your API needs to support other media types, this package allows you to add code to
+support additional **encodings** (how to encode response content) and/or **decodings** (how to read
+request content). It is important to think about encoding and decoding separately, because a client
+can send a request that has content in one media type, while requesting a response in a different
+media type.
+
+This chapter provides details of how to build JSON APIs with this package that support multiple media
+types. This is illustrated with some basic examples. As support for multiple media types is not covered
+by the JSON API spec, we can only provide details of how to integrate with this package, rather than
+how logically your application should support other media types.
+
+## Content Negotiation
+
+Content negotiation occurs during the middleware stack on the routes within your API. This is
+run by the `json-api.content` middleware. The default configuration for your API is setup to
+support receiving JSON API content and replying with JSON API content.
+
+### Accept Header
+
+A client defines the content it wants in the `Accept` header. Content negotiation involves matching
+the accept header media types to the **encodings** configured in your API. 
+
+If your API is not configured to support the media types requested by a client, it will send 
+a `406 Not Acceptable` response. For example:
+
+```http
+GET /api/v1/posts/1 HTTP/1.1
+Accept: application/json
+```
+
+Would result in the following response:
+
+```http
+HTTP/1.1 406 Not Acceptable
+Content-Type: application/json
+
+{
+  "message": "The requested resource is capable of generating only content not acceptable according to the Accept headers sent in the request."
+}
+```
+
+> As the client has not requested JSON API content, your application's exception handler will render the
+response. In the example above the client has asked for JSON, so the client receives Laravel's JSON
+rendering of the HTTP exception.
+
+Support can be added for additional encoding media types, as described in the [Encoding](#Encoding) section
+below.
+
+### Content-Type Header
+
+A client specifies the media type of request content in the `Content-Type` header. Content negotiation
+involves matching the content media type to the **decodings** configured in your API.
+
+If your API is not configured to support the media type sent by a client, it will send a
+`415 Unsupported Media Type` response. For example:
+
+```http
+POST /api/v1/posts HTTP/1.1
+Content-Type: application/json
+Accept: application/vnd.api+json
+
+{
+  "title": "Hello World",
+  "content": "..."
+}
+```
+
+Would result in the following response:
+
+```http
+HTTP/1.1 415 Unsupported Media Type
+Content-Type: application/vnd.api+json
+
+{
+  "error": [
+    {
+      "title": "Unsupported Media Type",
+      "status": "415",
+      "detail": "The request entity has a media type which the server or resource does not support."
+    }
+  ]
+}
+```
+
+> In the example above, the client has requested JSON API content via the `Accept` header, so the
+response contains JSON API errors.
+
+Support can be added for additional decoding media types, as described in the [Decoding](#Decoding) section
+below.
+
+## Encoding
+
+Encodings define the response media types that are supported by your API. These allow you to define
+either:
+
+- Media types that contain JSON API response content, but are JSON encoded with different settings; or
+- Media types that are supported but do not generate JSON API content.
+
+The default media types supported by your API are listed in the `encoding` array within the API's
+configuration. These media types apply to every route and action within your API. 
+
+By default the configuration contains support for the JSON API media type:
+
+```php
+return [
+    // ...
+    
+    'encoding' => [
+        'application/vnd.api+json'
+    ],
+];
+```
+
+### JSON API Encoding
+
+The `encoding` array supports media types being listed as the array values and/or the media type as
+the array key and the value the options that are passed to PHP's `json_encode` function. For example,
+to configure the JSON encoding for the JSON API media type:
+
+```php
+return [
+    // ...
+    
+    'encoding' => [
+        'application/vnd.api+json' => JSON_PRESERVE_ZERO_FRACTION,
+    ],
+],
+```
+
+Additional media types can be added to `encoding` settings. For example, if we wanted to support the
+`text/plain` media type to return human-readable JSON API encoded content, we can add it as follows:
+
+```php
+return [
+    // ...
+    
+    'encoding' => [
+        'application/vnd.api+json',
+        'text/plain' => JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_PRESERVE_ZERO_FRACTION,
+    ],
+];
+```
+
+The following can then be used to request human-readable content:
+
+```http
+GET /api/v1/posts/1 HTTP/1.1
+Accept: text/plain
+```
+
+### Custom Encoding
+
+If you need to support a media type that does not encode to JSON API content, use a string value.
+The value can either be a fully-qualified classname or a Laravel service container binding, for
+example:
+
+```php
+return [
+    // ...
+    
+    'encoding' => [
+        'applcation/vnd.api+json',
+        'text/csv' => \App\JsonApi\CsvRenderer::class,
+    ],
+],
+```
+
+// @TODO
+
+## Decoding
+
+Decodings define the request media types that are supported by your API. These allow you to define
+either:
+
+- Media types that can be decoded and parsed as JSON API content; and/or
+- Media types that are supported but are not to parsed as JSON API content.
+
+The default media types supported by your API are listed in the `decoding` array within the API's
+configuration. These media types apply to every route and action within your API. 
+
+By default the configuration contains support for the JSON API media type:
+
+```php
+return [
+    // ...
+    
+    'decoding' => [
+        'application/vnd.api+json',
+    ],
+];
+```
+
+### JSON API Decoding
+
+If you want to support additional media types that can be parsed as JSON API content, you can add
+them to the `decoding` array.
+
+For example if we wanted to allow the client to use an `application/json` content type, but
+expect the format of the JSON to match the JSON API spec, we would add it as follows:
+
+```php
+return [
+    // ...
+    
+    'decoding' => [
+        'application/vnd.api+json',
+        'application/json',
+    ],
+];
+```
+
+This would mean the following request would be allowed, as the JSON content complies with the JSON API
+spec:
+
+```http
+POST /api/v1/posts HTTP/1.1
+Content-Type: application/json
+Accept: application/vnd.api+json
+
+{
+  "data": {
+    "type": "posts",
+    "attributes": {
+      "title": "Hello World",
+      "content": "..."
+    }
+  }
+}
+```
+
+> You could use your `encoding` configuration to also allow the client to send an `Accept` header with
+the `application/json` media type.
+
+### Non-JSON API Decoding
+
+If we want to support a media type that is not must not be parsed as JSON API, then it can be
+configured as follows:
+
+```php
+return [
+    'decoding' => [
+        'application/vnd.api+json',
+        'application/json' => \App\JsonApi\JsonDecoder::class,
+    ],
+];
+```
+
+The string value is any fully-qualified name of Laravel service container binding that resolves to an
+implementation of `CloudCreativity\LaravelJsonApi\Contracts\Decoder\DecoderInterface`.
+
+In the above example, our `JsonDecoder` might be:
+
+```php
+namespace App\JsonApi\JsonDecoder;
+
+use CloudCreativity\LaravelJsonApi\Contracts\Decoder\DecoderInterface;
+
+class JsonDecoder implements DecoderInterface
+{
+    
+    /**
+     * @param \Illuminate\Http\Request $request
+     * @return array
+     */
+    public function toArray($request): array
+    {
+        return $request->json()->all();
+    }
+}
+```
+
+This means that we can now support the following request:
+
+```http
+POST /api/v1/posts HTTP/1.1
+Content-Type: application/json
+Accept: application/vnd.api+json
+
+{
+  "title": "Hello World",
+  "content": "..."
+}
+```
+
+This will mean the following array will be passed to the `posts` resource validators:
+
+```php
+return [
+    'title' => 'Hello World',
+    'content' => '...'
+];
+```
+
+In your validators class you need to overload the relevant public method to return a validator
+for the non-JSON API data. The `createValidator` method is provided to easily create a validator
+for non-JSON API data:
+
+```php
+namespace App\JsonApi\Posts\Validators;
+
+use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorInterface;
+use CloudCreativity\LaravelJsonApi\Validation\AbstractValidators;
+
+class Validators extends AbstractValidators
+{
+    // ...
+    
+    /**
+     * @inheritdoc
+     */
+    public function create(array $document): ValidatorInterface
+    {
+        if ($this->didDecode('application/json')) {
+            return $this->createValidator($document, [
+                'title' => 'required|...',
+                'content' => 'required|...',
+            ]);
+        }
+    
+        return parent::create($document);
+    }
+}
+```
+
+Then in your adapter you would need to overload the relevant public method to handle the non-JSON API
+data. For example: 
+
+```php
+namespace App\JsonApi\Posts;
+
+use CloudCreativity\LaravelJsonApi\Eloquent\AbstractAdapter;
+use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
+
+class Adapter extends AbstractAdapter
+{
+    // ...
+    
+    public function create(array $document, EncodingParametersInterface $parameters)
+    {
+        if ($this->didDecode('application/json')) {
+            $document = [
+                'data' => [
+                    'type' => 'posts',
+                    'attributes' => $document,
+                ],
+            ];
+        }
+        
+        return parent::create($document, $parameters);
+    }
+}
+```
+
+> The above is just an example, and you can do anything you need to do in your adapter to process
+your decoded data. However it is advantageous to convert it to the expected JSON API format and pass
+it to the parent method. This will mean that it is handled in exactly the same way as the JSON API media type,
+plus the parent methods handles using the encoding parameters for eager loading, etc. 
+
+## Content Negotiators
+
+This package implements content negotiation using `ContentNegotiator` classes. You will need to write 
+your own content negotiator classes if:
+
+- you need to programmatically work out what media types are supported; and/or
+- you want to support additional media types for specific resources or specific actions.
+
+### Generating Content Negotiators
+
+This package provides a generator to create content negotiator classes. You can either generate either:
+
+- *re-usable* content negotiators: these can be used by either your whole API or specific resources within
+the API.
+- *resource-specific* content negotiators: that are only used by a specific resource type.
+
+To generate a content negotiator that is re-usable across multiple JSON API resource types, use the following:
+
+```bash
+$ php artisan make:json-api:content-negotiator <name> [<api>]
+```
+
+Where `<name>` is a unique name for the content negotiator, e.g. `default`, `json` etc.
+
+To generate a resource-specific content negotiator, use the resource type as the name and add the 
+`--resource` (or `-r`) flag. E.g. to generate a content negotiator for our `posts` resource:
+
+```bash
+$ php artisan make:json-api:content-negotiator posts -r
+```
+
+Alternatively you can generate a content negotiator when creating a resource using the 
+`--content-negotiator` (or `-c`) flag:
+
+```bash
+$ php artisan make:json-api:resource posts -c
+```
+
+If your API has its `by-resource` option set to `true`, the generator will place re-usable content negotiators
+in the root of your JSON API namespace, e.g. `App\JsonApi\DefaultContentNegotiator`. Resource-specific
+content negotiators will be placed in the resource's namespace, e.g. `App\JsonApi\Posts\ContentNegotiator`.
+
+If your `by-resource` option is set to `false`, re-usable and resource specific authorizers will always be
+placed in the `ContentNegotiators` namespace, e.g. `App\JsonApi\ContentNegotiators\DefaultContentNegotiator`.
+
+> **You must give your re-usable content negotiators names that do not clash with your resource types.** 
+
+### Using Content Negotiators
+

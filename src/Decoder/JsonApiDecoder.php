@@ -19,25 +19,33 @@ namespace CloudCreativity\LaravelJsonApi\Decoder;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Decoder\DecoderInterface;
 use function CloudCreativity\LaravelJsonApi\json_decode;
+use Illuminate\Http\Request;
+use Neomerx\JsonApi\Exceptions\JsonApiException;
 
 /**
- * Class Decoder
+ * Class JsonApiDecoder
  *
  * @package CloudCreativity\LaravelJsonApi
  */
-class JsonDecoder implements DecoderInterface
+class JsonApiDecoder implements DecoderInterface
 {
 
     /**
-     * @inheritDoc
-     */
-    public function isJsonApi(): bool
-    {
-        return true;
-    }
-
-    /**
-     * @inheritdoc
+     * Decode a JSON API document from a request.
+     *
+     * JSON API request content MUST be decoded as an object, as it is not possible to validate
+     * that the request content complies with the JSON API spec if it is JSON decoded to an
+     * associative array.
+     *
+     * If the decoder is unable to return an object when decoding content, it MUST throw
+     * a HTTP exception or a JSON API exception.
+     *
+     * @param Request $request
+     * @return \stdClass
+     *      the JSON API document.
+     * @throws JsonApiException
+     * @throws \LogicException
+     *      if the decoder does not decode JSON API content.
      */
     public function decode($request): \stdClass
     {

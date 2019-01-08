@@ -3,6 +3,8 @@
 namespace CloudCreativity\LaravelJsonApi\Codec;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Decoder\DecoderInterface;
+use CloudCreativity\LaravelJsonApi\Decoder\JsonApiDecoder;
+use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use Neomerx\JsonApi\Contracts\Http\Headers\MediaTypeInterface;
 use Neomerx\JsonApi\Http\Headers\MediaType;
 
@@ -53,6 +55,21 @@ class Decoding
     }
 
     /**
+     * @param $key
+     * @param $value
+     * @return Decoding
+     */
+    public static function fromArray($key, $value): self
+    {
+        if (is_numeric($key)) {
+            $key = $value;
+            $value = new JsonApiDecoder();
+        }
+
+        return self::create($key, $value);
+    }
+
+    /**
      * Decoding constructor.
      *
      * @param MediaTypeInterface $mediaType
@@ -81,13 +98,33 @@ class Decoding
     }
 
     /**
+     * @return JsonApiDecoder
+     */
+    public function getJsonApiDecoder(): JsonApiDecoder
+    {
+        if ($this->decoder instanceof JsonApiDecoder) {
+            return $this->decoder;
+        }
+
+        throw new RuntimeException('Decoder is not a JSON API decoder.');
+    }
+
+    /**
      * Will the decoding decode JSON API content?
      *
      * @return bool
      */
-    public function willDecode(): bool
+    public function isJsonApi(): bool
     {
-        return $this->decoder->isJsonApi();
+        return $this->decoder instanceof JsonApiDecoder;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isNotJsonApi(): bool
+    {
+        return $this->isJsonApi();
     }
 
     /**

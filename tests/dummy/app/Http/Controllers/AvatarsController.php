@@ -5,28 +5,11 @@ namespace DummyApp\Http\Controllers;
 use CloudCreativity\LaravelJsonApi\Http\Controllers\JsonApiController;
 use CloudCreativity\LaravelJsonApi\Http\Requests\ValidatedRequest;
 use DummyApp\Avatar;
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AvatarsController extends JsonApiController
 {
-
-    /**
-     * @param ValidatedRequest $request
-     * @return Response
-     */
-    protected function creating(ValidatedRequest $request): Response
-    {
-        $path = $request->file('avatar')->store('avatars');
-
-        $avatar = Avatar::create([
-            'path' => $path,
-            'media_type' => Storage::disk('local')->mimeType($path),
-        ]);
-
-        return $this->reply()->created($avatar);
-    }
 
     /**
      * @param Avatar $avatar
@@ -35,7 +18,7 @@ class AvatarsController extends JsonApiController
      */
     protected function reading(Avatar $avatar, ValidatedRequest $request): ?StreamedResponse
     {
-        if ($request->doesNotReceive($avatar->media_type)) {
+        if ($this->willNotEncode($avatar->media_type)) {
             return null;
         }
 

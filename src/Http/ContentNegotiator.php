@@ -252,10 +252,15 @@ class ContentNegotiator implements ContentNegotiatorInterface
      *
      * @param AcceptHeaderInterface $header
      * @return HttpException
+     * @todo add translation
      */
     protected function notAcceptable(AcceptHeaderInterface $header): HttpException
     {
-        return new HttpException(self::HTTP_NOT_ACCEPTABLE);
+        return new HttpException(
+            self::HTTP_NOT_ACCEPTABLE,
+            "The requested resource is capable of generating only content not acceptable "
+            . "according to the Accept headers sent in the request."
+        );
     }
 
     /**
@@ -302,7 +307,7 @@ class ContentNegotiator implements ContentNegotiatorInterface
     {
         return new HttpException(
             self::HTTP_UNSUPPORTED_MEDIA_TYPE,
-            'The specified content type is not supported.'
+            'The request entity has a media type which the server or resource does not support.'
         );
     }
 

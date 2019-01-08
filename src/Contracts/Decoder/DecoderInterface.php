@@ -30,36 +30,6 @@ interface DecoderInterface
 {
 
     /**
-     * Does the decoder expect request content to comply with the JSON API spec?
-     *
-     * @return bool
-     */
-    public function isJsonApi(): bool;
-
-    /**
-     * Decode a JSON API document from a request.
-     *
-     * JSON API request content MUST be decoded as an object, as it is not possible to validate
-     * that the request content complies with the JSON API spec if it is JSON decoded to an
-     * associative array.
-     *
-     * If the decoder is unable to return an object when decoding content, it MUST throw
-     * a HTTP exception or a JSON API exception.
-     *
-     * A decoder that returns `false` from its `isJsonApi()` method MUST throw a `LogicException`
-     * from this method.
-     *
-     * @param Request $request
-     * @return \stdClass
-     *      the JSON API document.
-     * @throws HttpException
-     * @throws JsonApiException
-     * @throws \LogicException
-     *      if the decoder does not decode JSON API content.
-     */
-    public function decode($request): \stdClass;
-
-    /**
      * Return request data as an array.
      *
      * Request data returned from this method is used for validation. If it is

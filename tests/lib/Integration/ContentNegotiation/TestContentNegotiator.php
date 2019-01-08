@@ -17,7 +17,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\ContentNegotiation;
 
-use CloudCreativity\LaravelJsonApi\Decoder\JsonDecoder;
+use CloudCreativity\LaravelJsonApi\Decoder\JsonApiDecoder;
 use CloudCreativity\LaravelJsonApi\Http\ContentNegotiator;
 
 class TestContentNegotiator extends ContentNegotiator
@@ -34,7 +34,7 @@ class TestContentNegotiator extends ContentNegotiator
      * @var array
      */
     protected $decoding = [
-        'application/json' => JsonDecoder::class,
+        'application/json' => JsonApiDecoder::class,
     ];
 
 }

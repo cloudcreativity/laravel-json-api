@@ -174,7 +174,7 @@ return [
     |
     */
     'decoding' => [
-        'application/vnd.api+json' => \CloudCreativity\LaravelJsonApi\Decoder\JsonDecoder::class,
+        'application/vnd.api+json',
     ],
 
     /*

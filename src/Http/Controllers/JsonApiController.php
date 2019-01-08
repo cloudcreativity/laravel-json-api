@@ -20,6 +20,7 @@ namespace CloudCreativity\LaravelJsonApi\Http\Controllers;
 
 use Closure;
 use CloudCreativity\LaravelJsonApi\Auth\AuthorizesRequests;
+use CloudCreativity\LaravelJsonApi\Codec\ChecksMediaTypes;
 use CloudCreativity\LaravelJsonApi\Contracts\Queue\AsynchronousProcess;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\LaravelJsonApi\Http\Requests\CreateResource;
@@ -49,6 +50,7 @@ class JsonApiController extends Controller
 
     use CreatesResponses,
         AuthorizesRequests,
+        ChecksMediaTypes,
         InvokesHooks;
 
     /**

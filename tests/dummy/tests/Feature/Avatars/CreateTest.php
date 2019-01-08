@@ -28,18 +28,20 @@ class CreateTest extends TestCase
 
         /** @var TestResponse $response */
         $response = $this->actingAs($user, 'api')->post(
-            '/api/v1/avatars',
+            '/api/v1/avatars?include=user',
             ['avatar' => $file],
             ['Content-Type' => 'multipart/form-data', 'Content-Length' => '1']
         );
 
         $id = $response
             ->assertCreatedWithServerId(url('/api/v1/avatars'), $expected)
+            ->assertIsIncluded('users', $user)
             ->id();
 
         $this->assertDatabaseHas('avatars', [
             'id' => $id,
             'media_type' => 'image/jpeg',
+            'user_id' => $user->getKey(),
         ]);
 
         $path = Avatar::whereKey($id)->value('path');

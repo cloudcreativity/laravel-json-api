@@ -232,33 +232,34 @@ example, if the `name` is `api:v1:`, then the route name for the index of the `p
 ## Content Negotiation
 
 The JSON API spec defines [content negotiation](http://jsonapi.org/format/#content-negotiation) that must occur
-between the client and the server. This is handled by this package based on your API's `codecs` configuration.
+between the client and the server. This is handled by this package based on your API's `encoding` and
+`decoding` configuration.
 
-The generated API file contains a sensible default, for example:
+The generated API file contains the defaults required to support the JSON API media type.
+If you want to change how JSON API documents are JSON-encoded, you can add options to the `encoding` configuration.
+The options are the same as those used with PHP's `json_encode` function. For example, change this:
 
-``` php
-'codecs' => [
-  'encoders' => [
-    'application/vnd.api+json',
-    'text/plain' => JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES,
-  ],
-  'decoders' => [
-    'application/vnd.api+json',
-  ],
+```php
+return [
+    // ...
+    
+    'encoding' => [
+        'application/vnd.api+json',
+    ],
+];
+```
+
+To this:
+
+```php
+return [
+    // ...
+    
+    'encoding' => [
+        'application/vnd.api+json' => JSON_PRESERVE_ZERO_FRACTION,
+    ],
 ],
 ```
 
-### Encoders
-
-In the example, the config tells the codec matcher that the `application/vnd.api+json` and
-`text/plain` are valid `Accept` headers, along with how to encode responses for each type. If the client sends an 
-`Accept` media type that is not recognised, a `406 Not Acceptable` response will be sent.
-
-> The options for how to encode responses for each media type are the same as the options for PHP's `json_encode()` 
-function.
-
-### Decoders
-
-In the example, the config tells the codec matcher that the `application/vnd.api+json` is the only acceptable
-`Content-Type` that a client can submit. If a different media type is received, a `415 Unsupported Media Type`
-response will be sent.
+For more details, how to add additional media-types and advanced customisation, see the 
+[Content Negotiation](../features/content-negotiation.md) chapter.

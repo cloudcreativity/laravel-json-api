@@ -6,6 +6,7 @@ use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
 use Neomerx\JsonApi\Contracts\Encoder\EncoderInterface;
 use Neomerx\JsonApi\Contracts\Factories\FactoryInterface;
 use Neomerx\JsonApi\Contracts\Http\Headers\MediaTypeInterface;
+use Neomerx\JsonApi\Http\Headers\MediaType;
 
 /**
  * Class Codec
@@ -99,17 +100,32 @@ class Codec
     }
 
     /**
+     * Does the codec encode any of the supplied media types?
+     *
+     * @param string ...$mediaTypes
+     * @return bool
+     */
+    public function encodes(string ...$mediaTypes): bool
+    {
+        $encoding = $this->getEncodingMediaType();
+
+        return collect($mediaTypes)->contains(function ($mediaType, $index) use ($encoding) {
+            return $encoding->equalsTo(MediaType::parse($index, $mediaType));
+        });
+    }
+
+    /**
      * Will the codec decode JSON API content?
      *
      * @return bool
      */
-    public function willDecode(): bool
+    public function canDecodeJsonApi(): bool
     {
         if (!$this->decoding) {
             return false;
         }
 
-        return $this->decoding->willDecode();
+        return $this->decoding->isJsonApi();
     }
 
     /**
@@ -117,9 +133,9 @@ class Codec
      *
      * @return bool
      */
-    public function willNotDecode(): bool
+    public function cannotDecodeJsonApi(): bool
     {
-        return !$this->willNotDecode();
+        return !$this->canDecodeJsonApi();
     }
 
     /**
@@ -131,6 +147,23 @@ class Codec
     }
 
     /**
+     * Does the codec decode any of the supplied media types?
+     *
+     * @param string ...$mediaTypes
+     * @return bool
+     */
+    public function decodes(string ...$mediaTypes): bool
+    {
+        if (!$decoding = $this->getDecodingMediaType()) {
+            return false;
+        }
+
+        return collect($mediaTypes)->contains(function ($mediaType, $index) use ($decoding) {
+            return $decoding->equalsTo(MediaType::parse($index, $mediaType));
+        });
+    }
+
+    /**
      * Decode JSON API content from the request.
      *
      * @param $request
@@ -138,7 +171,11 @@ class Codec
      */
     public function decode($request): ?\stdClass
     {
-        return $this->willDecode() ? $this->decoding->getDecoder()->decode($request) : null;
+        if ($this->cannotDecodeJsonApi()) {
+            return null;
+        }
+
+        return $this->decoding->getJsonApiDecoder()->decode($request);
     }
 
     /**

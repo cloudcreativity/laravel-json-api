@@ -31,7 +31,7 @@ class ClientJobScope implements Scope
     public function apply(Builder $builder, Model $model)
     {
         /** @var Route $route */
-        $route = app('json-api')->current();
+        $route = app('json-api')->currentRoute();
 
         if ($route->getProcessType()) {
             $builder->where('resource_type', $route->getResourceType());

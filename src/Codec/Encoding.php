@@ -97,6 +97,22 @@ class Encoding
     }
 
     /**
+     * @param $key
+     * @param $value
+     * @param string|null $urlPrefix
+     * @return Encoding
+     */
+    public static function fromArray($key, $value, string $urlPrefix = null)
+    {
+        if (is_numeric($key)) {
+            $key = $value;
+            $value = 0;
+        }
+
+        return (false === $value) ? self::custom($key) : self::create($key, $value, $urlPrefix);
+    }
+
+    /**
      * Encoding constructor.
      *
      * @param MediaTypeInterface $mediaType

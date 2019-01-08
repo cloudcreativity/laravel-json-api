@@ -36,7 +36,6 @@ use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use Neomerx\JsonApi\Exceptions\JsonApiException;
-use Neomerx\JsonApi\Http\Headers\MediaType;
 
 abstract class ValidatedRequest implements ValidatesWhenResolved
 {
@@ -106,49 +105,6 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
         $this->factory = $factory;
         $this->container = $container;
         $this->route = $route;
-    }
-
-    /**
-     * Is the decoded request content any of the supplied media types?
-     *
-     * @param string ...$mediaTypes
-     * @return bool
-     */
-    public function didDecode(string ...$mediaTypes): bool
-    {
-        if (!$decoding = $this->route->getCodec()->getDecodingMediaType()) {
-            return false;
-        }
-
-        return collect($mediaTypes)->contains(function ($mediaType, $index) use ($decoding) {
-            return $decoding->equalsTo(MediaType::parse($index, $mediaType));
-        });
-    }
-
-    /**
-     * Will the request receive any of the supplied media types?
-     *
-     * @param string ...$mediaTypes
-     * @return bool
-     */
-    public function receives(string ...$mediaTypes): bool
-    {
-        $encoding = $this->route->getCodec()->getEncodingMediaType();
-
-        return collect($mediaTypes)->contains(function ($mediaType, $index) use ($encoding) {
-            return $encoding->equalsTo(MediaType::parse($index, $mediaType));
-        });
-    }
-
-    /**
-     * Will the request not receive any of the supplied media types?
-     *
-     * @param string ...$mediaTypes
-     * @return bool
-     */
-    public function doesNotReceive(string ...$mediaTypes): bool
-    {
-        return !$this->receives(...$mediaTypes);
     }
 
     /**

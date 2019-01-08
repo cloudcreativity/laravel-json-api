@@ -33,6 +33,7 @@ pages:
   - Digging Deeper:
     - Asynchronous Processing: features/async.md
     - Broadcasting: features/broadcasting.md
+    - Content Negotiation: features/content-negotiation.md
     - Errors: features/errors.md
     - Helpers: features/helpers.md
     - HTTP Clients: features/http-clients.md

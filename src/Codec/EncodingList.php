@@ -43,13 +43,11 @@ class EncodingList implements \IteratorAggregate, \Countable
      */
     public static function fromArray(iterable $config, string $urlPrefix = null): self
     {
-        $encodings = collect($config)->mapWithKeys(function ($value, $key) {
-            return is_numeric($key) ? [$value => 0] : [$key => $value];
-        })->map(function ($options, $mediaType) use ($urlPrefix) {
-            return Encoding::create($mediaType, $options, $urlPrefix);
-        })->values();
-
-        return new self(...$encodings);
+        return new self(
+            ...collect($config)->map(function ($value, $key) use ($urlPrefix) {
+                return Encoding::fromArray($key, $value, $urlPrefix);
+            })->values()
+        );
     }
 
     /**

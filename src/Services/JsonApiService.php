@@ -93,7 +93,7 @@ class JsonApiService
      *
      * @return Route
      */
-    public function current(): Route
+    public function currentRoute(): Route
     {
         return $this->container->make(Route::class);
     }
