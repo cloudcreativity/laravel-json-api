@@ -15,11 +15,12 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\LaravelJsonApi\Tests\Integration;
+namespace CloudCreativity\LaravelJsonApi\Tests\Integration\ContentNegotiation;
 
+use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
 use DummyApp\Post;
 
-class ContentNegotiationTest extends TestCase
+class DefaultTest extends TestCase
 {
 
     public function testOkWithoutBody()

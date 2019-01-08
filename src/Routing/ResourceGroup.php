@@ -88,7 +88,13 @@ class ResourceGroup
      */
     protected function middleware()
     {
-        return (array) $this->options->get('middleware');
+        $cn = $this->options->get('content-negotiator');
+
+        return collect([
+            $cn ? "json-api.content:{$cn}" : 'json-api.content',
+        ])->merge(
+            (array) $this->options->get('middleware')
+        )->all();
     }
 
     /**

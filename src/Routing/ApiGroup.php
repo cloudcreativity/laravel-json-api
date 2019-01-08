@@ -98,6 +98,7 @@ class ApiGroup
     protected function resourceDefaults()
     {
         return [
+            'content-negotiator' => $this->options->get('content-negotiator'),
             'default-authorizer' => $this->options->get('authorizer'),
             'processes' => $this->api->getJobs()->getResource(),
             'prefix' => $this->api->getUrl()->getNamespace(),

@@ -41,7 +41,7 @@ abstract class AbstractResolver implements ResolverInterface
      * Convert the provided unit name and resource type into a fully qualified namespace.
      *
      * @param string $unit
-     *      the JSON API unit name: Adapter, Authorizer, Schema, Validators
+     *      the JSON API unit name: Adapter, Authorizer, ContentNegotiator, Schema, Validators
      * @param $resourceType
      *      the JSON API resource type.
      * @return string
