@@ -17,10 +17,6 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\ContentNegotiation;
 
-use CloudCreativity\LaravelJsonApi\Codec\Decoding;
-use CloudCreativity\LaravelJsonApi\Codec\DecodingList;
-use CloudCreativity\LaravelJsonApi\Codec\Encoding;
-use CloudCreativity\LaravelJsonApi\Codec\EncodingList;
 use CloudCreativity\LaravelJsonApi\Decoder\JsonDecoder;
 use CloudCreativity\LaravelJsonApi\Http\ContentNegotiator;
 
@@ -28,22 +24,17 @@ class TestContentNegotiator extends ContentNegotiator
 {
 
     /**
-     * @return EncodingList
+     * @var array
      */
-    protected function supportedEncodings(): EncodingList
-    {
-        return parent::supportedEncodings()->push(
-            Encoding::create('application/json')
-        );
-    }
+    protected $encoding = [
+        'application/json',
+    ];
 
     /**
-     * @return DecodingList
+     * @var array
      */
-    protected function supportedDecodings(): DecodingList
-    {
-        return parent::supportedDecodings()->push(
-            Decoding::create('application/json', new JsonDecoder())
-        );
-    }
+    protected $decoding = [
+        'application/json' => JsonDecoder::class,
+    ];
+
 }

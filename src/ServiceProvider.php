@@ -90,6 +90,7 @@ class ServiceProvider extends BaseServiceProvider
                 Console\Commands\MakeAdapter::class,
                 Console\Commands\MakeApi::class,
                 Console\Commands\MakeAuthorizer::class,
+                Console\Commands\MakeContentNegotiator::class,
                 Console\Commands\MakeResource::class,
                 Console\Commands\MakeSchema::class,
                 Console\Commands\MakeValidators::class,

@@ -35,6 +35,28 @@ class ContentNegotiator implements ContentNegotiatorInterface
     protected $api;
 
     /**
+     * Supported encoding media types.
+     *
+     * Configure supported encoding media types for this negotiator here.
+     * These are merged with the encoding media types from your API. The format
+     * of this array is identical to the format in your API config.
+     *
+     * @var array
+     */
+    protected $encoding = [];
+
+    /**
+     * Supported decoding media types.
+     *
+     * Configure supported decoding media types for this negotiator here.
+     * These are merged with the decoding media types from your API. The format
+     * of this array is identical to the format in your API config.
+     *
+     * @var array
+     */
+    protected $decoding = [];
+
+    /**
      * @var Factory
      */
     private $factory;
@@ -147,7 +169,9 @@ class ContentNegotiator implements ContentNegotiatorInterface
      */
     protected function supportedEncodings(): EncodingList
     {
-        return $this->api->getEncodings();
+        return $this->api->getEncodings()->merge(
+            EncodingList::fromArray($this->encoding, $this->api->getUrl()->toString())
+        );
     }
 
     /**
@@ -188,7 +212,9 @@ class ContentNegotiator implements ContentNegotiatorInterface
      */
     protected function supportedDecodings(): DecodingList
     {
-        return $this->api->getDecodings();
+        return $this->api->getDecodings()->merge(
+            DecodingList::fromArray($this->decoding)
+        );
     }
 
     /**

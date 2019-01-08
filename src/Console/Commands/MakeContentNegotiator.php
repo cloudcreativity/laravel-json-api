@@ -22,11 +22,11 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 
 /**
- * Class MakeAuthorizer
+ * Class MakeContentNegotiator
  *
  * @package CloudCreativity\LaravelJsonApi
  */
-class MakeAuthorizer extends AbstractGeneratorCommand
+class MakeContentNegotiator extends AbstractGeneratorCommand
 {
 
     /**
@@ -34,21 +34,21 @@ class MakeAuthorizer extends AbstractGeneratorCommand
      *
      * @var string
      */
-    protected $name = 'make:json-api:authorizer';
+    protected $name = 'make:json-api:content-negotiator';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Create a new JSON API resource authorizer';
+    protected $description = 'Create a new JSON API content negotiator';
 
     /**
      * The type of class being generated.
      *
      * @var string
      */
-    protected $type = 'Authorizer';
+    protected $type = 'ContentNegotiator';
 
     /**
      * Whether the resource type is non-dependent on eloquent
@@ -67,7 +67,10 @@ class MakeAuthorizer extends AbstractGeneratorCommand
             return parent::qualifyClass($name);
         }
 
-        $class = $this->getApi()->getDefaultResolver()->getAuthorizerByName($name);
+        $class = $this
+            ->getApi()
+            ->getDefaultResolver()
+            ->getContentNegotiatorByName($name);
 
         return $class;
     }
@@ -86,7 +89,7 @@ class MakeAuthorizer extends AbstractGeneratorCommand
     protected function getResourceInput()
     {
         if ($this->isNotResource()) {
-            throw new RuntimeException('Not generating a resource authorizer.');
+            throw new RuntimeException('Not generating a resource content negotiator.');
         }
 
         return $this->argument('name');
@@ -116,8 +119,8 @@ class MakeAuthorizer extends AbstractGeneratorCommand
     protected function getArguments()
     {
         return [
-            ['name', InputArgument::REQUIRED, "The authorizer name or resource type."],
-            ['api', InputArgument::OPTIONAL, "The API that the resource belongs to."],
+            ['name', InputArgument::REQUIRED, "The content negotiator name or resource type."],
+            ['api', InputArgument::OPTIONAL, "The API that the content negotiator belongs to."],
         ];
     }
 
@@ -129,7 +132,7 @@ class MakeAuthorizer extends AbstractGeneratorCommand
     protected function getOptions()
     {
         return [
-            ['resource', 'r', InputOption::VALUE_NONE, 'Generate a resource-specific authorizer.'],
+            ['resource', 'r', InputOption::VALUE_NONE, 'Generate a resource-specific content negotiator.'],
         ];
     }
 

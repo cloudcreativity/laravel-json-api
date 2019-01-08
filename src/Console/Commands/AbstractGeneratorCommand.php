@@ -280,7 +280,12 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
      */
     protected function getStubFor($implementationType)
     {
-        return sprintf('%s/%s/%s.stub', $this->stubsDirectory, $implementationType, lcfirst($this->type));
+        return sprintf(
+            '%s/%s/%s.stub',
+            $this->stubsDirectory,
+            $implementationType,
+            Str::dasherize($this->type)
+        );
     }
 
     /**
