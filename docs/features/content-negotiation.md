@@ -304,7 +304,7 @@ class JsonDecoder implements DecoderInterface
      * @param \Illuminate\Http\Request $request
      * @return array
      */
-    public function toArray($request): array
+    public function decode($request): array
     {
         return $request->json()->all();
     }

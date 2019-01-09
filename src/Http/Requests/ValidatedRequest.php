@@ -163,7 +163,7 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
     {
         return $this->route
             ->getCodec()
-            ->decode($this->request);
+            ->document($this->request);
     }
 
     /**

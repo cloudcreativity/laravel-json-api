@@ -164,18 +164,18 @@ class Codec
     }
 
     /**
-     * Decode JSON API content from the request.
+     * Decode a JSON API document from the request content.
      *
      * @param $request
      * @return \stdClass|null
      */
-    public function decode($request): ?\stdClass
+    public function document($request): ?\stdClass
     {
         if ($this->cannotDecodeJsonApi()) {
             return null;
         }
 
-        return $this->decoding->getJsonApiDecoder()->decode($request);
+        return $this->decoding->getJsonApiDecoder()->document($request);
     }
 
     /**
@@ -186,7 +186,7 @@ class Codec
      */
     public function all($request): array
     {
-        return $this->decoding ? $this->decoding->getDecoder()->toArray($request) : [];
+        return $this->decoding ? $this->decoding->getDecoder()->decode($request) : [];
     }
 
 }

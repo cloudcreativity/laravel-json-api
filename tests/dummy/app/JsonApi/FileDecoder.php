@@ -10,7 +10,7 @@ class FileDecoder implements DecoderInterface
     /**
      * @inheritdoc
      */
-    public function toArray($request): array
+    public function decode($request): array
     {
         return $request->allFiles();
     }

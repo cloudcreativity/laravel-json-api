@@ -47,7 +47,7 @@ class JsonApiDecoder implements DecoderInterface
      * @throws \LogicException
      *      if the decoder does not decode JSON API content.
      */
-    public function decode($request): \stdClass
+    public function document($request): \stdClass
     {
         return json_decode($request->getContent());
     }
@@ -55,7 +55,7 @@ class JsonApiDecoder implements DecoderInterface
     /**
      * @inheritdoc
      */
-    public function toArray($request): array
+    public function decode($request): array
     {
         return $request->json()->all();
     }

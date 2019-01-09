@@ -43,5 +43,5 @@ interface DecoderInterface
      * @throws HttpException
      * @throws JsonApiException
      */
-    public function toArray($request): array;
+    public function decode($request): array;
 }
