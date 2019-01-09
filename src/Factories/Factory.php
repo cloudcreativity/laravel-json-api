@@ -485,20 +485,18 @@ class Factory extends BaseFactory implements FactoryInterface
     /**
      * Create a JSON API resource object validator.
      *
-     * @param array $data
+     * @param ResourceObject $resource
      * @param array $rules
      * @param array $messages
      * @param array $customAttributes
      * @return ValidatorInterface
      */
     public function createResourceValidator(
-        array $data,
+        ResourceObject $resource,
         array $rules,
         array $messages = [],
         array $customAttributes = []
     ) {
-        $resource = ResourceObject::create($data);
-
         return new Validation\ResourceValidator(
             $this->makeValidator($resource->all(), $rules, $messages, $customAttributes),
             $this->createErrorTranslator(),

@@ -21,6 +21,7 @@ use CloudCreativity\LaravelJsonApi\Codec\ChecksMediaTypes;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorInterface;
+use CloudCreativity\LaravelJsonApi\Document\ResourceObject;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use CloudCreativity\LaravelJsonApi\Rules\AllowedFieldSets;
 use CloudCreativity\LaravelJsonApi\Rules\AllowedFilterParameters;
@@ -226,8 +227,10 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
      */
     public function modifyRelationship($record, string $field, array $document): ValidatorInterface
     {
+        $data = $this->relationshipData($record, $field, $document);
+
         return $this->factory->createResourceValidator(
-            $this->relationshipData($record, $field, $document),
+            ResourceObject::create($data),
             $this->relationshipRules($record, $field),
             $this->messages(),
             $this->attributes()
@@ -488,7 +491,7 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
     ): ValidatorInterface
     {
         return $this->factory->createResourceValidator(
-            $data,
+            ResourceObject::create($data),
             $rules,
             $messages,
             $customAttributes
