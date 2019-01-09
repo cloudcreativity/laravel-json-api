@@ -36,7 +36,6 @@ return [
     'codecs' => [
         'encoders' => [
             'application/vnd.api+json',
-            'text/plain' => JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_PRESERVE_ZERO_FRACTION,
         ],
         'decoders' => [
             'application/vnd.api+json',
@@ -51,6 +50,7 @@ You will need to change it to this:
 return [
     // ...
     
+
     /*
     |--------------------------------------------------------------------------
     | Encoding Media Types
@@ -72,7 +72,6 @@ return [
     */
     'encoding' => [
         'application/vnd.api+json',
-        'text/plain' => JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_PRESERVE_ZERO_FRACTION,
     ],
 
     /*
@@ -94,7 +93,7 @@ return [
     |
     */
     'decoding' => [
-        'application/vnd.api+json' => \CloudCreativity\LaravelJsonApi\Decoder\JsonDecoder::class,
+        'application/vnd.api+json',
     ],
 ];
 ```
