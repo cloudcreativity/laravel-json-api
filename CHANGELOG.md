@@ -18,6 +18,8 @@ All notable changes to this project will be documented in this file. This projec
   - protected method `extractPagination()`: overload the `getQueryParameters()` method instead.
 - The previously deprecated `Eloquent\Concerns\AbstractRelation` class was removed.
 Extend `Adapter\AbstractRelationshipAdapter` and use the `Eloquent\Concerns\QueriesRelations` trait.
+- Removed the deprecated `Contracts\Utils\ConfigurableInterface` as this has not been in use for
+some time.
 
 ## [1.0.0-beta.6] - 2019-01-03
 
