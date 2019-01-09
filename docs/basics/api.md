@@ -229,14 +229,12 @@ The `name` setting applies the specified prefix to all route names that are regi
 example, if the `name` is `api:v1:`, then the route name for the index of the `posts` resource will be
 `api:v1:posts.index`.
 
-## Content Negotiation
+## Media Types
 
-The JSON API spec defines [content negotiation](http://jsonapi.org/format/#content-negotiation) that must occur
-between the client and the server. This is handled by this package based on your API's `encoding` and
-`decoding` configuration.
+The generated API file contains the default encoding and decoding media types required to support
+the JSON API media type. If you want to change how JSON API documents are JSON-encoded, you can add
+options to the `encoding` configuration.
 
-The generated API file contains the defaults required to support the JSON API media type.
-If you want to change how JSON API documents are JSON-encoded, you can add options to the `encoding` configuration.
 The options are the same as those used with PHP's `json_encode` function. For example, change this:
 
 ```php
@@ -261,5 +259,6 @@ return [
 ],
 ```
 
-For more details, how to add additional media-types and advanced customisation, see the 
-[Content Negotiation](../features/content-negotiation.md) chapter.
+You will not need to make any other changes to the `encoding` or `decoding` configuration unless
+you need to add support for other media types. See the
+[Media Types (Content Negotiation)](../features/media-types.md) chapter for full details.

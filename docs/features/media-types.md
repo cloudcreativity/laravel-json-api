@@ -1,4 +1,4 @@
-# Content Negotiation
+# Media Types (Content Negotiation)
 
 The JSON API spec defines [content negotiation](http://jsonapi.org/format/#content-negotiation) that must occur
 between the client and the server. When you generate a new JSON API in your application, it is configured
@@ -275,7 +275,7 @@ the `application/json` media type.
 
 ### Custom Decoding
 
-If we want to support a media type that is not must not be parsed as JSON API, then it can be
+If we want to support a media type that is not compliant with the JSON API spec, then it can be
 configured as follows:
 
 ```php
@@ -287,7 +287,7 @@ return [
 ];
 ```
 
-The string value is any fully-qualified name of Laravel service container binding that resolves to an
+The string value is any fully-qualified name or Laravel service container binding that resolves to an
 implementation of `CloudCreativity\LaravelJsonApi\Contracts\Decoder\DecoderInterface`.
 
 In the above example, our `JsonDecoder` might be:
@@ -408,7 +408,7 @@ your own content negotiator classes if:
 
 ### Generating Content Negotiators
 
-This package provides a generator to create content negotiator classes. You can either generate either:
+This package provides a generator to create content negotiator classes. You can generate either:
 
 - *re-usable* content negotiators: can be used by either your whole API or multiple resources within
 the API.
@@ -465,7 +465,7 @@ for the `posts` and `comments` resources, but not the `tags` resource:
  JsonApi::register('default', [], function ($api, $router) {
      $api->resource('posts', ['content-negotiator' => 'json']);
      $api->resource('comments', ['content-negotiator' => 'json']);
-     $api->resource('tags');
+     $api->resource('tags'); // uses the default content negotiator
  });
  ```
 
@@ -630,7 +630,7 @@ class ContentNegotiator extends BaseContentNegotiator
      */
     protected function decodingsForResource(?Avatar $avatar): DecodingList
     {
-        $multiPart = Decoding::create('multipart/form-data', new FileDecoder());
+        $multiPart = Decoding::create('multipart/form-data', new MultipartDecoder());
 
         return $this
             ->decodingMediaTypes()
@@ -646,7 +646,8 @@ the `multipart/form-data` media type if it is a create request (indicated by `$a
 > The `DecodingList` class also has an `unless` method, along with other helper methods. You can also
 access the current request in the content negotiator using the `$request` property.
 
-If we then followed the instructions earlier in this chapter about supporting custom decoding media types,
+We would then need to amend the `Validators` and `Adapter` classes for our `avatars` resource, as
+described for custom decoding earlier in this chapter. Having done that,
 a client would then be able to upload a file and get a JSON API resource in the response using
 this request:
 
