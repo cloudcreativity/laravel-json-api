@@ -88,14 +88,6 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     protected $defaultPagination = null;
 
     /**
-     * The model relationships to eager load on every query.
-     *
-     * @var string[]|null
-     * @deprecated 1.0.0 use `$defaultWith` instead.
-     */
-    protected $with = null;
-
-    /**
      * Apply the supplied filters to the builder instance.
      *
      * @param Builder $query
@@ -114,10 +106,6 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     {
         $this->model = $model;
         $this->paging = $paging;
-
-        if ($this->with) {
-            $this->defaultWith = array_merge($this->defaultWith, $this->with);
-        }
     }
 
     /**
@@ -165,17 +153,6 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
             $relation->newQuery(),
             $this->getQueryParameters($parameters)
         );
-    }
-
-    /**
-     * @param $relation
-     * @param EncodingParametersInterface $parameters
-     * @return mixed
-     * @deprecated 1.0.0 use `queryToMany` directly.
-     */
-    public function queryRelation($relation, EncodingParametersInterface $parameters)
-    {
-        return $this->queryToMany($relation, $parameters);
     }
 
     /**
@@ -424,18 +401,6 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      *
      * @param Builder $query
      * @return mixed
-     * @deprecated 1.0.0 use `searchAll`, renamed to avoid collisions with relation names.
-     */
-    protected function all($query)
-    {
-        return $this->searchAll($query);
-    }
-
-    /**
-     * Return the result for query that is not paginated.
-     *
-     * @param Builder $query
-     * @return mixed
      */
     protected function searchAll($query)
     {
@@ -490,41 +455,6 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     protected function getQualifiedKeyName()
     {
         return $this->model->qualifyColumn($this->getKeyName());
-    }
-
-    /**
-     * @param EncodingParametersInterface $parameters
-     * @return Collection
-     * @deprecated 1.0.0
-     *      overload the `getQueryParameters` method as needed.
-     */
-    protected function extractIncludePaths(EncodingParametersInterface $parameters)
-    {
-        return collect($parameters->getIncludePaths());
-    }
-
-    /**
-     * @param EncodingParametersInterface $parameters
-     * @return Collection
-     * @deprecated 1.0.0
-     *      overload the `getQueryParameters` method as needed.
-     */
-    protected function extractFilters(EncodingParametersInterface $parameters)
-    {
-        return collect($parameters->getFilteringParameters());
-    }
-
-    /**
-     * @param EncodingParametersInterface $parameters
-     * @return Collection
-     * @deprecated 1.0.0
-     *      overload the `getQueryParameters` method as needed.
-     */
-    protected function extractPagination(EncodingParametersInterface $parameters)
-    {
-        $pagination = (array) $parameters->getPaginationParameters();
-
-        return collect($pagination ?: $this->defaultPagination());
     }
 
     /**
@@ -639,7 +569,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
         $pagination = collect($parameters->getPaginationParameters());
 
         return $pagination->isEmpty() ?
-            $this->all($query) :
+            $this->searchAll($query) :
             $this->paginate($query, $parameters);
     }
 
@@ -676,11 +606,11 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     protected function getQueryParameters(EncodingParametersInterface $parameters)
     {
         return new EncodingParameters(
-            $this->extractIncludePaths($parameters)->all(),
+            $parameters->getIncludePaths(),
             $parameters->getFieldSets(),
             $parameters->getSortParameters() ?: $this->defaultSort(),
-            $this->extractPagination($parameters)->all(),
-            $this->extractFilters($parameters)->all(),
+            $parameters->getPaginationParameters() ?: $this->defaultPagination(),
+            $parameters->getFilteringParameters(),
             $parameters->getUnrecognizedParameters()
         );
     }

@@ -100,6 +100,11 @@ return [
 
 ### Controllers
 
+#### Eloquent
+
+The `Http\Controllers\EloquentController` class has been removed. This has been deprecated for
+some time, and had no code in it. You can extend `Http\Controllers\JsonApiController` directly.
+
 #### Searching Hook
 
 As before the `searching` hook now occurs *before* records are queried with the resource's adapter.
@@ -128,6 +133,16 @@ and ensure the code handles the record being `null`.
 We have changed the type-hinting of some protected methods so that they now type-hint the concrete
 instance of `ValidatedRequest`. This will only affect your application if you have overloaded any
 of the protected methods.
+
+### Adapters
+
+If any of your adapters were extending `Store\EloquentAdapter`, you now need to extend
+`Eloquent\AbstractAdapter` instead.
+
+We have removed deprecated properties and methods from the Eloquent adapter. A lot of these have
+been deprecated for some time, so are unlikely to affect your application unless you have Eloquent
+adapters that have not been changed for some time. If in doubt, check the changelog that lists
+the removals.
 
 ## 1.0.0-beta.5 to 1.0.0-beta.6
 

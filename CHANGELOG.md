@@ -2,6 +2,23 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## Unreleased
+
+### Removed
+- The deprecated `EloquentController` was removed - extend `JsonApiController` directly.
+- The `Store\EloquentAdapter` was removed - extend `Eloquent\AbstractAdapter` directly.
+- The following previously deprecated methods/properties were removed from the `EloquentAdapter`:
+  - public method `queryRelation()`: renamed `queryToMany()`.
+  - protected property `$with`: renamed `$defaultWith`.
+  - protected method `keyForAttribute()`: renamed `modelKeyForField()`.
+  - protected method `columnForField()`: renamed `getSortColumn()`.
+  - protected method `all()`: renamed `searchAll()`.
+  - protected method `extractIncludePaths()`: overload the `getQueryParameters()` method instead.
+  - protected method `extractFilters()`: overload the `getQueryParameters()` method instead.
+  - protected method `extractPagination()`: overload the `getQueryParameters()` method instead.
+- The previously deprecated `Eloquent\Concerns\AbstractRelation` class was removed.
+Extend `Adapter\AbstractRelationshipAdapter` and use the `Eloquent\Concerns\QueriesRelations` trait.
+
 ## [1.0.0-beta.6] - 2019-01-03
 
 ### Added

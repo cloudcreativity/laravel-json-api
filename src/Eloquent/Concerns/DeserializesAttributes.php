@@ -95,19 +95,6 @@ trait DeserializesAttributes
     }
 
     /**
-     * Convert a JSON API attribute key into a model attribute key.
-     *
-     * @param $resourceKey
-     * @param Model $model
-     * @return string
-     * @deprecated 1.0.0 use `modelKeyForField`
-     */
-    protected function keyForAttribute($resourceKey, Model $model)
-    {
-        return $this->modelKeyForField($resourceKey, $model);
-    }
-
-    /**
      * Deserialize fillable attributes.
      *
      * @param $attributes
@@ -119,7 +106,7 @@ trait DeserializesAttributes
         return collect($attributes)->reject(function ($v, $field) use ($record) {
             return $this->isNotFillable($field, $record);
         })->mapWithKeys(function ($value, $field) use ($record) {
-            $key = $this->keyForAttribute($field, $record);
+            $key = $this->modelKeyForField($field, $record);
 
             return [$key => $this->deserializeAttribute($value, $field, $record)];
         })->all();

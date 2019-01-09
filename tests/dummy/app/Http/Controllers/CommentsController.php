@@ -17,13 +17,13 @@
 
 namespace DummyApp\Http\Controllers;
 
-use CloudCreativity\LaravelJsonApi\Http\Controllers\EloquentController;
+use CloudCreativity\LaravelJsonApi\Http\Controllers\JsonApiController;
 use CloudCreativity\LaravelJsonApi\Http\Requests\ValidatedRequest;
 use DummyApp\Post;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 
-class CommentsController extends EloquentController
+class CommentsController extends JsonApiController
 {
 
     /**
