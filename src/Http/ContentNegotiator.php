@@ -97,9 +97,10 @@ class ContentNegotiator implements ContentNegotiatorInterface
      */
     public function encoding(AcceptHeaderInterface $header, $record = null): Encoding
     {
-        $codecs = $record ? $this->encodingsForResource($record) : $this->encodingsForCreateResource();
+        $fn = method_exists($this, 'encodingsForOne') ? 'encodingsForOne' : 'encodingMediaTypes';
+        $supported = $this->{$fn}($record);
 
-        return $this->checkAcceptTypes($header, $codecs);
+        return $this->checkAcceptTypes($header, $supported);
     }
 
     /**
@@ -107,9 +108,10 @@ class ContentNegotiator implements ContentNegotiatorInterface
      */
     public function encodingForMany(AcceptHeaderInterface $header): Encoding
     {
-        $codecs = $this->encodingsForMany();
+        $fn = method_exists($this, 'encodingsForMany') ? 'encodingsForMany' : 'encodingMediaTypes';
+        $supported = $this->{$fn}();
 
-        return $this->checkAcceptTypes($header, $codecs);
+        return $this->checkAcceptTypes($header, $supported);
     }
 
     /**
@@ -117,7 +119,8 @@ class ContentNegotiator implements ContentNegotiatorInterface
      */
     public function decoding(HeaderInterface $header, $record): Decoding
     {
-        $supported = $record ? $this->decodingsForResource($record) : $this->decodingsForCreateResource();
+        $fn = method_exists($this, 'decodingsForResource') ? 'decodingsForResource' : 'decodingMediaTypes';
+        $supported = $this->{$fn}($record);
 
         return $this->checkContentType($header, $supported);
     }
@@ -127,47 +130,16 @@ class ContentNegotiator implements ContentNegotiatorInterface
      */
     public function decodingForRelationship(HeaderInterface $header, $record, string $field): Decoding
     {
-        return $this->checkContentType(
-            $header,
-            $this->decodingsForRelationship($record, $field)
-        );
-    }
+        $fn = method_exists($this, 'decodingsForRelationship') ? 'decodingsForRelationship' : 'decodingMediaTypes';
+        $supported = $this->{$fn}($record, $field);
 
-    /**
-     * Get encodings for a create resource response.
-     *
-     * @return EncodingList
-     */
-    protected function encodingsForCreateResource(): EncodingList
-    {
-        return $this->supportedEncodings();
-    }
-
-    /**
-     * Get encodings for a resource response.
-     *
-     * @param mixed $record
-     * @return EncodingList
-     */
-    protected function encodingsForResource($record): EncodingList
-    {
-        return $this->supportedEncodings();
-    }
-
-    /**
-     * Get encodings for a zero-to-many resource response.
-     *
-     * @return EncodingList
-     */
-    protected function encodingsForMany(): EncodingList
-    {
-        return $this->supportedEncodings();
+        return $this->checkContentType($header, $supported);
     }
 
     /**
      * @return EncodingList
      */
-    protected function supportedEncodings(): EncodingList
+    protected function encodingMediaTypes(): EncodingList
     {
         return $this->api->getEncodings()->merge(
             EncodingList::fromArray($this->encoding, $this->api->getUrl()->toString())
@@ -175,42 +147,9 @@ class ContentNegotiator implements ContentNegotiatorInterface
     }
 
     /**
-     * Get supported decodings.
-     *
      * @return DecodingList
      */
-    protected function decodingsForCreateResource(): DecodingList
-    {
-        return $this->supportedDecodings();
-    }
-
-    /**
-     * Get supported decodings for a specific record.
-     *
-     * @param mixed $record
-     * @return DecodingList
-     */
-    protected function decodingsForResource($record): DecodingList
-    {
-        return $this->supportedDecodings();
-    }
-
-    /**
-     * Get supported decodings for a relationship on a specific record.
-     *
-     * @param mixed $record
-     * @param string $field
-     * @return DecodingList
-     */
-    protected function decodingsForRelationship($record, string $field): DecodingList
-    {
-        return $this->supportedDecodings();
-    }
-
-    /**
-     * @return DecodingList
-     */
-    protected function supportedDecodings(): DecodingList
+    protected function decodingMediaTypes(): DecodingList
     {
         return $this->api->getDecodings()->merge(
             DecodingList::fromArray($this->decoding)

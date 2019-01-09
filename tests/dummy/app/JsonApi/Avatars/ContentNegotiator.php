@@ -4,7 +4,6 @@ namespace DummyApp\JsonApi\Avatars;
 
 use CloudCreativity\LaravelJsonApi\Codec\Decoding;
 use CloudCreativity\LaravelJsonApi\Codec\DecodingList;
-use CloudCreativity\LaravelJsonApi\Codec\Encoding;
 use CloudCreativity\LaravelJsonApi\Codec\EncodingList;
 use CloudCreativity\LaravelJsonApi\Http\ContentNegotiator as BaseContentNegotiator;
 use DummyApp\Avatar;
@@ -14,27 +13,29 @@ class ContentNegotiator extends BaseContentNegotiator
 {
 
     /**
-     * @param Avatar $record
+     * @param Avatar|null $avatar
      * @return EncodingList
      */
-    protected function encodingsForResource($record): EncodingList
+    protected function encodingsForOne(?Avatar $avatar): EncodingList
     {
-        $mediaType = $record->media_type;
+        $mediaType = optional($avatar)->media_type;
 
         return $this
-            ->supportedEncodings()
-            ->optional($mediaType ? Encoding::custom($mediaType) : null);
+            ->encodingMediaTypes()
+            ->when($this->request->isMethod('GET'), $mediaType);
     }
 
     /**
+     * @param Avatar|null $avatar
      * @return DecodingList
      */
-    protected function decodingsForCreateResource(): DecodingList
+    protected function decodingsForResource(?Avatar $avatar): DecodingList
     {
-        return $this->supportedDecodings()->when(
-            $this->request->isMethod('POST'),
-            Decoding::create('multipart/form-data', new FileDecoder())
-        );
+        $multiPart = Decoding::create('multipart/form-data', new FileDecoder());
+
+        return $this
+            ->decodingMediaTypes()
+            ->when(is_null($avatar), $multiPart);
     }
 
 }

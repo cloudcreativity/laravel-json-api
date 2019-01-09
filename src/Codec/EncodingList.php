@@ -135,17 +135,21 @@ class EncodingList implements \IteratorAggregate, \Countable
      * Push encodings if the truth test evaluates to true.
      *
      * @param bool $test
-     * @param Encoding|iterable|\Closure $encodings
+     * @param Encoding|string|iterable|\Closure|null $encodings
      * @return EncodingList
      */
     public function when(bool $test, $encodings): self
     {
-        if (!$test) {
+        if (!$test || is_null($encodings)) {
             return $this;
         }
 
         if ($encodings instanceof \Closure) {
             return $encodings($this);
+        }
+
+        if (is_string($encodings)) {
+            $encodings = Encoding::custom($encodings);
         }
 
         $encodings = $encodings instanceof Encoding ? [$encodings] : $encodings;
@@ -157,7 +161,7 @@ class EncodingList implements \IteratorAggregate, \Countable
      * Push encodings if the truth test does not evaluate to true.
      *
      * @param bool $test
-     * @param $encodings
+     * @param Encoding|string|iterable|\Closure|null $encodings
      * @return EncodingList
      */
     public function unless(bool $test, $encodings): self
@@ -166,11 +170,15 @@ class EncodingList implements \IteratorAggregate, \Countable
     }
 
     /**
-     * @param Encoding|null $encoding
+     * @param Encoding|string|null $encoding
      * @return EncodingList
      */
-    public function optional(?Encoding $encoding): self
+    public function optional($encoding): self
     {
+        if (is_string($encoding)) {
+            $encoding = Encoding::custom($encoding);
+        }
+
         return $encoding ? $this->push($encoding) : $this;
     }
 

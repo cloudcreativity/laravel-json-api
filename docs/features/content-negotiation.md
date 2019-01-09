@@ -410,9 +410,9 @@ your own content negotiator classes if:
 
 This package provides a generator to create content negotiator classes. You can either generate either:
 
-- *re-usable* content negotiators: these can be used by either your whole API or specific resources within
+- *re-usable* content negotiators: can be used by either your whole API or multiple resources within
 the API.
-- *resource-specific* content negotiators: that are only used by a specific resource type.
+- *resource-specific* content negotiators: are used by a specific resource type.
 
 To generate a content negotiator that is re-usable across multiple JSON API resource types, use the following:
 
@@ -447,3 +447,213 @@ placed in the `ContentNegotiators` namespace, e.g. `App\JsonApi\ContentNegotiato
 
 ### Using Content Negotiators
 
+To set the default content negotiator for your API, use the `content-negotiator` configuration option when
+registering the API. For example, if we wanted to use the `json` content negotiator:
+
+```php
+JsonApi::register('default', ['content-negotiator' => 'json'], function ($api, $router) {
+    $api->resource('posts');
+    $api->resource('comments');
+});
+```
+
+To use a re-usable content negotiator on specific resource types, use the `content-negotiator` configuration
+option when registering the resource. For example, if we wanted to use the `json` content negotiator only
+for the `posts` and `comments` resources, but not the `tags` resource:
+
+ ```php
+ JsonApi::register('default', [], function ($api, $router) {
+     $api->resource('posts', ['content-negotiator' => 'json']);
+     $api->resource('comments', ['content-negotiator' => 'json']);
+     $api->resource('tags');
+ });
+ ```
+
+If you have generated a resource-specific content negotiator, it will be automatically detected so there
+is no need to configure it.
+
+### Encoding Media Types
+
+On your content negotiator, you can configure additional encoding media types using the `encoding`
+property. This uses the same array format as your API's configuration:
+
+```php
+namespace DummyApp\JsonApi\Avatars;
+
+use CloudCreativity\LaravelJsonApi\Http\ContentNegotiator as BaseContentNegotiator;
+
+class ContentNegotiator extends BaseContentNegotiator
+{
+    protected $encoding = [
+        'text/csv' => false,
+    ];
+}
+```
+
+The media types listed on your content negotiator are **added** to the list of media types that
+your API supports. They will be used for every controller action that the content negotiator
+is used for.
+
+If you need to programmatically work out the media types to support, or only want to support additional
+media types on particular actions, implement either of the following methods:
+
+- `encodingsForOne`: the encoding media types when the response will contain the resource that the
+request relates to. E.g. a `GET /api/v1/posts/1` request. This method receives the domain record for
+the request as its first argument. For a create request, the argument will be `null`.
+- `encodingsForMany`: the encoding media types when the response will contain zero-to-many of the
+resource. E.g. `GET /api/v1/posts` or when the resource is in a relationship such as
+`GET /api/v1/users/1/posts`.
+
+For example, say we wanted to support returning an avatar's image via our API we would need to
+support the media type of the stored avatar. Our avatar content negotiator may look like this:
+
+```php
+namespace App\JsonApi\Avatars;
+
+use App\Avatar;
+use CloudCreativity\LaravelJsonApi\Codec\EncodingList;
+use CloudCreativity\LaravelJsonApi\Http\ContentNegotiator as BaseContentNegotiator;
+
+class ContentNegotiator extends BaseContentNegotiator
+{
+
+    /**
+     * @param Avatar|null $avatar
+     * @return EncodingList
+     */
+    protected function encodingsForOne(?Avatar $avatar): EncodingList
+    {
+        $mediaType = optional($avatar)->media_type;
+
+        return $this
+            ->encodingMediaTypes()
+            ->when($this->request->isMethod('GET'), $mediaType);
+    }
+
+}
+```
+
+In this example, `encodingMediaTypes()` returns the list of the encodings supported by our API. The
+`when` method adds an encoding to the list if the first argument is true - in this case, if the
+request method is `GET`.
+
+> The `EncodingList` class also has an `unless` method, along with other helper methods.
+
+If we added this to our resource's controller:
+
+```php
+namespace App\Http\Controllers;
+
+use App\Avatar;
+use CloudCreativity\LaravelJsonApi\Http\Controllers\JsonApiController;
+use Illuminate\Support\Facades\Storage;
+
+class AvatarsController extends JsonApiController
+{
+
+    protected function reading(Avatar $avatar)
+    {
+        if ($this->willNotEncode($avatar->media_type)) {
+            return null;
+        }
+
+        abort_unless(
+            Storage::disk('local')->exists($avatar->path),
+            404,
+            'The image file does not exist.'
+        );
+
+        return Storage::disk('local')->download($avatar->path);
+    }
+}
+```
+
+Then the following request would download the avatar's image:
+
+```http
+GET /api/v1/avatars/1 HTTP/1.1
+Accept: image/*
+```
+
+### Decoding Media Types
+
+On your content negotiator, you can configure additional decoding media types using the `decoding`
+property. This uses the same array format as your API's configuration:
+
+```php
+namespace DummyApp\JsonApi\Avatars;
+
+use CloudCreativity\LaravelJsonApi\Http\ContentNegotiator as BaseContentNegotiator;
+
+class ContentNegotiator extends BaseContentNegotiator
+{
+    protected $decoding = [
+        'multipart/form-data' => \App\JsonApi\MultipartDecoder::class,
+    ];
+}
+```
+
+The media types listed on your content negotiator are **added** to the list of media types that
+your API supports. They will be used for every controller action that the content negotiator
+is used for.
+
+If you need to programmatically work out the media types to support, or only want to support additional
+media types on particular actions, implement either of the following methods:
+
+- `decodingsForResource`: the decoding media types when the request content is expected to be a
+resource object. E.g. `POST /api/v1/posts` or `PATCH /api/v1/posts/1`. This method receives
+the domain record for the request as its first argument. For a create request, the argument will
+be `null`.
+- `decodingsForRelationship`: the decoding media types when the request content is expected to be a
+relationship object. E.g. `POST /api/v1/posts/1/tags`. This method receives the domain record for
+the request as its first arguments, and the relationship field name as its second argument.
+
+For example, if we wanted to support uploading an Avatar image to create an `avatars` resource,
+our content negotiator could be:
+
+```php
+
+namespace DummyApp\JsonApi\Avatars;
+
+use App\Avatar;
+use App\JsonApi\MultipartDecoder;
+use CloudCreativity\LaravelJsonApi\Codec\Decoding;
+use CloudCreativity\LaravelJsonApi\Codec\DecodingList;
+use CloudCreativity\LaravelJsonApi\Http\ContentNegotiator as BaseContentNegotiator;
+
+class ContentNegotiator extends BaseContentNegotiator
+{
+
+    /**
+     * @param Avatar|null $avatar
+     * @return DecodingList
+     */
+    protected function decodingsForResource(?Avatar $avatar): DecodingList
+    {
+        $multiPart = Decoding::create('multipart/form-data', new FileDecoder());
+
+        return $this
+            ->decodingMediaTypes()
+            ->when(is_null($avatar), $multiPart);
+    }
+
+}
+```
+
+In this example, `decodingMediaTypes` returns the media types supported by our API, and we add
+the `multipart/form-data` media type if it is a create request (indicated by `$avatar` being `null`).
+
+> The `DecodingList` class also has an `unless` method, along with other helper methods. You can also
+access the current request in the content negotiator using the `$request` property.
+
+If we then followed the instructions earlier in this chapter about supporting custom decoding media types,
+a client would then be able to upload a file and get a JSON API resource in the response using
+this request:
+
+```http
+POST /api/v1/avatars HTTP/1.1
+Accept: application/vnd.api+json
+Content-Type: mutlipart/form-data
+
+// ...
+```
