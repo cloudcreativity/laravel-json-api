@@ -99,6 +99,37 @@ return [
 ];
 ```
 
+### Controllers
+
+#### Searching Hook
+
+As before the `searching` hook now occurs *before* records are queried with the resource's adapter.
+We have added a `searched` hook that is invoked *after* records are returned by the adapter. This
+hook receives the search results as its first argument.
+
+You probably do not need to make any changes, unless the new `searched` hook is more useful to you
+than the `searching` hook.
+
+#### Reading Hook
+
+The `reading` hook is now executed *before* the resource's adapter is called. Previously it was
+invoked *after* the adapter. The first argument of this hook remains the record that is being read.
+
+We have added a `didRead` hook that is executed *after* the resource's adapter is called. Its first
+argument is the result returned by the adapter. This will usually be the record being read, but may
+be `null` if the client provided any filter parameters and the record does not match those filters.
+
+If you have implemented the `reading` hook on any of your controllers, and you intend it to always
+receive the record that the request relates to, you do **not** need to make any changes. If you intend
+the hook to receive the record that will be in the response, you should change the hook to `didRead`
+and ensure the code handles the record being `null`.
+
+#### Type-Hinting
+
+We have changed the type-hinting of some protected methods so that they now type-hint the concrete
+instance of `ValidatedRequest`. This will only affect your application if you have overloaded any
+of the protected methods.
+
 ## 1.0.0-beta.5 to 1.0.0-beta.6
 
 ### Adapters

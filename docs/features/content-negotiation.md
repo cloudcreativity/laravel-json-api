@@ -156,9 +156,8 @@ Accept: text/plain
 
 ### Custom Encoding
 
-If you need to support a media type that does not encode to JSON API content, use a string value.
-The value can either be a fully-qualified classname or a Laravel service container binding, for
-example:
+If you need to support a media type that does not encode to JSON API content, add it to your
+`encoding` configuration with the value set to `false`. For example:
 
 ```php
 return [
@@ -166,12 +165,49 @@ return [
     
     'encoding' => [
         'applcation/vnd.api+json',
-        'text/csv' => \App\JsonApi\CsvRenderer::class,
+        'application/json' => false,
     ],
 ],
 ```
 
-// @TODO
+You will now need to use [controller hooks](../basics/controllers.md) to return responses for
+these custom media types.
+
+For example, if we wanted to use Laravel's Eloquent API resources for the response if the
+client has requested `application/json`, the `searched` hook on our controller would be:
+
+```php
+namespace App\Http\Controllers\Api\PostsController;
+
+use App\Http\Resources\Post as PostResource;
+
+class PostsController extends JsonApiController
+{
+
+    /**
+     * @param $posts
+     *      the posts returned by your adapter.
+     * @return \Illuminate\Http\Resources\Json\ResourceCollection|null
+     */
+    public function searched($posts)
+    {
+        // This check ensures we still support the JSON API media type.
+        if ($this->willEncode('application/json')) {
+            return PostResource::collection($posts);
+        }
+
+        return null;
+    }
+}
+```
+
+In this example, we create the JSON response *after* the adapter has returned results. If in this
+case we wanted to return a response for the media type *before* the JSON API adapter has been
+invoked, we would use the `searching` hook instead.
+
+> The advantage with using controller hooks that run *after* results have been returned from your
+adapter is that the media type `application/json` will have the same filters, paging etc
+applied as they are for the `application/vnd.api+json` media type.
 
 ## Decoding
 
@@ -237,7 +273,7 @@ Accept: application/vnd.api+json
 > You could use your `encoding` configuration to also allow the client to send an `Accept` header with
 the `application/json` media type.
 
-### Non-JSON API Decoding
+### Custom Decoding
 
 If we want to support a media type that is not must not be parsed as JSON API, then it can be
 configured as follows:

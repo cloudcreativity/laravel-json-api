@@ -21,6 +21,7 @@ namespace CloudCreativity\LaravelJsonApi\Http\Controllers;
 use Closure;
 use CloudCreativity\LaravelJsonApi\Auth\AuthorizesRequests;
 use CloudCreativity\LaravelJsonApi\Codec\ChecksMediaTypes;
+use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PageInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Queue\AsynchronousProcess;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\LaravelJsonApi\Http\Requests\CreateResource;
@@ -33,7 +34,6 @@ use CloudCreativity\LaravelJsonApi\Http\Requests\FetchResource;
 use CloudCreativity\LaravelJsonApi\Http\Requests\FetchResources;
 use CloudCreativity\LaravelJsonApi\Http\Requests\UpdateRelationship;
 use CloudCreativity\LaravelJsonApi\Http\Requests\UpdateResource;
-use CloudCreativity\LaravelJsonApi\Http\Requests\ValidatedRequest;
 use CloudCreativity\LaravelJsonApi\Utils\InvokesHooks;
 use CloudCreativity\LaravelJsonApi\Utils\Str;
 use Illuminate\Contracts\Support\Responsable;
@@ -94,22 +94,13 @@ class JsonApiController extends Controller
      */
     public function read(StoreInterface $store, FetchResource $request)
     {
-        $record = $store->readRecord(
-            $request->getRecord(),
-            $request->getParameters()
-        );
-
-        if (!$record) {
-            return $this->reply()->content(null);
-        }
-
-        $result = $this->invoke('reading', $record, $request);
+        $result = $this->doRead($store, $request);
 
         if ($this->isResponse($result)) {
             return $result;
         }
 
-        return $this->reply()->content($record);
+        return $this->reply()->content($result);
     }
 
     /**
@@ -194,6 +185,13 @@ class JsonApiController extends Controller
             $request->getParameters()
         );
 
+        $records = ($related instanceof PageInterface) ? $related->getData() : $related;
+        $result = $this->afterReadingRelationship($record, $records, $request);
+
+        if ($this->isInvokedResult($result)) {
+            return $result;
+        }
+
         return $this->reply()->content($related);
     }
 
@@ -218,6 +216,13 @@ class JsonApiController extends Controller
             $request->getRelationshipName(),
             $request->getParameters()
         );
+
+        $records = ($related instanceof PageInterface) ? $related->getData() : $related;
+        $result = $this->afterReadingRelationship($record, $records, $request);
+
+        if ($this->isInvokedResult($result)) {
+            return $result;
+        }
 
         return $this->reply()->relationship($related);
     }
@@ -320,27 +325,59 @@ class JsonApiController extends Controller
      * Search resources.
      *
      * @param StoreInterface $store
-     * @param ValidatedRequest $request
+     * @param FetchResources $request
      * @return mixed
      */
-    protected function doSearch(StoreInterface $store, ValidatedRequest $request)
+    protected function doSearch(StoreInterface $store, FetchResources $request)
     {
         if ($result = $this->invoke('searching', $request)) {
             return $result;
         }
 
-        return $store->queryRecords($request->getResourceType(), $request->getParameters());
+        $found = $store->queryRecords($request->getResourceType(), $request->getParameters());
+        $records = ($found instanceof PageInterface) ? $found->getData() : $found;
+
+        if ($result = $this->invoke('searched', $records, $request)) {
+            return $result;
+        }
+
+        return $found;
+    }
+
+    /**
+     * Read a resource.
+     *
+     * @param StoreInterface $store
+     * @param FetchResource $request
+     * @return mixed
+     */
+    protected function doRead(StoreInterface $store, FetchResource $request)
+    {
+        $record = $request->getRecord();
+
+        if ($result = $this->invoke('reading', $record, $request)) {
+            return $result;
+        }
+
+        /** We pass to the store for filtering, eager loading etc. */
+        $record = $store->readRecord($record, $request->getParameters());
+
+        if ($result = $this->invoke('didRead', $record, $request)) {
+            return $result;
+        }
+
+        return $record;
     }
 
     /**
      * Create a resource.
      *
      * @param StoreInterface $store
-     * @param ValidatedRequest $request
+     * @param CreateResource $request
      * @return mixed
      *      the created record, an asynchronous process, or a HTTP response.
      */
-    protected function doCreate(StoreInterface $store, ValidatedRequest $request)
+    protected function doCreate(StoreInterface $store, CreateResource $request)
     {
         if ($response = $this->beforeCommit($request)) {
             return $response;
@@ -359,11 +396,11 @@ class JsonApiController extends Controller
      * Update a resource.
      *
      * @param StoreInterface $store
-     * @param ValidatedRequest $request
+     * @param UpdateResource $request
      * @return mixed
      *      the updated record, an asynchronous process, or a HTTP response.
      */
-    protected function doUpdate(StoreInterface $store, ValidatedRequest $request)
+    protected function doUpdate(StoreInterface $store, UpdateResource $request)
     {
         if ($response = $this->beforeCommit($request)) {
             return $response;
@@ -382,11 +419,11 @@ class JsonApiController extends Controller
      * Delete a resource.
      *
      * @param StoreInterface $store
-     * @param ValidatedRequest $request
+     * @param DeleteResource $request
      * @return mixed|null
      *      an HTTP response, an asynchronous process, content to return, or null.
      */
-    protected function doDelete(StoreInterface $store, ValidatedRequest $request)
+    protected function doDelete(StoreInterface $store, DeleteResource $request)
     {
         $record = $request->getRecord();
 
@@ -403,10 +440,10 @@ class JsonApiController extends Controller
      * Replace a relationship.
      *
      * @param StoreInterface $store
-     * @param ValidatedRequest $request
+     * @param UpdateRelationship $request
      * @return mixed
      */
-    protected function doReplaceRelationship(StoreInterface $store, ValidatedRequest $request)
+    protected function doReplaceRelationship(StoreInterface $store, UpdateRelationship $request)
     {
         $record = $request->getRecord();
         $name = Str::classify($field = $request->getRelationshipName());
@@ -429,10 +466,10 @@ class JsonApiController extends Controller
      * Add to a relationship.
      *
      * @param StoreInterface $store
-     * @param ValidatedRequest $request
+     * @param UpdateRelationship $request
      * @return mixed
      */
-    protected function doAddToRelationship(StoreInterface $store, ValidatedRequest $request)
+    protected function doAddToRelationship(StoreInterface $store, UpdateRelationship $request)
     {
         $record = $request->getRecord();
         $name = Str::classify($field = $request->getRelationshipName());
@@ -455,10 +492,10 @@ class JsonApiController extends Controller
      * Remove from a relationship.
      *
      * @param StoreInterface $store
-     * @param ValidatedRequest $request
+     * @param UpdateRelationship $request
      * @return mixed
      */
-    protected function doRemoveFromRelationship(StoreInterface $store, ValidatedRequest $request)
+    protected function doRemoveFromRelationship(StoreInterface $store, UpdateRelationship $request)
     {
         $record = $request->getRecord();
         $name = Str::classify($field = $request->getRelationshipName());
@@ -504,10 +541,10 @@ class JsonApiController extends Controller
     }
 
     /**
-     * @param ValidatedRequest $request
+     * @param CreateResource|UpdateResource $request
      * @return mixed|null
      */
-    private function beforeCommit(ValidatedRequest $request)
+    private function beforeCommit($request)
     {
         $record = ($request instanceof UpdateResource) ? $request->getRecord() : null;
 
@@ -521,12 +558,12 @@ class JsonApiController extends Controller
     }
 
     /**
-     * @param ValidatedRequest $request
+     * @param CreateResource|UpdateResource $request
      * @param $record
      * @param $updating
      * @return mixed|null
      */
-    private function afterCommit(ValidatedRequest $request, $record, $updating)
+    private function afterCommit($request, $record, $updating)
     {
         $method = !$updating ? 'created' : 'updated';
 
@@ -539,15 +576,30 @@ class JsonApiController extends Controller
 
     /**
      * @param $record
-     * @param ValidatedRequest $request
+     * @param FetchRelated|FetchRelationship $request
      * @return mixed|null
      */
-    private function beforeReadingRelationship($record, ValidatedRequest $request)
+    private function beforeReadingRelationship($record, $request)
     {
-        $name = Str::classify($relationship = $request->getRelationshipName());
-        $hooks = ['readingRelationship', "reading{$name}"];
+        $field = Str::classify($request->getRelationshipName());
+        $hooks = ['readingRelationship', "reading{$field}"];
 
         return $this->invokeMany($hooks, $record, $request);
+    }
+
+    /**
+     * @param $record
+     * @param $related
+     *      the related resources that will be in the response.
+     * @param FetchRelated|FetchRelationship $request
+     * @return mixed|null
+     */
+    private function afterReadingRelationship($record, $related, $request)
+    {
+        $field = Str::classify($request->getRelationshipName());
+        $hooks = ["didRead{$field}", 'didReadRelationship'];
+
+        return $this->invokeMany($hooks, $record, $related, $request);
     }
 
     /**

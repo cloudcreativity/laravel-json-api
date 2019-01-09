@@ -15,14 +15,14 @@
  * limitations under the License.
  */
 
-namespace DummyApp\Events;
+namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Http\Controllers;
 
 use CloudCreativity\LaravelJsonApi\Broadcasting\BroadcastsData;
 use CloudCreativity\LaravelJsonApi\Http\Requests\ValidatedRequest;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Queue\SerializesModels;
 
-class ResourceEvent
+class TestEvent
 {
 
     use SerializesModels, BroadcastsData;
@@ -33,7 +33,7 @@ class ResourceEvent
     public $hook;
 
     /**
-     * @var object|null
+     * @var mixed|null
      */
     public $record;
 
@@ -43,20 +43,28 @@ class ResourceEvent
     public $request;
 
     /**
+     * @var mixed|null
+     */
+    public $related;
+
+    /**
      * ResourceEvent constructor.
      *
      * @param string $hook
-     * @param object|null $record
+     * @param mixed|null $record
      * @param ValidatedRequest|null $request
+     * @param mixed|null $related
      */
     public function __construct(
         $hook,
         $record,
-        ValidatedRequest $request = null
+        ValidatedRequest $request = null,
+        $related = null
     ) {
         $this->hook = $hook;
         $this->record = $record;
         $this->request = $request;
+        $this->related = $related;
     }
 
     /**

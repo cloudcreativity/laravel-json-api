@@ -38,7 +38,6 @@ JsonApi::register('v1', [], function (ApiGroup $api) {
     ]);
 
     $api->resource('posts', [
-        'controller' => true,
         'has-one' => [
             'author' => ['inverse' => 'users']
         ],

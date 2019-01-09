@@ -109,6 +109,7 @@ abstract class TestCase extends BaseTestCase
      * Use the default dummy app routes.
      *
      * @return $this
+     * @deprecated use acceptance tests to test the dummy app.
      */
     protected function withAppRoutes()
     {
@@ -121,6 +122,23 @@ abstract class TestCase extends BaseTestCase
         });
 
         $this->refreshRoutes();
+
+        return $this;
+    }
+
+    /**
+     * @param \Closure $callback
+     * @param array $options
+     * @param string $api
+     * @return $this
+     */
+    protected function withRoutes(\Closure $callback, array $options = [], string $api = 'v1')
+    {
+        Route::group([
+            'namespace' => '\\DummyApp\\Http\\Controllers',
+        ], function () use ($api, $options, $callback) {
+            JsonApi::register($api, $options, $callback);
+        });
 
         return $this;
     }
