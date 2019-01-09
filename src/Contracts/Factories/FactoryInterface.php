@@ -43,7 +43,7 @@ use Psr\Http\Message\ResponseInterface as PsrResponse;
  * Interface FactoryInterface
  *
  * @package CloudCreativity\LaravelJsonApi
- * @deprecated 1.0.0 type-hint `Factories\Factory` instead.
+ * @deprecated 2.0.0 type-hint `Factories\Factory` instead.
  */
 interface FactoryInterface extends BaseFactoryInterface
 {
@@ -58,6 +58,7 @@ interface FactoryInterface extends BaseFactoryInterface
      * @param SchemaContainerInterface $container
      * @param EncoderOptions|null $encoderOptions
      * @return SerializerInterface
+     * @deprecated 2.0.0 use `createEncoder`, which in Laravel JSON API returns a serializer.
      */
     public function createSerializer(SchemaContainerInterface $container, EncoderOptions $encoderOptions = null);
 
@@ -67,6 +68,7 @@ interface FactoryInterface extends BaseFactoryInterface
      * @param ErrorInterface|ErrorInterface[]|ErrorCollection $errors
      * @param int|null $defaultHttpCode
      * @param array $headers
+     * @deprecated 2.0.0
      */
     public function createErrorResponse($errors, $defaultHttpCode, array $headers = []);
 
@@ -77,6 +79,7 @@ interface FactoryInterface extends BaseFactoryInterface
      * @param PsrResponse $response
      * @return DocumentInterface|null
      *      the document, or null if the message does not contain body content.
+     * @deprecated 2.0.0
      */
     public function createDocumentObject(PsrRequest $request, PsrResponse $response = null);
 

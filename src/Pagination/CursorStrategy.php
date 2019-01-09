@@ -17,8 +17,8 @@
 
 namespace CloudCreativity\LaravelJsonApi\Pagination;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Factories\FactoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PagingStrategyInterface;
+use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use CloudCreativity\LaravelJsonApi\Utils\Arr;
 use Neomerx\JsonApi\Contracts\Document\LinkInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
@@ -33,7 +33,7 @@ class CursorStrategy implements PagingStrategyInterface
 {
 
     /**
-     * @var FactoryInterface
+     * @var Factory
      */
     private $factory;
 
@@ -85,9 +85,9 @@ class CursorStrategy implements PagingStrategyInterface
     /**
      * CursorStrategy constructor.
      *
-     * @param FactoryInterface $factory
+     * @param Factory $factory
      */
-    public function __construct(FactoryInterface $factory)
+    public function __construct(Factory $factory)
     {
         $this->factory = $factory;
     }
