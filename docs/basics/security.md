@@ -48,7 +48,7 @@ This will apply the `auth` middleware to every `user-profiles` resource route.
 
 If you need to run different authentication and authorization logic for the different JSON API resource actions,
 then you can define your logic in *authorizer* classes. Authorizers can either be re-used across multiple
-resource types, or definied for a specific resource type.
+resource types, or defined for a specific resource type.
 
 As well as defining your authorization logic in a single class, they also contain a number of helper methods
 (described below) to make authentication and authorization easy.

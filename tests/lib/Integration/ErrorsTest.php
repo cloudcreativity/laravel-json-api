@@ -21,6 +21,7 @@ use Carbon\Carbon;
 use CloudCreativity\LaravelJsonApi\Exceptions\DocumentRequiredException;
 use CloudCreativity\LaravelJsonApi\Exceptions\InvalidJsonException;
 use CloudCreativity\LaravelJsonApi\Exceptions\NotFoundException;
+use CloudCreativity\LaravelJsonApi\Exceptions\ResourceNotFoundException;
 use DummyApp\Post;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\Exceptions\MaintenanceModeException;
@@ -52,13 +53,9 @@ class ErrorsTest extends TestCase
      */
     public function test404()
     {
-        $this->doRead('999')->assertStatus(404)->assertExactJson([
-            'errors' => [
-                [
-                    'title' => 'Not Found',
-                    'status' => '404',
-                ],
-            ],
+        $this->doRead('999')->assertStatus(404)->assertErrorStatus([
+            'title' => 'Not Found',
+            'status' => '404',
         ]);
     }
 
@@ -67,7 +64,7 @@ class ErrorsTest extends TestCase
      */
     public function testCustom404()
     {
-        $expected = $this->withCustomError(NotFoundException::class);
+        $expected = $this->withCustomError(ResourceNotFoundException::class);
 
         $this->doRead('999')->assertStatus(404)->assertExactJson($expected);
     }
@@ -98,10 +95,9 @@ class ErrorsTest extends TestCase
     public function testDocumentRequired($content, $method = 'POST')
     {
         if ('POST' === $method) {
-            $uri = $this->api()->url()->create('posts');
+            $uri = $this->resourceUrl();
         } else {
-            $model = factory(Post::class)->create();
-            $uri = $this->api()->url()->read('posts', $model);
+            $uri = $this->resourceUrl(factory(Post::class)->create());
         }
 
         $expected = [
@@ -155,7 +151,7 @@ class ErrorsTest extends TestCase
      */
     public function testCustomDocumentRequired()
     {
-        $uri = $this->api()->url()->create('posts');
+        $uri = $this->resourceUrl();
         $expected = $this->withCustomError(DocumentRequiredException::class);
 
         $this->doInvalidRequest($uri, '')
@@ -169,7 +165,7 @@ class ErrorsTest extends TestCase
      */
     public function testInvalidJson()
     {
-        $uri = $this->api()->url()->create('posts');
+        $uri = $this->resourceUrl();
         $content = '{"data": {}';
 
         $this->doInvalidRequest($uri, $content)->assertStatus(400)->assertExactJson([
@@ -189,7 +185,7 @@ class ErrorsTest extends TestCase
      */
     public function testCustomInvalidJson()
     {
-        $uri = $this->api()->url()->create('posts');
+        $uri = $this->resourceUrl();
         $expected = $this->withCustomError(InvalidJsonException::class);
         $content = '{"data": {}';
 
@@ -367,11 +363,11 @@ class ErrorsTest extends TestCase
      */
     private function doInvalidRequest($uri, $content, $method = 'POST')
     {
-        $headers = [
+        $headers = $this->transformHeadersToServerVars([
             'CONTENT_LENGTH' => mb_strlen($content, '8bit'),
             'CONTENT_TYPE' => 'application/vnd.api+json',
             'Accept' => 'application/vnd.api+json',
-        ];
+        ]);
 
         return $this->call($method, $uri, [], [], [], $headers, $content);
     }

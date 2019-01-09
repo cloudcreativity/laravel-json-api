@@ -29,7 +29,6 @@ use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Utils\ReplacerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\QueryValidatorInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorFactoryInterface;
-use Neomerx\JsonApi\Contracts\Codec\CodecMatcherInterface;
 use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
 use Neomerx\JsonApi\Contracts\Document\LinkInterface;
 use Neomerx\JsonApi\Contracts\Factories\FactoryInterface as BaseFactoryInterface;
@@ -44,7 +43,7 @@ use Psr\Http\Message\ResponseInterface as PsrResponse;
  * Interface FactoryInterface
  *
  * @package CloudCreativity\LaravelJsonApi
- * @deprecated type-hint `Factories\Factory` instead.
+ * @deprecated 1.0.0 type-hint `Factories\Factory` instead.
  */
 interface FactoryInterface extends BaseFactoryInterface
 {
@@ -89,16 +88,6 @@ interface FactoryInterface extends BaseFactoryInterface
      * @return ClientInterface
      */
     public function createClient($httpClient, SchemaContainerInterface $container, SerializerInterface $encoder);
-
-    /**
-     * Create a codec matcher that is configured using the supplied codecs array.
-     *
-     * @param SchemaContainerInterface $schemas
-     * @param array $codecs
-     * @param string|null $urlPrefix
-     * @return CodecMatcherInterface
-     */
-    public function createConfiguredCodecMatcher(SchemaContainerInterface $schemas, array $codecs, $urlPrefix = null);
 
     /**
      * Create a store.

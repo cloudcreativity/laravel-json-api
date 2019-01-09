@@ -16,6 +16,7 @@
  */
 
 namespace CloudCreativity\LaravelJsonApi\Console\Commands;
+
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
@@ -128,7 +129,7 @@ class MakeAuthorizer extends AbstractGeneratorCommand
     protected function getOptions()
     {
         return [
-            ['resource', 'r', InputOption::VALUE_NONE, 'Generate a resource specific authorizer.'],
+            ['resource', 'r', InputOption::VALUE_NONE, 'Generate a resource-specific authorizer.'],
         ];
     }
 

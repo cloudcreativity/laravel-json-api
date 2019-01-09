@@ -22,6 +22,7 @@ use CloudCreativity\LaravelJsonApi\Contracts\Adapter\ResourceAdapterInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceIdentifierCollectionInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceIdentifierInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\RecordNotFoundException;
+use CloudCreativity\LaravelJsonApi\Exceptions\ResourceNotFoundException;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use Illuminate\Support\Collection;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
@@ -245,14 +246,19 @@ interface StoreInterface
     /**
      * Find the domain record that this resource identifier refers to, or fail if it cannot be found.
      *
-     * @param ResourceIdentifierInterface $identifier
-     * @return object
-     *      the record
-     * @throws RecordNotFoundException
+     * @param ResourceIdentifierInterface|array|string $type
+     *      the resource identifier, or the string resource type.
+     * @param string|null $id
+     *      the resource id, required if `$type` is a string.
+     * @return object|null
+     *      the record, or null if it does not exist.
+     * @throws ResourceNotFoundException
      *      if the record does not exist.
-     * @deprecated 2.0.0 use `find`.
+     * @throws RecordNotFoundException
+     *      if the record does not exist and a resource identifier is provided.
+     * @todo in 2.0.0 this will only accept type and id, not a resource identifier object.
      */
-    public function findOrFail(ResourceIdentifierInterface $identifier);
+    public function findOrFail($type, $id = null);
 
     /**
      * @param ResourceIdentifierInterface $identifier

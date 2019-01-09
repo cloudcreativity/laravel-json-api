@@ -27,6 +27,7 @@ use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Http\Requests\JsonApiRequest;
 use CloudCreativity\LaravelJsonApi\LaravelJsonApi;
 use CloudCreativity\LaravelJsonApi\Routing\ResourceRegistrar;
+use CloudCreativity\LaravelJsonApi\Routing\Route;
 use Exception;
 use Illuminate\Contracts\Container\Container;
 
@@ -88,16 +89,23 @@ class JsonApiService
     }
 
     /**
-     * Get the JSON API request, if there is an inbound API handling the request.
+     * Get the current JSON API route.
      *
-     * @return JsonApiRequest|null
+     * @return Route
+     */
+    public function currentRoute(): Route
+    {
+        return $this->container->make(Route::class);
+    }
+
+    /**
+     * Get the JSON API request.
+     *
+     * @return JsonApiRequest
+     * @deprecated 2.0.0 use `current()`
      */
     public function request()
     {
-        if (!$this->container->bound(Api::class)) {
-            return null;
-        }
-
         return $this->container->make('json-api.request');
     }
 
@@ -105,6 +113,7 @@ class JsonApiService
      * Get the inbound JSON API request.
      *
      * @return JsonApiRequest
+     * @deprecated 1.0.0 use `request`
      */
     public function requestOrFail()
     {
@@ -184,56 +193,6 @@ class JsonApiService
         /** @var ErrorReporterInterface $reporter */
         $reporter = $this->container->make(ErrorReporterInterface::class);
         $reporter->report($response, $e);
-    }
-
-    /**
-     * Get the current API, if one has been bound into the container.
-     *
-     * @return Api
-     * @deprecated 1.0.0 use `requestApi`
-     */
-    public function getApi()
-    {
-        if (!$api = $this->requestApi()) {
-            throw new RuntimeException('No active API. The JSON API middleware has not been run.');
-        }
-
-        return $api;
-    }
-
-    /**
-     * @return bool
-     * @deprecated 1.0.0 use `requestApi()`
-     */
-    public function hasApi()
-    {
-        return !is_null($this->requestApi());
-    }
-
-    /**
-     * Get the current JSON API request, if one has been bound into the container.
-     *
-     * @return JsonApiRequest
-     * @deprecated 1.0.0 use `request()`
-     */
-    public function getRequest()
-    {
-        if (!$request = $this->request()) {
-            throw new RuntimeException('No JSON API request has been created.');
-        }
-
-        return $request;
-    }
-
-    /**
-     * Has a JSON API request been bound into the container?
-     *
-     * @return bool
-     * @deprecated 1.0.0 use `request()`
-     */
-    public function hasRequest()
-    {
-        return !is_null($this->request());
     }
 
 }

@@ -20,8 +20,6 @@ namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Eloquent;
 use Carbon\Carbon;
 use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
 use DummyApp\Comment;
-use DummyApp\Events\ResourceEvent;
-use DummyApp\Http\Controllers\PostsController;
 use DummyApp\Post;
 use DummyApp\Tag;
 use Illuminate\Support\Facades\Event;
@@ -341,23 +339,18 @@ class ResourceTest extends TestCase
      */
     public function testUpdateRefreshes()
     {
-        /** @var PostsController $controller */
-        $controller = $this->app->make(PostsController::class);
-        $this->app->instance(PostsController::class, $controller);
+        $post = $this->createPost();
 
-        app('events')->listen(ResourceEvent::class, function ($event) {
-            if ('saving' === $event->hook) {
-                $event->record->tags; // causes the model to cache the tags relationship.
-            }
+        Post::saving(function (Post $saved) {
+            $saved->tags; // causes the model to cache the tags relationship.
         });
 
-        $model = $this->createPost();
         /** @var Tag $tag */
         $tag = factory(Tag::class)->create();
 
         $data = [
             'type' => 'posts',
-            'id' => (string) $model->getRouteKey(),
+            'id' => (string) $post->getRouteKey(),
             'relationships' => [
                 'tags' => [
                     'data' => [
@@ -371,7 +364,7 @@ class ResourceTest extends TestCase
 
         $this->assertDatabaseHas('taggables', [
             'taggable_type' => Post::class,
-            'taggable_id' => $model->getKey(),
+            'taggable_id' => $post->getKey(),
             'tag_id' => $tag->getKey(),
         ]);
     }

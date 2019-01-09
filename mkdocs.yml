@@ -37,6 +37,7 @@ pages:
     - Helpers: features/helpers.md
     - HTTP Clients: features/http-clients.md
     - Localization: features/localization.md
+    - Media Types: features/media-types.md
     - Packages: features/packages.md
     - Resolvers: features/resolvers.md
     - Responses: features/responses.md

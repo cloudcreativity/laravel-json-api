@@ -27,6 +27,8 @@ use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorProviderInterfa
 class FetchRelated extends ValidatedRequest
 {
 
+    use Concerns\RelationshipRequest;
+
     /**
      * @inheritDoc
      */

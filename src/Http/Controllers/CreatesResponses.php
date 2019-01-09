@@ -29,6 +29,13 @@ trait CreatesResponses
 {
 
     /**
+     * The API to use.
+     *
+     * @var string
+     */
+    protected $api = '';
+
+    /**
      * Get the responses factory.
      *
      * This will return the responses factory for the API handling the inbound HTTP request.
@@ -40,7 +47,7 @@ trait CreatesResponses
      */
     protected function reply()
     {
-        return response()->jsonApi($this->apiName());
+        return \response()->jsonApi($this->apiName());
     }
 
     /**
@@ -48,6 +55,6 @@ trait CreatesResponses
      */
     protected function apiName()
     {
-        return property_exists($this, 'api') ? $this->api : null;
+        return $this->api ?: null;
     }
 }

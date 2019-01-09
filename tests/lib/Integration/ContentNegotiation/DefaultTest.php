@@ -15,11 +15,12 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\LaravelJsonApi\Tests\Integration;
+namespace CloudCreativity\LaravelJsonApi\Tests\Integration\ContentNegotiation;
 
+use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
 use DummyApp\Post;
 
-class ContentNegotiationTest extends TestCase
+class DefaultTest extends TestCase
 {
 
     public function testOkWithoutBody()
@@ -72,31 +73,10 @@ class ContentNegotiationTest extends TestCase
         $this->patchJson("/api/v1/posts/{$data['id']}", ['data' => $data], [
             'Accept' => 'application/vnd.api+json',
             'Content-Type' => 'text/plain',
-        ])->assertStatus(415)->assertExactJson([
-            'errors' => [
-                [
-                    'title' => 'Invalid Content-Type Header',
-                    'status' => '415',
-                    'detail' => 'The specified content type is not supported.',
-                ],
-            ],
-        ]);
-    }
-
-    public function testMultipleMediaTypes()
-    {
-        $data = $this->willPatch();
-
-        $this->patchJson("/api/v1/posts/{$data['id']}", ['data' => $data], [
-            'Accept' => 'application/vnd.api+json',
-            'Content-Type' => 'application/vnd.api+json, text/plain',
-        ])->assertStatus(400)->assertExactJson([
-            'errors' => [
-                [
-                    'title' => 'Invalid Content-Type Header',
-                    'status' => '400',
-                ],
-            ],
+        ])->assertErrorStatus([
+            'title' => 'Unsupported Media Type',
+            'status' => '415',
+            'detail' => 'The request entity has a media type which the server or resource does not support.',
         ]);
     }
 
@@ -118,7 +98,14 @@ class ContentNegotiationTest extends TestCase
      */
     public function testNotAcceptable()
     {
-        $this->get('/api/v1/posts', ['Accept' => 'application/json'])->assertStatus(406);
+        $expected = ['message' =>
+            "The requested resource is capable of generating only content not acceptable "
+            . "according to the Accept headers sent in the request."
+        ];
+
+        $this->get('/api/v1/posts', ['Accept' => 'application/json'])
+            ->assertStatus(406)
+            ->assertExactJson($expected);
     }
 
     /**
@@ -126,9 +113,8 @@ class ContentNegotiationTest extends TestCase
      */
     public function testCanChangeMediaType1()
     {
-        app('config')->set('json-api-v1.codecs', [
-            'encoders' => ['application/json'],
-            'decoders' => ['application/json'],
+        app('config')->set('json-api-v1.encoding', [
+            'application/json',
         ]);
 
         $this->get('/api/v1/posts', ['Accept' => 'application/json'])
@@ -141,9 +127,8 @@ class ContentNegotiationTest extends TestCase
      */
     public function testCanChangeMediaType2()
     {
-        app('config')->set('json-api-v1.codecs', [
-            'encoders' => ['application/json'],
-            'decoders' => ['application/json'],
+        app('config')->set('json-api-v1.encoding', [
+            'application/json',
         ]);
 
         $this->get('/api/v1/posts', ['Accept' => 'application/vnd.api+json'])

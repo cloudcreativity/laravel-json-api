@@ -69,20 +69,6 @@ class NamespaceResolver extends AbstractResolver
     /**
      * @inheritDoc
      */
-    public function getAuthorizerByName($name)
-    {
-        if (!$this->byResource) {
-            return $this->resolve('Authorizer', $name);
-        }
-
-        $classified = Str::classify($name);
-
-        return $this->append("{$classified}Authorizer");
-    }
-
-    /**
-     * @inheritDoc
-     */
     protected function resolve($unit, $resourceType)
     {
         $classified = Str::classify($resourceType);
@@ -95,6 +81,20 @@ class NamespaceResolver extends AbstractResolver
         $class = $this->withType ? $classified . str_singular($unit) : $classified;
 
         return $this->append(sprintf('%s\%s', str_plural($unit), $class));
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function resolveName($unit, $name)
+    {
+        if (!$this->byResource) {
+            return $this->resolve($unit, $name);
+        }
+
+        $classified = Str::classify($name);
+
+        return $this->append($classified . $unit);
     }
 
     /**

@@ -38,6 +38,7 @@ class MakeResource extends Command
         {resource : The resource to create files for.}
         {api? : The API that the resource belongs to.}
         {--a|auth : Generate a resource authorizer.}
+        {--c|content-negotiator : Generate a resource content negotiator.}
         {--e|eloquent : Use Eloquent classes.}
         {--N|no-eloquent : Do not use Eloquent classes.}
         {--o|only= : Specify the classes to generate.}
@@ -81,26 +82,34 @@ class MakeResource extends Command
 
         $commands = collect($this->commands);
 
-        // Just tell the user, if no files are created
+        /** Just tell the user, if no files are created */
         if ($commands->isEmpty()) {
             $this->info('No files created.');
             return 0;
         }
 
-        // Filter out any commands the user asked os to.
+        /** Filter out any commands the user asked os to. */
         if ($this->option('only') || $this->option('except')) {
             $type = $this->option('only') ? 'only' : 'except';
 
             $commands = $this->filterCommands($commands, $type);
         }
 
-        // Run commands that cannot accept Eloquent parameters.
+        /** Run commands that cannot accept Eloquent parameters. */
         $notEloquent = ['make:json-api:validators'];
 
         if (!$this->runCommandsWithParameters($commands->only($notEloquent), $resourceParameter)) {
             return 1;
         }
 
+        /** Run commands that can accept Eloquent parameters. */
+        $eloquent = ['make:json-api:adapter', 'make:json-api:schema'];
+
+        if (!$this->runCommandsWithParameters($commands->only($eloquent), $eloquentParameters)) {
+            return 1;
+        }
+
+        /** Authorizer */
         if ($this->option('auth')) {
             $this->call('make:json-api:authorizer', [
                 'name' => $this->argument('resource'),
@@ -109,14 +118,16 @@ class MakeResource extends Command
             ]);
         }
 
-        // Run commands that can accept Eloquent parameters.
-        $eloquent = ['make:json-api:adapter', 'make:json-api:hydrator', 'make:json-api:schema'];
-
-        if (!$this->runCommandsWithParameters($commands->only($eloquent), $eloquentParameters)) {
-            return 1;
+        /** Content Negotiator */
+        if ($this->option('content-negotiator')) {
+            $this->call('make:json-api:content-negotiator', [
+                'name' => $this->argument('resource'),
+                'api' => $this->argument('api'),
+                '--resource' => true,
+            ]);
         }
 
-        // Give the user a digial high-five.
+        /** Give the user a digial high-five. */
         $this->comment('All done, keep doing what you do.');
 
         return 0;

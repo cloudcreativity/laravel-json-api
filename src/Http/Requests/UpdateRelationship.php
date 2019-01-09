@@ -25,6 +25,8 @@ use CloudCreativity\LaravelJsonApi\Object\Document;
 class UpdateRelationship extends ValidatedRequest
 {
 
+    use Concerns\RelationshipRequest;
+
     /**
      * @inheritDoc
      */
@@ -67,10 +69,7 @@ class UpdateRelationship extends ValidatedRequest
      */
     protected function validateDocument()
     {
-        if (!$document = $this->decode()) {
-            throw new DocumentRequiredException();
-        }
-
+        $document = $this->decodeOrFail();
         $validators = $this->getValidators();
 
         /** Pre-1.0 validators */

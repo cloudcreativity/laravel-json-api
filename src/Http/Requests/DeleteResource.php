@@ -27,6 +27,8 @@ use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorProviderInterfa
 class DeleteResource extends ValidatedRequest
 {
 
+    use Concerns\ResourceRequest;
+
     /**
      * @inheritDoc
      */

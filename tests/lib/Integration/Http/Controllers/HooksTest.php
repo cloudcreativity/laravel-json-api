@@ -15,19 +15,25 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\LaravelJsonApi\Tests\Integration;
+namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Http\Controllers;
 
-use DummyApp\Events\ResourceEvent;
+use CloudCreativity\LaravelJsonApi\Routing\ApiGroup;
+use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
 use DummyApp\Post;
 use DummyApp\Tag;
 
-class ControllerHooksTest extends TestCase
+class HooksTest extends TestCase
 {
 
     /**
      * @var string
      */
     protected $resourceType = 'posts';
+
+    /**
+     * @var bool
+     */
+    protected $appRoutes = false;
 
     /**
      * @var array
@@ -41,9 +47,19 @@ class ControllerHooksTest extends TestCase
     {
         parent::setUp();
 
+        $this->app->instance('DummyApp\Http\Controllers\PostsController', new TestController());
+
+        $this->withRoutes(function (ApiGroup $api) {
+            $api->resource('posts', [
+                'controller' => true,
+                'has-one' => 'author',
+                'has-many' => 'tags',
+            ]);
+        });
+
         $this->events = [];
 
-        app('events')->listen(ResourceEvent::class, function (ResourceEvent $event) {
+        app('events')->listen(TestEvent::class, function ($event) {
             $this->events[] = $event->hook;
         });
     }
@@ -54,7 +70,7 @@ class ControllerHooksTest extends TestCase
     public function testSearching()
     {
         $this->doSearch()->assertStatus(200);
-        $this->assertHookInvoked('searching');
+        $this->assertHooksInvoked('searching', 'searched');
     }
 
     /**
@@ -114,7 +130,7 @@ class ControllerHooksTest extends TestCase
         $post = factory(Post::class)->create();
 
         $this->doRead($post)->assertStatus(200);
-        $this->assertHookInvoked('reading');
+        $this->assertHooksInvoked('reading', 'did-read');
     }
 
     /**
@@ -180,7 +196,13 @@ class ControllerHooksTest extends TestCase
         $post = factory(Post::class)->create();
 
         $this->doReadRelated($post, 'author')->assertStatus(200);
-        $this->assertHooksInvoked('reading-relationship', 'reading-author');
+
+        $this->assertHooksInvoked(
+            'reading-relationship',
+            'reading-author',
+            'did-read-author',
+            'did-read-relationship'
+        );
     }
 
     public function testReadRelationship()
@@ -188,7 +210,13 @@ class ControllerHooksTest extends TestCase
         $post = factory(Post::class)->create();
 
         $this->doReadRelationship($post, 'author')->assertStatus(200);
-        $this->assertHooksInvoked('reading-relationship', 'reading-author');
+
+        $this->assertHooksInvoked(
+            'reading-relationship',
+            'reading-author',
+            'did-read-author',
+            'did-read-relationship'
+        );
     }
 
     public function testReplaceRelationship()
@@ -225,14 +253,6 @@ class ControllerHooksTest extends TestCase
     private function assertHooksInvoked(...$names)
     {
         $this->assertSame($this->events, $names);
-    }
-
-    /**
-     * @param $name
-     */
-    private function assertHookInvoked($name)
-    {
-        $this->assertSame($this->events, [$name]);
     }
 
     /**

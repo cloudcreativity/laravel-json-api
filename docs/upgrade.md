@@ -5,6 +5,130 @@
 We are now on `1.0.0` beta releases. Changes during this cycle will be kept to the minimum required to
 fix remaining issues.
 
+## 1.0.0-beta.6 to 1.0.0-rc.1
+
+### Config
+
+We have re-implemented content-negotiation so that you can support non-JSON API media types at
+runtime. As part of this change we've made a slight change to the API config to make it clearer
+what the config sets.
+
+Currently your API's content negotiation config looks like this:
+
+```php
+return [
+    // ...
+    
+    /*
+    |--------------------------------------------------------------------------
+    | Content Negotiation
+    |--------------------------------------------------------------------------
+    |
+    | This is where you register how different media types are mapped to
+    | encoders and decoders. Encoders do the work of converting your records
+    | into JSON API resources. Decoders are used to convert incoming request
+    | body content into objects.
+    |
+    | If there is not an encoder/decoder registered for a specific media-type,
+    | then an error will be sent to the client as per the JSON-API spec.
+    |
+    */
+    'codecs' => [
+        'encoders' => [
+            'application/vnd.api+json',
+        ],
+        'decoders' => [
+            'application/vnd.api+json',
+        ],
+    ],
+];
+```
+
+You will need to change it to this:
+
+```php
+return [
+    // ...
+    
+
+    /*
+    |--------------------------------------------------------------------------
+    | Encoding Media Types
+    |--------------------------------------------------------------------------
+    |
+    | This defines the JSON API encoding used for particular media
+    | types supported by your API. This array can contain either
+    | media types as values, or can be keyed by a media type with the value
+    | being the options that are passed to the `json_encode` method.
+    |
+    | These values are also used for Content Negotiation. If a client requests
+    | via the HTTP Accept header a media type that is not listed here,
+    | a 406 Not Acceptable response will be sent.
+    |
+    | If you want to support media types that do not return responses with JSON
+    | API encoded data, you can do this at runtime. Refer to the
+    | Content Negotiation chapter in the docs for details.
+    |
+    */
+    'encoding' => [
+        'application/vnd.api+json',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Decoding Media Types
+    |--------------------------------------------------------------------------
+    |
+    | This defines the media types that your API can receive from clients.
+    | This array is keyed by expected media types, with the value being the
+    | service binding that decodes the media type.
+    |
+    | These values are also used for Content Negotiation. If a client sends
+    | a content type not listed here, it will receive a
+    | 415 Unsupported Media Type response.
+    |
+    | Decoders can also be calculated at runtime, and/or you can add support
+    | for media types for specific resources or requests. Refer to the
+    | Content Negotiation chapter in the docs for details.
+    |
+    */
+    'decoding' => [
+        'application/vnd.api+json',
+    ],
+];
+```
+
+### Controllers
+
+#### Searching Hook
+
+As before the `searching` hook now occurs *before* records are queried with the resource's adapter.
+We have added a `searched` hook that is invoked *after* records are returned by the adapter. This
+hook receives the search results as its first argument.
+
+You probably do not need to make any changes, unless the new `searched` hook is more useful to you
+than the `searching` hook.
+
+#### Reading Hook
+
+The `reading` hook is now executed *before* the resource's adapter is called. Previously it was
+invoked *after* the adapter. The first argument of this hook remains the record that is being read.
+
+We have added a `didRead` hook that is executed *after* the resource's adapter is called. Its first
+argument is the result returned by the adapter. This will usually be the record being read, but may
+be `null` if the client provided any filter parameters and the record does not match those filters.
+
+If you have implemented the `reading` hook on any of your controllers, and you intend it to always
+receive the record that the request relates to, you do **not** need to make any changes. If you intend
+the hook to receive the record that will be in the response, you should change the hook to `didRead`
+and ensure the code handles the record being `null`.
+
+#### Type-Hinting
+
+We have changed the type-hinting of some protected methods so that they now type-hint the concrete
+instance of `ValidatedRequest`. This will only affect your application if you have overloaded any
+of the protected methods.
+
 ## 1.0.0-beta.5 to 1.0.0-beta.6
 
 ### Adapters

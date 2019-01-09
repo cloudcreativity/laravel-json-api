@@ -17,9 +17,11 @@
 
 namespace CloudCreativity\LaravelJsonApi\Validation;
 
+use CloudCreativity\LaravelJsonApi\Codec\ChecksMediaTypes;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorInterface;
+use CloudCreativity\LaravelJsonApi\Document\ResourceObject;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use CloudCreativity\LaravelJsonApi\Rules\AllowedFieldSets;
 use CloudCreativity\LaravelJsonApi\Rules\AllowedFilterParameters;
@@ -37,6 +39,8 @@ use Illuminate\Support\Str;
  */
 abstract class AbstractValidators implements ValidatorFactoryInterface
 {
+
+    use ChecksMediaTypes;
 
     /**
      * Whether the resource supports client-generated ids.
@@ -223,8 +227,10 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
      */
     public function modifyRelationship($record, string $field, array $document): ValidatorInterface
     {
+        $data = $this->relationshipData($record, $field, $document);
+
         return $this->factory->createResourceValidator(
-            $this->relationshipData($record, $field, $document),
+            ResourceObject::create($data),
             $this->relationshipRules($record, $field),
             $this->messages(),
             $this->attributes()
@@ -322,7 +328,7 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
      */
     protected function createData(array $document): array
     {
-        return $document['data'];
+        return $document['data'] ?? [];
     }
 
     /**
@@ -347,7 +353,7 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
      */
     protected function updateData($record, array $document): array
     {
-        $resource = $document['data'];
+        $resource = $document['data'] ?? [];
 
         if ($this->mustValidateExisting($record, $document)) {
             $resource['attributes'] = $this->extractAttributes(
@@ -469,6 +475,8 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
     }
 
     /**
+     * Create a validator for a JSON API resource object.
+     *
      * @param array $data
      * @param array $rules
      * @param array $messages
@@ -480,13 +488,33 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
         array $rules,
         array $messages = [],
         array $customAttributes = []
-    ): ValidatorInterface {
+    ): ValidatorInterface
+    {
         return $this->factory->createResourceValidator(
-            $data,
+            ResourceObject::create($data),
             $rules,
             $messages,
             $customAttributes
         );
+    }
+
+    /**
+     * Create a generic validator.
+     *
+     * @param array $data
+     * @param array $rules
+     * @param array $messages
+     * @param array $customAttributes
+     * @return ValidatorInterface
+     */
+    protected function createValidator(
+        array $data,
+        array $rules,
+        array $messages = [],
+        array $customAttributes = []
+    ): ValidatorInterface
+    {
+        return $this->factory->createValidator($data, $rules, $messages, $customAttributes);
     }
 
     /**

@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Copyright 2019 Cloud Creativity Limited
  *
@@ -21,15 +20,12 @@ namespace CloudCreativity\LaravelJsonApi\Http\Middleware;
 use Closure;
 use CloudCreativity\LaravelJsonApi\Api\Api;
 use CloudCreativity\LaravelJsonApi\Api\Repository;
-use CloudCreativity\LaravelJsonApi\Factories\Factory;
+use CloudCreativity\LaravelJsonApi\Exceptions\ResourceNotFoundException;
+use CloudCreativity\LaravelJsonApi\Routing\Route;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\AbstractPaginator;
-use Neomerx\JsonApi\Contracts\Codec\CodecMatcherInterface;
-use Neomerx\JsonApi\Contracts\Http\HttpFactoryInterface;
-use Neomerx\JsonApi\Exceptions\JsonApiException;
-use Psr\Http\Message\ServerRequestInterface;
-use function CloudCreativity\LaravelJsonApi\http_contains_body;
+use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 /**
  * Class BootJsonApi
@@ -56,28 +52,25 @@ class BootJsonApi
      * Start JSON API support.
      *
      * This middleware:
+     *
      * - Loads the configuration for the named API that this request is being routed to.
      * - Registers the API in the service container.
-     * - Triggers client/server content negotiation as per the JSON API spec.
+     * - Substitutes bindings on the route.
+     * - Overrides the Laravel current page resolver so that it uses the JSON API page parameter.
      *
      * @param Request $request
      * @param Closure $next
-     * @param $namespace
+     * @param string $namespace
      *      the API namespace, as per your JSON API configuration.
      * @return mixed
      */
-    public function handle($request, Closure $next, $namespace)
+    public function handle($request, Closure $next, string $namespace)
     {
-        /** @var Factory $factory */
-        $factory = $this->container->make(Factory::class);
-        /** @var ServerRequestInterface $request */
-        $serverRequest = $this->container->make(ServerRequestInterface::class);
-
-        /** Build and register the API */
+        /** Build and register the API. */
         $api = $this->bindApi($namespace, $request->getSchemeAndHttpHost() . $request->getBaseUrl());
 
-        /** Do content negotiation. */
-        $this->doContentNegotiation($factory, $serverRequest, $api->getCodecMatcher());
+        /** Substitute route bindings. */
+        $this->substituteBindings($api);
 
         /** Set up the Laravel paginator to read from JSON API request instead */
         $this->bindPageResolver();
@@ -92,7 +85,7 @@ class BootJsonApi
      * @param $host
      * @return Api
      */
-    protected function bindApi($namespace, $host)
+    protected function bindApi(string $namespace, string $host): Api
     {
         /** @var Repository $repository */
         $repository = $this->container->make(Repository::class);
@@ -105,38 +98,29 @@ class BootJsonApi
     }
 
     /**
+     * @param Api $api
+     * @throws ResourceNotFoundException
+     */
+    protected function substituteBindings(Api $api): void
+    {
+        /** @var Route $route */
+        $route = $this->container->make(Route::class);
+        $route->substituteBindings($api->getStore());
+    }
+
+    /**
      * Override the page resolver to read the page parameter from the JSON API request.
      *
      * @return void
      */
-    protected function bindPageResolver()
+    protected function bindPageResolver(): void
     {
         /** Override the current page resolution */
         AbstractPaginator::currentPageResolver(function ($pageName) {
-            $pagination = json_api_request()->getParameters()->getPaginationParameters() ?: [];
+            $pagination = app(EncodingParametersInterface::class)->getPaginationParameters() ?: [];
 
             return $pagination[$pageName] ?? null;
         });
-    }
-
-    /**
-     * Perform content negotiation.
-     *
-     * @param HttpFactoryInterface $httpFactory
-     * @param ServerRequestInterface $request
-     * @param CodecMatcherInterface $codecMatcher
-     * @throws JsonApiException
-     * @see http://jsonapi.org/format/#content-negotiation
-     */
-    protected function doContentNegotiation(
-        HttpFactoryInterface $httpFactory,
-        ServerRequestInterface $request,
-        CodecMatcherInterface $codecMatcher
-    ) {
-        $parser = $httpFactory->createHeaderParametersParser();
-        $checker = $httpFactory->createHeadersChecker($codecMatcher);
-
-        $checker->checkHeaders($parser->parse($request, http_contains_body($request)));
     }
 
 }

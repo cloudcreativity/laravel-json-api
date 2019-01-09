@@ -70,6 +70,7 @@ class GeneratorsTest extends TestCase
             "{$this->path}/app/JsonApi/Companies",
             "{$this->path}/app/JsonApi/Adapters",
             "{$this->path}/app/JsonApi/Authorizers",
+            "{$this->path}/app/JsonApi/ContentNegotiators",
             "{$this->path}/app/JsonApi/Schemas",
             "{$this->path}/app/JsonApi/Validators",
         ];
@@ -84,6 +85,7 @@ class GeneratorsTest extends TestCase
             "{$this->path}/config/json-api-default.php",
             "{$this->path}/config/json-api-foo.php",
             "{$this->path}/app/JsonApi/VisitorAuthorizer.php",
+            "{$this->path}/app/JsonApi/JsonContentNegotiator.php",
         ];
 
         foreach ($files as $file) {
@@ -288,6 +290,66 @@ class GeneratorsTest extends TestCase
 
         $this->assertSame(0, $result);
         $this->assertResourceAuthorizer();
+    }
+
+    /**
+     * Test generating a reusable content negotiator.
+     *
+     * @param bool $byResource
+     * @param bool $withoutType
+     * @dataProvider byResourceProvider
+     */
+    public function testReusableContentNegotiator($byResource, $withoutType = false)
+    {
+        $this->byResource($byResource, $withoutType);
+
+        $result = $this->artisan('make:json-api:content-negotiator', [
+            'name' => 'json',
+        ]);
+
+        $this->assertSame(0, $result);
+        $this->assertReusableContentNegotiator();
+    }
+
+    /**
+     * Test generating a resource-specific content negotiator.
+     *
+     * @param $byResource
+     * @param $withoutType
+     * @dataProvider byResourceProvider
+     */
+    public function testResourceContentNegotiator($byResource, $withoutType = false)
+    {
+        $this->byResource($byResource, $withoutType);
+
+        $result = $this->artisan('make:json-api:content-negotiator', [
+            'name' => 'companies',
+            '--resource' => true,
+        ]);
+
+        $this->assertSame(0, $result);
+        $this->assertResourceContentNegotiator();
+    }
+
+    /**
+     * Test generating a resource with an content negotiator.
+     *
+     * @param $byResource
+     * @param $withoutType
+     * @dataProvider byResourceProvider
+     */
+    public function testResourceWithContentNegotiator($byResource, $withoutType = false)
+    {
+        $this->byResource($byResource, $withoutType);
+
+        $result = $this->artisan('make:json-api:resource', [
+            'resource' => 'companies',
+            '--auth' => true,
+            '--content-negotiator' => true,
+        ]);
+
+        $this->assertSame(0, $result);
+        $this->assertResourceContentNegotiator();
     }
 
     /**
@@ -536,6 +598,61 @@ class GeneratorsTest extends TestCase
             $class = $this->withoutType ? 'Company' : 'CompanyAuthorizer';
             $this->assertContains('namespace DummyApp\JsonApi\Authorizers;', $content);
             $this->assertContains("class {$class} extends", $content);
+        }
+    }
+
+    /**
+     * @return void
+     */
+    private function assertReusableContentNegotiator()
+    {
+        if ($this->withoutType) {
+            $class = 'Json';
+            $file = "{$this->path}/app/JsonApi/ContentNegotiators/{$class}.php";
+        } else {
+            $class = 'JsonContentNegotiator';
+            $file = $this->byResource ?
+                "{$this->path}/app/JsonApi/{$class}.php" :
+                "{$this->path}/app/JsonApi/ContentNegotiators/{$class}.php";
+        }
+
+
+        $this->assertFileExists($file);
+        $content = $this->files->get($file);
+
+        $this->assertContains("class {$class} extends BaseContentNegotiator", $content);
+
+        if ($this->byResource) {
+            $this->assertContains('namespace DummyApp\JsonApi;', $content);
+        } else {
+            $this->assertContains('namespace DummyApp\JsonApi\ContentNegotiators;', $content);
+        }
+    }
+
+    /**
+     * @return void
+     */
+    private function assertResourceContentNegotiator()
+    {
+        if ($this->withoutType) {
+            $file = "{$this->path}/app/JsonApi/ContentNegotiators/Company.php";
+        } else {
+            $file = $this->byResource ?
+                "{$this->path}/app/JsonApi/Companies/ContentNegotiator.php" :
+                "{$this->path}/app/JsonApi/ContentNegotiators/CompanyContentNegotiator.php";
+        }
+
+
+        $this->assertFileExists($file);
+        $content = $this->files->get($file);
+
+        if ($this->byResource) {
+            $this->assertContains('namespace DummyApp\JsonApi\Companies;', $content);
+            $this->assertContains('class ContentNegotiator extends BaseContentNegotiator', $content);
+        } else {
+            $class = $this->withoutType ? 'Company' : 'CompanyContentNegotiator';
+            $this->assertContains('namespace DummyApp\JsonApi\ContentNegotiators;', $content);
+            $this->assertContains("class {$class} extends BaseContentNegotiator", $content);
         }
     }
 }

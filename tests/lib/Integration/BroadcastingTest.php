@@ -17,7 +17,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration;
 
-use DummyApp\Events\ResourceEvent;
+use CloudCreativity\LaravelJsonApi\Tests\Integration\Http\Controllers\TestEvent;
 use DummyApp\Post;
 
 class BroadcastingTest extends TestCase
@@ -26,7 +26,7 @@ class BroadcastingTest extends TestCase
     public function testBroadcastWith()
     {
         $post = factory(Post::class)->create();
-        $event = new ResourceEvent('created', $post);
+        $event = new TestEvent('created', $post);
         $data = $event->broadcastWith();
 
         $this->assertSame('posts', array_get($data, 'data.type'));

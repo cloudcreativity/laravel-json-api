@@ -18,6 +18,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Adapter;
 
+use CloudCreativity\LaravelJsonApi\Codec\ChecksMediaTypes;
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\RelationshipAdapterInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\ResourceAdapterInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Queue\AsynchronousProcess;
@@ -40,6 +41,7 @@ abstract class AbstractResourceAdapter implements ResourceAdapterInterface, Stor
 
     use StoreAwareTrait,
         InvokesHooks,
+        ChecksMediaTypes,
         Concerns\GuardsFields,
         Concerns\FindsManyResources;
 
@@ -86,8 +88,9 @@ abstract class AbstractResourceAdapter implements ResourceAdapterInterface, Stor
      */
     public function create(array $document, EncodingParametersInterface $parameters)
     {
-        $resource = ResourceObject::create($document['data']);
-        $record = $this->createRecord($resource);
+        $record = $this->createRecord(
+            $resource = $this->deserialize($document)
+        );
 
         return $this->fillAndPersist($record, $resource, $parameters, false);
     }
@@ -105,7 +108,7 @@ abstract class AbstractResourceAdapter implements ResourceAdapterInterface, Stor
      */
     public function update($record, array $document, EncodingParametersInterface $parameters)
     {
-        $resource = ResourceObject::create($document['data']);
+        $resource = $this->deserialize($document, $record);
 
         return $this->fillAndPersist($record, $resource, $parameters, true) ?: $record;
     }
@@ -152,6 +155,24 @@ abstract class AbstractResourceAdapter implements ResourceAdapterInterface, Stor
         }
 
         return $relation;
+    }
+
+    /**
+     * Deserialize a resource object from a JSON API document.
+     *
+     * @param array $document
+     * @param mixed|null $record
+     * @return ResourceObject
+     */
+    protected function deserialize(array $document, $record = null): ResourceObject
+    {
+        $data = $document['data'] ?? [];
+
+        if (!is_array($data) || empty($data)) {
+            throw new \InvalidArgumentException('Expecting a JSON API document with a data member.');
+        }
+
+        return ResourceObject::create($data);
     }
 
     /**

@@ -122,6 +122,18 @@ interface ResolverInterface
     public function getAuthorizerByName($name);
 
     /**
+     * @param string $resourceType
+     * @return string
+     */
+    public function getContentNegotiatorByResourceType($resourceType);
+
+    /**
+     * @param string $name
+     * @return string
+     */
+    public function getContentNegotiatorByName($name);
+
+    /**
      * @param $type
      * @return string|null
      */

@@ -22,6 +22,8 @@ namespace CloudCreativity\LaravelJsonApi {
     use CloudCreativity\LaravelJsonApi\Utils\Helpers;
     use Psr\Http\Message\RequestInterface;
     use Psr\Http\Message\ResponseInterface;
+    use Symfony\Component\HttpFoundation\Request;
+    use Symfony\Component\HttpFoundation\Response;
 
     if (!function_exists('\CloudCreativity\LaravelJsonApi\json_decode')) {
 
@@ -49,11 +51,11 @@ namespace CloudCreativity\LaravelJsonApi {
          * body. Determining this for a response is dependent on the request method, which is why
          * the request is also required.
          *
-         * @param RequestInterface $request
-         * @param ResponseInterface $response
+         * @param RequestInterface|Request $request
+         * @param ResponseInterface|Response $response
          * @return bool
          */
-        function http_contains_body(RequestInterface $request, ResponseInterface $response = null)
+        function http_contains_body($request, $response = null)
         {
             return $response ?
                 Helpers::doesResponseHaveBody($request, $response) :
@@ -88,7 +90,8 @@ namespace {
         /**
          * Get the inbound JSON API request.
          *
-         * @return JsonApiRequest|null
+         * @return JsonApiRequest
+         * @deprecated 2.0.0 use `\JsonApi::current()`
          */
         function json_api_request() {
             return app('json-api')->request();

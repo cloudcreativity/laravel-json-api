@@ -29,11 +29,11 @@ use CloudCreativity\LaravelJsonApi\Exceptions\ExceptionParser;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use CloudCreativity\LaravelJsonApi\Http\Middleware\Authorize;
 use CloudCreativity\LaravelJsonApi\Http\Middleware\BootJsonApi;
-use CloudCreativity\LaravelJsonApi\Http\Middleware\SubstituteBindings;
+use CloudCreativity\LaravelJsonApi\Http\Middleware\NegotiateContent;
 use CloudCreativity\LaravelJsonApi\Http\Requests\JsonApiRequest;
-use CloudCreativity\LaravelJsonApi\Http\Responses\Responses;
 use CloudCreativity\LaravelJsonApi\Queue\UpdateClientProcess;
 use CloudCreativity\LaravelJsonApi\Routing\ResourceRegistrar;
+use CloudCreativity\LaravelJsonApi\Routing\Route;
 use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
 use CloudCreativity\LaravelJsonApi\View\Renderer;
 use Illuminate\Contracts\Foundation\Application;
@@ -48,9 +48,12 @@ use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Parser\ParserFactoryInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Stack\StackFactoryInterface;
 use Neomerx\JsonApi\Contracts\Factories\FactoryInterface as NeomerxFactoryInterface;
+use Neomerx\JsonApi\Contracts\Http\Headers\HeaderParametersInterface;
+use Neomerx\JsonApi\Contracts\Http\Headers\HeaderParametersParserInterface;
 use Neomerx\JsonApi\Contracts\Http\HttpFactoryInterface;
 use Neomerx\JsonApi\Contracts\Http\Query\QueryParametersParserInterface;
 use Neomerx\JsonApi\Contracts\Schema\SchemaFactoryInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -87,6 +90,7 @@ class ServiceProvider extends BaseServiceProvider
                 Console\Commands\MakeAdapter::class,
                 Console\Commands\MakeApi::class,
                 Console\Commands\MakeAuthorizer::class,
+                Console\Commands\MakeContentNegotiator::class,
                 Console\Commands\MakeResource::class,
                 Console\Commands\MakeSchema::class,
                 Console\Commands\MakeValidators::class,
@@ -119,7 +123,7 @@ class ServiceProvider extends BaseServiceProvider
     protected function bootMiddleware(Router $router)
     {
         $router->aliasMiddleware('json-api', BootJsonApi::class);
-        $router->aliasMiddleware('json-api.bindings', SubstituteBindings::class);
+        $router->aliasMiddleware('json-api.content', NegotiateContent::class);
         $router->aliasMiddleware('json-api.auth', Authorize::class);
     }
 
@@ -141,7 +145,9 @@ class ServiceProvider extends BaseServiceProvider
     protected function bootResponseMacro()
     {
         Response::macro('jsonApi', function ($api = null) {
-            return Responses::create($api);
+            return json_api($api)->getResponses()->withEncodingParameters(
+                app(EncodingParametersInterface::class)
+            );
         });
     }
 
@@ -230,6 +236,13 @@ class ServiceProvider extends BaseServiceProvider
         $this->app->singleton(JsonApiRequest::class);
         $this->app->alias(JsonApiRequest::class, 'json-api.request');
 
+        $this->app->singleton(Route::class, function (Application $app) {
+            return new Route(
+                $app->make(ResolverInterface::class),
+                $app->make('router')->current()
+            );
+        });
+
         $this->app->bind(StoreInterface::class, function () {
             return json_api()->getStore();
         });
@@ -244,6 +257,15 @@ class ServiceProvider extends BaseServiceProvider
 
         $this->app->bind(ContainerInterface::class, function () {
             return json_api()->getContainer();
+        });
+
+        $this->app->singleton(HeaderParametersInterface::class, function (Application $app) {
+            /** @var HeaderParametersParserInterface $parser */
+            $parser = $app->make(HttpFactoryInterface::class)->createHeaderParametersParser();
+            /** @var ServerRequestInterface $serverRequest */
+            $serverRequest = $app->make(ServerRequestInterface::class);
+
+            return $parser->parse($serverRequest, http_contains_body($serverRequest));
         });
 
         $this->app->singleton(EncodingParametersInterface::class, function (Application $app) {
