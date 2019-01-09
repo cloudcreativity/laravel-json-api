@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file. This projec
 
 ## Unreleased
 
+### Changed
+- [#254](https://github.com/cloudcreativity/laravel-json-api/pull/254)
+Refactored content negotiation so that multiple media types can be supported. Refer to the
+[Media Types](./docs/features/media-types.md) documentation for details.
+
 ### Removed
 - The deprecated `EloquentController` was removed - extend `JsonApiController` directly.
 - The `Store\EloquentAdapter` was removed - extend `Eloquent\AbstractAdapter` directly.
@@ -19,6 +24,15 @@ All notable changes to this project will be documented in this file. This projec
 - The previously deprecated `Eloquent\Concerns\AbstractRelation` class was removed.
 Extend `Adapter\AbstractRelationshipAdapter` and use the `Eloquent\Concerns\QueriesRelations` trait.
 - Removed the deprecated `Contracts\Utils\ConfigurableInterface` as this has not been in use for
+some time.
+- Removed the deprecated `createResourceDocumentValidator()` method from the factory.
+- Removed the following previously deprecated methods from the `TestResponse` class:
+  - `assertJsonApiResponse()`: use `jsonApi()`.
+  - `normalizeIds()` and `normalizeId()` as these are not in use by the refactored test implementation.
+- Removed the following previously deprecated methods from the JSON API service/facade:
+  - `report()`: no longer supported for access via the service.
+  - `requestOrFail()`: no longer required.
+- Removed the previously deprecated `Schema\ExtractsAttributesTrait` as it has not been used for
 some time.
 
 ## [1.0.0-beta.6] - 2019-01-03

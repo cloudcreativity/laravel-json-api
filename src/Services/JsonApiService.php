@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Copyright 2019 Cloud Creativity Limited
  *
@@ -21,14 +20,11 @@ namespace CloudCreativity\LaravelJsonApi\Services;
 use Closure;
 use CloudCreativity\LaravelJsonApi\Api\Api;
 use CloudCreativity\LaravelJsonApi\Api\Repository;
-use CloudCreativity\LaravelJsonApi\Contracts\Http\Responses\ErrorResponseInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Utils\ErrorReporterInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Http\Requests\JsonApiRequest;
 use CloudCreativity\LaravelJsonApi\LaravelJsonApi;
 use CloudCreativity\LaravelJsonApi\Routing\ResourceRegistrar;
 use CloudCreativity\LaravelJsonApi\Routing\Route;
-use Exception;
 use Illuminate\Contracts\Container\Container;
 
 /**
@@ -110,21 +106,6 @@ class JsonApiService
     }
 
     /**
-     * Get the inbound JSON API request.
-     *
-     * @return JsonApiRequest
-     * @deprecated 1.0.0 use `request`
-     */
-    public function requestOrFail()
-    {
-        if (!$request = $this->request()) {
-            throw new RuntimeException('No inbound JSON API request.');
-        }
-
-        return $request;
-    }
-
-    /**
      * Get the API that is handling the inbound HTTP request.
      *
      * @return Api|null
@@ -176,23 +157,6 @@ class JsonApiService
         /** @var ResourceRegistrar $registrar */
         $registrar = $this->container->make('json-api.registrar');
         $registrar->api($apiName, $options, $routes);
-    }
-
-    /**
-     * @param ErrorResponseInterface $response
-     * @param Exception|null $e
-     * @return void
-     * @deprecated 1.0.0
-     */
-    public function report(ErrorResponseInterface $response, Exception $e = null)
-    {
-        if (!$this->container->bound(ErrorReporterInterface::class)) {
-            return;
-        }
-
-        /** @var ErrorReporterInterface $reporter */
-        $reporter = $this->container->make(ErrorReporterInterface::class);
-        $reporter->report($response, $e);
     }
 
 }

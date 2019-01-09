@@ -392,27 +392,6 @@ class Factory extends BaseFactory implements FactoryInterface
     }
 
     /**
-     * Create a validator to check that a resource document complies with the JSON API specification.
-     *
-     * @param object $document
-     * @param string $expectedType
-     *      the expected resource type.
-     * @param string|null $expectedId
-     *      the expected resource id if updating an existing resource.
-     * @return DocumentValidatorInterface
-     * @deprecated 1.0.0 use `createNewResourceDocumentValidator` or `createExistingResourceDocumentValidator`.
-     */
-    public function createResourceDocumentValidator($document, $expectedType, $expectedId = null)
-    {
-        if ($expectedId) {
-            return $this->createExistingResourceDocumentValidator($document, $expectedType, $expectedId);
-        }
-
-        // true for client ids means the old behaviour is supported.
-        return $this->createNewResourceDocumentValidator($document, $expectedType, true);
-    }
-
-    /**
      * Create a validator to check that a relationship document complies with the JSON API specification.
      *
      * @param object $document

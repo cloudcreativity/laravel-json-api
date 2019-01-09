@@ -186,27 +186,6 @@ class TestResponse extends BaseTestResponse
     }
 
     /**
-     * Assert response is a JSON API response.
-     *
-     * @param int $statusCode
-     * @param string|null $contentType
-     * @return $this
-     * @deprecated 1.0.0 use `jsonApi`
-     */
-    public function assertJsonApiResponse(
-        $statusCode = Response::HTTP_OK,
-        $contentType = MediaTypeInterface::JSON_API_MEDIA_TYPE
-    ) {
-        $this->assertStatus($statusCode);
-
-        if ($contentType) {
-            $this->assertHeader('Content-Type', $contentType);
-        }
-
-        return $this;
-    }
-
-    /**
      * @param string[]|string|null $expected
      * @return $this
      * @deprecated 2.0.0 use assertFetchedMany() or assertFetchManyInOrder()
@@ -445,36 +424,6 @@ class TestResponse extends BaseTestResponse
     protected function expectedResourceType()
     {
         return $this->getExpectedType();
-    }
-
-    /**
-     * Normalize ids for a find many request
-     *
-     * @param array|Collection|UrlRoutable $ids
-     * @return array
-     * @deprecated 1.0.0
-     */
-    protected function normalizeIds($ids)
-    {
-        if ($ids instanceof UrlRoutable) {
-            $ids = [$ids];
-        }
-
-        return collect($ids)->map(function ($id) {
-            return $this->normalizeId($id);
-        })->values()->all();
-    }
-
-    /**
-     * @param $id
-     * @return mixed
-     * @deprecated 1.0.0
-     */
-    protected function normalizeId($id)
-    {
-        $id = ($id instanceof UrlRoutable) ? $id->getRouteKey() : $id;
-
-        return (string) $id;
     }
 
     /**

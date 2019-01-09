@@ -17,16 +17,11 @@
 
 namespace DummyApp\JsonApi\Sites;
 
-use CloudCreativity\LaravelJsonApi\Schema\ExtractsAttributesTrait;
-use CloudCreativity\LaravelJsonApi\Utils\Str;
 use DummyApp\Entities\Site;
-use InvalidArgumentException;
 use Neomerx\JsonApi\Schema\SchemaProvider;
 
 class Schema extends SchemaProvider
 {
-
-    use ExtractsAttributesTrait;
 
     /**
      * @var string
@@ -42,28 +37,24 @@ class Schema extends SchemaProvider
     ];
 
     /**
-     * @param object $resource
-     * @return mixed
+     * @param Site $resource
+     * @return string
      */
     public function getId($resource)
     {
-        if (!$resource instanceof Site) {
-            throw new InvalidArgumentException('Expecting a site object.');
-        }
-
         return $resource->getSlug();
     }
 
     /**
-     * @param $record
-     * @param $recordKey
-     * @return mixed
+     * @param Site $resource
+     * @return array
      */
-    protected function extractAttribute($record, $recordKey)
+    public function getAttributes($resource)
     {
-        $method = 'get' . Str::classify($recordKey);
-
-        return call_user_func([$record, $method]);
+        return [
+            'domain' => $resource->getDomain(),
+            'name' => $resource->getName(),
+        ];
     }
 
 }
