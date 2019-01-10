@@ -160,9 +160,9 @@ In our `Validation\AbstractValidators` class we have renamed the following two p
   
 We have also simplified our validator classes into a single class. The following classes have
 been removed:
-- `Validation\AbstractValidator`: use `Factory\Factory::createValidator()` or extend `Validation\Validator`.
-- `Validation\ResourceValidator`: use `Factory\Factory::createResourceValidator()`.
-- `Validation\QueryValidator`: use `Factory\Factory::createQueryValidator()`.
+- `Validation\AbstractValidator`: use `Factories\Factory::createValidator()` or extend `Validation\Validator`.
+- `Validation\ResourceValidator`: use `Factories\Factory::createResourceValidator()`.
+- `Validation\QueryValidator`: use `Factories\Factory::createQueryValidator()`.
 
 ## 1.0.0-beta.5 to 1.0.0-beta.6
 

@@ -76,7 +76,14 @@ class Validators extends AbstractValidators
      * @var array
      */
     protected $deleteMessages = [
-        'no_comments.accepted' => 'Cannot delete a post with comments.',
+        'accepted' => 'Cannot delete a post with :attribute.',
+    ];
+
+    /**
+     * @var array
+     */
+    protected $deleteAttributes = [
+        'no_comments' => 'comments',
     ];
 
     /**
