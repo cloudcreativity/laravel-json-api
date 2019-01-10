@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. This projec
 
 ## Unreleased
 
+### Added
+- [#271](https://github.com/cloudcreativity/laravel-json-api/issues/271)
+Can now validate delete resource requests.
+
 ### Changed
 - [#254](https://github.com/cloudcreativity/laravel-json-api/pull/254)
 Refactored content negotiation so that multiple media types can be supported. Refer to the

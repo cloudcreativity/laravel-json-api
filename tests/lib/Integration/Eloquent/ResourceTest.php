@@ -610,6 +610,21 @@ class ResourceTest extends TestCase
     }
 
     /**
+     * Test that the delete request is logically validated.
+     */
+    public function testCannotDeletePostHasComments()
+    {
+        $post = factory(Comment::class)->states('post')->create()->commentable;
+
+        $expected = [
+            'status' => '422',
+            'detail' => 'Cannot delete a post with comments.',
+        ];
+
+        $this->doDelete($post)->assertErrorStatus($expected);
+    }
+
+    /**
      * Just a helper method so that we get a type-hinted model back...
      *
      * @param bool $create

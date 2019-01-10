@@ -135,7 +135,7 @@ class Validators extends AbstractValidators
 }
 ```
 
-## Resource Object Validation
+## Modify Resource Validation
 
 Resource objects are validated using [Laravel validations](https://laravel.com/docs/validation). If any field
 fails the validation rules, a `422 Unprocessable Entity` response will be sent. JSON API errors will be included
@@ -388,7 +388,7 @@ class Validators extends AbstractValidators
 }
 ```
 
-## Relationship Validation
+## Modify Relationship Validation
 
 The JSON API specification provides relationship endpoints for modifying resource relations. To-one and to-many
 relationships can be replaced using a `PATCH` request. For to-many relationships, resources can be added
@@ -439,6 +439,164 @@ method on your validators class.
 
 Custom validation messages (on the `$messages` property) and attribute names (on the `$attribtues` property)
 are also passed to your validator.
+
+## Delete Resource Validation
+
+It is possible to add validation rules for deleting resources. This is useful if you want to prevent
+the deletion of a resource in certain circumstances - for example, if you did not want to allow API clients
+to delete posts that have comments.
+
+This validation is optional. If your validators class does not define any delete rules, the delete request
+will be allowed.
+
+### Validation Data
+
+By default we pass the resource's current field values to the delete validator, using the 
+`existingRelationships` method to work out the values of any relationships. 
+(The `existingRelationships` method is discussed above in the update resource validation section.)
+
+If a `posts` resource had a `title` and `content` attributes, given the following validators class:
+
+```php
+class Validators extends AbstractValidators
+{
+    // ...
+
+    /**
+     * @param \App\Post $record
+     * @return iterable
+     */
+    protected function existingRelationships($record): iterable
+    {
+        return [
+            'author' => [
+                'data' => [
+                    'type' => 'users',
+                    'id' => (string) $record->user->getRouteKey(),
+                ],            
+            ],
+        ];
+    }
+}
+```
+
+The validator would receive this data:
+
+```php
+[
+    "title": "posts",
+    "id": "1",
+    "title": "Hello World!",
+    "content": "...",
+    "author": [
+        "type": "users",
+        "id": "123"
+    ]
+]
+```
+
+If you wanted to use different data for validating a delete request, overload the `dataForDelete` method.
+This is shown in the next example.
+
+### Defining Rules
+
+Define delete validation rules in your validators `deleteRules` method. For example, if we wanted to
+stop a `posts` resource from being deleted if it has any comments:
+
+```php
+class Validators extends AbstractValidators
+{
+    // ...
+    
+    /**
+     * @var array
+     */
+    protected $deleteMessages = [
+        'no_comments.accepted' => 'Cannot delete a post with comments.',
+    ];
+
+    /**
+     * @param \App\Post $record
+     * @return array|null
+     */
+    protected function deleteRules($record): ?array
+    {
+        return [
+            'no_comments' => 'accepted',
+        ];
+    }
+
+    /**
+     * @param \App\Post $record
+     * @return array
+     */
+    protected function dataForDelete($record): array
+    {
+        return [
+            'no_comments' => $record->comments()->doesntExist(),
+        ];
+    }
+}
+```
+
+> Returning an empty array or `null` from the `deleteRules` validator indicates that a delete
+request does not need to be validated.
+
+### Custom Error Messages
+
+To add any custom error messages for your delete resource rules, define them on the `$deleteMessages` property.
+This is shown in the example above.
+
+Alternatively you can overload the `deleteMessages` method. Like the `deleteRules` method, this receives the
+record being deleted.
+
+### Custom Attribute Names
+
+To define any custom attribute names for delete resource validation, add them to the `$deleteAttributes`
+property on your validators.
+
+Alternatively you can overload the `deleteAttributes` method. Like the `deleteRules` method, this receives the
+record being deleted.
+
+### Conditionally Adding Rules
+
+If you need to [conditionally add rules](https://laravel.com/docs/validation#conditionally-adding-rules), you can
+do this by overloading the `delete` method. For example:
+
+```php
+class Validators extends AbstractValidators
+{
+    // ...
+    
+    /**
+     * @param \App\Post $record
+     * @return array
+     */
+    protected function dataForDelete($record): array
+    {
+        return [
+            'is_author' => \Auth::user()->is($record->author),
+            'no_comments' => $record->comments()->doesntExist(),
+        ];
+    }
+    
+    /**
+     * @param \App\Post $record
+     * @return \CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorInterface
+     */
+    public function delete($record): ValidatorInterface
+    {
+        $validator = parent::create($document);
+    
+        $validator->sometimes('no_comments', 'accepted', function ($input) use ($record) {
+            return !$input->is_author;
+        });
+        
+        return $validator;
+    }
+
+}
+```
 
 ## Query Validation
 

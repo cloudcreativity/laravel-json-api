@@ -144,6 +144,20 @@ been deprecated for some time, so are unlikely to affect your application unless
 adapters that have not been changed for some time. If in doubt, check the changelog that lists
 the removals.
 
+### Validators
+
+> The changes listed here are unlikely to affect most applications.
+
+If you have implemented the `Contracts\Validation\ValidatorFactoryInterface` interface rather than 
+extending our `Validation\AbstractValidators` class, you will need to add the `delete()` method
+to your implementation.
+
+In our `Validation\AbstractValidators` class we have renamed the following two protected methods:
+  - `createData` is now `dataForCreate`.
+  - `updateData` is now `dataForUpdate`.
+  - `createResourceValidator` is now `validatorForResource`.
+  - `createQueryValidator` is now `validatorForQuery`.
+
 ## 1.0.0-beta.5 to 1.0.0-beta.6
 
 ### Adapters

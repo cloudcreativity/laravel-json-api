@@ -446,18 +446,21 @@ class Factory extends BaseFactory implements FactoryInterface
      * @param array $rules
      * @param array $messages
      * @param array $customAttributes
+     * @param \Closure|null $callback
      * @return ValidatorInterface
      */
     public function createValidator(
         array $data,
         array $rules,
         array $messages = [],
-        array $customAttributes = []
+        array $customAttributes = [],
+        \Closure $callback = null
     ): ValidatorInterface
     {
         return new Validation\Validator(
             $this->makeValidator($data, $rules, $messages, $customAttributes),
-            $this->createErrorTranslator()
+            $this->createErrorTranslator(),
+            $callback
         );
     }
 
@@ -480,6 +483,30 @@ class Factory extends BaseFactory implements FactoryInterface
             $this->makeValidator($resource->all(), $rules, $messages, $customAttributes),
             $this->createErrorTranslator(),
             $resource
+        );
+    }
+
+    /**
+     * @param array $data
+     * @param array $rules
+     * @param array $messages
+     * @param array $customAttributes
+     * @return ValidatorInterface
+     */
+    public function createDeleteValidator(
+        array $data,
+        array $rules,
+        array $messages = [],
+        array $customAttributes = []
+    ) {
+        return $this->createValidator(
+            $data,
+            $rules,
+            $messages,
+            $customAttributes,
+            function ($key, $detail, ErrorTranslator $translator) {
+                return $translator->resourceCannotBeDeleted($detail);
+            }
         );
     }
 

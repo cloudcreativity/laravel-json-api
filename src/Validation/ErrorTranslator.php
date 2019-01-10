@@ -295,6 +295,24 @@ class ErrorTranslator
     }
 
     /**
+     * Create an error for when a resource cannot be deleted.
+     *
+     * @param string|null $detail
+     * @return ErrorInterface
+     */
+    public function resourceCannotBeDeleted(string $detail = null): ErrorInterface
+    {
+        return new Error(
+            null,
+            null,
+            Response::HTTP_UNPROCESSABLE_ENTITY,
+            $this->trans('resource_cannot_be_deleted', 'code'),
+            $this->trans('resource_cannot_be_deleted', 'title'),
+            $detail ?: $this->trans('resource_cannot_be_deleted', 'detail')
+        );
+    }
+
+    /**
      * Create an error for an invalid resource.
      *
      * @param string $path

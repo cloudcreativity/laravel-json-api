@@ -73,6 +73,13 @@ class Validators extends AbstractValidators
     ];
 
     /**
+     * @var array
+     */
+    protected $deleteMessages = [
+        'no_comments.accepted' => 'Cannot delete a post with comments.',
+    ];
+
+    /**
      * @param Post|null $record
      * @return array|mixed
      */
@@ -94,6 +101,28 @@ class Validators extends AbstractValidators
             ],
             'author.type' => 'in:users',
             'tags.*.type' => 'in:tags',
+        ];
+    }
+
+    /**
+     * @param Post $record
+     * @return array|null
+     */
+    protected function deleteRules($record): ?array
+    {
+        return [
+            'no_comments' => 'accepted',
+        ];
+    }
+
+    /**
+     * @param Post $record
+     * @return array
+     */
+    protected function dataForDelete($record): array
+    {
+        return [
+            'no_comments' => $record->comments()->doesntExist(),
         ];
     }
 
