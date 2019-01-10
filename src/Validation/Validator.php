@@ -1,20 +1,52 @@
 <?php
+/**
+ * Copyright 2019 Cloud Creativity Limited
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 namespace CloudCreativity\LaravelJsonApi\Validation;
 
+use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorInterface;
 use Illuminate\Contracts\Validation\Validator as ValidatorContract;
 use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
+use Neomerx\JsonApi\Exceptions\ErrorCollection;
 
-class Validator extends AbstractValidator
+/**
+ * Class Validator
+ *
+ * @package CloudCreativity\LaravelJsonApi
+ */
+class Validator implements ValidatorInterface
 {
 
     /**
-     * @var \Closure
+     * @var ValidatorContract
      */
-    private $callback;
+    protected $validator;
 
     /**
-     * Validator constructor.
+     * @var ErrorTranslator
+     */
+    protected $errors;
+
+    /**
+     * @var \Closure|null
+     */
+    protected $callback;
+
+    /**
+     * AbstractValidator constructor.
      *
      * @param ValidatorContract $validator
      * @param ErrorTranslator $errors
@@ -25,12 +57,87 @@ class Validator extends AbstractValidator
         ErrorTranslator $errors,
         \Closure $callback = null
     ) {
-        parent::__construct($validator, $errors);
+        $this->validator = $validator;
+        $this->errors = $errors;
         $this->callback = $callback;
     }
 
     /**
      * @inheritDoc
+     */
+    public function validate()
+    {
+        return $this->validator->validate();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function fails()
+    {
+        return $this->validator->fails();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function failed()
+    {
+        return $this->validator->failed();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function sometimes($attribute, $rules, callable $callback)
+    {
+        return $this->validator->sometimes($attribute, $rules, $callback);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function after($callback)
+    {
+        return $this->validator->after($callback);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function errors()
+    {
+        return $this->validator->errors();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getMessageBag()
+    {
+        return $this->validator->getMessageBag();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getErrors(): ErrorCollection
+    {
+        $errors = new ErrorCollection();
+
+        foreach ($this->getMessageBag()->toArray() as $key => $messages) {
+            foreach ($messages as $detail) {
+                $errors->add($this->createError($key, $detail));
+            }
+        }
+
+        return $errors;
+    }
+
+    /**
+     * @param string $key
+     * @param string $detail
+     * @return ErrorInterface
      */
     protected function createError(string $key, string $detail): ErrorInterface
     {

@@ -479,10 +479,17 @@ class Factory extends BaseFactory implements FactoryInterface
         array $messages = [],
         array $customAttributes = []
     ) {
-        return new Validation\ResourceValidator(
-            $this->makeValidator($resource->all(), $rules, $messages, $customAttributes),
-            $this->createErrorTranslator(),
-            $resource
+        return $this->createValidator(
+            $resource->all(),
+            $rules,
+            $messages,
+            $customAttributes,
+            function ($key, $detail, ErrorTranslator $translator) use ($resource) {
+                return $translator->invalidResource(
+                    $resource->pointer($key, '/data'),
+                    $detail
+                );
+            }
         );
     }
 
@@ -525,9 +532,14 @@ class Factory extends BaseFactory implements FactoryInterface
         array $messages = [],
         array $customAttributes = []
     ) {
-        return new Validation\QueryValidator(
-            $this->makeValidator($data, $rules, $messages, $customAttributes),
-            $this->createErrorTranslator()
+        return $this->createValidator(
+            $data,
+            $rules,
+            $messages,
+            $customAttributes,
+            function ($key, $detail, ErrorTranslator $translator) {
+                return $translator->invalidQueryParameter($key, $detail);
+            }
         );
     }
 

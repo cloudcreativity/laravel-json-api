@@ -12,8 +12,14 @@ Can now validate delete resource requests.
 - [#254](https://github.com/cloudcreativity/laravel-json-api/pull/254)
 Refactored content negotiation so that multiple media types can be supported. Refer to the
 [Media Types](./docs/features/media-types.md) documentation for details.
+- Simplified the validator classes into a single class: `Validators\Validator`.
 
 ### Removed
+- The following classes in the `Validation` namespace were removed as the `Validation\Validator`
+class can be used instead, or validators can be constructed via the factory instead:
+  - `AbstractValidator`
+  - `ResourceValidator`
+  - `QueryValidator`
 - The deprecated `EloquentController` was removed - extend `JsonApiController` directly.
 - The `Store\EloquentAdapter` was removed - extend `Eloquent\AbstractAdapter` directly.
 - The following previously deprecated methods/properties were removed from the `EloquentAdapter`:

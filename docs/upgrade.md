@@ -153,10 +153,16 @@ extending our `Validation\AbstractValidators` class, you will need to add the `d
 to your implementation.
 
 In our `Validation\AbstractValidators` class we have renamed the following two protected methods:
-  - `createData` is now `dataForCreate`.
-  - `updateData` is now `dataForUpdate`.
-  - `createResourceValidator` is now `validatorForResource`.
-  - `createQueryValidator` is now `validatorForQuery`.
+- `createData` is now `dataForCreate`.
+- `updateData` is now `dataForUpdate`.
+- `createResourceValidator` is now `validatorForResource`.
+- `createQueryValidator` is now `validatorForQuery`.
+  
+We have also simplified our validator classes into a single class. The following classes have
+been removed:
+- `Validation\AbstractValidator`: use `Factory\Factory::createValidator()` or extend `Validation\Validator`.
+- `Validation\ResourceValidator`: use `Factory\Factory::createResourceValidator()`.
+- `Validation\QueryValidator`: use `Factory\Factory::createQueryValidator()`.
 
 ## 1.0.0-beta.5 to 1.0.0-beta.6
 
