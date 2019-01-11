@@ -17,6 +17,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Validation;
 
+use CloudCreativity\LaravelJsonApi\Utils\Str;
 use Illuminate\Contracts\Translation\Translator;
 use Illuminate\Http\Response;
 use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
@@ -318,10 +319,20 @@ class ErrorTranslator
      * @param string $path
      * @param string|null $detail
      *      the validation message (already translated).
+     * @param array $failed
+     *      rule failure details
      * @return ErrorInterface
      */
-    public function invalidResource(string $path, ?string $detail = null): ErrorInterface
+    public function invalidResource(
+        string $path,
+        ?string $detail = null,
+        array $failed = []
+    ): ErrorInterface
     {
+        if (isset($failed['rule'])) {
+            $failed['rule'] = Str::dasherize($failed['rule']);
+        }
+
         return new Error(
             null,
             null,
@@ -329,7 +340,8 @@ class ErrorTranslator
             $this->trans('resource_invalid', 'code'),
             $this->trans('resource_invalid', 'title'),
             $detail ?: $this->trans('resource_invalid', 'detail'),
-            $this->pointer($path)
+            $this->pointer($path),
+            $failed ? compact('failed') : null
         );
     }
 

@@ -19,7 +19,9 @@ namespace CloudCreativity\LaravelJsonApi\Validation;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorInterface;
 use Illuminate\Contracts\Validation\Validator as ValidatorContract;
+use Illuminate\Http\Response;
 use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
+use Neomerx\JsonApi\Document\Error;
 use Neomerx\JsonApi\Exceptions\ErrorCollection;
 
 /**
@@ -36,11 +38,6 @@ class Validator implements ValidatorInterface
     protected $validator;
 
     /**
-     * @var ErrorTranslator
-     */
-    protected $errors;
-
-    /**
      * @var \Closure|null
      */
     protected $callback;
@@ -49,16 +46,11 @@ class Validator implements ValidatorInterface
      * AbstractValidator constructor.
      *
      * @param ValidatorContract $validator
-     * @param ErrorTranslator $errors
      * @param \Closure|null $callback
      */
-    public function __construct(
-        ValidatorContract $validator,
-        ErrorTranslator $errors,
-        \Closure $callback = null
-    ) {
+    public function __construct(ValidatorContract $validator, \Closure $callback = null)
+    {
         $this->validator = $validator;
-        $this->errors = $errors;
         $this->callback = $callback;
     }
 
@@ -123,11 +115,17 @@ class Validator implements ValidatorInterface
      */
     public function getErrors(): ErrorCollection
     {
+        $failed = $this->failed();
         $errors = new ErrorCollection();
 
-        foreach ($this->getMessageBag()->toArray() as $key => $messages) {
+        foreach ($this->errors()->messages() as $key => $messages) {
+            $failures = collect($failed[$key] ?? [])->map(function ($options, $rule) {
+                return ['rule' => $rule, 'options' => $options];
+            })->values()->reverse();
+
             foreach ($messages as $detail) {
-                $errors->add($this->createError($key, $detail));
+                $failed = $failures->pop() ?: [];
+                $errors->add($this->createError($key, $detail, $failed));
             }
         }
 
@@ -137,15 +135,23 @@ class Validator implements ValidatorInterface
     /**
      * @param string $key
      * @param string $detail
+     * @param array $failed
      * @return ErrorInterface
      */
-    protected function createError(string $key, string $detail): ErrorInterface
+    protected function createError(string $key, string $detail, array $failed): ErrorInterface
     {
         if ($fn = $this->callback) {
-            return $fn($key, $detail, $this->errors);
+            return $fn($key, $detail, $failed);
         }
 
-        return $this->errors->invalidResource($key, $detail);
+        return new Error(
+            null,
+            null,
+            '422',
+            null,
+            'Unprocessable Entity',
+            $detail
+        );
     }
 
 }

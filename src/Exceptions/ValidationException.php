@@ -18,6 +18,8 @@
 
 namespace CloudCreativity\LaravelJsonApi\Exceptions;
 
+use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorInterface;
+use CloudCreativity\LaravelJsonApi\Utils\Helpers;
 use Exception;
 use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
 use Neomerx\JsonApi\Exceptions\ErrorCollection;
@@ -32,6 +34,25 @@ class ValidationException extends JsonApiException
 {
 
     /**
+     * @var ValidatorInterface|null
+     */
+    private $validator;
+
+    /**
+     * Create a validation exception from a validator.
+     *
+     * @param ValidatorInterface $validator
+     * @return ValidationException
+     */
+    public static function create(ValidatorInterface $validator): self
+    {
+        $ex = new self($validator->getErrors());
+        $ex->validator = $validator;
+
+        return $ex;
+    }
+
+    /**
      * ValidationException constructor.
      *
      * @param ErrorInterface|ErrorInterface[]|ErrorCollection $errors
@@ -40,8 +61,18 @@ class ValidationException extends JsonApiException
      */
     public function __construct($errors, $defaultHttpCode = self::DEFAULT_HTTP_CODE, Exception $previous = null)
     {
-        $errors = MutableErrorCollection::cast($errors);
+        parent::__construct(
+            $errors,
+            Helpers::httpErrorStatus($errors, $defaultHttpCode),
+            $previous
+        );
+    }
 
-        parent::__construct($errors, $errors->getHttpStatus($defaultHttpCode), $previous);
+    /**
+     * @return ValidatorInterface|null
+     */
+    public function getValidator(): ?ValidatorInterface
+    {
+        return $this->validator;
     }
 }

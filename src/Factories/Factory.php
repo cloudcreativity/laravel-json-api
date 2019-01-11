@@ -459,7 +459,6 @@ class Factory extends BaseFactory implements FactoryInterface
     {
         return new Validation\Validator(
             $this->makeValidator($data, $rules, $messages, $customAttributes),
-            $this->createErrorTranslator(),
             $callback
         );
     }
@@ -479,15 +478,16 @@ class Factory extends BaseFactory implements FactoryInterface
         array $messages = [],
         array $customAttributes = []
     ) {
-        return $this->createValidator(
-            $resource->all(),
-            $rules,
-            $messages,
-            $customAttributes,
-            function ($key, $detail, ErrorTranslator $translator) use ($resource) {
+        $translator = $this->createErrorTranslator();
+        $validator = $this->makeValidator($resource->all(), $rules, $messages, $customAttributes);
+
+        return new Validation\Validator(
+            $validator,
+            function ($key, $detail, $failed) use ($resource, $translator) {
                 return $translator->invalidResource(
                     $resource->pointer($key, '/data'),
-                    $detail
+                    $detail,
+                    $failed
                 );
             }
         );
@@ -506,12 +506,12 @@ class Factory extends BaseFactory implements FactoryInterface
         array $messages = [],
         array $customAttributes = []
     ) {
-        return $this->createValidator(
-            $data,
-            $rules,
-            $messages,
-            $customAttributes,
-            function ($key, $detail, ErrorTranslator $translator) {
+        $validator = $this->makeValidator($data, $rules, $messages, $customAttributes);
+        $translator = $this->createErrorTranslator();
+
+        return new Validation\Validator(
+            $validator,
+            function ($key, $detail) use ($translator) {
                 return $translator->resourceCannotBeDeleted($detail);
             }
         );
@@ -532,12 +532,12 @@ class Factory extends BaseFactory implements FactoryInterface
         array $messages = [],
         array $customAttributes = []
     ) {
-        return $this->createValidator(
-            $data,
-            $rules,
-            $messages,
-            $customAttributes,
-            function ($key, $detail, ErrorTranslator $translator) {
+        $validator = $this->makeValidator($data, $rules, $messages, $customAttributes);
+        $translator = $this->createErrorTranslator();
+
+        return new Validation\Validator(
+            $validator,
+            function ($key, $detail) use ($translator) {
                 return $translator->invalidQueryParameter($key, $detail);
             }
         );
