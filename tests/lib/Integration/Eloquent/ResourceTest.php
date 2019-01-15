@@ -207,7 +207,6 @@ class ResourceTest extends TestCase
                 'meta' => [
                     'failed' => [
                         'rule' => 'string',
-                        'options' => [],
                     ],
                 ],
             ],
@@ -262,7 +261,6 @@ class ResourceTest extends TestCase
             'meta' => [
                 'failed' => [
                     'rule' => 'required',
-                    'options' => [],
                 ],
             ],
         ]);

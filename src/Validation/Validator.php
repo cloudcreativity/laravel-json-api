@@ -19,7 +19,7 @@ namespace CloudCreativity\LaravelJsonApi\Validation;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorInterface;
 use Illuminate\Contracts\Validation\Validator as ValidatorContract;
-use Illuminate\Http\Response;
+use Illuminate\Support\Collection;
 use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
 use Neomerx\JsonApi\Document\Error;
 use Neomerx\JsonApi\Exceptions\ErrorCollection;
@@ -119,12 +119,10 @@ class Validator implements ValidatorInterface
         $errors = new ErrorCollection();
 
         foreach ($this->errors()->messages() as $key => $messages) {
-            $failures = collect($failed[$key] ?? [])->map(function ($options, $rule) {
-                return ['rule' => $rule, 'options' => $options];
-            })->values()->reverse();
+            $failures = $this->createFailures($failed[$key] ?? []);
 
             foreach ($messages as $detail) {
-                $failed = $failures->pop() ?: [];
+                $failed = $failures->shift() ?: [];
                 $errors->add($this->createError($key, $detail, $failed));
             }
         }
@@ -152,6 +150,17 @@ class Validator implements ValidatorInterface
             'Unprocessable Entity',
             $detail
         );
+    }
+
+    /**
+     * @param array $failures
+     * @return Collection
+     */
+    protected function createFailures(array $failures): Collection
+    {
+        return collect($failures)->map(function ($options, $rule) {
+            return array_filter(['rule' => $rule, 'options' => $options ?: null]);
+        })->values();
     }
 
 }
