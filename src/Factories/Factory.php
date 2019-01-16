@@ -447,6 +447,7 @@ class Factory extends BaseFactory implements FactoryInterface
      * @param array $messages
      * @param array $customAttributes
      * @param \Closure|null $callback
+     *       a closure for creating an error, that will be bound to the error translator.
      * @return ValidatorInterface
      */
     public function createValidator(
@@ -457,8 +458,11 @@ class Factory extends BaseFactory implements FactoryInterface
         \Closure $callback = null
     ): ValidatorInterface
     {
+        $translator = $this->createErrorTranslator();
+
         return new Validation\Validator(
             $this->makeValidator($data, $rules, $messages, $customAttributes),
+            $translator,
             $callback
         );
     }
@@ -478,13 +482,13 @@ class Factory extends BaseFactory implements FactoryInterface
         array $messages = [],
         array $customAttributes = []
     ) {
-        $translator = $this->createErrorTranslator();
-        $validator = $this->makeValidator($resource->all(), $rules, $messages, $customAttributes);
-
-        return new Validation\Validator(
-            $validator,
-            function ($key, $detail, $failed) use ($resource, $translator) {
-                return $translator->invalidResource(
+        return $this->createValidator(
+            $resource->all(),
+            $rules,
+            $messages,
+            $customAttributes,
+            function ($key, $detail, $failed) use ($resource) {
+                return $this->invalidResource(
                     $resource->pointer($key, '/data'),
                     $detail,
                     $failed
@@ -506,13 +510,13 @@ class Factory extends BaseFactory implements FactoryInterface
         array $messages = [],
         array $customAttributes = []
     ) {
-        $validator = $this->makeValidator($data, $rules, $messages, $customAttributes);
-        $translator = $this->createErrorTranslator();
-
-        return new Validation\Validator(
-            $validator,
-            function ($key, $detail) use ($translator) {
-                return $translator->resourceCannotBeDeleted($detail);
+        return $this->createValidator(
+            $data,
+            $rules,
+            $messages,
+            $customAttributes,
+            function ($key, $detail) {
+                return $this->resourceCannotBeDeleted($detail);
             }
         );
     }
@@ -532,13 +536,13 @@ class Factory extends BaseFactory implements FactoryInterface
         array $messages = [],
         array $customAttributes = []
     ) {
-        $validator = $this->makeValidator($data, $rules, $messages, $customAttributes);
-        $translator = $this->createErrorTranslator();
-
-        return new Validation\Validator(
-            $validator,
-            function ($key, $detail) use ($translator) {
-                return $translator->invalidQueryParameter($key, $detail);
+        return $this->createValidator(
+            $data,
+            $rules,
+            $messages,
+            $customAttributes,
+            function ($key, $detail) {
+                return $this->invalidQueryParameter($key, $detail);
             }
         );
     }

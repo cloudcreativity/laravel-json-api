@@ -123,4 +123,10 @@ return [
         'detail' => 'The request query parameters are invalid.',
         'code' => '',
     ],
+
+    'failed_validator' => [
+        'title' => 'Unprocessable Entity',
+        'detail' => 'The document was well-formed but contains semantic errors.',
+        'code' => '',
+    ],
 ];

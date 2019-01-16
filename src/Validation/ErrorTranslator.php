@@ -17,11 +17,16 @@
 
 namespace CloudCreativity\LaravelJsonApi\Validation;
 
+use CloudCreativity\LaravelJsonApi\Exceptions\ValidationException;
 use CloudCreativity\LaravelJsonApi\Utils\Str;
 use Illuminate\Contracts\Translation\Translator;
+use Illuminate\Contracts\Validation\Validator as ValidatorContract;
 use Illuminate\Http\Response;
+use Illuminate\Support\Collection;
 use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
 use Neomerx\JsonApi\Document\Error;
+use Neomerx\JsonApi\Exceptions\ErrorCollection;
+use Neomerx\JsonApi\Exceptions\JsonApiException;
 
 /**
  * Class ErrorTranslator
@@ -34,7 +39,7 @@ class ErrorTranslator
     /**
      * @var Translator
      */
-    private $translator;
+    protected $translator;
 
     /**
      * ErrorTranslator constructor.
@@ -367,6 +372,73 @@ class ErrorTranslator
     }
 
     /**
+     * Create errors for a failed validator.
+     *
+     * @param ValidatorContract $validator
+     * @param \Closure|null $closure
+     *      a closure that is bound to the translator.
+     * @return ErrorCollection
+     */
+    public function failedValidator(ValidatorContract $validator, \Closure $closure = null): ErrorCollection
+    {
+        $failed = $validator->failed();
+        $errors = new ErrorCollection();
+
+        foreach ($validator->errors()->messages() as $key => $messages) {
+            $failures = $this->createValidationFailures($failed[$key] ?? []);
+
+            foreach ($messages as $detail) {
+                $failed = $failures->shift() ?: [];
+
+                if ($closure) {
+                    $errors->add($this->call($closure, $key, $detail, $failed));
+                    continue;
+                }
+
+                $errors->add(new Error(
+                    null,
+                    null,
+                    Response::HTTP_UNPROCESSABLE_ENTITY,
+                    $this->trans('failed_validator', 'code'),
+                    $this->trans('failed_validator', 'title'),
+                    $detail ?: $this->trans('failed_validator', 'detail')
+                ));
+            }
+        }
+
+        return $errors;
+    }
+
+    /**
+     * Create a JSON API exception for a failed validator.
+     *
+     * @param ValidatorContract $validator
+     * @param \Closure|null $closure
+     * @return JsonApiException
+     */
+    public function failedValidatorException(
+        ValidatorContract $validator,
+        \Closure $closure = null
+    ): JsonApiException
+    {
+        return new ValidationException(
+            $this->failedValidator($validator, $closure)
+        );
+    }
+
+    /**
+     * Create an error by calling the closure with it bound to the error translator.
+     *
+     * @param \Closure $closure
+     * @param mixed ...$args
+     * @return ErrorInterface
+     */
+    public function call(\Closure $closure, ...$args): ErrorInterface
+    {
+        return $closure->call($this, ...$args);
+    }
+
+    /**
      * Translate an error member value.
      *
      * @param string $key
@@ -402,5 +474,16 @@ class ErrorTranslator
         }
 
         return [Error::SOURCE_POINTER => $pointer];
+    }
+
+    /**
+     * @param array $failures
+     * @return Collection
+     */
+    protected function createValidationFailures(array $failures): Collection
+    {
+        return collect($failures)->map(function ($options, $rule) {
+            return array_filter(['rule' => $rule, 'options' => $options ?: null]);
+        })->values();
     }
 }

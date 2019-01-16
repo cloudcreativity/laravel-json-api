@@ -19,9 +19,6 @@ namespace CloudCreativity\LaravelJsonApi\Validation;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorInterface;
 use Illuminate\Contracts\Validation\Validator as ValidatorContract;
-use Illuminate\Support\Collection;
-use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
-use Neomerx\JsonApi\Document\Error;
 use Neomerx\JsonApi\Exceptions\ErrorCollection;
 
 /**
@@ -38,6 +35,11 @@ class Validator implements ValidatorInterface
     protected $validator;
 
     /**
+     * @var ErrorTranslator
+     */
+    protected $translator;
+
+    /**
      * @var \Closure|null
      */
     protected $callback;
@@ -46,11 +48,16 @@ class Validator implements ValidatorInterface
      * AbstractValidator constructor.
      *
      * @param ValidatorContract $validator
+     * @param ErrorTranslator $translator
      * @param \Closure|null $callback
      */
-    public function __construct(ValidatorContract $validator, \Closure $callback = null)
-    {
+    public function __construct(
+        ValidatorContract $validator,
+        ErrorTranslator $translator,
+        \Closure $callback = null
+    ) {
         $this->validator = $validator;
+        $this->translator = $translator;
         $this->callback = $callback;
     }
 
@@ -115,52 +122,7 @@ class Validator implements ValidatorInterface
      */
     public function getErrors(): ErrorCollection
     {
-        $failed = $this->failed();
-        $errors = new ErrorCollection();
-
-        foreach ($this->errors()->messages() as $key => $messages) {
-            $failures = $this->createFailures($failed[$key] ?? []);
-
-            foreach ($messages as $detail) {
-                $failed = $failures->shift() ?: [];
-                $errors->add($this->createError($key, $detail, $failed));
-            }
-        }
-
-        return $errors;
-    }
-
-    /**
-     * @param string $key
-     * @param string $detail
-     * @param array $failed
-     * @return ErrorInterface
-     */
-    protected function createError(string $key, string $detail, array $failed): ErrorInterface
-    {
-        if ($fn = $this->callback) {
-            return $fn($key, $detail, $failed);
-        }
-
-        return new Error(
-            null,
-            null,
-            '422',
-            null,
-            'Unprocessable Entity',
-            $detail
-        );
-    }
-
-    /**
-     * @param array $failures
-     * @return Collection
-     */
-    protected function createFailures(array $failures): Collection
-    {
-        return collect($failures)->map(function ($options, $rule) {
-            return array_filter(['rule' => $rule, 'options' => $options ?: null]);
-        })->values();
+        return $this->translator->failedValidator($this, $this->callback);
     }
 
 }
