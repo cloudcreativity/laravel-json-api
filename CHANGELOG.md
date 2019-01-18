@@ -14,6 +14,10 @@ Refactored content negotiation so that multiple media types can be supported. Re
 [Media Types](./docs/features/media-types.md) documentation for details.
 - Simplified the validator classes into a single class: `Validators\Validator`.
 
+### Fixed
+- [#280](https://github.com/cloudcreativity/laravel-json-api/issues/280)
+Validation error objects for relationship objects now have correct source pointers.
+
 ### Removed
 - The following classes in the `Validation` namespace were removed as the `Validation\Validator`
 class can be used instead, or validators can be constructed via the factory instead:

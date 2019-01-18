@@ -18,6 +18,7 @@
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Eloquent;
 
 use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
+use DummyApp\Country;
 use DummyApp\Post;
 use DummyApp\User;
 
@@ -298,5 +299,27 @@ class BelongsToTest extends TestCase
             'id' => $post->getKey(),
             'author_id' => $user->getKey(),
         ]);
+    }
+
+    /**
+     * @see https://github.com/cloudcreativity/laravel-json-api/issues/280
+     */
+    public function testInvalidReplace()
+    {
+        $post = factory(Post::class)->create();
+        $country = factory(Country::class)->create();
+
+        $data = ['type' => 'countries', 'id' => (string) $country->getRouteKey()];
+
+        $expected = [
+            'status' => '422',
+            'detail' => 'The selected author.type is invalid.',
+            'source' => [
+                'pointer' => '/data/type',
+            ],
+        ];
+
+        $this->doReplaceRelationship($post, 'author', $data)
+            ->assertErrorStatus($expected);
     }
 }

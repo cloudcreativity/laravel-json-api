@@ -494,6 +494,36 @@ class Factory extends BaseFactory implements FactoryInterface
     }
 
     /**
+     * Create a JSON API relationship validator.
+     *
+     * @param ResourceObject $resource
+     *      the resource object, containing only the relationship field.
+     * @param array $rules
+     * @param array $messages
+     * @param array $customAttributes
+     * @return ValidatorInterface
+     */
+    public function createRelationshipValidator(
+        ResourceObject $resource,
+        array $rules,
+        array $messages = [],
+        array $customAttributes = []
+    ) {
+        return $this->createValidator(
+            $resource->all(),
+            $rules,
+            $messages,
+            $customAttributes,
+            function ($key, $detail, ErrorTranslator $translator) use ($resource) {
+                return $translator->invalidResource(
+                    $resource->pointerForRelationship($key, '/data'),
+                    $detail
+                );
+            }
+        );
+    }
+
+    /**
      * @param array $data
      * @param array $rules
      * @param array $messages

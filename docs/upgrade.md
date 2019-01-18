@@ -155,6 +155,7 @@ to your implementation.
 In our `Validation\AbstractValidators` class we have renamed the following two protected methods:
 - `createData` is now `dataForCreate`.
 - `updateData` is now `dataForUpdate`.
+- `relationshipData` is now `dataForRelationship`.
 - `createResourceValidator` is now `validatorForResource`.
 - `createQueryValidator` is now `validatorForQuery`.
   

@@ -264,6 +264,44 @@ class ResourceObjectTest extends TestCase
         $this->assertSame($expected, $this->resource->pointer($key, '/data'));
     }
 
+    /**
+     * @return array
+     */
+    public function pointerForRelationshipProvider(): array
+    {
+        return [
+            ['author', null],
+            ['author.type', '/data/type'],
+            ['tags.0.id', '/data/0/id'],
+            ['tags', null],
+        ];
+    }
+
+    /**
+     * @param string $key
+     * @param string|null $expected
+     * @return void
+     * @dataProvider pointerForRelationshipProvider
+     */
+    public function testPointerForRelationship(string $key, ?string $expected): void
+    {
+        if (!is_null($expected)) {
+            $this->assertSame($expected, $this->resource->pointerForRelationship($key, '/foo/bar'));
+            return;
+        }
+
+        $this->assertSame('/', $this->resource->pointerForRelationship($key));
+        $this->assertSame('/data', $this->resource->pointerForRelationship($key, '/data'));
+    }
+
+    public function testPointerForRelationshipNotRelationship(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('not a relationship');
+
+        $this->resource->pointerForRelationship('title');
+    }
+
     public function testForget(): void
     {
         $expected = $this->values;
