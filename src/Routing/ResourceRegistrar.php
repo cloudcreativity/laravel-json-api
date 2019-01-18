@@ -50,6 +50,11 @@ class ResourceRegistrar
     protected $apiRepository;
 
     /**
+     * @var array
+     */
+    private $attributes;
+
+    /**
      * ResourceRegistrar constructor.
      *
      * @param Registrar $router
@@ -59,34 +64,33 @@ class ResourceRegistrar
     {
         $this->router = $router;
         $this->apiRepository = $apiRepository;
+        $this->attributes = [];
     }
 
     /**
-     * @param $apiName
-     * @param array $options
-     * @param Closure $routes
-     * @return void
+     * @param string $apiName
+     * @param array|Closure $options
+     * @param Closure|null $routes
+     * @return ApiRegistration
      */
-    public function api($apiName, array $options, Closure $routes)
+    public function api(string $apiName, $options = [], Closure $routes = null): ApiRegistration
     {
-        $api = $this->apiRepository->createApi($apiName);
-        $url = $api->getUrl();
+        if ($options instanceof Closure) {
+            $routes = $options;
+            $options = [];
+        }
 
-        $this->router->group([
-            'middleware' => ["json-api:{$apiName}"],
-            'as' => $url->getName(),
-            'prefix' => $url->getNamespace(),
-        ], function () use ($api, $options, $routes) {
-            $group = new ApiGroup($this->router, $api, $options);
+        $api = new ApiRegistration(
+            $this->router,
+            $this->apiRepository->createApi($apiName),
+            $options
+        );
 
-            $this->router->group($options, function () use ($api, $group, $routes) {
-                $routes($group, $this->router);
+        if ($routes instanceof Closure) {
+            $api->group($routes);
+        }
 
-                $this->apiRepository
-                    ->createProviders($api->getName())
-                    ->mountAll($group, $this->router);
-            });
-        });
+        return $api;
     }
 
 }

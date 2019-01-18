@@ -23,6 +23,7 @@ use CloudCreativity\LaravelJsonApi\Api\Repository;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Http\Requests\JsonApiRequest;
 use CloudCreativity\LaravelJsonApi\LaravelJsonApi;
+use CloudCreativity\LaravelJsonApi\Routing\ApiRegistration;
 use CloudCreativity\LaravelJsonApi\Routing\ResourceRegistrar;
 use CloudCreativity\LaravelJsonApi\Routing\Route;
 use Illuminate\Contracts\Container\Container;
@@ -148,15 +149,16 @@ class JsonApiService
      * Register the routes for an API.
      *
      * @param $apiName
-     * @param array $options
-     * @param Closure $routes
-     * @return void
+     * @param array|Closure $options
+     * @param Closure|null $routes
+     * @return ApiRegistration
      */
-    public function register($apiName, array $options, Closure $routes)
+    public function register($apiName, $options = [], Closure $routes = null): ApiRegistration
     {
         /** @var ResourceRegistrar $registrar */
         $registrar = $this->container->make('json-api.registrar');
-        $registrar->api($apiName, $options, $routes);
+
+        return $registrar->api($apiName, $options, $routes);
     }
 
 }

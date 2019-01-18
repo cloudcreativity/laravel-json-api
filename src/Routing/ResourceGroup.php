@@ -18,7 +18,6 @@
 
 namespace CloudCreativity\LaravelJsonApi\Routing;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
 use Illuminate\Contracts\Routing\Registrar;
 use Illuminate\Routing\Route;
 use Illuminate\Support\Fluent;
@@ -34,21 +33,14 @@ class ResourceGroup
     use RegistersResources;
 
     /**
-     * @var ResolverInterface
-     */
-    private $resolver;
-
-    /**
      * ResourceGroup constructor.
      *
      * @param string $resourceType
-     * @param ResolverInterface $resolver
      * @param Fluent $options
      */
-    public function __construct($resourceType, ResolverInterface $resolver, Fluent $options)
+    public function __construct($resourceType, Fluent $options)
     {
         $this->resourceType = $resourceType;
-        $this->resolver = $resolver;
         $this->options = $options;
     }
 

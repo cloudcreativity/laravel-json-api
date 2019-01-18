@@ -17,11 +17,9 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Auth;
 
-use CloudCreativity\LaravelJsonApi\Facades\JsonApi;
 use CloudCreativity\LaravelJsonApi\Routing\ApiGroup;
 use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
 use DummyApp\Post;
-use Illuminate\Support\Facades\Route;
 
 class AuthorizerTest extends TestCase
 {
@@ -43,13 +41,11 @@ class AuthorizerTest extends TestCase
     {
         parent::setUp();
 
-        Route::group([
-            'namespace' => 'DummyApp\\Http\\Controllers',
-        ], function () {
-            JsonApi::register('v1', ['middleware' => "json-api.auth:generic"], function (ApiGroup $api) {
+        $this->withFluentRoutes()
+            ->authorizer('generic')
+            ->group(function (ApiGroup $api) {
                 $api->resource('posts');
             });
-        });
     }
 
     public function testIndexUnauthenticated()

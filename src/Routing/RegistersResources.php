@@ -130,11 +130,7 @@ trait RegistersResources
             return null;
         }
 
-        if ($constraint = $this->options->get('async_id')) {
-            return $constraint;
-        }
-
-        return Uuid::VALID_PATTERN;
+        return $this->options->get('async_id', Uuid::VALID_PATTERN);
     }
 
     /**
@@ -158,7 +154,7 @@ trait RegistersResources
      */
     protected function hasOne()
     {
-        return $this->normalizeRelationships('has-one');
+        return $this->options['has-one'];
     }
 
     /**
@@ -166,7 +162,7 @@ trait RegistersResources
      */
     protected function hasMany()
     {
-        return $this->normalizeRelationships('has-many');
+        return $this->options['has-many'];
     }
 
     /**
@@ -226,23 +222,4 @@ trait RegistersResources
         return $defaults;
     }
 
-    /**
-     * @param $optionsKey
-     * @return array
-     */
-    private function normalizeRelationships($optionsKey)
-    {
-        $relationships = [];
-
-        foreach ((array) $this->options->get($optionsKey) as $key => $value) {
-            if (is_numeric($key)) {
-                $key = $value;
-                $value = [];
-            }
-
-            $relationships[$key] = (array) $value;
-        }
-
-        return $relationships;
-    }
 }

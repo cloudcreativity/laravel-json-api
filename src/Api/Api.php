@@ -126,6 +126,11 @@ class Api
     private $responses;
 
     /**
+     * @var array
+     */
+    private $providers;
+
+    /**
      * Api constructor.
      *
      * @param Factory $factory
@@ -138,6 +143,7 @@ class Api
      * @param bool $useEloquent
      * @param string|null $supportedExt
      * @param array $errors
+     * @param array $providers
      */
     public function __construct(
         Factory $factory,
@@ -149,7 +155,8 @@ class Api
         Jobs $jobs,
         $useEloquent = true,
         $supportedExt = null,
-        array $errors = []
+        array $errors = [],
+        array $providers = []
     ) {
         $this->factory = $factory;
         $this->resolver = $resolver;
@@ -161,6 +168,7 @@ class Api
         $this->useEloquent = $useEloquent;
         $this->supportedExt = $supportedExt;
         $this->errors = $errors;
+        $this->providers = $providers;
     }
 
     /**
@@ -410,6 +418,17 @@ class Api
     public function links()
     {
         return $this->factory->createLinkGenerator($this->url());
+    }
+
+    /**
+     * @return ResourceProviders
+     */
+    public function providers(): ResourceProviders
+    {
+        return new ResourceProviders(
+            $this->factory,
+            $this->providers
+        );
     }
 
     /**

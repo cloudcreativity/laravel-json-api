@@ -82,7 +82,7 @@ class CustomTest extends TestCase
         Route::group([
             'namespace' => 'DummyApp\\Http\\Controllers',
         ], function () {
-            JsonApi::register('v1', ['content-negotiator' => 'custom'], function (ApiGroup $api) {
+            JsonApi::register('v1')->defaultContentNegotiator('custom')->group(function (ApiGroup $api) {
                 $api->resource('avatars', ['controller' => true]);
                 $api->resource('posts');
             });
@@ -100,7 +100,7 @@ class CustomTest extends TestCase
             'namespace' => 'DummyApp\\Http\\Controllers',
         ], function () {
             JsonApi::register('v1', ['content-negotiator' => 'foobar'], function (ApiGroup $api) {
-                $api->resource('posts', ['content-negotiator' => 'custom']);
+                $api->resource('posts')->contentNegotiator('custom');
             });
         });
 

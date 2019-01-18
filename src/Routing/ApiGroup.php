@@ -63,14 +63,22 @@ class ApiGroup
      * Register routes for the supplied resource type
      *
      * @param string $resourceType
-     * @param array $options
-     * @return void
+     * @param array|\Closure $options
+     * @return ResourceRegistration
      */
-    public function resource($resourceType, array $options = [])
+    public function resource(string $resourceType, $options = []): ResourceRegistration
     {
-        $options = $this->normalizeOptions($options);
+        $resource = new ResourceRegistration(
+            $this->router,
+            $resourceType,
+            $this->normalizeOptions(is_array($options) ? $options : [])
+        );
 
-        $this->resourceGroup($resourceType, $options)->addResource($this->router);
+        if ($options instanceof \Closure) {
+            $options($resource);
+        }
+
+        return $resource;
     }
 
     /**
@@ -80,7 +88,7 @@ class ApiGroup
      */
     protected function resourceGroup($resourceType, array $options)
     {
-        return new ResourceGroup($resourceType, $this->api->getResolver(), new Fluent($options));
+        return new ResourceGroup($resourceType, new Fluent($options));
     }
 
     /**
