@@ -37,6 +37,8 @@ use Illuminate\Contracts\Routing\Registrar;
  * @method RouteRegistration namespace(string $value)
  * @method RouteRegistration prefix(string  $prefix)
  * @method RouteRegistration where(array  $where)
+ * @method RouteRegistration controller(string $controller)
+ * @method RouteRegistration field(string $field, string $inverse = null)
  */
 class RouteRegistrar
 {

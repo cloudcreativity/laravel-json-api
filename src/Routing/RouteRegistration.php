@@ -4,6 +4,7 @@ namespace CloudCreativity\LaravelJsonApi\Routing;
 
 use Illuminate\Routing\Router;
 use Illuminate\Routing\RouteRegistrar as IlluminateRegistrar;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
 /**
@@ -44,12 +45,31 @@ final class RouteRegistration extends IlluminateRegistrar
     }
 
     /**
+     * Set the controller for the route.
+     *
      * @param string $controller
      * @return $this
      */
     public function controller(string $controller): self
     {
         $this->controller = $controller;
+
+        return $this;
+    }
+
+    /**
+     * Set the route's relationship field name and inverse resource type.
+     *
+     * @param string $field
+     * @param string|null $inverse
+     * @return $this
+     */
+    public function field(string $field, string $inverse = null): self
+    {
+        $this->defaults = array_merge($this->defaults, [
+            ResourceRegistrar::PARAM_RELATIONSHIP_NAME => $field,
+            ResourceRegistrar::PARAM_RELATIONSHIP_INVERSE_TYPE => $inverse ?: Str::plural($field),
+        ]);
 
         return $this;
     }
@@ -86,6 +106,16 @@ final class RouteRegistration extends IlluminateRegistrar
     {
         $route = parent::registerRoute($method, $uri, $action);
         $route->defaults = $this->defaults;
+        $middleware = collect($route->middleware());
+
+        $negotiated = $middleware->contains(function ($m) {
+            return Str::startsWith($m, 'json-api.content');
+        });
+
+        $route->middleware($middleware->unless($negotiated, function (Collection $collection) {
+            $cn = $this->options['content-negotiator'] ?? '';
+            return $collection->prepend($cn ? "json-api.content:{$cn}" : 'json-api.content');
+        })->all());
 
         return $route;
     }
