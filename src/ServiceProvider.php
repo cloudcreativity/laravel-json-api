@@ -32,7 +32,7 @@ use CloudCreativity\LaravelJsonApi\Http\Middleware\BootJsonApi;
 use CloudCreativity\LaravelJsonApi\Http\Middleware\NegotiateContent;
 use CloudCreativity\LaravelJsonApi\Http\Requests\JsonApiRequest;
 use CloudCreativity\LaravelJsonApi\Queue\UpdateClientProcess;
-use CloudCreativity\LaravelJsonApi\Routing\ResourceRegistrar;
+use CloudCreativity\LaravelJsonApi\Routing\JsonApiRegistrar;
 use CloudCreativity\LaravelJsonApi\Routing\Route;
 use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
 use CloudCreativity\LaravelJsonApi\View\Renderer;
@@ -223,7 +223,7 @@ class ServiceProvider extends BaseServiceProvider
      */
     protected function bindRouteRegistrar()
     {
-        $this->app->alias(ResourceRegistrar::class, 'json-api.registrar');
+        $this->app->alias(JsonApiRegistrar::class, 'json-api.registrar');
     }
 
     /**

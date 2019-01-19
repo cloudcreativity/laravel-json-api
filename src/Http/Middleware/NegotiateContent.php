@@ -131,21 +131,21 @@ class NegotiateContent
     /**
      * Get the resource type that will be in the response.
      *
-     * @return string
+     * @return string|null
      */
-    protected function responseResourceType(): string
+    protected function responseResourceType(): ?string
     {
         return $this->route->getInverseResourceType() ?: $this->route->getResourceType();
     }
 
     /**
-     * @param string $resourceType
+     * @param string|null $resourceType
      * @param string|null $default
      * @return ContentNegotiatorInterface
      */
-    protected function negotiator(string $resourceType, ?string $default): ContentNegotiatorInterface
+    protected function negotiator(?string $resourceType, ?string $default): ContentNegotiatorInterface
     {
-        if ($negotiator = $this->getContainer()->getContentNegotiatorByResourceType($resourceType)) {
+        if ($resourceType && $negotiator = $this->getContainer()->getContentNegotiatorByResourceType($resourceType)) {
             return $negotiator;
         }
 

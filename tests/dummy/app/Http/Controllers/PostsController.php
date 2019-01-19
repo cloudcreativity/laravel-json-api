@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Copyright 2019 Cloud Creativity Limited
  *
@@ -16,29 +15,26 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\LaravelJsonApi\Facades;
+namespace DummyApp\Http\Controllers;
 
-use CloudCreativity\LaravelJsonApi\Routing\ApiRegistration;
-use CloudCreativity\LaravelJsonApi\Routing\Route;
-use Illuminate\Support\Facades\Facade as BaseFacade;
+use CloudCreativity\LaravelJsonApi\Http\Controllers\JsonApiController;
+use CloudCreativity\LaravelJsonApi\Http\Requests\FetchResource;
+use DummyApp\Jobs\SharePost;
+use DummyApp\Post;
+use Illuminate\Http\Response;
 
-/**
- * Class Facade
- *
- * @package CloudCreativity\LaravelJsonApi
- * @method static ApiRegistration register(string $apiName, array|\Closure $options = [], \Closure|null $callback = null)
- * @method static string defaultApi(string|null $apiName)
- * @method static Route currentRoute()
- */
-class JsonApi extends BaseFacade
+class PostsController extends JsonApiController
 {
 
     /**
-     * @return string
+     * @param FetchResource $request
+     * @param Post $post
+     * @return Response
      */
-    protected static function getFacadeAccessor()
+    public function share(FetchResource $request, Post $post): Response
     {
-        return 'json-api';
-    }
+        SharePost::dispatch($post);
 
+        return $this->reply()->content($post);
+    }
 }

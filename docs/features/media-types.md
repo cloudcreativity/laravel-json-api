@@ -447,24 +447,24 @@ placed in the `ContentNegotiators` namespace, e.g. `App\JsonApi\ContentNegotiato
 
 ### Using Content Negotiators
 
-To set the default content negotiator for your API, use the `content-negotiator` configuration option when
+To set the default content negotiator for your API, use the `defaultContentNegotiator` method when
 registering the API. For example, if we wanted to use the `json` content negotiator:
 
 ```php
-JsonApi::register('default', ['content-negotiator' => 'json'], function ($api, $router) {
+JsonApi::register('default')->defaultContentNegotiator('json')->routes(function ($api, $router) {
     $api->resource('posts');
     $api->resource('comments');
 });
 ```
 
-To use a re-usable content negotiator on specific resource types, use the `content-negotiator` configuration
-option when registering the resource. For example, if we wanted to use the `json` content negotiator only
+To use a re-usable content negotiator on specific resource types, use the `contentNegotiator` method
+when registering the resource. For example, if we wanted to use the `json` content negotiator only
 for the `posts` and `comments` resources, but not the `tags` resource:
 
  ```php
- JsonApi::register('default', [], function ($api, $router) {
-     $api->resource('posts', ['content-negotiator' => 'json']);
-     $api->resource('comments', ['content-negotiator' => 'json']);
+ JsonApi::register('default')->routes(function ($api, $router) {
+     $api->resource('posts')->contentNegotiator('json');
+     $api->resource('comments')->contentNegotiator('json');
      $api->resource('tags'); // uses the default content negotiator
  });
  ```

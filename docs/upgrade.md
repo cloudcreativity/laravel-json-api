@@ -165,6 +165,29 @@ been removed:
 - `Validation\ResourceValidator`: use `Factories\Factory::createResourceValidator()`.
 - `Validation\QueryValidator`: use `Factories\Factory::createQueryValidator()`.
 
+### Packages (Resource Providers)
+
+The method signature for the `mount` method on the `AbstractProvider` class has changed to this:
+
+```php
+/**
+ * Mount routes onto the provided API.
+ *
+ * @param \CloudCreativity\LaravelJsonApi\Routing\RouteRegistrar $api
+ * @return void
+ */
+public function mount(RouteRegistrar $api): void
+{
+    //
+}
+```
+
+> If you were previously using the second argument, check out the new documentation for adding
+custom routes to the API in the [Routing chapter.](./basics/routing.md)
+
+We have also added PHP 7 type-hinting to all other methods on the provider. (There were not many of them,
+so as we were changing the signature of one method, it made sense to change all.)
+
 ## 1.0.0-beta.5 to 1.0.0-beta.6
 
 ### Adapters
