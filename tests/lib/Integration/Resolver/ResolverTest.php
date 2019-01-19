@@ -18,7 +18,7 @@
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Resolver;
 
 use CloudCreativity\LaravelJsonApi\Facades\JsonApi;
-use CloudCreativity\LaravelJsonApi\Routing\ApiGroup;
+use CloudCreativity\LaravelJsonApi\Routing\RouteRegistrar;
 use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
 use DummyApp\JsonApi\Posts\Adapter;
 use DummyApp\Post;
@@ -50,7 +50,7 @@ class ResolverTest extends TestCase
         Route::group([
             'namespace' => 'DummyApp\\Http\\Controllers',
         ], function () {
-            JsonApi::register('v1', [], function (ApiGroup $api) {
+            JsonApi::register('v1', [], function (RouteRegistrar $api) {
                 $api->resource('foobars');
             });
         });

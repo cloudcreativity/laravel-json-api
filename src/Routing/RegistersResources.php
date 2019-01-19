@@ -31,6 +31,11 @@ trait RegistersResources
 {
 
     /**
+     * @var Registrar
+     */
+    private $router;
+
+    /**
      * @var string
      */
     private $resourceType;
@@ -86,16 +91,15 @@ trait RegistersResources
     }
 
     /**
-     * @param Registrar $router
-     * @param $method
-     * @param $uri
-     * @param $action
+     * @param string $method
+     * @param string $uri
+     * @param array $action
      * @return Route
      */
-    private function createRoute(Registrar $router, $method, $uri, $action): Route
+    private function createRoute(string $method, string $uri, array $action): Route
     {
         /** @var Route $route */
-        $route = $router->{$method}($uri, $action);
+        $route = $this->router->{$method}($uri, $action);
         $route->defaults(ResourceRegistrar::PARAM_RESOURCE_TYPE, $this->resourceType);
 
         if ($idConstraint = $this->idConstraint($uri)) {

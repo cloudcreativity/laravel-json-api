@@ -18,7 +18,7 @@
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Auth;
 
 use CloudCreativity\LaravelJsonApi\Facades\JsonApi;
-use CloudCreativity\LaravelJsonApi\Routing\ApiGroup;
+use CloudCreativity\LaravelJsonApi\Routing\RouteRegistrar;
 use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -116,7 +116,7 @@ class AuthTest extends TestCase
         ], function () {
             JsonApi::register('v1', [
                 'middleware' => 'auth',
-            ], function (ApiGroup $api) {
+            ], function (RouteRegistrar $api) {
                 $api->resource('posts');
             });
         });
@@ -138,7 +138,7 @@ class AuthTest extends TestCase
         Route::group([
             'namespace' => 'DummyApp\\Http\\Controllers',
         ], function () {
-            JsonApi::register('v1', [], function (ApiGroup $api) {
+            JsonApi::register('v1', [], function (RouteRegistrar $api) {
                 $api->resource('posts');
                 $api->resource('comments', [
                     'middleware' => 'auth',

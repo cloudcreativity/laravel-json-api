@@ -147,10 +147,10 @@ final class ApiRegistration
     /**
      * @param \Closure $callback
      */
-    public function group(\Closure $callback): void
+    public function routes(\Closure $callback): void
     {
         $this->routes->group($this->attributes(), function () use ($callback) {
-            $group = new ApiGroup($this->routes, $this->options());
+            $group = new RouteRegistrar($this->routes, $this->options());
             $callback($group, $this->routes);
             $this->api->providers()->mountAll($group, $this->routes);
         });

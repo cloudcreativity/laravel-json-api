@@ -17,7 +17,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Auth;
 
-use CloudCreativity\LaravelJsonApi\Routing\ApiGroup;
+use CloudCreativity\LaravelJsonApi\Routing\RouteRegistrar;
 use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
 use DummyApp\Post;
 
@@ -43,7 +43,7 @@ class AuthorizerTest extends TestCase
 
         $this->withFluentRoutes()
             ->authorizer('generic')
-            ->group(function (ApiGroup $api) {
+            ->routes(function (RouteRegistrar $api) {
                 $api->resource('posts');
             });
     }

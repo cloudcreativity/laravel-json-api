@@ -18,6 +18,7 @@
 namespace DummyApp\Http\Controllers;
 
 use CloudCreativity\LaravelJsonApi\Http\Controllers\JsonApiController;
+use CloudCreativity\LaravelJsonApi\Http\Requests\FetchResource;
 use DummyApp\Jobs\SharePost;
 use DummyApp\Post;
 use Illuminate\Http\Response;
@@ -25,8 +26,12 @@ use Illuminate\Http\Response;
 class PostsController extends JsonApiController
 {
 
-
-    public function share(Post $post): Response
+    /**
+     * @param FetchResource $request
+     * @param Post $post
+     * @return Response
+     */
+    public function share(FetchResource $request, Post $post): Response
     {
         SharePost::dispatch($post);
 

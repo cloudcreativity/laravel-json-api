@@ -20,7 +20,7 @@ namespace CloudCreativity\LaravelJsonApi\Api;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
 use CloudCreativity\LaravelJsonApi\Resolver\NamespaceResolver;
-use CloudCreativity\LaravelJsonApi\Routing\ApiGroup;
+use CloudCreativity\LaravelJsonApi\Routing\RouteRegistrar;
 use Illuminate\Contracts\Routing\Registrar;
 
 /**
@@ -50,11 +50,11 @@ abstract class AbstractProvider
     /**
      * Mount routes onto the provided API.
      *
-     * @param ApiGroup $api
+     * @param RouteRegistrar $api
      * @param Registrar $router
      * @return void
      */
-    abstract public function mount(ApiGroup $api, Registrar $router);
+    abstract public function mount(RouteRegistrar $api, Registrar $router);
 
     /**
      * @return string

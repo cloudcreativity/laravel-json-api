@@ -3,7 +3,7 @@
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\ContentNegotiation;
 
 use CloudCreativity\LaravelJsonApi\Facades\JsonApi;
-use CloudCreativity\LaravelJsonApi\Routing\ApiGroup;
+use CloudCreativity\LaravelJsonApi\Routing\RouteRegistrar;
 use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
 use DummyApp\Avatar;
 use DummyApp\Post;
@@ -82,7 +82,7 @@ class CustomTest extends TestCase
         Route::group([
             'namespace' => 'DummyApp\\Http\\Controllers',
         ], function () {
-            JsonApi::register('v1')->defaultContentNegotiator('custom')->group(function (ApiGroup $api) {
+            JsonApi::register('v1')->defaultContentNegotiator('custom')->routes(function (RouteRegistrar $api) {
                 $api->resource('avatars', ['controller' => true]);
                 $api->resource('posts');
             });
@@ -99,7 +99,7 @@ class CustomTest extends TestCase
         Route::group([
             'namespace' => 'DummyApp\\Http\\Controllers',
         ], function () {
-            JsonApi::register('v1', ['content-negotiator' => 'foobar'], function (ApiGroup $api) {
+            JsonApi::register('v1', ['content-negotiator' => 'foobar'], function (RouteRegistrar $api) {
                 $api->resource('posts')->contentNegotiator('custom');
             });
         });

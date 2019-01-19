@@ -23,11 +23,11 @@ use Illuminate\Routing\Route;
 use Illuminate\Support\Str;
 
 /**
- * Class RelationshipsGroup
+ * Class RelationshipsRegistrar
  *
  * @package CloudCreativity\LaravelJsonApi
  */
-final class RelationshipsGroup implements \IteratorAggregate
+final class RelationshipsRegistrar implements \IteratorAggregate
 {
 
     private const METHODS = [
@@ -49,25 +49,26 @@ final class RelationshipsGroup implements \IteratorAggregate
     use RegistersResources;
 
     /**
-     * RelationshipsGroup constructor.
+     * RelationshipsRegistrar constructor.
      *
+     * @param Registrar $router
      * @param string $resourceType
      * @param array $options
      */
-    public function __construct(string $resourceType, array $options = [])
+    public function __construct(Registrar $router, string $resourceType, array $options = [])
     {
+        $this->router = $router;
         $this->resourceType = $resourceType;
         $this->options = $options;
     }
 
     /**
-     * @param Registrar $router
      * @return void
      */
-    public function register(Registrar $router): void
+    public function register(): void
     {
         foreach ($this as $relationship => $options) {
-            $this->add($router, $relationship, $options);
+            $this->add($relationship, $options);
         }
     }
 
@@ -104,34 +105,31 @@ final class RelationshipsGroup implements \IteratorAggregate
     }
 
     /**
-     * @param Registrar $router
      * @param string $field
      * @param array $options
      * @return void
      */
-    private function add(Registrar $router, string $field, array $options): void
+    private function add(string $field, array $options): void
     {
         $inverse = $this->options['inverse'] ?? Str::plural($field);
 
-        $router->group([], function (Registrar $router) use ($field, $options, $inverse) {
+        $this->router->group([], function () use ($field, $options, $inverse) {
             foreach ($options['actions'] as $action) {
-                $this->route($router, $field, $action, $inverse);
+                $this->route($field, $action, $inverse);
             }
         });
     }
 
     /**
-     * @param Registrar $router
      * @param string $field
      * @param string $action
      * @param string $inverse
      *      the inverse resource type
      * @return Route
      */
-    private function route(Registrar $router, string $field, string $action, string $inverse): Route
+    private function route(string $field, string $action, string $inverse): Route
     {
         $route = $this->createRoute(
-            $router,
             $this->methodForAction($action),
             $this->urlForAction($field, $action),
             $this->actionForRoute($field, $action)

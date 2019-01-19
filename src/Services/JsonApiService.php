@@ -24,7 +24,7 @@ use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Http\Requests\JsonApiRequest;
 use CloudCreativity\LaravelJsonApi\LaravelJsonApi;
 use CloudCreativity\LaravelJsonApi\Routing\ApiRegistration;
-use CloudCreativity\LaravelJsonApi\Routing\ResourceRegistrar;
+use CloudCreativity\LaravelJsonApi\Routing\JsonApiRegistrar;
 use CloudCreativity\LaravelJsonApi\Routing\Route;
 use Illuminate\Contracts\Container\Container;
 
@@ -155,7 +155,7 @@ class JsonApiService
      */
     public function register($apiName, $options = [], Closure $routes = null): ApiRegistration
     {
-        /** @var ResourceRegistrar $registrar */
+        /** @var JsonApiRegistrar $registrar */
         $registrar = $this->container->make('json-api.registrar');
 
         return $registrar->api($apiName, $options, $routes);

@@ -16,9 +16,9 @@
  */
 
 use CloudCreativity\LaravelJsonApi\Facades\JsonApi;
-use CloudCreativity\LaravelJsonApi\Routing\ApiGroup;
+use CloudCreativity\LaravelJsonApi\Routing\RouteRegistrar;
 
-JsonApi::register('v1', [], function (ApiGroup $api) {
+JsonApi::register('v1', [], function (RouteRegistrar $api) {
 
     $api->resource('avatars', ['controller' => true]);
 

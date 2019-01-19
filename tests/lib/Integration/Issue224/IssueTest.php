@@ -18,7 +18,7 @@
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Issue224;
 
 use CloudCreativity\LaravelJsonApi\Facades\JsonApi;
-use CloudCreativity\LaravelJsonApi\Routing\ApiGroup;
+use CloudCreativity\LaravelJsonApi\Routing\RouteRegistrar;
 use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
 use DummyApp\JsonApi\Users\Adapter;
 use DummyApp\User;
@@ -50,7 +50,7 @@ class IssueTest extends TestCase
         Route::group([
             'namespace' => 'DummyApp\\Http\\Controllers',
         ], function () {
-            JsonApi::register('v1', [], function (ApiGroup $api) {
+            JsonApi::register('v1', [], function (RouteRegistrar $api) {
                 $api->resource('endUsers');
             });
         });

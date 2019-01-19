@@ -52,6 +52,13 @@ final class ResourceRegistration implements Arrayable
     private $relationships;
 
     /**
+     * Custom routes.
+     *
+     * @var \Closure|null
+     */
+    private $routes;
+
+    /**
      * @var bool
      */
     private $registered;
@@ -197,6 +204,17 @@ final class ResourceRegistration implements Arrayable
     }
 
     /**
+     * @param \Closure $routes
+     * @return $this
+     */
+    public function routes(\Closure $routes): self
+    {
+        $this->routes = $routes;
+
+        return $this;
+    }
+
+    /**
      * @inheritDoc
      */
     public function toArray()
@@ -211,7 +229,7 @@ final class ResourceRegistration implements Arrayable
     {
         $this->registered = true;
 
-        $group = new ResourceGroup($this->resourceType, $this->toArray());
+        $group = new ResourceRegistrar($this->router, $this->resourceType, $this->toArray(), $this->routes);
         $group->register($this->router);
     }
 

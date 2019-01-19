@@ -2,10 +2,9 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration;
 
-use CloudCreativity\LaravelJsonApi\Routing\ApiGroup;
+use CloudCreativity\LaravelJsonApi\Routing\RouteRegistrar;
 use DummyApp\Jobs\SharePost;
 use DummyApp\Post;
-use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Queue;
 
 class CustomRoutesTest extends TestCase
@@ -30,12 +29,10 @@ class CustomRoutesTest extends TestCase
 
         Queue::fake();
 
-        $this->withFluentRoutes()->group(function (ApiGroup $api, Router $router) {
-            $router->get('/posts/{record}/share', 'PostsController@share')
-                ->middleware('json-api.content')
-                ->defaults('resource_type', 'posts');
-
-            $api->resource('posts');
+        $this->withFluentRoutes()->routes(function (RouteRegistrar $api) {
+            $api->resource('posts')->controller()->routes(function (RouteRegistrar $router) {
+                $router->post('{record}/share', 'share');
+            });
         });
     }
 
@@ -44,7 +41,7 @@ class CustomRoutesTest extends TestCase
         $post = factory(Post::class)->create();
         $uri = url('/api/v1/posts', [$post, 'share']);
 
-        $this->getJsonApi($uri, ['include' => 'author'])
+        $this->postJsonApi($uri, ['include' => 'author'])
             ->assertFetchedOne($post)
             ->assertIsIncluded('users', $post->author);
 
@@ -55,7 +52,7 @@ class CustomRoutesTest extends TestCase
 
     public function testNotFound(): void
     {
-        $this->getJsonApi('/api/v1/posts/999/share')->assertErrorStatus([
+        $this->postJsonApi('/api/v1/posts/999/share')->assertErrorStatus([
             'status' => '404',
             'title' => 'Not Found',
         ]);
@@ -71,8 +68,22 @@ class CustomRoutesTest extends TestCase
         $post = factory(Post::class)->create();
         $uri = url('/api/v1/posts', [$post, 'share']);
 
-        $this->get($uri, ['Accept' => 'application/json'])
+        $this->post($uri, [], ['Accept' => 'application/json'])
             ->assertStatus(406)
             ->assertExactJson($expected);
+    }
+
+    public function testValidated(): void
+    {
+        $post = factory(Post::class)->create();
+        $uri = url('/api/v1/posts', [$post, 'share']);
+
+        $expected = [
+            'status' => '400',
+            'source' => ['parameter' => 'include'],
+        ];
+
+        $this->postJsonApi($uri, ['include' => 'foo'])
+            ->assertErrorStatus($expected);
     }
 }

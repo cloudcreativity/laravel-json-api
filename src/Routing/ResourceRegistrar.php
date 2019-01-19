@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Copyright 2019 Cloud Creativity Limited
  *
@@ -18,9 +17,10 @@
 
 namespace CloudCreativity\LaravelJsonApi\Routing;
 
-use Closure;
-use CloudCreativity\LaravelJsonApi\Api\Repository;
 use Illuminate\Contracts\Routing\Registrar;
+use Illuminate\Routing\Route;
+use Illuminate\Support\Str;
+use Ramsey\Uuid\Uuid;
 
 /**
  * Class ResourceRegistrar
@@ -39,58 +39,286 @@ final class ResourceRegistrar
     const PARAM_PROCESS_TYPE = 'process_type';
     const PARAM_PROCESS_ID = 'process';
 
-    /**
-     * @var Registrar
-     */
-    protected $router;
+    const METHODS = [
+        'index' => 'get',
+        'create' => 'post',
+        'read' => 'get',
+        'update' => 'patch',
+        'delete' => 'delete',
+    ];
+
+    use RegistersResources;
 
     /**
-     * @var Repository
+     * @var \Closure|null
      */
-    protected $apiRepository;
+    private $group;
 
     /**
-     * @var array
-     */
-    private $attributes;
-
-    /**
-     * ResourceRegistrar constructor.
+     * ResourceGroup constructor.
      *
      * @param Registrar $router
-     * @param Repository $apiRepository
+     * @param string $resourceType
+     * @param array $options
+     * @param \Closure|null $group
      */
-    public function __construct(Registrar $router, Repository $apiRepository)
+    public function __construct(Registrar $router, string $resourceType, array $options = [], \Closure $group = null)
     {
         $this->router = $router;
-        $this->apiRepository = $apiRepository;
-        $this->attributes = [];
+        $this->resourceType = $resourceType;
+        $this->options = $options;
+        $this->group = $group;
     }
 
     /**
-     * @param string $apiName
-     * @param array|Closure $options
-     * @param Closure|null $routes
-     * @return ApiRegistration
+     * @return void
      */
-    public function api(string $apiName, $options = [], Closure $routes = null): ApiRegistration
+    public function register(): void
     {
-        if ($options instanceof Closure) {
-            $routes = $options;
-            $options = [];
-        }
+        $this->router->group($this->attributes(), function () {
+            /** Custom routes */
+            $this->registerCustom();
 
-        $api = new ApiRegistration(
-            $this->router,
-            $this->apiRepository->createApi($apiName),
-            $options
-        );
+            /** Async process routes */
+            if ($this->hasAsync()) {
+                $this->registerProcesses();
+            }
 
-        if ($routes instanceof Closure) {
-            $api->group($routes);
-        }
+            /** Primary resource routes. */
+            $this->router->group([], function () {
+                $this->registerResource();
+            });
 
-        return $api;
+            /** Resource relationship routes */
+            $this->registerRelationships();
+        });
     }
 
+    /**
+     * @return void
+     */
+    private function registerResource(): void
+    {
+        foreach ($this->resourceActions() as $action) {
+            $this->routeForResource($action);
+        }
+    }
+
+    /**
+     * @return void
+     */
+    private function registerRelationships(): void
+    {
+        (new RelationshipsRegistrar($this->router, $this->resourceType, $this->options))
+            ->register();
+    }
+
+    /**
+     * Register custom routes.
+     *
+     * @return void
+     */
+    public function registerCustom(): void
+    {
+        if (!$fn = $this->group) {
+            return;
+        }
+
+        $this->router->group([], function () use ($fn) {
+            $fn(new RouteRegistrar(
+                $this->router,
+                ['controller' => $this->controller()],
+                [self::PARAM_RESOURCE_TYPE => $this->resourceType]
+            ));
+        });
+    }
+
+    /**
+     * Add routes for async processes.
+     *
+     * @return void
+     */
+    private function registerProcesses(): void
+    {
+        $this->routeForProcess(
+            'get',
+            $this->baseProcessUrl(),
+            $this->actionForRoute('processes')
+        );
+
+        $this->routeForProcess(
+            'get',
+            $this->processUrl(),
+            $this->actionForRoute('process')
+        );
+    }
+
+    /**
+     * @return string
+     */
+    private function contentNegotiation(): string
+    {
+        $cn = $this->options['content-negotiator'] ?? null;
+
+        return $cn ? "json-api.content:{$cn}" : 'json-api.content';
+    }
+
+    /**
+     * @return array
+     */
+    private function attributes(): array
+    {
+        return [
+            'middleware' => $this->middleware(),
+            'as' => "{$this->resourceType}.",
+            'prefix' => $this->resourceType,
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    private function middleware(): array
+    {
+        return collect($this->contentNegotiation())
+            ->merge($this->options['middleware'] ?? [])
+            ->all();
+    }
+
+    /**
+     * @return array
+     */
+    private function resourceActions(): array
+    {
+        return $this->diffActions(['index', 'create', 'read', 'update', 'delete'], $this->options);
+    }
+
+    /**
+     * @return bool
+     */
+    private function hasAsync(): bool
+    {
+        return $this->options['async'] ?? false;
+    }
+
+    /**
+     * @return string
+     */
+    private function baseProcessUrl(): string
+    {
+        return '/' . $this->processType();
+    }
+
+    /**
+     * @return string
+     */
+    private function processUrl(): string
+    {
+        return $this->baseProcessUrl() . '/' . $this->processIdParameter();
+    }
+
+    /**
+     * @return string
+     */
+    private function processIdParameter(): string
+    {
+        return '{' . ResourceRegistrar::PARAM_PROCESS_ID . '}';
+    }
+
+    /**
+     * @return string
+     */
+    private function processType(): string
+    {
+        return $this->options['processes'] ?? ResourceRegistrar::KEYWORD_PROCESSES;
+    }
+
+    /**
+     * @param string $uri
+     * @return string|null
+     */
+    private function idConstraintForProcess(string $uri): ?string
+    {
+        if (!Str::contains($uri, $this->processIdParameter())) {
+            return null;
+        }
+
+        return $this->options['async_id'] ?? Uuid::VALID_PATTERN;
+    }
+
+    /**
+     * @param string $method
+     * @param string $uri
+     * @param array $action
+     * @return Route
+     */
+    private function routeForProcess(string $method, string $uri, array $action): Route
+    {
+        /** @var Route $route */
+        $route = $this->router->{$method}($uri, $action);
+        $route->defaults(ResourceRegistrar::PARAM_RESOURCE_TYPE, $this->resourceType);
+        $route->defaults(ResourceRegistrar::PARAM_PROCESS_TYPE, $this->processType());
+
+        if ($constraint = $this->idConstraintForProcess($uri)) {
+            $route->where(ResourceRegistrar::PARAM_PROCESS_ID, $constraint);
+        }
+
+        return $route;
+    }
+
+    /**
+     * @param string $action
+     * @return Route
+     */
+    private function routeForResource(string $action): Route
+    {
+        return $this->createRoute(
+            $this->methodForAction($action),
+            $this->urlForAction($action),
+            $this->actionForRoute($action)
+        );
+    }
+
+    /**
+     * @param string $action
+     * @return string
+     */
+    private function urlForAction(string $action): string
+    {
+        if (in_array($action, ['index', 'create'], true)) {
+            return $this->baseUrl();
+        }
+
+        return $this->resourceUrl();
+    }
+
+    /**
+     * @param string $action
+     * @return string
+     */
+    private function methodForAction(string $action): string
+    {
+        return self::METHODS[$action];
+    }
+
+    /**
+     * @param string $action
+     * @return array
+     */
+    private function actionForRoute(string $action): array
+    {
+        return [
+            'uses' => $this->controllerAction($action),
+            'as' => $action,
+        ];
+    }
+
+    /**
+     * @param string $action
+     * @return string
+     */
+    private function controllerAction(string $action): string
+    {
+        return sprintf('%s@%s', $this->controller(), $action);
+    }
 }
