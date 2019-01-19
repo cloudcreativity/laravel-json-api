@@ -135,7 +135,7 @@ class CustomRoutesTest extends TestCase
 
     public function testRelationship(): void
     {
-        $comment = factory(Comment::class)->state('post')->create();
+        $comment = factory(Comment::class)->states('post')->create();
         $post = $comment->commentable;
         $uri = url('/api/v1/comments', [$comment, 'post', 'share']);
 
@@ -163,7 +163,7 @@ class CustomRoutesTest extends TestCase
             . "according to the Accept headers sent in the request."
         ];
 
-        $comment = factory(Comment::class)->state('post')->create();
+        $comment = factory(Comment::class)->states('post')->create();
         $uri = url('/api/v1/comments', [$comment, 'post', 'share']);
 
         $this->post($uri, [], ['Accept' => 'application/json'])
@@ -173,7 +173,7 @@ class CustomRoutesTest extends TestCase
 
     public function testRelationshipValidated(): void
     {
-        $comment = factory(Comment::class)->state('post')->create();
+        $comment = factory(Comment::class)->states('post')->create();
         $uri = url('/api/v1/comments', [$comment, 'post', 'share']);
 
         $expected = [

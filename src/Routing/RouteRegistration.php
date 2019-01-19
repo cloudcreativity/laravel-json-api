@@ -1,10 +1,25 @@
 <?php
+/**
+ * Copyright 2019 Cloud Creativity Limited
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 namespace CloudCreativity\LaravelJsonApi\Routing;
 
+use Illuminate\Routing\Route;
 use Illuminate\Routing\Router;
 use Illuminate\Routing\RouteRegistrar as IlluminateRegistrar;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
 /**
@@ -79,10 +94,9 @@ final class RouteRegistration extends IlluminateRegistrar
      */
     public function match($methods, $uri, $action = null)
     {
-        $route = parent::match($methods, $uri, $action);
-        $route->defaults = $this->defaults;
-
-        return $route;
+        return $this->setupRoute(
+            parent::match($methods, $uri, $action)
+        );
     }
 
     /**
@@ -104,20 +118,9 @@ final class RouteRegistration extends IlluminateRegistrar
      */
     protected function registerRoute($method, $uri, $action = null)
     {
-        $route = parent::registerRoute($method, $uri, $action);
-        $route->defaults = $this->defaults;
-        $middleware = collect($route->middleware());
-
-        $negotiated = $middleware->contains(function ($m) {
-            return Str::startsWith($m, 'json-api.content');
-        });
-
-        $route->middleware($middleware->unless($negotiated, function (Collection $collection) {
-            $cn = $this->options['content-negotiator'] ?? '';
-            return $collection->prepend($cn ? "json-api.content:{$cn}" : 'json-api.content');
-        })->all());
-
-        return $route;
+        return $this->setupRoute(
+            parent::registerRoute($method, $uri, $action)
+        );
     }
 
     /**
@@ -133,5 +136,26 @@ final class RouteRegistration extends IlluminateRegistrar
         }
 
         return $action;
+    }
+
+    /**
+     * @param Route $route
+     * @return Route
+     */
+    private function setupRoute(Route $route): Route
+    {
+        $route->defaults = $this->defaults;
+
+        /** If there is no resource type, we need to prepend content negotiation. */
+        if (!isset($this->defaults[ResourceRegistrar::PARAM_RESOURCE_TYPE])) {
+            $cn = $this->options['content-negotiator'] ?? '';
+            $cn = $cn ? "json-api.content:{$cn}" : 'json-api.content';
+
+            $route->middleware(
+                collect($route->middleware())->prepend($cn)->unique()->all()
+            );
+        }
+
+        return $route;
     }
 }
