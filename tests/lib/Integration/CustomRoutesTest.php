@@ -30,7 +30,7 @@ class CustomRoutesTest extends TestCase
 
         Queue::fake();
 
-        $this->withRoutes(function (ApiGroup $api, Router $router) {
+        $this->withFluentRoutes()->group(function (ApiGroup $api, Router $router) {
             $router->get('/posts/{record}/share', 'PostsController@share')
                 ->middleware('json-api.content')
                 ->defaults('resource_type', 'posts');

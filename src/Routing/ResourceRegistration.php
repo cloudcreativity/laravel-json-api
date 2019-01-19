@@ -1,14 +1,34 @@
 <?php
+/**
+ * Copyright 2019 Cloud Creativity Limited
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 namespace CloudCreativity\LaravelJsonApi\Routing;
 
+use CloudCreativity\LaravelJsonApi\Utils\Str;
 use Illuminate\Contracts\Routing\Registrar;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Fluent;
 use Ramsey\Uuid\Uuid;
 
-class ResourceRegistration implements Arrayable
+/**
+ * Class ResourceRegistration
+ *
+ * @package CloudCreativity\LaravelJsonApi
+ */
+final class ResourceRegistration implements Arrayable
 {
 
     /**
@@ -27,14 +47,9 @@ class ResourceRegistration implements Arrayable
     private $options;
 
     /**
-     * @var array
+     * @var RelationshipsRegistration
      */
-    private $hasOne;
-
-    /**
-     * @var array
-     */
-    private $hasMany;
+    private $relationships;
 
     /**
      * @var bool
@@ -52,10 +67,20 @@ class ResourceRegistration implements Arrayable
     {
         $this->router = $router;
         $this->resourceType = $resourceType;
-        $this->options = collect($options)->forget(['has-one', 'has-many'])->all();
-        $this->hasOne = $this->normalizeRelationships($options['has-one'] ?? null);
-        $this->hasMany = $this->normalizeRelationships($options['has-many'] ?? null);
         $this->registered = false;
+
+        $this->options = collect($options)
+            ->forget(['has-one', 'has-many'])
+            ->all();
+
+        if (isset($options['controller']) && true === $options['controller']) {
+            $this->controller();
+        }
+
+        $this->relationships = new RelationshipsRegistration(
+            $options['has-one'] ?? null,
+            $options['has-many'] ?? null
+        );
     }
 
     /**
@@ -91,7 +116,7 @@ class ResourceRegistration implements Arrayable
      */
     public function controller(string $controller = ''): self
     {
-        $this->options['controller'] = $controller ?: true;
+        $this->options['controller'] = $controller ?: Str::classify($this->resourceType) . 'Controller';
 
         return $this;
     }
@@ -109,7 +134,7 @@ class ResourceRegistration implements Arrayable
 
     /**
      * @param string|null $constraint
-     * @return ResourceRegistration
+     * @return $this
      */
     public function id(?string $constraint): self
     {
@@ -120,7 +145,7 @@ class ResourceRegistration implements Arrayable
 
     /**
      * @param string ...$actions
-     * @return ResourceRegistration
+     * @return $this
      */
     public function only(string ...$actions): self
     {
@@ -131,7 +156,7 @@ class ResourceRegistration implements Arrayable
 
     /**
      * @param string ...$actions
-     * @return ResourceRegistration
+     * @return $this
      */
     public function except(string ...$actions): self
     {
@@ -141,7 +166,7 @@ class ResourceRegistration implements Arrayable
     }
 
     /**
-     * @return ResourceRegistration
+     * @return $this
      */
     public function readOnly(): self
     {
@@ -149,35 +174,14 @@ class ResourceRegistration implements Arrayable
     }
 
     /**
-     * @param string $field
-     * @param string|null $inverse
-     * @return RelationshipRegistration
+     * @param \Closure $closure
+     * @return $this
      */
-    public function hasOne(string $field, string $inverse = null): RelationshipRegistration
+    public function relationships(\Closure $closure): self
     {
-        $rel = $this->hasOne[$field] ?? new RelationshipRegistration();
+        $closure($this->relationships);
 
-        if ($inverse) {
-            $rel->inverse($inverse);
-        }
-
-        return $this->hasOne[$field] = $rel;
-    }
-
-    /**
-     * @param string $field
-     * @param string|null $inverse
-     * @return RelationshipRegistration
-     */
-    public function hasMany(string $field, string $inverse = null): RelationshipRegistration
-    {
-        $rel = $this->hasMany[$field] ?? new RelationshipRegistration();
-
-        if ($inverse) {
-            $rel->inverse($inverse);
-        }
-
-        return $this->hasMany[$field] = $rel;
+        return $this;
     }
 
     /**
@@ -197,11 +201,7 @@ class ResourceRegistration implements Arrayable
      */
     public function toArray()
     {
-        $options = $this->options;
-        $options['has-one'] = collect($this->hasOne)->toArray();
-        $options['has-many'] = collect($this->hasMany)->toArray();
-
-        return $options;
+        return collect($this->options)->merge($this->relationships)->all();
     }
 
     /**
@@ -211,8 +211,8 @@ class ResourceRegistration implements Arrayable
     {
         $this->registered = true;
 
-        $group = new ResourceGroup($this->resourceType, new Fluent($this->toArray()));
-        $group->addResource($this->router);
+        $group = new ResourceGroup($this->resourceType, $this->toArray());
+        $group->register($this->router);
     }
 
     /**
@@ -223,22 +223,6 @@ class ResourceRegistration implements Arrayable
         if (!$this->registered) {
             $this->register();
         }
-    }
-
-    /**
-     * @param $value
-     * @return array
-     */
-    private function normalizeRelationships($value): array
-    {
-        return collect(Arr::wrap($value ?: []))->mapWithKeys(function ($value, $key) {
-            if (is_numeric($key)) {
-                $key = $value;
-                $value = [];
-            }
-
-            return [$key => new RelationshipRegistration(Arr::wrap($value))];
-        })->all();
     }
 
 }

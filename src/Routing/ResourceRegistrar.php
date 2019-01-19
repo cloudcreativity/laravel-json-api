@@ -27,7 +27,7 @@ use Illuminate\Contracts\Routing\Registrar;
  *
  * @package CloudCreativity\LaravelJsonApi
  */
-class ResourceRegistrar
+final class ResourceRegistrar
 {
 
     const KEYWORD_RELATIONSHIPS = 'relationships';

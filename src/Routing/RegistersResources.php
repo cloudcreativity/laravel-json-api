@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Copyright 2019 Cloud Creativity Limited
  *
@@ -18,13 +17,10 @@
 
 namespace CloudCreativity\LaravelJsonApi\Routing;
 
-use ArrayAccess;
 use CloudCreativity\LaravelJsonApi\Http\Controllers\JsonApiController;
-use CloudCreativity\LaravelJsonApi\Utils\Str;
 use Illuminate\Contracts\Routing\Registrar;
 use Illuminate\Routing\Route;
-use Illuminate\Support\Fluent;
-use Ramsey\Uuid\Uuid;
+use Illuminate\Support\Str;
 
 /**
  * Class RegistersResources
@@ -37,17 +33,17 @@ trait RegistersResources
     /**
      * @var string
      */
-    protected $resourceType;
+    private $resourceType;
 
     /**
-     * @var Fluent
+     * @var array
      */
-    protected $options;
+    private $options;
 
     /**
      * @return string
      */
-    protected function baseUrl()
+    private function baseUrl(): string
     {
         return '/';
     }
@@ -55,114 +51,38 @@ trait RegistersResources
     /**
      * @return string
      */
-    protected function resourceUrl()
+    private function resourceUrl(): string
     {
-        return sprintf('%s/{%s}', $this->baseUrl(), ResourceRegistrar::PARAM_RESOURCE_ID);
+        return $this->baseUrl() . '/' . $this->resourceIdParameter();
     }
 
     /**
      * @return string
      */
-    protected function baseProcessUrl(): string
+    private function resourceIdParameter(): string
     {
-        return '/' . $this->processType();
-    }
-
-    /**
-     * @return string
-     */
-    protected function processUrl(): string
-    {
-        return sprintf('%s/{%s}', $this->baseProcessUrl(), ResourceRegistrar::PARAM_PROCESS_ID);
-    }
-
-    /**
-     * @return string
-     */
-    protected function processType(): string
-    {
-        return $this->options->get('processes') ?: ResourceRegistrar::KEYWORD_PROCESSES;
-    }
-
-    /**
-     * @param string $relationship
-     * @return string
-     */
-    protected function relatedUrl($relationship)
-    {
-        return sprintf('%s/%s', $this->resourceUrl(), $relationship);
-    }
-
-    /**
-     * @param $relationship
-     * @return string
-     */
-    protected function relationshipUrl($relationship)
-    {
-        return sprintf(
-            '%s/%s/%s',
-            $this->resourceUrl(),
-            ResourceRegistrar::KEYWORD_RELATIONSHIPS,
-            $relationship
-        );
+        return '{' . ResourceRegistrar::PARAM_RESOURCE_ID . '}';
     }
 
     /**
      * @param string $url
      * @return string|null
      */
-    protected function idConstraint($url)
+    private function idConstraint($url): ?string
     {
-        if ($this->baseUrl() === $url) {
+        if (!Str::contains($url, $this->resourceIdParameter())) {
             return null;
         }
 
-        return $this->options->get('id');
-    }
-
-    /**
-     * @param string $uri
-     * @return string|null
-     */
-    protected function idConstraintForProcess(string $uri): ?string
-    {
-        if ($this->baseProcessUrl() === $uri) {
-            return null;
-        }
-
-        return $this->options->get('async_id', Uuid::VALID_PATTERN);
+        return $this->options['id'] ?? null;
     }
 
     /**
      * @return string
      */
-    protected function controller()
+    private function controller(): string
     {
-        if (is_string($controller = $this->options->get('controller'))) {
-            return $controller;
-        }
-
-        if (true !== $controller) {
-            return $this->options['controller'] = '\\' . JsonApiController::class;
-        }
-
-        return $this->options['controller'] = Str::classify($this->resourceType) . 'Controller';
-    }
-
-    /**
-     * @return array
-     */
-    protected function hasOne()
-    {
-        return $this->options['has-one'];
-    }
-
-    /**
-     * @return array
-     */
-    protected function hasMany()
-    {
-        return $this->options['has-many'];
+        return $this->options['controller'] ?? '\\' . JsonApiController::class;
     }
 
     /**
@@ -172,7 +92,7 @@ trait RegistersResources
      * @param $action
      * @return Route
      */
-    protected function createRoute(Registrar $router, $method, $uri, $action)
+    private function createRoute(Registrar $router, $method, $uri, $action): Route
     {
         /** @var Route $route */
         $route = $router->{$method}($uri, $action);
@@ -186,37 +106,16 @@ trait RegistersResources
     }
 
     /**
-     * @param Registrar $router
-     * @param $method
-     * @param $uri
-     * @param $action
-     * @return Route
-     */
-    protected function createProcessRoute(Registrar $router, $method, $uri, $action): Route
-    {
-        /** @var Route $route */
-        $route = $router->{$method}($uri, $action);
-        $route->defaults(ResourceRegistrar::PARAM_RESOURCE_TYPE, $this->resourceType);
-        $route->defaults(ResourceRegistrar::PARAM_PROCESS_TYPE, $this->processType());
-
-        if ($constraint = $this->idConstraintForProcess($uri)) {
-            $route->where(ResourceRegistrar::PARAM_PROCESS_ID, $constraint);
-        }
-
-        return $route;
-    }
-
-    /**
      * @param array $defaults
-     * @param array|ArrayAccess $options
+     * @param array $options
      * @return array
      */
-    protected function diffActions(array $defaults, $options)
+    private function diffActions(array $defaults, array $options): array
     {
-        if (isset($options['only'])) {
-            return array_intersect($defaults, (array) $options['only']);
-        } elseif (isset($options['except'])) {
-            return array_diff($defaults, (array) $options['except']);
+        if ($only = $options['only'] ?? null) {
+            return collect($defaults)->intersect($only)->all();
+        } elseif ($except = $options['except'] ?? null) {
+            return collect($defaults)->diff($except)->all();
         }
 
         return $defaults;

@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Copyright 2019 Cloud Creativity Limited
  *
@@ -20,15 +19,24 @@ namespace CloudCreativity\LaravelJsonApi\Routing;
 
 use Illuminate\Contracts\Routing\Registrar;
 use Illuminate\Routing\Route;
-use Illuminate\Support\Fluent;
+use Illuminate\Support\Str;
+use Ramsey\Uuid\Uuid;
 
 /**
  * Class ResourceGroup
  *
  * @package CloudCreativity\LaravelJsonApi
  */
-class ResourceGroup
+final class ResourceGroup
 {
+
+    const METHODS = [
+        'index' => 'get',
+        'create' => 'post',
+        'read' => 'get',
+        'update' => 'patch',
+        'delete' => 'delete',
+    ];
 
     use RegistersResources;
 
@@ -36,9 +44,9 @@ class ResourceGroup
      * ResourceGroup constructor.
      *
      * @param string $resourceType
-     * @param Fluent $options
+     * @param array $options
      */
-    public function __construct($resourceType, Fluent $options)
+    public function __construct(string $resourceType, array $options = [])
     {
         $this->resourceType = $resourceType;
         $this->options = $options;
@@ -46,27 +54,82 @@ class ResourceGroup
 
     /**
      * @param Registrar $router
+     * @return void
      */
-    public function addResource(Registrar $router)
+    public function register(Registrar $router): void
     {
-        $router->group($this->groupAction(), function (Registrar $router) {
+        $router->group($this->attributes(), function (Registrar $router) {
             /** Async process routes */
-            $this->addProcessRoutes($router);
+            if ($this->hasAsync()) {
+                $this->registerProcesses($router);
+            }
 
             /** Primary resource routes. */
             $router->group([], function ($router) {
-                $this->addResourceRoutes($router);
+                $this->registerResource($router);
             });
 
             /** Resource relationship routes */
-            $this->addRelationshipRoutes($router);
+            $this->registerRelationships($router);
         });
+    }
+
+    /**
+     * @param Registrar $router
+     * @return void
+     */
+    private function registerResource(Registrar $router): void
+    {
+        foreach ($this->resourceActions() as $action) {
+            $this->routeForResource($router, $action);
+        }
+    }
+
+    /**
+     * @param Registrar $router
+     * @return void
+     */
+    private function registerRelationships(Registrar $router): void
+    {
+        (new RelationshipsGroup($this->resourceType, $this->options))->register($router);
+    }
+
+    /**
+     * Add routes for async processes.
+     *
+     * @param Registrar $router
+     */
+    private function registerProcesses(Registrar $router): void
+    {
+        $this->routeForProcess(
+            $router,
+            'get',
+            $this->baseProcessUrl(),
+            $this->actionForRoute('processes')
+        );
+
+        $this->routeForProcess(
+            $router,
+            'get',
+            $this->processUrl(),
+            $this->actionForRoute('process')
+        );
+    }
+
+    /**
+     * @return string
+     */
+    private function contentNegotiation(): string
+    {
+        $cn = $this->options['content-negotiator'] ?? null;
+
+        return $cn ? "json-api.content:{$cn}" : 'json-api.content';
     }
 
     /**
      * @return array
      */
-    protected function groupAction()
+    private function attributes(): array
     {
         return [
             'middleware' => $this->middleware(),
@@ -78,97 +141,115 @@ class ResourceGroup
     /**
      * @return array
      */
-    protected function middleware()
+    private function middleware(): array
     {
-        $cn = $this->options->get('content-negotiator');
-
-        return collect([
-            $cn ? "json-api.content:{$cn}" : 'json-api.content',
-        ])->merge(
-            (array) $this->options->get('middleware')
-        )->all();
-    }
-
-    /**
-     * @param Registrar $router
-     */
-    protected function addResourceRoutes(Registrar $router)
-    {
-        foreach ($this->resourceActions() as $action) {
-            $this->resourceRoute($router, $action);
-        }
+        return collect($this->contentNegotiation())
+            ->merge($this->options['middleware'] ?? [])
+            ->all();
     }
 
     /**
      * @return array
      */
-    protected function resourceActions()
+    private function resourceActions(): array
     {
         return $this->diffActions(['index', 'create', 'read', 'update', 'delete'], $this->options);
     }
 
     /**
-     * @param Registrar $router
+     * @return bool
      */
-    protected function addRelationshipRoutes(Registrar $router)
+    private function hasAsync(): bool
     {
-        $this->relationshipsGroup()->addRelationships($router);
+        return $this->options['async'] ?? false;
     }
 
     /**
-     * @return RelationshipsGroup
+     * @return string
      */
-    protected function relationshipsGroup()
+    private function baseProcessUrl(): string
     {
-        return new RelationshipsGroup($this->resourceType, $this->options);
+        return '/' . $this->processType();
     }
 
     /**
-     * Add routes for async processes.
-     *
-     * @param Registrar $router
+     * @return string
      */
-    protected function addProcessRoutes(Registrar $router): void
+    private function processUrl(): string
     {
-        if (true !== $this->options->get('async')) {
-            return;
+        return $this->baseProcessUrl() . '/' . $this->processIdParameter();
+    }
+
+    /**
+     * @return string
+     */
+    private function processIdParameter(): string
+    {
+        return '{' . ResourceRegistrar::PARAM_PROCESS_ID . '}';
+    }
+
+    /**
+     * @return string
+     */
+    private function processType(): string
+    {
+        return $this->options['processes'] ?? ResourceRegistrar::KEYWORD_PROCESSES;
+    }
+
+    /**
+     * @param string $uri
+     * @return string|null
+     */
+    private function idConstraintForProcess(string $uri): ?string
+    {
+        if (!Str::contains($uri, $this->processIdParameter())) {
+            return null;
         }
 
-        $this->createProcessRoute(
-            $router,
-            'get',
-            $this->baseProcessUrl(),
-            $this->routeAction('processes')
-        );
-
-        $this->createProcessRoute(
-            $router,
-            'get',
-            $this->processUrl(),
-            $this->routeAction('process')
-        );
+        return $this->options['async_id'] ?? Uuid::VALID_PATTERN;
     }
 
     /**
      * @param Registrar $router
-     * @param $action
+     * @param string $method
+     * @param string $uri
+     * @param array $action
      * @return Route
      */
-    protected function resourceRoute(Registrar $router, $action)
+    private function routeForProcess(Registrar $router, string $method, string $uri, array $action): Route
+    {
+        /** @var Route $route */
+        $route = $router->{$method}($uri, $action);
+        $route->defaults(ResourceRegistrar::PARAM_RESOURCE_TYPE, $this->resourceType);
+        $route->defaults(ResourceRegistrar::PARAM_PROCESS_TYPE, $this->processType());
+
+        if ($constraint = $this->idConstraintForProcess($uri)) {
+            $route->where(ResourceRegistrar::PARAM_PROCESS_ID, $constraint);
+        }
+
+        return $route;
+    }
+
+    /**
+     * @param Registrar $router
+     * @param string $action
+     * @return Route
+     */
+    private function routeForResource(Registrar $router, string $action): Route
     {
         return $this->createRoute(
             $router,
-            $this->routeMethod($action),
-            $this->routeUrl($action),
-            $this->routeAction($action)
+            $this->methodForAction($action),
+            $this->urlForAction($action),
+            $this->actionForRoute($action)
         );
     }
 
     /**
-     * @param $action
+     * @param string $action
      * @return string
      */
-    protected function routeUrl($action)
+    private function urlForAction(string $action): string
     {
         if (in_array($action, ['index', 'create'], true)) {
             return $this->baseUrl();
@@ -178,10 +259,19 @@ class ResourceGroup
     }
 
     /**
-     * @param $action
+     * @param string $action
+     * @return string
+     */
+    private function methodForAction(string $action): string
+    {
+        return self::METHODS[$action];
+    }
+
+    /**
+     * @param string $action
      * @return array
      */
-    protected function routeAction($action)
+    private function actionForRoute(string $action): array
     {
         return [
             'uses' => $this->controllerAction($action),
@@ -190,27 +280,10 @@ class ResourceGroup
     }
 
     /**
-     * @param $action
+     * @param string $action
      * @return string
      */
-    protected function routeMethod($action)
-    {
-        $methods = [
-            'index' => 'get',
-            'create' => 'post',
-            'read' => 'get',
-            'update' => 'patch',
-            'delete' => 'delete',
-        ];
-
-        return $methods[$action];
-    }
-
-    /**
-     * @param $action
-     * @return string
-     */
-    protected function controllerAction($action)
+    private function controllerAction(string $action): string
     {
         return sprintf('%s@%s', $this->controller(), $action);
     }

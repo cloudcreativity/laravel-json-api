@@ -18,28 +18,43 @@
 
 namespace CloudCreativity\LaravelJsonApi\Routing;
 
-use Generator;
 use Illuminate\Contracts\Routing\Registrar;
 use Illuminate\Routing\Route;
-use Illuminate\Support\Fluent;
+use Illuminate\Support\Str;
 
 /**
  * Class RelationshipsGroup
  *
  * @package CloudCreativity\LaravelJsonApi
  */
-class RelationshipsGroup
+final class RelationshipsGroup implements \IteratorAggregate
 {
+
+    private const METHODS = [
+        'related' => 'get',
+        'read' => 'get',
+        'replace' => 'patch',
+        'add' => 'post',
+        'remove' => 'delete',
+    ];
+
+    private const CONTROLLER_ACTIONS = [
+        'related' => 'readRelatedResource',
+        'read' => 'readRelationship',
+        'replace' => 'replaceRelationship',
+        'add' => 'addToRelationship',
+        'remove' => 'removeFromRelationship',
+    ];
 
     use RegistersResources;
 
     /**
      * RelationshipsGroup constructor.
      *
-     * @param $resourceType
-     * @param Fluent $options
+     * @param string $resourceType
+     * @param array $options
      */
-    public function __construct($resourceType, Fluent $options)
+    public function __construct(string $resourceType, array $options = [])
     {
         $this->resourceType = $resourceType;
         $this->options = $options;
@@ -49,57 +64,17 @@ class RelationshipsGroup
      * @param Registrar $router
      * @return void
      */
-    public function addRelationships(Registrar $router)
+    public function register(Registrar $router): void
     {
-        foreach ($this->relationships() as $relationship => $options) {
-            $this->addRelationship($router, $relationship, $options);
+        foreach ($this as $relationship => $options) {
+            $this->add($router, $relationship, $options);
         }
     }
 
     /**
-     * @param Registrar $router
-     * @param $name
-     * @param array $options
-     * @return void
+     * @inheritDoc
      */
-    protected function addRelationship(Registrar $router, $name, array $options)
-    {
-        $inverse = isset($options['inverse']) ? $options['inverse'] : str_plural($name);
-
-        $router->group([], function (Registrar $router) use ($name, $options, $inverse) {
-            foreach ($options['actions'] as $action) {
-                $this->relationshipRoute($router, $name, $action, $inverse);
-            }
-        });
-    }
-
-    /**
-     * @param Registrar $router
-     * @param $relationship
-     * @param $action
-     * @param $inverse
-     *      the inverse resource type
-     * @return Route
-     */
-    protected function relationshipRoute(Registrar $router, $relationship, $action, $inverse)
-    {
-        $route = $this->createRoute(
-            $router,
-            $this->routeMethod($action),
-            $this->routeUrl($relationship, $action),
-            $this->routeAction($relationship, $action)
-        );
-
-        $route->defaults(ResourceRegistrar::PARAM_RELATIONSHIP_NAME, $relationship);
-        $route->defaults(ResourceRegistrar::PARAM_RELATIONSHIP_INVERSE_TYPE, $inverse);
-
-        return $route;
-    }
-
-    /**
-     * @return Generator
-     */
-    protected function relationships()
+    public function getIterator()
     {
         foreach ($this->hasOne() as $hasOne => $options) {
             $options['actions'] = $this->hasOneActions($options);
@@ -113,10 +88,66 @@ class RelationshipsGroup
     }
 
     /**
+     * @return array
+     */
+    private function hasOne(): array
+    {
+        return $this->options['has-one'] ?? [];
+    }
+
+    /**
+     * @return array
+     */
+    private function hasMany(): array
+    {
+        return $this->options['has-many'] ?? [];
+    }
+
+    /**
+     * @param Registrar $router
+     * @param string $field
+     * @param array $options
+     * @return void
+     */
+    private function add(Registrar $router, string $field, array $options): void
+    {
+        $inverse = $this->options['inverse'] ?? Str::plural($field);
+
+        $router->group([], function (Registrar $router) use ($field, $options, $inverse) {
+            foreach ($options['actions'] as $action) {
+                $this->route($router, $field, $action, $inverse);
+            }
+        });
+    }
+
+    /**
+     * @param Registrar $router
+     * @param string $field
+     * @param string $action
+     * @param string $inverse
+     *      the inverse resource type
+     * @return Route
+     */
+    private function route(Registrar $router, string $field, string $action, string $inverse): Route
+    {
+        $route = $this->createRoute(
+            $router,
+            $this->methodForAction($action),
+            $this->urlForAction($field, $action),
+            $this->actionForRoute($field, $action)
+        );
+
+        $route->defaults(ResourceRegistrar::PARAM_RELATIONSHIP_NAME, $field);
+        $route->defaults(ResourceRegistrar::PARAM_RELATIONSHIP_INVERSE_TYPE, $inverse);
+
+        return $route;
+    }
+
+    /**
      * @param array $options
      * @return array
      */
-    protected function hasOneActions(array $options)
+    private function hasOneActions(array $options): array
     {
         return $this->diffActions(['related', 'read', 'replace'], $options);
     }
@@ -125,63 +156,65 @@ class RelationshipsGroup
      * @param array $options
      * @return array
      */
-    protected function hasManyActions(array $options)
+    private function hasManyActions(array $options): array
     {
         return $this->diffActions(['related', 'read', 'replace', 'add', 'remove'], $options);
     }
 
     /**
-     * @param $action
+     * @param string $relationship
      * @return string
      */
-    protected function routeMethod($action)
+    private function relatedUrl($relationship): string
     {
-        $methods = [
-            'related' => 'get',
-            'read' => 'get',
-            'replace' => 'patch',
-            'add' => 'post',
-            'remove' => 'delete',
-        ];
-
-        return $methods[$action];
+        return sprintf('%s/%s', $this->resourceUrl(), $relationship);
     }
 
     /**
      * @param $relationship
-     * @param $action
      * @return string
      */
-    protected function routeUrl($relationship, $action)
+    private function relationshipUrl($relationship): string
+    {
+        return sprintf(
+            '%s/%s/%s',
+            $this->resourceUrl(),
+            ResourceRegistrar::KEYWORD_RELATIONSHIPS,
+            $relationship
+        );
+    }
+
+    /**
+     * @param string $action
+     * @return string
+     */
+    private function methodForAction(string $action): string
+    {
+        return self::METHODS[$action];
+    }
+
+    /**
+     * @param string $field
+     * @param string $action
+     * @return string
+     */
+    private function urlForAction(string $field, string $action): string
     {
         if ('related' === $action) {
-            return $this->relatedUrl($relationship);
+            return $this->relatedUrl($field);
         }
 
-        return $this->relationshipUrl($relationship);
+        return $this->relationshipUrl($field);
     }
 
     /**
-     * @param $relationship
-     * @param $action
-     * @return array
-     */
-    protected function routeAction($relationship, $action)
-    {
-        return [
-            'as' => $this->routeName($relationship, $action),
-            'uses' => $this->controllerAction($action),
-        ];
-    }
-
-    /**
-     * @param $relationship
-     * @param $action
+     * @param string $field
+     * @param string $action
      * @return string
      */
-    protected function routeName($relationship, $action)
+    private function nameForAction(string $field, string $action): string
     {
-        $name = "relationships.{$relationship}";
+        $name = "relationships.{$field}";
 
         if ('related' !== $action) {
             $name .= ".{$action}";
@@ -191,19 +224,24 @@ class RelationshipsGroup
     }
 
     /**
-     * @param $action
+     * @param string $field
+     * @param string $action
+     * @return array
+     */
+    private function actionForRoute(string $field, string $action): array
+    {
+        return [
+            'as' => $this->nameForAction($field, $action),
+            'uses' => $this->controllerAction($action),
+        ];
+    }
+
+    /**
+     * @param string $action
      * @return string
      */
-    protected function controllerAction($action)
+    private function controllerAction(string $action): string
     {
-        $methods = [
-            'related' => 'readRelatedResource',
-            'read' => 'readRelationship',
-            'replace' => 'replaceRelationship',
-            'add' => 'addToRelationship',
-            'remove' => 'removeFromRelationship',
-        ];
-
-        return sprintf('%s@%s', $this->controller(), $methods[$action]);
+        return sprintf('%s@%s', $this->controller(), self::CONTROLLER_ACTIONS[$action]);
     }
 }

@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Copyright 2019 Cloud Creativity Limited
  *
@@ -18,16 +17,14 @@
 
 namespace CloudCreativity\LaravelJsonApi\Routing;
 
-use CloudCreativity\LaravelJsonApi\Api\Api;
 use Illuminate\Contracts\Routing\Registrar;
-use Illuminate\Support\Fluent;
 
 /**
  * Class ApiGroup
  *
  * @package CloudCreativity\LaravelJsonApi
  */
-class ApiGroup
+final class ApiGroup
 {
 
     /**
@@ -36,12 +33,7 @@ class ApiGroup
     private $router;
 
     /**
-     * @var Api
-     */
-    private $api;
-
-    /**
-     * @var Fluent
+     * @var array
      */
     private $options;
 
@@ -49,69 +41,28 @@ class ApiGroup
      * ApiGroup constructor.
      *
      * @param Registrar $router
-     * @param Api $api
      * @param array $options
      */
-    public function __construct(Registrar $router, Api $api, array $options)
+    public function __construct(Registrar $router, array $options = [])
     {
         $this->router = $router;
-        $this->api = $api;
-        $this->options = new Fluent($options);
+        $this->options = $options;
     }
 
     /**
      * Register routes for the supplied resource type
      *
      * @param string $resourceType
-     * @param array|\Closure $options
+     * @param array $options
      * @return ResourceRegistration
      */
-    public function resource(string $resourceType, $options = []): ResourceRegistration
+    public function resource(string $resourceType, array $options = []): ResourceRegistration
     {
-        $resource = new ResourceRegistration(
+        return new ResourceRegistration(
             $this->router,
             $resourceType,
-            $this->normalizeOptions(is_array($options) ? $options : [])
+            array_merge($this->options, $options)
         );
-
-        if ($options instanceof \Closure) {
-            $options($resource);
-        }
-
-        return $resource;
-    }
-
-    /**
-     * @param $resourceType
-     * @param array $options
-     * @return ResourceGroup
-     */
-    protected function resourceGroup($resourceType, array $options)
-    {
-        return new ResourceGroup($resourceType, new Fluent($options));
-    }
-
-    /**
-     * @param array $resourceOptions
-     * @return array
-     */
-    protected function normalizeOptions(array $resourceOptions)
-    {
-        return array_merge($this->resourceDefaults(), $resourceOptions);
-    }
-
-    /**
-     * @return array
-     */
-    protected function resourceDefaults()
-    {
-        return [
-            'content-negotiator' => $this->options->get('content-negotiator'),
-            'default-authorizer' => $this->options->get('authorizer'),
-            'processes' => $this->api->getJobs()->getResource(),
-            'prefix' => $this->api->getUrl()->getNamespace(),
-            'id' => $this->options->get('id'),
-        ];
     }
 
 }

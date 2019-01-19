@@ -19,7 +19,7 @@ namespace CloudCreativity\LaravelJsonApi\Tests\Integration;
 
 use CloudCreativity\LaravelJsonApi\Http\Controllers\JsonApiController;
 use CloudCreativity\LaravelJsonApi\Routing\ApiGroup;
-use CloudCreativity\LaravelJsonApi\Routing\ResourceRegistration;
+use CloudCreativity\LaravelJsonApi\Routing\RelationshipsRegistration;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Route;
@@ -101,10 +101,10 @@ class RoutingTest extends TestCase
     public function testFluentDefaults($method, $url, $action)
     {
         $this->withFluentRoutes()->group(function (ApiGroup $api) {
-            $api->resource('posts', function (ResourceRegistration $posts) {
-                $posts->hasOne('author');
-                $posts->hasMany('tags');
-                $posts->hasMany('comments');
+            $api->resource('posts')->relationships(function (RelationshipsRegistration $rel) {
+                $rel->hasOne('author');
+                $rel->hasMany('tags');
+                $rel->hasMany('comments');
             });
         });
 
@@ -141,11 +141,11 @@ class RoutingTest extends TestCase
     public function testFluentControllerIsTrue($method, $url, $action)
     {
         $this->withRoutes(function (ApiGroup $api) {
-            $api->resource('posts', function (ResourceRegistration $posts) {
-                $posts->hasOne('author');
-                $posts->hasMany('tags');
-                $posts->hasMany('comments');
-            })->controller();
+            $api->resource('posts')->controller()->relationships(function (RelationshipsRegistration $rel) {
+                $rel->hasOne('author');
+                $rel->hasMany('tags');
+                $rel->hasMany('comments');
+            });
         });
 
         $expected = '\DummyApp\Http\Controllers\PostsController';
@@ -185,11 +185,11 @@ class RoutingTest extends TestCase
         $expected = '\Foo\Bar';
 
         $this->withRoutes(function (ApiGroup $api) use ($expected) {
-            $api->resource('posts', function (ResourceRegistration $posts) {
-                $posts->hasOne('author');
-                $posts->hasMany('tags');
-                $posts->hasMany('comments');
-            })->controller($expected);
+            $api->resource('posts')->controller($expected)->relationships(function (RelationshipsRegistration $rel) {
+                $rel->hasOne('author');
+                $rel->hasMany('tags');
+                $rel->hasMany('comments');
+            });
         });
 
         $this->assertMatch($method, $url, $expected . $action);
@@ -368,9 +368,9 @@ class RoutingTest extends TestCase
     {
         $only = Arr::wrap($only);
 
-        $this->withRoutes(function (ApiGroup $api) use ($only) {
-            $api->resource('posts', function (ResourceRegistration $posts) use ($only) {
-                $posts->hasOne('author')->only(...$only);
+        $this->withFluentRoutes()->group(function (ApiGroup $api) use ($only) {
+            $api->resource('posts')->relationships(function (RelationshipsRegistration $rel) use ($only) {
+                $rel->hasOne('author')->only(...$only);
             });
         });
 
@@ -431,8 +431,8 @@ class RoutingTest extends TestCase
         $except = Arr::wrap($except);
 
         $this->withRoutes(function (ApiGroup $api) use ($except) {
-            $api->resource('posts', function (ResourceRegistration $posts) use ($except) {
-                $posts->hasOne('author')->except(...$except);
+            $api->resource('posts')->relationships(function (RelationshipsRegistration $rel) use ($except) {
+                $rel->hasOne('author')->except(...$except);
             });
         });
 
@@ -506,8 +506,8 @@ class RoutingTest extends TestCase
         $only = Arr::wrap($only);
 
         $this->withRoutes(function (ApiGroup $api) use ($only) {
-            $api->resource('posts', function (ResourceRegistration $posts) use ($only) {
-                $posts->hasMany('tags')->only(...$only);
+            $api->resource('posts')->relationships(function (RelationshipsRegistration $rel) use ($only) {
+                $rel->hasMany('tags')->only(...$only);
             });
         });
 
@@ -581,8 +581,8 @@ class RoutingTest extends TestCase
         $except = Arr::wrap($except);
 
         $this->withRoutes(function (ApiGroup $api) use ($except) {
-            $api->resource('posts', function (ResourceRegistration $posts) use ($except) {
-                $posts->hasMany('tags')->except(...$except);
+            $api->resource('posts')->relationships(function (RelationshipsRegistration $rel) use ($except) {
+                $rel->hasMany('tags')->except(...$except);
             });
         });
 
@@ -615,11 +615,11 @@ class RoutingTest extends TestCase
     public function testFluentResourceIdConstraint($method, $url)
     {
         $this->withRoutes(function (ApiGroup $api) {
-            $api->resource('posts', function (ResourceRegistration $posts) {
-                $posts->hasOne('author');
-                $posts->hasMany('tags');
-                $posts->hasMany('comments');
-            })->id('^[A-Z]+$');
+            $api->resource('posts')->id('^[A-Z]+$')->relationships(function (RelationshipsRegistration $rel) {
+                $rel->hasOne('author');
+                $rel->hasMany('tags');
+                $rel->hasMany('comments');
+            });
         });
 
         $this->assertNotFound($method, $url);
@@ -650,10 +650,10 @@ class RoutingTest extends TestCase
     public function testFluentDefaultIdConstraint($method, $url)
     {
         $this->withFluentRoutes()->defaultId('^[A-Z]+$')->group(function (ApiGroup $api) {
-            $api->resource('posts', function (ResourceRegistration $posts) {
-                $posts->hasOne('author');
-                $posts->hasMany('tags');
-                $posts->hasMany('comments');
+            $api->resource('posts')->relationships(function (RelationshipsRegistration $rel) {
+                $rel->hasOne('author');
+                $rel->hasMany('tags');
+                $rel->hasMany('comments');
             });
         });
 
@@ -690,11 +690,11 @@ class RoutingTest extends TestCase
     public function testFluentDefaultIdConstraintCanBeIgnoredByResource($method, $url)
     {
         $this->withFluentRoutes()->defaultId('^[A-Z]+$')->group(function (ApiGroup $api) {
-            $api->resource('posts', function (ResourceRegistration $posts) {
-                $posts->hasOne('author');
-                $posts->hasMany('tags');
-                $posts->hasMany('comments');
-            })->id(null);
+            $api->resource('posts')->id(null)->relationships(function (RelationshipsRegistration $rel) {
+                $rel->hasOne('author');
+                $rel->hasMany('tags');
+                $rel->hasMany('comments');
+            });
         });
 
         $this->assertMatch($method, $url);
@@ -730,11 +730,11 @@ class RoutingTest extends TestCase
     public function testFluentResourceIdConstraintOverridesDefaultIdConstraint($method, $url)
     {
         $this->withFluentRoutes()->defaultId('^[0-9]+$')->group(function (ApiGroup $api) {
-            $api->resource('posts', function (ResourceRegistration $posts) {
-                $posts->hasOne('author');
-                $posts->hasMany('tags');
-                $posts->hasMany('comments');
-            })->id('^[A-Z]+$');
+            $api->resource('posts')->id('^[A-Z]+$')->relationships(function (RelationshipsRegistration $rel) {
+                $rel->hasOne('author');
+                $rel->hasMany('tags');
+                $rel->hasMany('comments');
+            });
         });
 
         $this->assertNotFound($method, $url);

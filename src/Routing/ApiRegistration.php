@@ -1,4 +1,19 @@
 <?php
+/**
+ * Copyright 2019 Cloud Creativity Limited
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 namespace CloudCreativity\LaravelJsonApi\Routing;
 
@@ -6,7 +21,12 @@ use CloudCreativity\LaravelJsonApi\Api\Api;
 use Illuminate\Contracts\Routing\Registrar;
 use Illuminate\Support\Arr;
 
-class ApiRegistration
+/**
+ * Class ApiRegistration
+ *
+ * @package CloudCreativity\LaravelJsonApi
+ */
+final class ApiRegistration
 {
 
     /**
@@ -24,14 +44,14 @@ class ApiRegistration
      *
      * @var array
      */
-    private $attributes;
+    private $options;
 
     /**
-     * Laravel route options.
+     * Laravel route attributes.
      *
      * @var array
      */
-    private $options;
+    private $attributes;
 
     /**
      * ApiRegistration constructor.
@@ -42,13 +62,13 @@ class ApiRegistration
      */
     public function __construct(Registrar $routes, Api $api, array $options = [])
     {
-        // this maintains compatibility with passing all through as a single array.
-        $keys = ['content-negotiator', 'default-authorizer', 'processes', 'prefix', 'id'];
+        // this maintains compatibility with passing attributes and options through as a single array.
+        $attrs = ['content-negotiator', 'processes', 'prefix', 'id'];
 
         $this->routes = $routes;
         $this->api = $api;
-        $this->attributes = collect($options)->only($keys)->all();
-        $this->options = collect($options)->forget($keys)->all();
+        $this->options = collect($options)->only($attrs)->all();
+        $this->attributes = collect($options)->forget($attrs)->all();
     }
 
     /**
@@ -57,7 +77,18 @@ class ApiRegistration
      */
     public function defaultId(string $constraint): self
     {
-        $this->attributes['id'] = $constraint;
+        $this->options['id'] = $constraint;
+
+        return $this;
+    }
+
+    /**
+     * @param string $controller
+     * @return ApiRegistration
+     */
+    public function defaultController(string $controller): self
+    {
+        $this->options['controller'] = $controller;
 
         return $this;
     }
@@ -70,7 +101,7 @@ class ApiRegistration
      */
     public function defaultContentNegotiator(string $negotiator): self
     {
-        $this->attributes['content-negotiator'] = $negotiator;
+        $this->options['content-negotiator'] = $negotiator;
 
         return $this;
     }
@@ -94,8 +125,8 @@ class ApiRegistration
      */
     public function middleware(string ...$middleware): self
     {
-        $this->options['middleware'] = array_merge(
-            Arr::wrap($this->options['middleware'] ?? []),
+        $this->attributes['middleware'] = array_merge(
+            Arr::wrap($this->attributes['middleware'] ?? []),
             $middleware
         );
 
@@ -108,7 +139,7 @@ class ApiRegistration
      */
     public function withNamespace(string $namespace): self
     {
-        $this->options['namespace'] = $namespace;
+        $this->attributes['namespace'] = $namespace;
 
         return $this;
     }
@@ -118,8 +149,8 @@ class ApiRegistration
      */
     public function group(\Closure $callback): void
     {
-        $this->routes->group($this->options(), function () use ($callback) {
-            $group = new ApiGroup($this->routes, $this->api, $this->attributes);
+        $this->routes->group($this->attributes(), function () use ($callback) {
+            $group = new ApiGroup($this->routes, $this->options());
             $callback($group, $this->routes);
             $this->api->providers()->mountAll($group, $this->routes);
         });
@@ -128,11 +159,11 @@ class ApiRegistration
     /**
      * @return array
      */
-    protected function options(): array
+    private function attributes(): array
     {
         $url = $this->api->getUrl();
 
-        return collect($this->options)->merge([
+        return collect($this->attributes)->merge([
             'as' => $url->getName(),
             'prefix' => $url->getNamespace(),
             'middleware' => $this->allMiddleware()
@@ -142,10 +173,20 @@ class ApiRegistration
     /**
      * @return array
      */
-    protected function allMiddleware(): array
+    private function options(): array
+    {
+        return array_merge([
+            'processes' => $this->api->getJobs()->getResource(),
+        ], $this->options);
+    }
+
+    /**
+     * @return array
+     */
+    private function allMiddleware(): array
     {
         return collect(["json-api:{$this->api->getName()}"])
-            ->merge(Arr::wrap($this->options['middleware'] ?? []))
+            ->merge(Arr::wrap($this->attributes['middleware'] ?? []))
             ->all();
     }
 }
