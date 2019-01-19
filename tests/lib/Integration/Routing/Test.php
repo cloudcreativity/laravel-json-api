@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\LaravelJsonApi\Tests\Integration;
+namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Routing;
 
 use CloudCreativity\LaravelJsonApi\Http\Controllers\JsonApiController;
 use CloudCreativity\LaravelJsonApi\Routing\RouteRegistrar;
@@ -25,8 +25,9 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Route;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
 
-class RoutingTest extends TestCase
+class Test extends TestCase
 {
 
     /**
