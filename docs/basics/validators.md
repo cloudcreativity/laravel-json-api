@@ -735,3 +735,79 @@ return [
     'published-at' => ['nullable', new DateTimeIso8601()]
 ];
 ```
+
+## Confirmed Rule
+
+Laravel's `confirmed` rule expects there to be a field with the same name and `_confirmation` on the end: i.e.
+if using the `confirmed` rule on the `password` field, it expects there to be a `password_confirmation` field.
+
+If you are not using underscores in your field names, this means the `confirmed` rules will not work. For example
+if using dash-case your extra field will be called `password-confirmation`. Unfortunately Laravel does not
+provide a way of customising the expected confirmation field name.
+
+In this scenario you will need to use the following rules to get `password-confirmation` working:
+
+```php
+namespace App\JsonApi\Users;
+
+use CloudCreativity\LaravelJsonApi\Validation\AbstractValidators;
+
+class Validators extends AbstractValidators
+{
+    // ...
+
+    protected function rules($record = null): array
+    {
+        return [
+            'name' => 'required|string',
+            'password' => "required|string",
+            'password-confirmation' => "required_with:password|same:password",
+        ];
+    }
+}
+```
+
+Remember to note the guidance above about `PATCH` requests, where the server must assume that missing values
+being the current values. For password scenarios, your validator will not have access to the current value.
+You would therefore need to adjust your use of the `required` and `required_with` rules to only add them if
+the client has sent a password. For example:
+
+```php
+namespace App\JsonApi\Users;
+
+use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorInterface;
+use CloudCreativity\LaravelJsonApi\Validation\AbstractValidators;
+
+class Validators extends AbstractValidators
+{
+    // ...
+
+    public function update($record, array $document): ValidatorInterface
+    {
+        $validator = parent::update($record, $document);
+
+        $validator->sometimes('password-confirmation', 'required_with:password|same:password', function ($input) {
+            return isset($input['password']);
+        });
+
+        return $validator;
+    }
+
+    protected function rules($record = null): array
+    {
+        $rules = [
+            'name' => 'required|string',
+            'password' => [
+                $record ? 'filled' : 'required',
+                'string',
+            ],
+        ];
+
+        if (!$record) {
+            $rules['password-confirmation'] = 'required_with:password|same:password';
+        }
+
+        return $rules;
+    }
+}
+```

@@ -303,7 +303,7 @@ class HasManyTest extends TestCase
         // code is a valid sort on the countries resource, but not on the users resource.
         $this->doReadRelated($country, 'users', ['sort' => 'code'])->assertError(400, [
             'source' => ['parameter' => 'sort'],
-            'title' => 'Sort parameter code is not allowed.',
+            'detail' => 'Sort parameter code is not allowed.',
         ]);
     }
 

@@ -17,25 +17,11 @@
 
 namespace DummyApp\JsonApi\Users;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Validators\RelationshipsValidatorInterface;
-use CloudCreativity\LaravelJsonApi\Validators\AbstractValidatorProvider;
+use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorInterface;
+use CloudCreativity\LaravelJsonApi\Validation\AbstractValidators;
 
-class Validators extends AbstractValidatorProvider
+class Validators extends AbstractValidators
 {
-
-    /**
-     * @var string
-     */
-    protected $resourceType = 'users';
-
-    /**
-     * @var array
-     */
-    protected $queryRules = [
-        'filter.name' => 'filled|string',
-        'page.number' => 'filled|integer|min:1',
-        'page.size' => 'filled|integer|between:1,50',
-    ];
 
     /**
      * @var array
@@ -55,30 +41,48 @@ class Validators extends AbstractValidatorProvider
     ];
 
     /**
-     * Get the validation rules for the resource attributes.
-     *
-     * @param object|null $record
-     *      the record being updated, or null if it is a create request.
-     * @return array
+     * @inheritdoc
      */
-    protected function attributeRules($record = null)
+    public function update($record, array $document): ValidatorInterface
     {
-        return [
-            //
-        ];
+        $validator = parent::update($record, $document);
+
+        $validator->sometimes('password-confirmation', 'required_with:password|same:password', function ($input) {
+            return isset($input['password']);
+        });
+
+        return $validator;
     }
 
     /**
-     * Define the validation rules for the resource relationships.
-     *
-     * @param RelationshipsValidatorInterface $relationships
-     * @param object|null $record
-     *      the record being updated, or null if it is a create request.
-     * @return void
+     * @inheritDoc
      */
-    protected function relationshipRules(RelationshipsValidatorInterface $relationships, $record = null)
+    protected function rules($record = null): array
     {
-        //
+        $rules = [
+            'name' => 'required|string',
+            'password' => [
+                $record ? 'filled' : 'required',
+                'string',
+            ],
+        ];
+
+        if (!$record) {
+            $rules['password-confirmation'] = 'required_with:password|same:password';
+        }
+
+        return $rules;
     }
 
+    /**
+     * @inheritDoc
+     */
+    protected function queryRules(): array
+    {
+        return [
+            'filter.name' => 'filled|string',
+            'page.number' => 'filled|integer|min:1',
+            'page.size' => 'filled|integer|between:1,50',
+        ];
+    }
 }
