@@ -7,12 +7,22 @@ All notable changes to this project will be documented in this file. This projec
 ### Added
 - [#271](https://github.com/cloudcreativity/laravel-json-api/issues/271)
 Can now validate delete resource requests.
+- [#196](https://github.com/cloudcreativity/laravel-json-api/issues/196)
+Can now add custom actions to resource controllers. Refer to the [Routing](./docs/basics/routing.md) and
+[Controllers](./docs/basics/controllers.md) chapters.
+- [#242](https://github.com/cloudcreativity/laravel-json-api/issues/242)
+Can now override the default controller for an API. Refer to the [Controllers](./docs/basics/controllers.md)
+chapter for details.
 
 ### Changed
 - [#254](https://github.com/cloudcreativity/laravel-json-api/pull/254)
 Refactored content negotiation so that multiple media types can be supported. Refer to the
 [Media Types](./docs/features/media-types.md) documentation for details.
 - Simplified the validator classes into a single class: `Validators\Validator`.
+- Renamed a lot of classes in the `Routing` namespace. They are also marked as `final` because they
+are not meant to be extended.
+- Modified the abstract `mount` method that package providers use to add routes to an API.
+Also added PHP 7 type-hinting to all methods in the abstract class. 
 
 ### Fixed
 - [#280](https://github.com/cloudcreativity/laravel-json-api/issues/280)

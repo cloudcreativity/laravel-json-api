@@ -21,7 +21,6 @@ namespace CloudCreativity\LaravelJsonApi\Api;
 use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
 use CloudCreativity\LaravelJsonApi\Resolver\NamespaceResolver;
 use CloudCreativity\LaravelJsonApi\Routing\RouteRegistrar;
-use Illuminate\Contracts\Routing\Registrar;
 
 /**
  * Class ResourceProvider
@@ -51,20 +50,19 @@ abstract class AbstractProvider
      * Mount routes onto the provided API.
      *
      * @param RouteRegistrar $api
-     * @param Registrar $router
      * @return void
      */
-    abstract public function mount(RouteRegistrar $api, Registrar $router);
+    abstract public function mount(RouteRegistrar $api): void;
 
     /**
      * @return string
      */
-    abstract protected function getRootNamespace();
+    abstract protected function getRootNamespace(): string;
 
     /**
      * @return ResolverInterface
      */
-    public function getResolver()
+    public function getResolver(): ResolverInterface
     {
         return new NamespaceResolver($this->getRootNamespace(), $this->resources, $this->byResource);
     }
@@ -73,7 +71,7 @@ abstract class AbstractProvider
      * @return array
      * @deprecated 2.0.0
      */
-    public function getErrors()
+    public function getErrors(): array
     {
         return $this->errors;
     }
