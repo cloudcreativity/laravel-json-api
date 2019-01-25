@@ -3,6 +3,7 @@
 namespace CloudCreativity\LaravelJsonApi\Http\Middleware;
 
 use CloudCreativity\LaravelJsonApi\Api\Api;
+use CloudCreativity\LaravelJsonApi\Codec\Codec;
 use CloudCreativity\LaravelJsonApi\Codec\Decoding;
 use CloudCreativity\LaravelJsonApi\Codec\Encoding;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
@@ -10,10 +11,12 @@ use CloudCreativity\LaravelJsonApi\Contracts\Http\ContentNegotiatorInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\DocumentRequiredException;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use CloudCreativity\LaravelJsonApi\Routing\Route;
+use Illuminate\Contracts\Container\Container;
 use Illuminate\Http\Request;
+use Neomerx\JsonApi\Contracts\Http\Headers\AcceptHeaderInterface;
+use Neomerx\JsonApi\Contracts\Http\Headers\HeaderInterface;
 use Neomerx\JsonApi\Contracts\Http\Headers\HeaderParametersInterface;
 use Symfony\Component\HttpKernel\Exception\HttpException;
-use function CloudCreativity\LaravelJsonApi\http_contains_body;
 
 /**
  * Class NegotiateContent
@@ -24,19 +27,14 @@ class NegotiateContent
 {
 
     /**
+     * @var Container
+     */
+    private $container;
+
+    /**
      * @var Factory
      */
     private $factory;
-
-    /**
-     * @var Api
-     */
-    private $api;
-
-    /**
-     * @var HeaderParametersInterface
-     */
-    private $headers;
 
     /**
      * @var Route
@@ -46,16 +44,14 @@ class NegotiateContent
     /**
      * NegotiateContent constructor.
      *
+     * @param Container $container
      * @param Factory $factory
-     * @param Api $api
-     * @param HeaderParametersInterface $headers
      * @param Route $route
      */
-    public function __construct(Factory $factory, Api $api, HeaderParametersInterface $headers, Route $route)
+    public function __construct(Container $container, Factory $factory, Route $route)
     {
+        $this->container = $container;
         $this->factory = $factory;
-        $this->api = $api;
-        $this->headers = $headers;
         $this->route = $route;
     }
 
@@ -71,14 +67,20 @@ class NegotiateContent
      */
     public function handle($request, \Closure $next, string $default = null)
     {
-        $body = http_contains_body($request);
+        $api = $this->container->make(Api::class);
+        /** @var HeaderParametersInterface $headers */
+        $headers = $this->container->make(HeaderParametersInterface::class);
+        $contentType = $headers->getContentTypeHeader();
 
-        $this->matched(
-            $this->matchEncoding($request, $default),
-            $decoder = $body ? $this->matchDecoder($request, $default) : null
+        $codec = $this->factory->createCodec(
+            $api->getContainer(),
+            $this->matchEncoding($api, $request, $headers->getAcceptHeader(), $default),
+            $decoder = $contentType ? $this->matchDecoder($api, $request, $contentType, $default) : null
         );
 
-        if (!$body && $this->isExpectingContent($request)) {
+        $this->matched($codec);
+
+        if (!$contentType && $this->isExpectingContent($request)) {
             throw new DocumentRequiredException();
         }
 
@@ -86,18 +88,23 @@ class NegotiateContent
     }
 
     /**
+     * @param Api $api
      * @param Request $request
+     * @param AcceptHeaderInterface $accept
      * @param string|null $defaultNegotiator
      * @return Encoding
      */
-    protected function matchEncoding($request, ?string $defaultNegotiator): Encoding
+    protected function matchEncoding(
+        Api $api,
+        $request,
+        AcceptHeaderInterface $accept,
+        ?string $defaultNegotiator
+    ): Encoding
     {
         $negotiator = $this
-            ->negotiator($this->responseResourceType(), $defaultNegotiator)
+            ->negotiator($api->getContainer(), $this->responseResourceType(), $defaultNegotiator)
             ->withRequest($request)
-            ->withApi($this->api);
-
-        $accept = $this->headers->getAcceptHeader();
+            ->withApi($api);
 
         if ($this->willSeeMany($request)) {
             return $negotiator->encodingForMany($accept);
@@ -107,18 +114,24 @@ class NegotiateContent
     }
 
     /**
+     * @param Api $api
      * @param Request $request
+     * @param HeaderInterface $contentType
      * @param string|null $defaultNegotiator
      * @return Decoding|null
      */
-    protected function matchDecoder($request, ?string $defaultNegotiator): ?Decoding
+    protected function matchDecoder(
+        Api $api,
+        $request,
+        HeaderInterface $contentType,
+        ?string $defaultNegotiator
+    ): ?Decoding
     {
         $negotiator = $this
-            ->negotiator($this->route->getResourceType(), $defaultNegotiator)
+            ->negotiator($api->getContainer(), $this->route->getResourceType(), $defaultNegotiator)
             ->withRequest($request)
-            ->withApi($this->api);
+            ->withApi($api);
 
-        $contentType = $this->headers->getContentTypeHeader();
         $resource = $this->route->getResource();
 
         if ($resource && $field = $this->route->getRelationshipName()) {
@@ -139,18 +152,23 @@ class NegotiateContent
     }
 
     /**
+     * @param ContainerInterface $container
      * @param string|null $resourceType
      * @param string|null $default
      * @return ContentNegotiatorInterface
      */
-    protected function negotiator(?string $resourceType, ?string $default): ContentNegotiatorInterface
+    protected function negotiator(
+        ContainerInterface $container,
+        ?string $resourceType,
+        ?string $default
+    ): ContentNegotiatorInterface
     {
-        if ($resourceType && $negotiator = $this->getContainer()->getContentNegotiatorByResourceType($resourceType)) {
+        if ($resourceType && $negotiator = $container->getContentNegotiatorByResourceType($resourceType)) {
             return $negotiator;
         }
 
         if ($default) {
-            return $this->getContainer()->getContentNegotiatorByName($default);
+            return $container->getContentNegotiatorByName($default);
         }
 
         return $this->defaultNegotiator();
@@ -167,28 +185,13 @@ class NegotiateContent
     }
 
     /**
-     * Apply the matched encoding and decoding.
+     * Apply the matched codec.
      *
-     * @param Encoding $encoding
-     * @param Decoding|null $decoding
+     * @param Codec $codec
      */
-    protected function matched(Encoding $encoding, ?Decoding $decoding): void
+    protected function matched(Codec $codec): void
     {
-        $codec = $this->factory->createCodec(
-            $this->getContainer(),
-            $encoding,
-            $decoding
-        );
-
         $this->route->setCodec($codec);
-    }
-
-    /**
-     * @return ContainerInterface
-     */
-    protected function getContainer(): ContainerInterface
-    {
-        return $this->api->getContainer();
     }
 
     /**

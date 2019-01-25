@@ -98,6 +98,32 @@ return [
 ];
 ```
 
+### Routing
+
+We have made changes to the routing to introduce a fluent syntax for defining routes. This will
+not affect your application unless you type-hinted the `Routing\ApiGroup` class in any of your
+route definitions. You will now need to type-hint `Routing\RouteRegistrar` instead.
+
+Change this:
+
+```php
+use CloudCreativity\LaravelJsonApi\Routing\RouteRegistrar;
+
+JsonApi::register('v1', [], function (ApiGroup $api) {
+    // ...
+});
+```
+
+to this:
+
+```php
+use CloudCreativity\LaravelJsonApi\Routing\RouteRegistrar;
+
+JsonApi::register('v1', [], function (RouteRegistrar $api) {
+    // ...
+});
+```
+
 ### Controllers
 
 #### Eloquent

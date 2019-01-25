@@ -27,6 +27,9 @@ Also added PHP 7 type-hinting to all methods in the abstract class.
 ### Fixed
 - [#280](https://github.com/cloudcreativity/laravel-json-api/issues/280)
 Validation error objects for relationship objects now have correct source pointers.
+- [#284](https://github.com/cloudcreativity/laravel-json-api/issues/284)
+Content negotiation middleware no longer causes a container binding exception when the Kernel
+is terminated.
 
 ### Removed
 - The following classes in the `Validation` namespace were removed as the `Validation\Validator`
