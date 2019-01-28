@@ -107,7 +107,7 @@ route definitions. You will now need to type-hint `Routing\RouteRegistrar` inste
 Change this:
 
 ```php
-use CloudCreativity\LaravelJsonApi\Routing\RouteRegistrar;
+use CloudCreativity\LaravelJsonApi\Routing\ApiGroup;
 
 JsonApi::register('v1', [], function (ApiGroup $api) {
     // ...
