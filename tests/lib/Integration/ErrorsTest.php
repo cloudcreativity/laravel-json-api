@@ -20,7 +20,6 @@ namespace CloudCreativity\LaravelJsonApi\Tests\Integration;
 use Carbon\Carbon;
 use CloudCreativity\LaravelJsonApi\Exceptions\DocumentRequiredException;
 use CloudCreativity\LaravelJsonApi\Exceptions\InvalidJsonException;
-use CloudCreativity\LaravelJsonApi\Exceptions\NotFoundException;
 use CloudCreativity\LaravelJsonApi\Exceptions\ResourceNotFoundException;
 use DummyApp\Post;
 use Illuminate\Contracts\Validation\Validator;

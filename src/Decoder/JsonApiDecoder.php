@@ -18,9 +18,9 @@
 namespace CloudCreativity\LaravelJsonApi\Decoder;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Decoder\DecoderInterface;
-use function CloudCreativity\LaravelJsonApi\json_decode;
 use Illuminate\Http\Request;
 use Neomerx\JsonApi\Exceptions\JsonApiException;
+use function CloudCreativity\LaravelJsonApi\json_decode;
 
 /**
  * Class JsonApiDecoder

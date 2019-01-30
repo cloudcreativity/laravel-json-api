@@ -21,7 +21,6 @@ use CloudCreativity\LaravelJsonApi\Exceptions\DocumentRequiredException;
 use CloudCreativity\LaravelJsonApi\Exceptions\InvalidJsonException;
 use Illuminate\Support\Str as IlluminateStr;
 use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
-use Neomerx\JsonApi\Contracts\Http\Headers\HeaderInterface;
 use Neomerx\JsonApi\Http\Headers\MediaType;
 use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\RequestInterface;
