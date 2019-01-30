@@ -17,8 +17,8 @@
 
 namespace CloudCreativity\LaravelJsonApi\Http\Requests;
 
+use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorProviderInterface;
-use CloudCreativity\LaravelJsonApi\Exceptions\DocumentRequiredException;
 use CloudCreativity\LaravelJsonApi\Exceptions\ValidationException;
 use CloudCreativity\LaravelJsonApi\Object\Document;
 
@@ -68,10 +68,7 @@ class CreateResource extends ValidatedRequest
      */
     protected function validateDocument()
     {
-        if (!$document = $this->decode()) {
-            throw new DocumentRequiredException();
-        }
-
+        $document = $this->decode();
         $validators = $this->getValidators();
 
         /** Pre-1.0 validators */
@@ -80,7 +77,25 @@ class CreateResource extends ValidatedRequest
             return;
         }
 
-        /** Check the document is compliant with the JSON API spec. */
+        /** If there is a decoded JSON API document, check it complies with the spec. */
+        if ($document) {
+            $this->validateDocumentCompliance($document, $validators);
+        }
+
+        /** Check the document is logically correct. */
+        if ($validators) {
+            $this->passes($validators->create($this->all()));
+        }
+    }
+
+    /**
+     * Validate the JSON API document complies with the spec.
+     *
+     * @param object $document
+     * @param ValidatorFactoryInterface|null $validators
+     */
+    protected function validateDocumentCompliance($document, ?ValidatorFactoryInterface $validators): void
+    {
         $this->passes(
             $this->factory->createNewResourceDocumentValidator(
                 $document,
@@ -88,11 +103,6 @@ class CreateResource extends ValidatedRequest
                 $validators && $validators->supportsClientIds()
             )
         );
-
-        /** Check the document is logically correct. */
-        if ($validators) {
-            $this->passes($validators->create($this->all()));
-        }
     }
 
     /**

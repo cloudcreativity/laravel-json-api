@@ -22,7 +22,10 @@ use CloudCreativity\LaravelJsonApi\Utils\Helpers;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
 use Illuminate\Http\Request as IlluminateRequest;
+use Illuminate\Http\Response as IlluminateResponse;
 use Neomerx\JsonApi\Document\Error;
+use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 use function CloudCreativity\LaravelJsonApi\http_contains_body;
 use function CloudCreativity\LaravelJsonApi\json_decode;
 
@@ -95,6 +98,38 @@ class HelpersTest extends TestCase
     }
 
     /**
+     * @param array $headers
+     * @param $expected
+     * @dataProvider requestContainsBodyProvider
+     */
+    public function testIlluminateRequestContainsBody(array $headers, $expected)
+    {
+        $request = IlluminateRequest::create('/api/posts', 'GET');
+
+        foreach ($headers as $header => $value) {
+            $request->headers->set($header, $value);
+        }
+
+        $this->assertSame($expected, http_contains_body($request));
+    }
+
+    /**
+     * @param array $headers
+     * @param $expected
+     * @dataProvider requestContainsBodyProvider
+     */
+    public function testSymfonyRequestContainsBody(array $headers, $expected)
+    {
+        $request = SymfonyRequest::create('/api/posts', 'GET');
+
+        foreach ($headers as $header => $value) {
+            $request->headers->set($header, $value);
+        }
+
+        $this->assertSame($expected, http_contains_body($request));
+    }
+
+    /**
      * @return array
      */
     public function responseContainsBodyProvider()
@@ -123,6 +158,38 @@ class HelpersTest extends TestCase
     {
         $request = new Request($method, '/api/posts');
         $response = new Response($status, $headers, $body);
+
+        $this->assertSame($expected, http_contains_body($request, $response));
+    }
+
+    /**
+     * @param $expected
+     * @param $method
+     * @param $status
+     * @param array $headers
+     * @param $body
+     * @dataProvider responseContainsBodyProvider
+     */
+    public function testIlluminateResponseContainsBody($expected, $method, $status, $headers = [], $body = null)
+    {
+        $request = IlluminateRequest::create('/api/posts', $method);
+        $response = new IlluminateResponse($body, $status, $headers);
+
+        $this->assertSame($expected, http_contains_body($request, $response));
+    }
+
+    /**
+     * @param $expected
+     * @param $method
+     * @param $status
+     * @param array $headers
+     * @param $body
+     * @dataProvider responseContainsBodyProvider
+     */
+    public function testSymfonyResponseContainsBody($expected, $method, $status, $headers = [], $body = null)
+    {
+        $request = SymfonyRequest::create('/api/posts', $method);
+        $response = new SymfonyResponse($body, $status, $headers);
 
         $this->assertSame($expected, http_contains_body($request, $response));
     }

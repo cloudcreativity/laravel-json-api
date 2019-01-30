@@ -18,6 +18,10 @@
 
 namespace CloudCreativity\LaravelJsonApi\Api;
 
+use CloudCreativity\LaravelJsonApi\Codec\Codec;
+use CloudCreativity\LaravelJsonApi\Codec\DecodingList;
+use CloudCreativity\LaravelJsonApi\Codec\Encoding;
+use CloudCreativity\LaravelJsonApi\Codec\EncodingList;
 use CloudCreativity\LaravelJsonApi\Contracts\Client\ClientInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Encoder\SerializerInterface;
@@ -32,7 +36,7 @@ use CloudCreativity\LaravelJsonApi\Resolver\NamespaceResolver;
 use GuzzleHttp\Client;
 use Neomerx\JsonApi\Contracts\Codec\CodecMatcherInterface;
 use Neomerx\JsonApi\Contracts\Encoder\EncoderInterface;
-use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
+use Neomerx\JsonApi\Contracts\Http\Headers\MediaTypeInterface;
 use Neomerx\JsonApi\Contracts\Http\Headers\SupportedExtensionsInterface;
 use Neomerx\JsonApi\Encoder\EncoderOptions;
 
@@ -60,9 +64,14 @@ class Api
     private $name;
 
     /**
-     * @var array
+     * @var EncodingList
      */
-    private $codecs;
+    private $encodings;
+
+    /**
+     * @var DecodingList
+     */
+    private $decodings;
 
     /**
      * @var array
@@ -112,38 +121,54 @@ class Api
     private $errorRepository;
 
     /**
+     * @var Responses|null
+     */
+    private $responses;
+
+    /**
+     * @var array
+     */
+    private $providers;
+
+    /**
      * Api constructor.
      *
      * @param Factory $factory
      * @param AggregateResolver $resolver
      * @param $apiName
-     * @param array $codecs
+     * @param EncodingList $encodings
+     * @param DecodingList $decodings
      * @param Url $url
      * @param Jobs $jobs
      * @param bool $useEloquent
      * @param string|null $supportedExt
      * @param array $errors
+     * @param array $providers
      */
     public function __construct(
         Factory $factory,
         AggregateResolver $resolver,
         $apiName,
-        array $codecs,
+        EncodingList $encodings,
+        DecodingList $decodings,
         Url $url,
         Jobs $jobs,
         $useEloquent = true,
         $supportedExt = null,
-        array $errors = []
+        array $errors = [],
+        array $providers = []
     ) {
         $this->factory = $factory;
         $this->resolver = $resolver;
         $this->name = $apiName;
-        $this->codecs = $codecs;
+        $this->encodings = $encodings;
+        $this->decodings = $decodings;
         $this->url = $url;
         $this->jobs = $jobs;
         $this->useEloquent = $useEloquent;
         $this->supportedExt = $supportedExt;
         $this->errors = $errors;
+        $this->providers = $providers;
     }
 
     /**
@@ -220,22 +245,6 @@ class Api
     }
 
     /**
-     * @return CodecMatcherInterface
-     */
-    public function getCodecMatcher()
-    {
-        if (!$this->codecMatcher) {
-            $this->codecMatcher = $this->factory->createConfiguredCodecMatcher(
-                $this->getContainer(),
-                $this->codecs,
-                (string) $this->getUrl()
-            );
-        }
-
-        return $this->codecMatcher;
-    }
-
-    /**
      * @return ContainerInterface|null
      */
     public function getContainer()
@@ -285,29 +294,76 @@ class Api
     }
 
     /**
-     * Get the matched encoder, or a default encoder.
-     *
-     * @return EncoderInterface
+     * @return EncodingList
      */
-    public function getEncoder()
+    public function getEncodings(): EncodingList
     {
-        if ($encoder = $this->getCodecMatcher()->getEncoder()) {
-            return $encoder;
-        }
-
-        $this->getCodecMatcher()->setEncoder($encoder = $this->encoder());
-
-        return $encoder;
+        return $this->encodings;
     }
 
     /**
-     * @param int $options
+     * @return DecodingList
+     */
+    public function getDecodings(): DecodingList
+    {
+        return $this->decodings;
+    }
+
+    /**
+     * Get the default API codec.
+     *
+     * @return Codec
+     */
+    public function getDefaultCodec(): Codec
+    {
+        return $this->factory->createCodec(
+            $this->getContainer(),
+            $this->encodings->find(MediaTypeInterface::JSON_API_MEDIA_TYPE) ?: Encoding::jsonApi(),
+            $this->decodings->find(MediaTypeInterface::JSON_API_MEDIA_TYPE)
+        );
+    }
+
+    /**
+     * Get the responses instance for the API.
+     *
+     * @return Responses
+     */
+    public function getResponses()
+    {
+        if (!$this->responses) {
+            $this->responses = $this->response();
+        }
+
+        return $this->responses;
+    }
+
+    /**
+     * Get the matched encoder, or a default encoder.
+     *
+     * @return EncoderInterface
+     * @deprecated 2.0.0 use `encoder` to create an encoder.
+     */
+    public function getEncoder()
+    {
+        return $this->encoder();
+    }
+
+    /**
+     * Create an encoder for the API.
+     *
+     * @param int|EncoderOptions|Encoding $options
      * @param int $depth
      * @return SerializerInterface
      */
     public function encoder($options = 0, $depth = 512)
     {
-        $options = new EncoderOptions($options, (string) $this->getUrl(), $depth);
+        if ($options instanceof Encoding) {
+            $options = $options->getOptions();
+        }
+
+        if (!$options instanceof EncoderOptions) {
+            $options = new EncoderOptions($options, $this->getUrl()->toString(), $depth);
+        }
 
         return $this->factory->createEncoder($this->getContainer(), $options);
     }
@@ -315,22 +371,11 @@ class Api
     /**
      * Create a responses helper for this API.
      *
-     * @param EncodingParametersInterface|null $parameters
-     * @param SupportedExtensionsInterface|null $extensions
      * @return Responses
      */
-    public function response(
-        EncodingParametersInterface $parameters = null,
-        SupportedExtensionsInterface $extensions = null
-    ) {
-        return $this->factory->createResponses(
-            $this->getContainer(),
-            $this->getErrors(),
-            $this->getCodecMatcher(),
-            $parameters,
-            $extensions ?: $this->getSupportedExtensions(),
-            (string) $this->getUrl()
-        );
+    public function response()
+    {
+        return $this->factory->createResponseFactory($this);
     }
 
     /**
@@ -373,6 +418,17 @@ class Api
     public function links()
     {
         return $this->factory->createLinkGenerator($this->url());
+    }
+
+    /**
+     * @return ResourceProviders
+     */
+    public function providers(): ResourceProviders
+    {
+        return new ResourceProviders(
+            $this->factory,
+            $this->providers
+        );
     }
 
     /**

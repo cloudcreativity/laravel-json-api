@@ -20,11 +20,8 @@ namespace CloudCreativity\LaravelJsonApi\Testing;
 use CloudCreativity\JsonApi\Testing\Compare;
 use CloudCreativity\JsonApi\Testing\Concerns\HasHttpAssertions;
 use CloudCreativity\JsonApi\Testing\Document;
-use Illuminate\Contracts\Routing\UrlRoutable;
 use Illuminate\Foundation\Testing\TestResponse as BaseTestResponse;
 use Illuminate\Http\Response;
-use Illuminate\Support\Collection;
-use Neomerx\JsonApi\Contracts\Http\Headers\MediaTypeInterface;
 use PHPUnit\Framework\Assert;
 
 /**
@@ -50,6 +47,16 @@ class TestResponse extends BaseTestResponse
         if ($expectedType) {
             $this->willSeeType($expectedType);
         }
+    }
+
+    /**
+     * Get the resource ID from the `/data/id` member.
+     *
+     * @return string|null
+     */
+    public function id(): ?string
+    {
+        return $this->getId();
     }
 
     /**
@@ -173,27 +180,6 @@ class TestResponse extends BaseTestResponse
     public function assertStatus($status)
     {
         return $this->assertStatusCode($status);
-    }
-
-    /**
-     * Assert response is a JSON API response.
-     *
-     * @param int $statusCode
-     * @param string|null $contentType
-     * @return $this
-     * @deprecated 1.0.0 use `jsonApi`
-     */
-    public function assertJsonApiResponse(
-        $statusCode = Response::HTTP_OK,
-        $contentType = MediaTypeInterface::JSON_API_MEDIA_TYPE
-    ) {
-        $this->assertStatus($statusCode);
-
-        if ($contentType) {
-            $this->assertHeader('Content-Type', $contentType);
-        }
-
-        return $this;
     }
 
     /**
@@ -435,36 +421,6 @@ class TestResponse extends BaseTestResponse
     protected function expectedResourceType()
     {
         return $this->getExpectedType();
-    }
-
-    /**
-     * Normalize ids for a find many request
-     *
-     * @param array|Collection|UrlRoutable $ids
-     * @return array
-     * @deprecated 1.0.0
-     */
-    protected function normalizeIds($ids)
-    {
-        if ($ids instanceof UrlRoutable) {
-            $ids = [$ids];
-        }
-
-        return collect($ids)->map(function ($id) {
-            return $this->normalizeId($id);
-        })->values()->all();
-    }
-
-    /**
-     * @param $id
-     * @return mixed
-     * @deprecated 1.0.0
-     */
-    protected function normalizeId($id)
-    {
-        $id = ($id instanceof UrlRoutable) ? $id->getRouteKey() : $id;
-
-        return (string) $id;
     }
 
     /**

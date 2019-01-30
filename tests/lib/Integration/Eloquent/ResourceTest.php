@@ -20,8 +20,6 @@ namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Eloquent;
 use Carbon\Carbon;
 use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
 use DummyApp\Comment;
-use DummyApp\Events\ResourceEvent;
-use DummyApp\Http\Controllers\PostsController;
 use DummyApp\Post;
 use DummyApp\Tag;
 use Illuminate\Support\Facades\Event;
@@ -175,6 +173,49 @@ class ResourceTest extends TestCase
             'content' => $model->content,
             'author_id' => $model->author_id,
         ]);
+    }
+
+    public function testCreateInvalid()
+    {
+        $model = factory(Post::class)->make();
+
+        $data = [
+            'type' => 'posts',
+            'attributes' => [
+                'title' => 1,
+                'content' => $model->content,
+                'slug' => $model->slug,
+            ],
+            'relationships' => [
+                'author' => [
+                    'data' => [
+                        'type' => 'users',
+                        'id' => (string) $model->author_id,
+                    ],
+                ],
+            ],
+        ];
+
+        $expected = [
+            [
+                'status' => '422',
+                'title' => 'Unprocessable Entity',
+                'detail' => 'The title must be a string.',
+                'source' => [
+                    'pointer' => '/data/attributes/title',
+                ],
+            ],
+            [
+                'status' => '422',
+                'title' => 'Unprocessable Entity',
+                'detail' => 'The title must be between 5 and 255 characters.',
+                'source' => [
+                    'pointer' => '/data/attributes/title',
+                ],
+            ],
+        ];
+
+        $this->doCreate($data)->assertErrors(422, $expected);
     }
 
     /**
@@ -341,23 +382,18 @@ class ResourceTest extends TestCase
      */
     public function testUpdateRefreshes()
     {
-        /** @var PostsController $controller */
-        $controller = $this->app->make(PostsController::class);
-        $this->app->instance(PostsController::class, $controller);
+        $post = $this->createPost();
 
-        app('events')->listen(ResourceEvent::class, function ($event) {
-            if ('saving' === $event->hook) {
-                $event->record->tags; // causes the model to cache the tags relationship.
-            }
+        Post::saving(function (Post $saved) {
+            $saved->tags; // causes the model to cache the tags relationship.
         });
 
-        $model = $this->createPost();
         /** @var Tag $tag */
         $tag = factory(Tag::class)->create();
 
         $data = [
             'type' => 'posts',
-            'id' => (string) $model->getRouteKey(),
+            'id' => (string) $post->getRouteKey(),
             'relationships' => [
                 'tags' => [
                     'data' => [
@@ -371,7 +407,7 @@ class ResourceTest extends TestCase
 
         $this->assertDatabaseHas('taggables', [
             'taggable_type' => Post::class,
-            'taggable_id' => $model->getKey(),
+            'taggable_id' => $post->getKey(),
             'tag_id' => $tag->getKey(),
         ]);
     }
@@ -448,16 +484,15 @@ class ResourceTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data)->assertStatus(422)->assertJson([
-            'errors' => [
-                [
-                    'detail' => 'The published is not a valid ISO 8601 date and time.',
-                    'source' => [
-                        'pointer' => '/data/attributes/published',
-                    ],
-                ]
+        $expected = [
+            'status' => '422',
+            'detail' => 'The published date is not a valid ISO 8601 date and time.',
+            'source' => [
+                'pointer' => '/data/attributes/published',
             ],
-        ]);
+        ];
+
+        $this->doUpdate($data)->assertErrorStatus($expected);
     }
 
     public function testSoftDelete()
@@ -614,6 +649,21 @@ class ResourceTest extends TestCase
 
         $this->doDelete($model)->assertDeleted();
         $this->assertDatabaseMissing('posts', [$model->getKeyName() => $model->getKey()]);
+    }
+
+    /**
+     * Test that the delete request is logically validated.
+     */
+    public function testCannotDeletePostHasComments()
+    {
+        $post = factory(Comment::class)->states('post')->create()->commentable;
+
+        $expected = [
+            'status' => '422',
+            'detail' => 'Cannot delete a post with comments.',
+        ];
+
+        $this->doDelete($post)->assertErrorStatus($expected);
     }
 
     /**

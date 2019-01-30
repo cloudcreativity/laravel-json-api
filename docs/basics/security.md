@@ -25,7 +25,7 @@ to your API and protect either the whole API or specific resources. If your API 
 authenticated user, you could protect the entire API using the `auth` middleware as follows:
 
 ```php
-JsonApi::register('default', ['middleware' => 'auth'], function ($api, $router) {
+JsonApi::register('default')->middleware('auth')->routes(function ($api, $router) {
    // ...
 });
 ```
@@ -36,9 +36,9 @@ If certain resources within your API only ever related to the authenticated user
 resources as follows:
 
 ```php
-JsonApi::register('default', [], function ($api, $router) {
+JsonApi::register('default')->routes(function ($api, $router) {
    $api->resource('posts'); // not protected
-   $api->resource('user-profiles', ['middleware' => 'auth']); // protected
+   $api->resource('user-profiles')->middleware('auth'); // protected
 });
 ```
 
@@ -48,7 +48,7 @@ This will apply the `auth` middleware to every `user-profiles` resource route.
 
 If you need to run different authentication and authorization logic for the different JSON API resource actions,
 then you can define your logic in *authorizer* classes. Authorizers can either be re-used across multiple
-resource types, or definied for a specific resource type.
+resource types, or defined for a specific resource type.
 
 As well as defining your authorization logic in a single class, they also contain a number of helper methods
 (described below) to make authentication and authorization easy.
@@ -88,14 +88,13 @@ placed in the `Authorizers` namespace, e.g. `App\JsonApi\Authorizers\DefaultAuth
 
 ### Using Authorizers
 
-Authorizers that are not for a specific resource type are registered via middleware. To use an authorizer,
-you should use the `json-api.auth` middleware, providing the name of the authorizer as the first middleware
-argument.
+Authorizers that are not for a specific resource type are registered via middleware. Use the `authorizer`
+method to add them to your route middleware.
 
 For example, if you wanted to use the `default` authorizer for your entire API:
 
 ```php
-JsonApi::register('default', ['middleware' => 'json-api.auth:default'], function ($api, $router) {
+JsonApi::register('default')->authorizer('default')->routes(function ($api, $router) {
    // ...
 });
 ```
@@ -103,12 +102,17 @@ JsonApi::register('default', ['middleware' => 'json-api.auth:default'], function
 Or to use the `visitor` authorizer on specific resources:
 
 ```php
-JsonApi::register('default', [], function ($api, $router) {
+JsonApi::register('default')->routes(function ($api, $router) {
    $api->resource('posts'); // not protected
-   $api->resource('comments', ['middleware' => 'json-api.auth:visitor']); // protected
-   $api->resource('countries', ['middleware' => 'json-api.auth:visitor']); // protected
+   $api->resource('comments')->authorizer('visitor'); // protected
+   $api->resource('countries')->authorizer('visitor'); // protected
 });
 ```
+
+> If you call `authorizer` before `middleware`, then the authorizer will run before your other middleware.
+If you call it after, it will run after the other middleware. You can call
+`$api->middleware('foo')->authorizer('default')->middleware('bar')` to run the authorizer middleware in-between
+your other middleware.
 
 Authorizers that are for a specific resource type are automatically detected and invoked, so you do not
 need to add them as middleware.

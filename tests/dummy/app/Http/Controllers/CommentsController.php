@@ -17,14 +17,34 @@
 
 namespace DummyApp\Http\Controllers;
 
-use CloudCreativity\LaravelJsonApi\Http\Controllers\EloquentController;
+use CloudCreativity\LaravelJsonApi\Http\Controllers\JsonApiController;
+use CloudCreativity\LaravelJsonApi\Http\Requests\FetchRelated;
 use CloudCreativity\LaravelJsonApi\Http\Requests\ValidatedRequest;
+use DummyApp\Comment;
+use DummyApp\Jobs\SharePost;
 use DummyApp\Post;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Http\Response;
 
-class CommentsController extends EloquentController
+class CommentsController extends JsonApiController
 {
+
+    /**
+     * @param FetchRelated $request
+     * @param Comment $comment
+     * @return Response
+     */
+    public function sharePost(FetchRelated $request, Comment $comment): Response
+    {
+        $post = $comment->commentable;
+
+        abort_unless($post instanceof Post, '404');
+
+        SharePost::dispatch($post);
+
+        return $this->reply()->content($post);
+    }
 
     /**
      * @param ValidatedRequest $request

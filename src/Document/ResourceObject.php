@@ -22,6 +22,7 @@ use CloudCreativity\LaravelJsonApi\Object\ResourceObject as LegacyResourceObject
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 
 class ResourceObject implements Arrayable, \IteratorAggregate, \JsonSerializable, \ArrayAccess
 {
@@ -552,6 +553,26 @@ class ResourceObject implements Arrayable, \IteratorAggregate, \JsonSerializable
         }
 
         return $prefix ? $prefix : '/';
+    }
+
+    /**
+     * Convert a validation key to a JSON pointer for a relationship object within the resource.
+     *
+     * @param string $key
+     * @param string $default
+     * @return string
+     */
+    public function pointerForRelationship(string $key, string $default = '/'): string
+    {
+        $field = collect(explode('.', $key))->first();
+
+        if (!$this->isRelationship($field)) {
+            throw new \InvalidArgumentException("Field {$field} is not a relationship.");
+        }
+
+        $pointer = $this->pointer($key);
+
+        return Str::after($pointer, "relationships/{$field}") ?: $default;
     }
 
     /**

@@ -27,6 +27,8 @@ use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorProviderInterfa
 class DeleteResource extends ValidatedRequest
 {
 
+    use Concerns\ResourceRequest;
+
     /**
      * @inheritDoc
      */
@@ -58,6 +60,11 @@ class DeleteResource extends ValidatedRequest
         $this->passes(
             $validators->modifyQuery($this->query())
         );
+
+        /** Validate that the delete is allowed. */
+        if ($validator = $validators->delete($this->getRecord())) {
+            $this->passes($validator);
+        }
     }
 
 }

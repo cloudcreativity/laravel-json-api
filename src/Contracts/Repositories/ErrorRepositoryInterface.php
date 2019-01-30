@@ -19,7 +19,6 @@
 namespace CloudCreativity\LaravelJsonApi\Contracts\Repositories;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Document\MutableErrorInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Utils\ConfigurableInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\MutableErrorCollection;
 
 /**
@@ -28,7 +27,7 @@ use CloudCreativity\LaravelJsonApi\Exceptions\MutableErrorCollection;
  * @package CloudCreativity\LaravelJsonApi
  * @deprecated 2.0.0 create errors via the error translator instead.
  */
-interface ErrorRepositoryInterface extends ConfigurableInterface
+interface ErrorRepositoryInterface
 {
 
     /**

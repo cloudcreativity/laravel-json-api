@@ -18,6 +18,8 @@
 
 namespace CloudCreativity\LaravelJsonApi\Api;
 
+use CloudCreativity\LaravelJsonApi\Codec\DecodingList;
+use CloudCreativity\LaravelJsonApi\Codec\EncodingList;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use CloudCreativity\LaravelJsonApi\Resolver\AggregateResolver;
@@ -71,36 +73,27 @@ class Repository
     {
         $config = $this->configFor($apiName);
         $config = $this->normalize($config, $host);
+        $url = Url::fromArray($config['url']);
         $resolver = new AggregateResolver($this->factory->createResolver($apiName, $config));
 
         $api = new Api(
             $this->factory,
             $resolver,
             $apiName,
-            $config['codecs'],
-            Url::fromArray($config['url']),
-            Jobs::fromArray($config['jobs'] ?: []),
+            EncodingList::fromArray($config['encoding'] ?? [], $url->toString()),
+            DecodingList::fromArray($config['decoding'] ?? []),
+            $url,
+            Jobs::fromArray($config['jobs'] ?? []),
             $config['use-eloquent'],
             $config['supported-ext'],
-            $config['errors']
+            $config['errors'],
+            $config['providers'] ?? []
         );
 
         /** Attach resource providers to the API. */
-        $this->createProviders($apiName)->registerAll($api);
+        $api->providers()->registerAll($api);
 
         return $api;
-    }
-
-    /**
-     * @param $apiName
-     * @return ResourceProviders
-     */
-    public function createProviders($apiName)
-    {
-        return new ResourceProviders(
-            $this->factory,
-            $this->config->get($this->configKey($apiName, 'providers'))
-        );
     }
 
     /**
@@ -128,13 +121,8 @@ class Repository
         $config = array_replace([
             'namespace' => null,
             'by-resource' => true,
-            'resources' => [],
             'use-eloquent' => true,
-            'codecs' => null,
             'supported-ext' => null,
-            'url' => null,
-            'errors' => null,
-            'jobs' => null,
         ], $config);
 
         if (!$config['namespace']) {
@@ -142,8 +130,8 @@ class Repository
         }
 
         $config['resources'] = $this->normalizeResources($config['resources'] ?? [], $config);
-        $config['url'] = $this->normalizeUrl((array) $config['url'], $host);
-        $config['errors'] = array_replace($this->defaultErrors(), (array) $config['errors']);
+        $config['url'] = $this->normalizeUrl($config['url'] ?? [], $host);
+        $config['errors'] = array_replace($this->defaultErrors(), $config['errors'] ?? []);
 
         return $config;
     }

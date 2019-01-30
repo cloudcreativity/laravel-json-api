@@ -19,13 +19,14 @@ namespace CloudCreativity\LaravelJsonApi\Utils;
 
 use CloudCreativity\LaravelJsonApi\Exceptions\DocumentRequiredException;
 use CloudCreativity\LaravelJsonApi\Exceptions\InvalidJsonException;
-use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Support\Str as IlluminateStr;
 use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
 use Neomerx\JsonApi\Http\Headers\MediaType;
+use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class Helpers
 {
@@ -70,20 +71,16 @@ class Helpers
      * without any message-body. Therefore rather than checking for the existence of a Content-Length
      * header, we will allow an empty value to indicate that the request does not contain body.
      *
-     * @param RequestInterface $request
+     * @param RequestInterface|SymfonyRequest $request
      * @return bool
      */
-    public static function doesRequestHaveBody(RequestInterface $request)
+    public static function doesRequestHaveBody($request)
     {
-        if ($request->hasHeader('Transfer-Encoding')) {
+        if (self::hasHeader($request, 'Transfer-Encoding')) {
             return true;
         };
 
-        if (!$contentLength = $request->getHeader('Content-Length')) {
-            return false;
-        }
-
-        if (1 > $contentLength[0]) {
+        if (1 > self::getHeader($request, 'Content-Length')) {
             return false;
         }
 
@@ -101,11 +98,11 @@ class Helpers
      * message-body, although it MAY be of zero length."
      * https://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html#sec4.3
      *
-     * @param RequestInterface $request
-     * @param ResponseInterface $response
+     * @param RequestInterface|SymfonyRequest $request
+     * @param ResponseInterface|SymfonyResponse $response
      * @return bool
      */
-    public static function doesResponseHaveBody(RequestInterface $request, ResponseInterface $response)
+    public static function doesResponseHaveBody($request, $response)
     {
         if ('HEAD' === strtoupper($request->getMethod())) {
             return false;
@@ -117,11 +114,11 @@ class Helpers
             return false;
         }
 
-        if ($response->hasHeader('Transfer-Encoding')) {
+        if (self::hasHeader($response, 'Transfer-Encoding')) {
             return true;
         };
 
-        if (!$contentLength = $response->getHeader('Content-Length')) {
+        if (!$contentLength = self::getHeader($response, 'Content-Length')) {
             return false;
         }
 
@@ -131,7 +128,7 @@ class Helpers
     /**
      * Does the request want JSON API content?
      *
-     * @param Request $request
+     * @param SymfonyRequest $request
      * @return bool
      */
     public static function wantsJsonApi($request)
@@ -144,12 +141,12 @@ class Helpers
     /**
      * Has the request sent JSON API content?
      *
-     * @param Request $request
+     * @param SymfonyRequest $request
      * @return bool
      */
     public static function isJsonApi($request)
     {
-        return IlluminateStr::contains($request->header('Content-Type'), MediaType::JSON_API_SUB_TYPE);
+        return IlluminateStr::contains($request->headers->get('Content-Type'), MediaType::JSON_API_SUB_TYPE);
     }
 
     /**
@@ -159,13 +156,17 @@ class Helpers
      * code SHOULD be used in the response. For instance, 400 Bad Request might be appropriate for multiple
      * 4xx errors or 500 Internal Server Error might be appropriate for multiple 5xx errors.
      *
-     * @param iterable $errors
+     * @param iterable|ErrorInterface $errors
      * @param int $default
      * @return int
      * @see https://jsonapi.org/format/#errors
      */
-    public static function httpErrorStatus(iterable $errors, int $default = Response::HTTP_BAD_REQUEST): int
+    public static function httpErrorStatus($errors, int $default = SymfonyResponse::HTTP_BAD_REQUEST): int
     {
+        if ($errors instanceof ErrorInterface) {
+            $errors = [$errors];
+        }
+
         $statuses = collect($errors)->reject(function (ErrorInterface $error) {
             return is_null($error->getStatus());
         })->map(function (ErrorInterface $error) {
@@ -180,7 +181,35 @@ class Helpers
             return 400 <= $status && 499 >= $status;
         });
 
-        return $only4xx ? Response::HTTP_BAD_REQUEST : Response::HTTP_INTERNAL_SERVER_ERROR;
+        return $only4xx ? SymfonyResponse::HTTP_BAD_REQUEST : SymfonyResponse::HTTP_INTERNAL_SERVER_ERROR;
+    }
+
+    /**
+     * @param MessageInterface|SymfonyRequest|SymfonyResponse $message
+     * @param $key
+     * @return mixed
+     */
+    private static function getHeader($message, $key)
+    {
+        if ($message instanceof MessageInterface) {
+            return $message->getHeader($key)[0] ?? null;
+        }
+
+        return $message->headers->get($key);
+    }
+
+    /**
+     * @param MessageInterface|SymfonyRequest|SymfonyResponse $message
+     * @param $key
+     * @return mixed
+     */
+    private static function hasHeader($message, $key)
+    {
+        if ($message instanceof MessageInterface) {
+            return $message->hasHeader($key);
+        }
+
+        return $message->headers->has($key);
     }
 
 }

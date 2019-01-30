@@ -3,12 +3,65 @@
 Install using [Composer](http://getcomposer.org):
 
 ``` bash
-$ composer require cloudcreativity/laravel-json-api:1.0.0-beta.6
+$ composer require cloudcreativity/laravel-json-api:1.0.0-rc.1
 $ composer require --dev cloudcreativity/json-api-testing:1.0.0-rc.1
 ```
 
 This package's service provider and facade will be automatically added using package discovery. You will
-then need to update your Exception handler as follows...
+then need to check your API route prefix and update your Exception handler as follows...
+
+## Route Prefixes
+
+The default Laravel installation has an `api` prefix for API routes. If you want to register your JSON API
+routes in your `routes/api.php` file, you will need to remove the prefix from the `mapApiRoutes()` method in your 
+`RouteServiceProvider`.
+
+For example, change this:
+
+```php
+<?php
+
+namespace App\Providers;
+
+use Illuminate\Support\Facades\Route;
+use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
+
+class RouteServiceProvider extends ServiceProvider
+{
+    // ...
+
+    protected function mapApiRoutes()
+    {
+        Route::prefix('api')
+             ->middleware('api')
+             ->namespace($this->namespace)
+             ->group(base_path('routes/api.php'));
+    }
+}
+```
+
+To this:
+
+```php
+<?php
+
+namespace App\Providers;
+
+use Illuminate\Support\Facades\Route;
+use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
+
+class RouteServiceProvider extends ServiceProvider
+{
+    // ...
+
+    protected function mapApiRoutes()
+    {
+        Route::middleware('api')
+             ->namespace($this->namespace)
+             ->group(base_path('routes/api.php'));
+    }
+}
+```
 
 ## Exception Handling
 

@@ -18,8 +18,7 @@
 namespace DummyPackage;
 
 use CloudCreativity\LaravelJsonApi\Api\ResourceProvider as BaseResourceProvider;
-use CloudCreativity\LaravelJsonApi\Routing\ApiGroup;
-use Illuminate\Contracts\Routing\Registrar;
+use CloudCreativity\LaravelJsonApi\Routing\RouteRegistrar;
 
 class ResourceProvider extends BaseResourceProvider
 {
@@ -34,17 +33,17 @@ class ResourceProvider extends BaseResourceProvider
     /**
      * @inheritDoc
      */
-    public function mount(ApiGroup $api, Registrar $router)
+    public function mount(RouteRegistrar $api): void
     {
-        $api->resource('blogs', [
-            'controller' => '\\' . Http\Controllers\BlogsController::class,
-        ]);
+        $api->namespace('\\DummyPackage\\Http\\Controllers')->group(function (RouteRegistrar $api) {
+            $api->resource('blogs');
+        });
     }
 
     /**
      * @inheritDoc
      */
-    protected function getRootNamespace()
+    protected function getRootNamespace(): string
     {
         return __NAMESPACE__ . '\\Resources';
     }

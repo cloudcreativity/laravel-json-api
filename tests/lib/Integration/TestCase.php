@@ -19,6 +19,7 @@
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration;
 
 use CloudCreativity\LaravelJsonApi\Facades\JsonApi;
+use CloudCreativity\LaravelJsonApi\Routing\ApiRegistration;
 use CloudCreativity\LaravelJsonApi\ServiceProvider;
 use CloudCreativity\LaravelJsonApi\Testing\MakesJsonApiRequests;
 use CloudCreativity\LaravelJsonApi\Testing\TestExceptionHandler;
@@ -70,7 +71,7 @@ abstract class TestCase extends BaseTestCase
         return [
             ServiceProvider::class,
             DummyPackage\ServiceProvider::class,
-            DummyApp\Providers\DummyServiceProvider::class,
+            DummyApp\Providers\AppServiceProvider::class,
         ];
     }
 
@@ -109,18 +110,52 @@ abstract class TestCase extends BaseTestCase
      * Use the default dummy app routes.
      *
      * @return $this
+     * @deprecated use acceptance tests to test the dummy app.
      */
     protected function withAppRoutes()
     {
-        Route::group([
-            'namespace' => 'DummyApp\\Http\\Controllers',
-        ], function () {
-            require __DIR__ . '/../../dummy/routes/json-api.php';
+        Route::middleware('web')
+            ->namespace($namespace = 'DummyApp\\Http\\Controllers')
+            ->group(__DIR__ . '/../../dummy/routes/web.php');
+
+        Route::group(compact('namespace'), function () {
+            require __DIR__ . '/../../dummy/routes/api.php';
         });
 
         $this->refreshRoutes();
 
         return $this;
+    }
+
+    /**
+     * @param \Closure $callback
+     * @param array $options
+     * @param string $api
+     * @return $this
+     */
+    protected function withRoutes(\Closure $callback, array $options = [], string $api = 'v1')
+    {
+        Route::group([
+            'namespace' => '\\DummyApp\\Http\\Controllers',
+        ], function () use ($api, $options, $callback) {
+
+            if (empty($options)) {
+                JsonApi::register($api, $callback);
+            } else {
+                JsonApi::register($api, $options, $callback);
+            }
+        });
+
+        return $this;
+    }
+
+    /**
+     * @param string $api
+     * @return ApiRegistration
+     */
+    protected function withFluentRoutes(string $api = 'v1'): ApiRegistration
+    {
+        return JsonApi::register($api)->withNamespace('\\DummyApp\\Http\\Controllers');
     }
 
     /**

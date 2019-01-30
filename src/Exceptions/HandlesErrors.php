@@ -18,15 +18,13 @@
 
 namespace CloudCreativity\LaravelJsonApi\Exceptions;
 
-use CloudCreativity\LaravelJsonApi\Http\Responses\ErrorResponse;
-use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
 use CloudCreativity\LaravelJsonApi\Utils\Helpers;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
 /**
- * Class HandlerTrait
+ * Trait HandlesErrors
  *
  * @package CloudCreativity\LaravelJsonApi
  */
@@ -37,10 +35,8 @@ trait HandlesErrors
      * Does the HTTP request require a JSON API error response?
      *
      * This method determines if we need to render a JSON API error response
-     * for the provided exception. We need to do this if:
-     *
-     * - The client has requested JSON API via its Accept header; or
-     * - The application is handling a request to a JSON API endpoint.
+     * for the client. We need to do this if the client has requested JSON
+     * API via its Accept header.
      *
      * @param Request $request
      * @param Exception $e
@@ -48,14 +44,7 @@ trait HandlesErrors
      */
     public function isJsonApi($request, Exception $e)
     {
-        if (Helpers::wantsJsonApi($request)) {
-            return true;
-        }
-
-        /** @var JsonApiService $service */
-        $service = app(JsonApiService::class);
-
-        return !is_null($service->requestApi());
+        return Helpers::wantsJsonApi($request);
     }
 
     /**
@@ -65,15 +54,7 @@ trait HandlesErrors
      */
     public function renderJsonApi($request, Exception $e)
     {
-        /** @var ErrorResponse $response */
-        $response = app('json-api.exceptions')->parse($e);
-
-        /** Client does not accept a JSON API response. */
-        if (Response::HTTP_NOT_ACCEPTABLE === $response->getHttpCode()) {
-            return response('', Response::HTTP_NOT_ACCEPTABLE);
-        }
-
-        return json_api()->response()->errors($response);
+        return json_api()->response()->exception($e);
     }
 
 }

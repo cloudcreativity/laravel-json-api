@@ -17,13 +17,15 @@ as long as it implements the methods expected for the registered routes.
 The following route registration:
 
 ```php
-JsonApi::register('default', ['namespace' => 'Api'], function ($api, $router) {
+JsonApi::register('default')->routes(function ($api, $router) {
     $api->resource('posts');
 });
 ```
 
 Will use the `CloudCreativity\LaravelJsonApi\Http\Controllers\JsonApiController` for the `posts` resource. This
 will work for all controller actions without any customisation. So by default, no controller is needed.
+
+> Refer to the [Routing](./routing.md) chapter for details on how to change the default controller.
 
 ## Extended Controller
 
@@ -32,8 +34,8 @@ you can extend the `JsonApiController`. When registering the resource routes you
 is to be used:
 
 ```php
-JsonApi::register('default', ['namespace' => 'Api'], function ($api, $router) {
-    $api->resource('posts', ['controller' => true]);
+JsonApi::register('default')->withNamespace('Api')->routes(function ($api, $router) {
+    $api->resource('posts')->controller();
 });
 ```
 
@@ -41,12 +43,12 @@ This will use the `PostsController` in the `Api` namespace. If you are using a d
 you can specify it as follows:
 
 ```php
-JsonApi::register('default', ['namespace' => 'Api'], function ($api, $router) {
-    $api->resource('posts', ['controller' => 'CustomPostsController']);
+JsonApi::register('default')->withNamespace('Api')->routes(function ($api, $router) {
+    $api->resource('posts')->controller('BlogPostsController');
 });
 ```
 
-> The `namespace` option is identical to Laravel's namespace option when registering a route group.
+> The `withNamespace` method is identical to Laravel's namespace method when registering a route group.
 
 Your controller would then look like this:
 
@@ -57,6 +59,8 @@ use CloudCreativity\LaravelJsonApi\Http\Controllers\JsonApiController;
 
 class PostsController extends JsonApiController
 {
+
+  // ...
 }
 ```
 
@@ -87,145 +91,79 @@ class PostsController extends JsonApiController
 ### Resource Hooks
 
 The controller allows you to hook into the resource lifecycle by invoking the following methods if they are 
-implemented:
+implemented. These methods allow you to easily implement application specific actions, such as firing events 
+or dispatching jobs.
 
-- `searching`
-- `reading`
-- `saving`
-- `creating`
-- `updating`
-- `created`
-- `updated`
-- `saved`
-- `deleting`
-- `deleted`
+| Hook | Arguments | Request Class |
+| :-- | :-- | :-- |
+| `searching` | request | `FetchResources` |
+| `searched` | results, request | `FetchResources` |
+| `reading` | record, request | `FetchResource` |
+| `didRead` | result, request | `FetchResource` |
+| `saving` | record, request | `CreateReource` or `UpdateResource` |
+| `creating` | request | `CreateReource` |
+| `updating` | record, request | `UpdateResource` |
+| `created` | record, request | `CreateResource` |
+| `saved` | record, request | `CreateResource` or `UpdateResource` |
+| `deleting` | record, request | `DeleteResource` |
+| `deleted` | record, request | `DeleteResource` | 
 
-These methods allow you to easily implement application specific actions, such as firing events or dispatching
-jobs.
+> The request class is the validated request in the `CloudCreativity\LaravelJsonApi\Http\Requests` namespace.
 
-The `searching` and `reading` hooks are invoked when resource(s) are being accessed, i.e. a `GET` request. The
-`searching` hook is invoked when reading any resources (the *index* action), while `reading` is invoked when
-reading a specific record (the *read* action).
+The `searching`, `searched`, `reading` and `didRead` hooks are invoked when resource(s) are being accessed,
+i.e. a `GET` request. The `searching` and `searched` hooks are invoked when reading any resources 
+(the *index* action), while `reading` and `didRead` are invoked when reading a specific record
+(the *read* action).
 
-> Note that the `reading` hook is **not** invoked if the request has filter parameters and there was no
-matching record.
+> Note that the `didRead` hook will receive a result of `null` if the request has filter parameters and
+there was no matching record.
 
 The `creating` and `created` hooks will be invoked when a resource is being created, i.e. a `POST` request. The
 `updating` and `updated` hooks are invoked for a `PATCH` request on an existing resource. The `saving` and `saved`
 hooks are called for both `POST` and `PATCH` requests.
 
-The `searching` and `creating` hooks receive the JSON API request submitted by the client as their only argument, 
-for example:
+> Note that the `saving` hook's first argument (the record) will be `null` when creating a resource.
 
-```php
-use CloudCreativity\LaravelJsonApi\Http\Controllers\JsonApiController;
-use CloudCreativity\LaravelJsonApi\Http\Requests\ValidatedRequest;
-
-class PostsController extends JsonApiController
-{
-
-    protected function creating(ValidatedRequest $request)
-    {
-        // ...
-    }
-}
-```
-
-> The `creating` hook only receives the request because at the point it is invoked, the record does not exist.
-
-The `reading`, `created`, `updating`, `updated`, `saved`, `deleting` and `deleted` hooks receive the domain record 
-as their first argument, and the JSON API request as the second argument. For example:
-
-```php
-use App\Post;
-use CloudCreativity\LaravelJsonApi\Http\Controllers\JsonApiController;
-use CloudCreativity\LaravelJsonApi\Http\Requests\ValidatedRequest;
-
-class PostsController extends JsonApiController
-{
-
-    protected function updated(Post $post, ValidatedRequest $request)
-    {
-        // ...
-    }
-}
-```
-
-The `saving` hook receives the same arguments (the record and the request). However the record will be `null` if
-the resource is being created because it does not exist at this point. For example:
-
-```php
-use App\Post;
-use CloudCreativity\LaravelJsonApi\Http\Controllers\JsonApiController;
-use CloudCreativity\LaravelJsonApi\Http\Requests\ValidatedRequest;
-
-class PostsController extends JsonApiController
-{
-
-    protected function saving(?Post $post, ValidatedRequest $request)
-    {
-        // ...
-    }
-}
-```
+Controller hooks are intended primarily for dispatching events or jobs. If you need to execute logic to fill
+values into your domain record when creating or updating them, you should use [Adapter hooks](./adapters.md)
+instead. This is because adapters are the classes that contain the logic to fill domain records.
 
 ### Relationship Hooks
 
 The controller also allows you to hook into the relationship lifecycle by invoking the following methods if they are
-implemented:
+implemented. These methods allow you to easily implement application specific actions, such as firing events or
+dispatching jobs.
 
-- `readingRelationship`
-- `reading{Field}`
-- `replacing`
-- `replacing{Field}`
-- `replaced{Field}`
-- `replaced`
-- `adding`
-- `adding{Field}`
-- `added{Field`
-- `added`
-- `removing`
-- `removing{Field}`
-- `removed{Field}`
-- `removed`
-
-These methods allow you to easily implement application specific actions, such as firing events or dispatching
-jobs.
+| Hook | Arguments | Request Class |
+| :-- | :-- | :-- |
+| `readingRelationship` | record, request | `FetchRelated` or `FetchRelationship` |
+| `reading{Field}` | record, request | `FetchRelated` or `FetchRelationship` |
+| `didRead{Field}` | record, related, request | `FetchRelated` or `FetchRelationship` |
+| `didReadRelationship` | record, related, request | `FetchRelated` or `FetchRelationship` |
+| `replacing` | record, request | `UpdateRelationship` |
+| `replacing{Field}` | record, request | `UpdateRelationship` |
+| `replaced{Field}` | record, request | `UpdateRelationship` |
+| `replaced` | record, request | `UpdateRelationship` |
+| `adding` | record, request | `UpdateRelationship` |
+| `adding{Field}` | record, request | `UpdateRelationship` |
+| `added{Field}` | record, request | `UpdateRelationship` |
+| `added` | record, request | `UpdateRelationship` |
+| `removing` | record, request | `UpdateRelationship` |
+| `removing{Field}` | record, request | `UpdateRelationship` |
+| `removed{Field}` | record, request | `UpdateRelationship` |
+| `removed` | record, request | `UpdateRelationship` |
 
 In the above method names `{Field}` refers to the camel-cased JSON API field name for the relationship. For example,
-if reading the `author` relationship on a `posts` resource, the `readingRelationship` and/or `readingAuthor`
+if reading the `author` relationship on a `posts` resource, the `readingRelationship` and `readingAuthor`
 methods will be invoked if they exist.
 
-The `reading...` methods are invoked when accessing the related resource or the relationship data, i.e. a `GET`
-relationship request. The `replacing...` methods are invoked when changing the entire relationship in a
-`PATCH` relationship request.
+The `reading...` and `didRead...` methods are invoked when accessing the related resource or the relationship data,
+i.e. a `GET` relationship request. The `replacing...` and `replaced...` methods are invoked when changing the 
+entire relationship in a `PATCH` relationship request.
 
-For *to-many* relationships, the `adding...` methods are invoked when adding resources to the relationship
-using a `POST` relationship request. The `removing...` methods are invoked when removing resource from the
-relationship using a `DELETE` relationship request.
-
-All the relationship hooks receive the primary record being read as their first argument, and the JSON API request
-received from the client as the second. For example:
-
-```php
-use App\Post;
-use CloudCreativity\LaravelJsonApi\Http\Controllers\JsonApiController;
-use CloudCreativity\LaravelJsonApi\Http\Requests\ValidatedRequest;
-
-class PostsController extends JsonApiController
-{
-
-    protected function replacing(Post $post, ValidatedRequest $request)
-    {
-        // ...
-    }
-
-    protected function addingTags(Post $post, ValidatedRequest $request)
-    {
-        // ...
-    }
-}
-```
+For *to-many* relationships, the `adding...` and `added...` methods are invoked when adding resources to the
+relationship using a `POST` relationship request. The `removing...` and `removed...` methods are invoked when
+removing resource from the relationship using a `DELETE` relationship request.
 
 ### Responses
 
@@ -263,6 +201,90 @@ Content-Type: application/vnd.api+json
   }
 }
 ```
+
+## Custom Actions
+
+The [Routing Chapter](./routing.md) describes how you can register custom routes in your API. For example
+if we added an action to share a `posts` resource:
+
+```php
+JsonApi::register('default')->withNamespace('Api')->routes(function ($api) {
+    $api->resource('posts')->controller()->routes(function ($posts) {
+        $posts->post('{record}/share', 'share');
+    });
+});
+```
+
+This would expect the `share` method to be implemented on our resource's controller. For example:
+
+```php
+namespace App\Http\Controllers\Api;
+
+use CloudCreativity\LaravelJsonApi\Http\Controllers\JsonApiController;
+
+class PostsController extends JsonApiController
+{
+    
+    public function share(\App\Post $post): \Illuminate\Http\Response
+    {
+        \App\Jobs\SharePost::dispatch($post);
+        
+        return $this->reply()->content($post);
+    }
+}
+```
+
+When you do this, any query parameters sent by the client will be used when encoding the response. If you
+have not validated the request, this could result in an error.
+
+To avoid this, you will need to type-hint the JSON API request class to ensure the request is validated.
+This package provides a number of request classes that validated the different *types* of request that
+are defined by the JSON API specification. You should type-hint whichever is appropriate for your action.
+
+> These request classes are validated when they are resolved out of the container. I.e. they work like
+Laravel's form requests.
+
+The example *share* action does not expect there to be any request body content, but it is going to return
+a `posts` resource in the response. It is therefore the same as request to fetch a `posts` resource i.e.
+`GET /api/posts/123`. (This is the case even if we have registered the action as needing to be called as
+`POST /api/posts/123/share`.) We would therefore type-hint the `FetchResource` request object:
+
+```php
+namespace App\Http\Controllers\Api;
+
+use CloudCreativity\LaravelJsonApi\Http\Controllers\JsonApiController;
+use CloudCreativity\LaravelJsonApi\Http\Requests\FetchResource;
+
+class PostsController extends JsonApiController
+{
+    
+    public function share(FetchResource $request, \App\Post $post): \Illuminate\Http\Response
+    {
+        \App\Jobs\SharePost::dispatch($post);
+        
+        return $this->reply()->content($post);
+    }
+}
+```
+
+All request classes are in the `CloudCreativity\LaravelJsonApi\Http\Requests` namespace. These are
+the ones available:
+
+| Action | Request Class |
+| :-- | :-- |
+| `index` | `FetchResources` |
+| `create` | `CreateResource` |
+| `read` | `FetchResource` |
+| `update` | `UpdateResource` |
+| `delete` | `DeleteResource` |
+| `readRelatedResource` | `FetchRelated` |
+| `readRelationship` | `FetchRelationship` |
+| `replaceRelationship` | `UpdateRelationship` |
+| `addToRelationship` | `UpdateRelationship` |
+| `removeFromRelationship` | `UpdateRelationship` |
+
+> All of these classes extended the `ValidatedRequest` abstract class. If none of them do exactly what you
+need for your custom action, you can write you own request class that extends the abstract class.
 
 ## Custom Controller
 

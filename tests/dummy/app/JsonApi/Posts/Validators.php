@@ -73,6 +73,27 @@ class Validators extends AbstractValidators
     ];
 
     /**
+     * @var array
+     */
+    protected $attributes = [
+        'published' => 'published date',
+    ];
+
+    /**
+     * @var array
+     */
+    protected $deleteMessages = [
+        'accepted' => 'Cannot delete a post with :attribute.',
+    ];
+
+    /**
+     * @var array
+     */
+    protected $deleteAttributes = [
+        'no_comments' => 'comments',
+    ];
+
+    /**
      * @param Post|null $record
      * @return array|mixed
      */
@@ -85,7 +106,7 @@ class Validators extends AbstractValidators
         }
 
         return [
-            'title' => "required|string|between:1,255",
+            'title' => "required|string|between:5,255",
             'content' => "required|string|min:1",
             'slug' => "required|alpha_dash|$slugUnique",
             'published' => [
@@ -94,6 +115,28 @@ class Validators extends AbstractValidators
             ],
             'author.type' => 'in:users',
             'tags.*.type' => 'in:tags',
+        ];
+    }
+
+    /**
+     * @param Post $record
+     * @return array|null
+     */
+    protected function deleteRules($record): ?array
+    {
+        return [
+            'no_comments' => 'accepted',
+        ];
+    }
+
+    /**
+     * @param Post $record
+     * @return array
+     */
+    protected function dataForDelete($record): array
+    {
+        return [
+            'no_comments' => $record->comments()->doesntExist(),
         ];
     }
 

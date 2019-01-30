@@ -17,6 +17,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Eloquent;
 
+use CloudCreativity\LaravelJsonApi\Document\ResourceObject;
 use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
 use DummyApp\Phone;
 use DummyApp\User;
@@ -52,6 +53,8 @@ class HasOneTest extends TestCase
                 'name' => $user->name,
                 'email' => $user->email,
                 'password' => 'secret',
+                // @see https://github.com/cloudcreativity/laravel-json-api/issues/262
+                'password-confirmation' => 'secret',
             ],
             'relationships' => [
                 'phone' => [
@@ -61,12 +64,62 @@ class HasOneTest extends TestCase
         ];
 
         $expected = $data;
-        unset($expected['attributes']['password']);
+        unset($expected['attributes']['password'], $expected['attributes']['password-confirmation']);
 
         $id = $this->doCreate($data, ['include' => 'phone'])->assertCreatedWithId($expected);
 
         $this->assertNotNull($refreshed = User::find($id));
         $this->assertNull($refreshed->phone);
+    }
+
+    /**
+     * @return array
+     */
+    public function confirmationProvider(): array
+    {
+        return [
+            ['password-confirmation', 'foo'],
+            ['password-confirmation', null],
+            ['password', 'foo'],
+        ];
+    }
+
+    /**
+     * @param string $field
+     * @param $value
+     * @dataProvider confirmationProvider
+     * @see https://github.com/cloudcreativity/laravel-json-api/issues/262
+     */
+    public function testCreatePasswordNotConfirmed(string $field, $value): void
+    {
+        /** @var User $user */
+        $user = factory(User::class)->make();
+
+        $data = ResourceObject::create([
+            'type' => 'users',
+            'attributes' => [
+                'name' => $user->name,
+                'email' => $user->email,
+                'password' => 'secret',
+                'password-confirmation' => 'secret',
+            ],
+            'relationships' => [
+                'phone' => [
+                    'data' => null,
+                ],
+            ],
+        ])->replace($field, $value);
+
+        $expected = [
+            'status' => '422',
+            'source' => [
+                'pointer' => '/data/attributes/password-confirmation',
+            ],
+        ];
+
+        $id = $this
+            ->doCreate($data, ['include' => 'phone'])
+            ->assertErrorStatus($expected);
     }
 
     /**
@@ -85,6 +138,7 @@ class HasOneTest extends TestCase
                 'name' => $user->name,
                 'email' => $user->email,
                 'password' => 'secret',
+                'password-confirmation' => 'secret',
             ],
             'relationships' => [
                 'phone' => [
@@ -97,7 +151,7 @@ class HasOneTest extends TestCase
         ];
 
         $expected = $data;
-        unset($expected['attributes']['password']);
+        unset($expected['attributes']['password'], $expected['attributes']['password-confirmation']);
 
         $id = $this->doCreate($data, ['include' => 'phone'])->assertCreatedWithId($expected);
 

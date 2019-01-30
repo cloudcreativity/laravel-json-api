@@ -53,6 +53,17 @@ interface ValidatorFactoryInterface
     public function update($record, array $document): ValidatorInterface;
 
     /**
+     * Get a validator for a delete resource request.
+     *
+     * Factories MAY NOT return a validator if the delete request does not
+     * need to be validated.
+     *
+     * @param $record
+     * @return ValidatorInterface|null
+     */
+    public function delete($record): ?ValidatorInterface;
+
+    /**
      * Get a document validator for modifying a relationship.
      *
      * @param object $record

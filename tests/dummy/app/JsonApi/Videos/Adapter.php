@@ -18,13 +18,13 @@
 namespace DummyApp\JsonApi\Videos;
 
 use CloudCreativity\LaravelJsonApi\Document\ResourceObject;
-use CloudCreativity\LaravelJsonApi\Store\EloquentAdapter;
+use CloudCreativity\LaravelJsonApi\Eloquent\AbstractAdapter;
 use DummyApp\Video;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 
-class Adapter extends EloquentAdapter
+class Adapter extends AbstractAdapter
 {
 
     /**

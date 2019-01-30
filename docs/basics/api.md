@@ -229,36 +229,36 @@ The `name` setting applies the specified prefix to all route names that are regi
 example, if the `name` is `api:v1:`, then the route name for the index of the `posts` resource will be
 `api:v1:posts.index`.
 
-## Content Negotiation
+## Media Types
 
-The JSON API spec defines [content negotiation](http://jsonapi.org/format/#content-negotiation) that must occur
-between the client and the server. This is handled by this package based on your API's `codecs` configuration.
+The generated API file contains the default encoding and decoding media types required to support
+the JSON API media type. If you want to change how JSON API documents are JSON-encoded, you can add
+options to the `encoding` configuration.
 
-The generated API file contains a sensible default, for example:
+The options are the same as those used with PHP's `json_encode` function. For example, change this:
 
-``` php
-'codecs' => [
-  'encoders' => [
-    'application/vnd.api+json',
-    'text/plain' => JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES,
-  ],
-  'decoders' => [
-    'application/vnd.api+json',
-  ],
+```php
+return [
+    // ...
+    
+    'encoding' => [
+        'application/vnd.api+json',
+    ],
+];
+```
+
+To this:
+
+```php
+return [
+    // ...
+    
+    'encoding' => [
+        'application/vnd.api+json' => JSON_PRESERVE_ZERO_FRACTION,
+    ],
 ],
 ```
 
-### Encoders
-
-In the example, the config tells the codec matcher that the `application/vnd.api+json` and
-`text/plain` are valid `Accept` headers, along with how to encode responses for each type. If the client sends an 
-`Accept` media type that is not recognised, a `406 Not Acceptable` response will be sent.
-
-> The options for how to encode responses for each media type are the same as the options for PHP's `json_encode()` 
-function.
-
-### Decoders
-
-In the example, the config tells the codec matcher that the `application/vnd.api+json` is the only acceptable
-`Content-Type` that a client can submit. If a different media type is received, a `415 Unsupported Media Type`
-response will be sent.
+You will not need to make any other changes to the `encoding` or `decoding` configuration unless
+you need to add support for other media types. See the
+[Media Types (Content Negotiation)](../features/media-types.md) chapter for full details.

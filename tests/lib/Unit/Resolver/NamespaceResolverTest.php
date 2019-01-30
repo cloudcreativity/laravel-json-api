@@ -33,50 +33,32 @@ class NamespaceResolverTest extends TestCase
             [
                 'posts',
                 'App\Post',
-                'App\JsonApi\Posts\Schema',
-                'App\JsonApi\Posts\Adapter',
-                'App\JsonApi\Posts\Validators',
-                'App\JsonApi\Posts\Authorizer',
+                'App\JsonApi\Posts',
             ],
             [
                 'comments',
                 'App\Comment',
-                'App\JsonApi\Comments\Schema',
-                'App\JsonApi\Comments\Adapter',
-                'App\JsonApi\Comments\Validators',
-                'App\JsonApi\Comments\Authorizer',
+                'App\JsonApi\Comments',
             ],
             [
                 'tags',
                 null,
-                'App\JsonApi\Tags\Schema',
-                'App\JsonApi\Tags\Adapter',
-                'App\JsonApi\Tags\Validators',
-                'App\JsonApi\Tags\Authorizer',
+                'App\JsonApi\Tags',
             ],
             [
                 'dance-events',
                 null,
-                'App\JsonApi\DanceEvents\Schema',
-                'App\JsonApi\DanceEvents\Adapter',
-                'App\JsonApi\DanceEvents\Validators',
-                'App\JsonApi\DanceEvents\Authorizer',
+                'App\JsonApi\DanceEvents',
             ],
             [
                 'dance_events',
                 null,
-                'App\JsonApi\DanceEvents\Schema',
-                'App\JsonApi\DanceEvents\Adapter',
-                'App\JsonApi\DanceEvents\Validators',
-                'App\JsonApi\DanceEvents\Authorizer',
+                'App\JsonApi\DanceEvents',
             ],
             [
                 'danceEvents',
                 null,
-                'App\JsonApi\DanceEvents\Schema',
-                'App\JsonApi\DanceEvents\Adapter',
-                'App\JsonApi\DanceEvents\Validators',
-                'App\JsonApi\DanceEvents\Authorizer',
+                'App\JsonApi\DanceEvents',
             ],
         ];
     }
@@ -90,107 +72,32 @@ class NamespaceResolverTest extends TestCase
             [
                 'posts',
                 'App\Post',
-                'App\JsonApi\Schemas\PostSchema',
-                'App\JsonApi\Adapters\PostAdapter',
-                'App\JsonApi\Validators\PostValidator',
-                'App\JsonApi\Authorizers\PostAuthorizer',
+                'Post',
             ],
             [
                 'comments',
                 'App\Comment',
-                'App\JsonApi\Schemas\CommentSchema',
-                'App\JsonApi\Adapters\CommentAdapter',
-                'App\JsonApi\Validators\CommentValidator',
-                'App\JsonApi\Authorizers\CommentAuthorizer',
+                'Comment',
             ],
             [
                 'tags',
                 null,
-                'App\JsonApi\Schemas\TagSchema',
-                'App\JsonApi\Adapters\TagAdapter',
-                'App\JsonApi\Validators\TagValidator',
-                'App\JsonApi\Authorizers\TagAuthorizer',
+                'Tag',
             ],
             [
                 'dance-events',
                 null,
-                'App\JsonApi\Schemas\DanceEventSchema',
-                'App\JsonApi\Adapters\DanceEventAdapter',
-                'App\JsonApi\Validators\DanceEventValidator',
-                'App\JsonApi\Authorizers\DanceEventAuthorizer',
+                'DanceEvent',
             ],
             [
                 'dance_events',
                 null,
-                'App\JsonApi\Schemas\DanceEventSchema',
-                'App\JsonApi\Adapters\DanceEventAdapter',
-                'App\JsonApi\Validators\DanceEventValidator',
-                'App\JsonApi\Authorizers\DanceEventAuthorizer',
+                'DanceEvent',
             ],
             [
                 'danceEvents',
                 null,
-                'App\JsonApi\Schemas\DanceEventSchema',
-                'App\JsonApi\Adapters\DanceEventAdapter',
-                'App\JsonApi\Validators\DanceEventValidator',
-                'App\JsonApi\Authorizers\DanceEventAuthorizer',
-            ],
-        ];
-    }
-
-    /**
-     * @return array
-     */
-    public function notByResourceWithoutTypeProvider()
-    {
-        return [
-            [
-                'posts',
-                'App\Post',
-                'App\JsonApi\Schemas\Post',
-                'App\JsonApi\Adapters\Post',
-                'App\JsonApi\Validators\Post',
-                'App\JsonApi\Authorizers\Post',
-            ],
-            [
-                'comments',
-                'App\Comment',
-                'App\JsonApi\Schemas\Comment',
-                'App\JsonApi\Adapters\Comment',
-                'App\JsonApi\Validators\Comment',
-                'App\JsonApi\Authorizers\Comment',
-            ],
-            [
-                'tags',
-                null,
-                'App\JsonApi\Schemas\Tag',
-                'App\JsonApi\Adapters\Tag',
-                'App\JsonApi\Validators\Tag',
-                'App\JsonApi\Authorizers\Tag',
-            ],
-            [
-                'dance-events',
-                null,
-                'App\JsonApi\Schemas\DanceEvent',
-                'App\JsonApi\Adapters\DanceEvent',
-                'App\JsonApi\Validators\DanceEvent',
-                'App\JsonApi\Authorizers\DanceEvent',
-            ],
-            [
-                'dance_events',
-                null,
-                'App\JsonApi\Schemas\DanceEvent',
-                'App\JsonApi\Adapters\DanceEvent',
-                'App\JsonApi\Validators\DanceEvent',
-                'App\JsonApi\Authorizers\DanceEvent',
-            ],
-            [
-                'danceEvents',
-                null,
-                'App\JsonApi\Schemas\DanceEvent',
-                'App\JsonApi\Adapters\DanceEvent',
-                'App\JsonApi\Validators\DanceEvent',
-                'App\JsonApi\Authorizers\DanceEvent',
+                'DanceEvent',
             ],
         ];
     }
@@ -220,51 +127,66 @@ class NamespaceResolverTest extends TestCase
     }
 
     /**
+     * @return array
+     */
+    public function genericContentNegotiator()
+    {
+        return [
+            // By resource
+            ['generic', 'App\JsonApi\GenericContentNegotiator', true],
+            ['foo-bar', 'App\JsonApi\FooBarContentNegotiator', true],
+            ['foo_bar', 'App\JsonApi\FooBarContentNegotiator', true],
+            ['fooBar', 'App\JsonApi\FooBarContentNegotiator', true],
+            // Not by resource
+            ['generic', 'App\JsonApi\ContentNegotiators\GenericContentNegotiator', false],
+            ['foo-bar', 'App\JsonApi\ContentNegotiators\FooBarContentNegotiator', false],
+            ['foo_bar', 'App\JsonApi\ContentNegotiators\FooBarContentNegotiator', false],
+            ['fooBar', 'App\JsonApi\ContentNegotiators\FooBarContentNegotiator', false],
+            // Not by resource without type appended:
+            ['generic', 'App\JsonApi\ContentNegotiators\Generic', false, false],
+            ['foo-bar', 'App\JsonApi\ContentNegotiators\FooBar', false, false],
+            ['foo_bar', 'App\JsonApi\ContentNegotiators\FooBar', false, false],
+            ['fooBar', 'App\JsonApi\ContentNegotiators\FooBar', false, false],
+        ];
+    }
+
+    /**
      * @param $resourceType
      * @param $type
-     * @param $schema
-     * @param $adapter
-     * @param $validator
-     * @param $auth
+     * @param $namespace
      * @dataProvider byResourceProvider
      */
-    public function testByResource($resourceType, $type, $schema, $adapter, $validator, $auth)
+    public function testByResource($resourceType, $type, $namespace)
     {
         $resolver = $this->createResolver(true);
 
-        $this->assertResolver($resolver, $resourceType, $type, $schema, $adapter, $validator, $auth);
+        $this->assertResourceNamespace($resolver, $resourceType, $type, $namespace);
     }
 
     /**
      * @param $resourceType
      * @param $type
-     * @param $schema
-     * @param $adapter
-     * @param $validator
-     * @param $auth
+     * @param $singular
      * @dataProvider notByResourceProvider
      */
-    public function testNotByResource($resourceType, $type, $schema, $adapter, $validator, $auth)
+    public function testNotByResource($resourceType, $type, $singular)
     {
         $resolver = $this->createResolver(false);
 
-        $this->assertResolver($resolver, $resourceType, $type, $schema, $adapter, $validator, $auth);
+        $this->assertUnitNamespace($resolver, $resourceType, $type,  'App\JsonApi', $singular);
     }
 
     /**
      * @param $resourceType
      * @param $type
-     * @param $schema
-     * @param $adapter
-     * @param $validator
-     * @param $auth
-     * @dataProvider notByResourceWithoutTypeProvider
+     * @param $singular
+     * @dataProvider notByResourceProvider
      */
-    public function testNotByResourceWithoutType($resourceType, $type, $schema, $adapter, $validator, $auth)
+    public function testNotByResourceWithoutType($resourceType, $type, $singular)
     {
         $resolver = $this->createResolver(false, false);
 
-        $this->assertResolver($resolver, $resourceType, $type, $schema, $adapter, $validator, $auth);
+        $this->assertUnitNamespaceWithoutType($resolver, $resourceType, $type, 'App\JsonApi', $singular);
     }
 
     public function testAll()
@@ -325,9 +247,18 @@ class NamespaceResolverTest extends TestCase
      * @param $adapter
      * @param $validator
      * @param $auth
+     * @param $contentNegotiator
      */
-    private function assertResolver($resolver, $resourceType, $type, $schema, $adapter, $validator, $auth)
-    {
+    private function assertResolver(
+        $resolver,
+        $resourceType,
+        $type,
+        $schema,
+        $adapter,
+        $validator,
+        $auth,
+        $contentNegotiator
+    ) {
         $exists = !is_null($type);
 
         $this->assertSame($exists, $resolver->isType($type));
@@ -347,5 +278,69 @@ class NamespaceResolverTest extends TestCase
 
         $this->assertSame($exists ? $auth : null, $resolver->getAuthorizerByType($type));
         $this->assertSame($auth, $resolver->getAuthorizerByResourceType($resourceType));
+
+        $this->assertSame($contentNegotiator, $resolver->getContentNegotiatorByResourceType($resourceType));
+    }
+
+    /**
+     * @param $resolver
+     * @param $resourceType
+     * @param $type
+     * @param $namespace
+     */
+    private function assertResourceNamespace($resolver, $resourceType, $type, $namespace)
+    {
+        $this->assertResolver(
+            $resolver,
+            $resourceType,
+            $type,
+            "{$namespace}\Schema",
+            "{$namespace}\Adapter",
+            "{$namespace}\Validators",
+            "{$namespace}\Authorizer",
+            "{$namespace}\ContentNegotiator"
+        );
+    }
+
+    /**
+     * @param $resolver
+     * @param $resourceType
+     * @param $type
+     * @param $namespace
+     * @param $singular
+     */
+    private function assertUnitNamespace($resolver, $resourceType, $type, $namespace, $singular)
+    {
+        $this->assertResolver(
+            $resolver,
+            $resourceType,
+            $type,
+            "{$namespace}\Schemas\\{$singular}Schema",
+            "{$namespace}\Adapters\\{$singular}Adapter",
+            "{$namespace}\Validators\\{$singular}Validator",
+            "{$namespace}\Authorizers\\{$singular}Authorizer",
+            "{$namespace}\ContentNegotiators\\{$singular}ContentNegotiator"
+        );
+    }
+
+    /**
+     * @param $resolver
+     * @param $resourceType
+     * @param $type
+     * @param $namespace
+     * @param $singular
+     */
+    private function assertUnitNamespaceWithoutType($resolver, $resourceType, $type, $namespace, $singular)
+    {
+        $this->assertResolver(
+            $resolver,
+            $resourceType,
+            $type,
+            "{$namespace}\Schemas\\{$singular}",
+            "{$namespace}\Adapters\\{$singular}",
+            "{$namespace}\Validators\\{$singular}",
+            "{$namespace}\Authorizers\\{$singular}",
+            "{$namespace}\ContentNegotiators\\{$singular}"
+        );
     }
 }

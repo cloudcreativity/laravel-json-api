@@ -2,6 +2,69 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## [1.0.0-rc.1] - 2019-01-30
+
+### Added
+- [#271](https://github.com/cloudcreativity/laravel-json-api/issues/271)
+Can now validate delete resource requests.
+- [#196](https://github.com/cloudcreativity/laravel-json-api/issues/196)
+Can now add custom actions to resource controllers. Refer to the [Routing](./docs/basics/routing.md) and
+[Controllers](./docs/basics/controllers.md) chapters.
+- [#242](https://github.com/cloudcreativity/laravel-json-api/issues/242)
+Can now override the default controller for an API. Refer to the [Controllers](./docs/basics/controllers.md)
+chapter for details.
+- [#289](https://github.com/cloudcreativity/laravel-json-api/pull/289)
+Can now opt-in to Laravel validation failure data being added to the `meta` member of JSON API
+error objects.
+
+### Changed
+- [#254](https://github.com/cloudcreativity/laravel-json-api/pull/254)
+Refactored content negotiation so that multiple media types can be supported. Refer to the
+[Media Types](./docs/features/media-types.md) documentation for details.
+- Simplified the validator classes into a single class: `Validators\Validator`.
+- Renamed a lot of classes in the `Routing` namespace. They are also marked as `final` because they
+are not meant to be extended.
+- Modified the abstract `mount` method that package providers use to add routes to an API.
+Also added PHP 7 type-hinting to all methods in the abstract class. 
+
+### Fixed
+- [#280](https://github.com/cloudcreativity/laravel-json-api/issues/280)
+Validation error objects for relationship objects now have correct source pointers.
+- [#284](https://github.com/cloudcreativity/laravel-json-api/issues/284)
+Content negotiation middleware no longer causes a container binding exception when the Kernel
+is terminated.
+
+### Removed
+- The following classes in the `Validation` namespace were removed as the `Validation\Validator`
+class can be used instead, or validators can be constructed via the factory instead:
+  - `AbstractValidator`
+  - `ResourceValidator`
+  - `QueryValidator`
+- The deprecated `EloquentController` was removed - extend `JsonApiController` directly.
+- The `Store\EloquentAdapter` was removed - extend `Eloquent\AbstractAdapter` directly.
+- The following previously deprecated methods/properties were removed from the `EloquentAdapter`:
+  - public method `queryRelation()`: renamed `queryToMany()`.
+  - protected property `$with`: renamed `$defaultWith`.
+  - protected method `keyForAttribute()`: renamed `modelKeyForField()`.
+  - protected method `columnForField()`: renamed `getSortColumn()`.
+  - protected method `all()`: renamed `searchAll()`.
+  - protected method `extractIncludePaths()`: overload the `getQueryParameters()` method instead.
+  - protected method `extractFilters()`: overload the `getQueryParameters()` method instead.
+  - protected method `extractPagination()`: overload the `getQueryParameters()` method instead.
+- The previously deprecated `Eloquent\Concerns\AbstractRelation` class was removed.
+Extend `Adapter\AbstractRelationshipAdapter` and use the `Eloquent\Concerns\QueriesRelations` trait.
+- Removed the deprecated `Contracts\Utils\ConfigurableInterface` as this has not been in use for
+some time.
+- Removed the deprecated `createResourceDocumentValidator()` method from the factory.
+- Removed the following previously deprecated methods from the `TestResponse` class:
+  - `assertJsonApiResponse()`: use `jsonApi()`.
+  - `normalizeIds()` and `normalizeId()` as these are not in use by the refactored test implementation.
+- Removed the following previously deprecated methods from the JSON API service/facade:
+  - `report()`: no longer supported for access via the service.
+  - `requestOrFail()`: no longer required.
+- Removed the previously deprecated `Schema\ExtractsAttributesTrait` as it has not been used for
+some time.
+
 ## [1.0.0-beta.6] - 2019-01-03
 
 ### Added

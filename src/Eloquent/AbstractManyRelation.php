@@ -17,6 +17,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Eloquent;
 
+use CloudCreativity\LaravelJsonApi\Adapter\AbstractRelationshipAdapter;
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\HasManyAdapterInterface;
 use Illuminate\Database\Eloquent\Model;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
@@ -26,8 +27,25 @@ use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
  *
  * @package CloudCreativity\LaravelJsonApi
  */
-abstract class AbstractManyRelation extends AbstractRelation implements HasManyAdapterInterface
+abstract class AbstractManyRelation extends AbstractRelationshipAdapter implements HasManyAdapterInterface
 {
+
+    use Concerns\QueriesRelations;
+
+    /**
+     * @var string
+     */
+    protected $key;
+
+    /**
+     * AbstractManyRelation constructor.
+     *
+     * @param string $key
+     */
+    public function __construct($key)
+    {
+        $this->key = $key;
+    }
 
     /**
      * @param Model $record

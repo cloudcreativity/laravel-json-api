@@ -24,13 +24,16 @@ use CloudCreativity\LaravelJsonApi\Contracts\Validation\DocumentValidatorInterfa
 use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorProviderInterface;
+use CloudCreativity\LaravelJsonApi\Exceptions\DocumentRequiredException;
 use CloudCreativity\LaravelJsonApi\Exceptions\ValidationException;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use CloudCreativity\LaravelJsonApi\Object\Document;
+use CloudCreativity\LaravelJsonApi\Routing\Route;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Validation\ValidatesWhenResolved;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use Neomerx\JsonApi\Exceptions\JsonApiException;
 
@@ -43,9 +46,9 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
     protected $request;
 
     /**
-     * @var JsonApiRequest
+     * @var Route
      */
-    protected $jsonApiRequest;
+    protected $route;
 
     /**
      * @var Factory
@@ -56,6 +59,16 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
      * @var ContainerInterface
      */
     protected $container;
+
+    /**
+     * @var array|null
+     */
+    private $data;
+
+    /**
+     * @var EncodingParametersInterface|null
+     */
+    private $parameters;
 
     /**
      * Authorize the request.
@@ -80,18 +93,18 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
      * @param Request $httpRequest
      * @param ContainerInterface $container
      * @param Factory $factory
-     * @param JsonApiRequest $jsonApiRequest
+     * @param Route $route
      */
     public function __construct(
         Request $httpRequest,
         ContainerInterface $container,
         Factory $factory,
-        JsonApiRequest $jsonApiRequest
+        Route $route
     ) {
         $this->request = $httpRequest;
         $this->factory = $factory;
         $this->container = $container;
-        $this->jsonApiRequest = $jsonApiRequest;
+        $this->route = $route;
     }
 
     /**
@@ -103,7 +116,7 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
      */
     public function get($key, $default = null)
     {
-        return $this->request->json($key, $default);
+        return array_get($this->all(), $key, $default);
     }
 
     /**
@@ -113,7 +126,22 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
      */
     public function all()
     {
-        return $this->request->json()->all();
+        if (is_array($this->data)) {
+            return $this->data;
+        }
+
+        return $this->data = $this->route->getCodec()->all($this->request);
+    }
+
+    /**
+     * @param $key
+     * @return UploadedFile|null
+     */
+    public function file($key): ?UploadedFile
+    {
+        $file = $this->get($key);
+
+        return ($file instanceof UploadedFile) ? $file : null;
     }
 
     /**
@@ -129,11 +157,27 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
     /**
      * Get the JSON API document as an object.
      *
-     * @return object|null
+     * @return object
      */
     public function decode()
     {
-        return $this->jsonApiRequest->getDocument();
+        return $this->route
+            ->getCodec()
+            ->document($this->request);
+    }
+
+    /**
+     * Get the JSON API document as an object.
+     *
+     * @return object
+     */
+    public function decodeOrFail()
+    {
+        if (!$document = $this->decode()) {
+            throw new DocumentRequiredException();
+        }
+
+        return $document;
     }
 
     /**
@@ -143,7 +187,7 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
      */
     public function getType()
     {
-        return $this->jsonApiRequest->getType();
+        return $this->route->getType();
     }
 
     /**
@@ -153,37 +197,7 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
      */
     public function getResourceType()
     {
-        return $this->jsonApiRequest->getResourceType();
-    }
-
-    /**
-     * Get the resource id that the request is for.
-     *
-     * @return string|null
-     */
-    public function getResourceId()
-    {
-        return $this->jsonApiRequest->getResourceId();
-    }
-
-    /**
-     * Get the relationship name that the request is for.
-     *
-     * @return string|null
-     */
-    public function getRelationshipName()
-    {
-        return $this->jsonApiRequest->getRelationshipName();
-    }
-
-    /**
-     * Get the record that the request relates to.
-     *
-     * @return object|null
-     */
-    public function getRecord()
-    {
-        return $this->jsonApiRequest->getResource();
+        return $this->route->getResourceType();
     }
 
     /**
@@ -194,7 +208,7 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
      */
     public function getDocument()
     {
-        if (!$document = $this->jsonApiRequest->getDocument()) {
+        if (!$document = $this->decode()) {
             return null;
         }
 
@@ -217,16 +231,25 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
      */
     public function getEncodingParameters()
     {
-        return $this->jsonApiRequest->getParameters();
+        if ($this->parameters) {
+            return $this->parameters;
+        }
+
+        $parser = $this->factory->createQueryParametersParser();
+
+        return $this->parameters = $parser->parseQueryParameters(
+            $this->request->query()
+        );
     }
 
     /**
      * Validate the JSON API request.
      *
-     * This method maintains compatibility with Laravel 5.4 and 5.5, as the `ValidatesWhenResolved`
+     * This method maintains compatibility with Laravel 5.5, as the `ValidatesWhenResolved`
      * method was renamed to `validateResolved` in 5.6.
      *
      * @return void
+     * @todo remove when dropping support for Laravel 5.5.
      */
     public function validate()
     {
@@ -241,6 +264,14 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
         $this->authorize();
         $this->validateQuery();
         $this->validateDocument();
+    }
+
+    /**
+     * @return Route
+     */
+    protected function getRoute(): Route
+    {
+        return $this->route;
     }
 
     /**
@@ -273,6 +304,10 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
      */
     protected function failedValidation($validator)
     {
+        if ($validator instanceof ValidatorInterface) {
+            throw ValidationException::create($validator);
+        }
+
         throw new ValidationException($validator->getErrors());
     }
 
@@ -302,7 +337,7 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
     protected function getInverseValidators()
     {
         return $this->container->getValidatorsByResourceType(
-            $this->jsonApiRequest->getInverseResourceType()
+            $this->route->getInverseResourceType()
         );
     }
 

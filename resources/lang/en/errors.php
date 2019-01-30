@@ -112,9 +112,21 @@ return [
         'code' => '',
     ],
 
+    'resource_cannot_be_deleted' => [
+        'title' => 'Not Deletable',
+        'detail' => 'The resource cannot be deleted.',
+        'code' => '',
+    ],
+
     'query_invalid' => [
         'title' => 'Invalid Query Parameter',
         'detail' => 'The request query parameters are invalid.',
+        'code' => '',
+    ],
+
+    'failed_validator' => [
+        'title' => 'Unprocessable Entity',
+        'detail' => 'The document was well-formed but contains semantic errors.',
         'code' => '',
     ],
 ];

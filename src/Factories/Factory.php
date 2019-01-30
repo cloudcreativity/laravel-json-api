@@ -19,16 +19,21 @@
 namespace CloudCreativity\LaravelJsonApi\Factories;
 
 use CloudCreativity\LaravelJsonApi\Api\AbstractProvider;
+use CloudCreativity\LaravelJsonApi\Api\Api;
 use CloudCreativity\LaravelJsonApi\Api\LinkGenerator;
 use CloudCreativity\LaravelJsonApi\Api\ResourceProvider;
 use CloudCreativity\LaravelJsonApi\Api\Url;
 use CloudCreativity\LaravelJsonApi\Api\UrlGenerator;
 use CloudCreativity\LaravelJsonApi\Client\ClientSerializer;
 use CloudCreativity\LaravelJsonApi\Client\GuzzleClient;
+use CloudCreativity\LaravelJsonApi\Codec\Codec;
+use CloudCreativity\LaravelJsonApi\Codec\Decoding;
+use CloudCreativity\LaravelJsonApi\Codec\Encoding;
 use CloudCreativity\LaravelJsonApi\Container;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Encoder\SerializerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Factories\FactoryInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\ContentNegotiatorInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Repositories\ErrorRepositoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
@@ -39,15 +44,16 @@ use CloudCreativity\LaravelJsonApi\Document\ResourceObject;
 use CloudCreativity\LaravelJsonApi\Encoder\Encoder;
 use CloudCreativity\LaravelJsonApi\Encoder\Parameters\EncodingParameters;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
+use CloudCreativity\LaravelJsonApi\Http\ContentNegotiator;
 use CloudCreativity\LaravelJsonApi\Http\Headers\RestrictiveHeadersChecker;
 use CloudCreativity\LaravelJsonApi\Http\Query\ValidationQueryChecker;
 use CloudCreativity\LaravelJsonApi\Http\Responses\ErrorResponse;
 use CloudCreativity\LaravelJsonApi\Http\Responses\Responses;
 use CloudCreativity\LaravelJsonApi\Object\Document;
 use CloudCreativity\LaravelJsonApi\Pagination\Page;
-use CloudCreativity\LaravelJsonApi\Repositories\CodecMatcherRepository;
 use CloudCreativity\LaravelJsonApi\Repositories\ErrorRepository;
 use CloudCreativity\LaravelJsonApi\Resolver\ResolverFactory;
+use CloudCreativity\LaravelJsonApi\Routing\Route;
 use CloudCreativity\LaravelJsonApi\Store\Store;
 use CloudCreativity\LaravelJsonApi\Utils\Replacer;
 use CloudCreativity\LaravelJsonApi\Validation;
@@ -61,8 +67,6 @@ use Illuminate\Contracts\Validation\Factory as ValidatorFactoryContract;
 use Illuminate\Contracts\Validation\Validator;
 use Neomerx\JsonApi\Contracts\Codec\CodecMatcherInterface;
 use Neomerx\JsonApi\Contracts\Document\LinkInterface;
-use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
-use Neomerx\JsonApi\Contracts\Http\Headers\SupportedExtensionsInterface;
 use Neomerx\JsonApi\Contracts\Schema\ContainerInterface as SchemaContainerInterface;
 use Neomerx\JsonApi\Encoder\EncoderOptions;
 use Neomerx\JsonApi\Factories\Factory as BaseFactory;
@@ -192,20 +196,6 @@ class Factory extends BaseFactory implements FactoryInterface
     }
 
     /**
-     * @inheritDoc
-     */
-    public function createConfiguredCodecMatcher(SchemaContainerInterface $schemas, array $codecs, $urlPrefix = null)
-    {
-        $repository = new CodecMatcherRepository($this);
-        $repository->configure($codecs);
-
-        return $repository
-            ->registerSchemas($schemas)
-            ->registerUrlPrefix($urlPrefix)
-            ->getCodecMatcher();
-    }
-
-    /**
      * @inheritdoc
      */
     public function createStore(ContainerInterface $container)
@@ -298,23 +288,19 @@ class Factory extends BaseFactory implements FactoryInterface
     }
 
     /**
-     * @param SchemaContainerInterface $schemas
-     * @param ErrorRepositoryInterface $errors
-     * @param CodecMatcherInterface|null $codecs
-     * @param EncodingParametersInterface|null $parameters
-     * @param SupportedExtensionsInterface|null $extensions
-     * @param string|null $urlPrefix
+     * Create a response factory.
+     *
+     * @param Api $api
      * @return Responses
      */
-    public function createResponses(
-        SchemaContainerInterface $schemas,
-        ErrorRepositoryInterface $errors,
-        CodecMatcherInterface $codecs = null,
-        EncodingParametersInterface $parameters = null,
-        SupportedExtensionsInterface $extensions = null,
-        $urlPrefix = null
-    ) {
-        return new Responses($this, $schemas, $errors, $codecs, $parameters, $extensions, $urlPrefix);
+    public function createResponseFactory(Api $api)
+    {
+        return new Responses(
+            $this,
+            $api,
+            $this->container->make(Route::class),
+            $this->container->make('json-api.exceptions')
+        );
     }
 
     /**
@@ -406,27 +392,6 @@ class Factory extends BaseFactory implements FactoryInterface
     }
 
     /**
-     * Create a validator to check that a resource document complies with the JSON API specification.
-     *
-     * @param object $document
-     * @param string $expectedType
-     *      the expected resource type.
-     * @param string|null $expectedId
-     *      the expected resource id if updating an existing resource.
-     * @return DocumentValidatorInterface
-     * @deprecated 1.0.0 use `createNewResourceDocumentValidator` or `createExistingResourceDocumentValidator`.
-     */
-    public function createResourceDocumentValidator($document, $expectedType, $expectedId = null)
-    {
-        if ($expectedId) {
-            return $this->createExistingResourceDocumentValidator($document, $expectedType, $expectedId);
-        }
-
-        // true for client ids means the old behaviour is supported.
-        return $this->createNewResourceDocumentValidator($document, $expectedType, true);
-    }
-
-    /**
      * Create a validator to check that a relationship document complies with the JSON API specification.
      *
      * @param object $document
@@ -454,26 +419,136 @@ class Factory extends BaseFactory implements FactoryInterface
     }
 
     /**
-     * Create a resource validator.
+     * Create a content negotiator.
+     *
+     * @return ContentNegotiatorInterface
+     */
+    public function createContentNegotiator()
+    {
+        return new ContentNegotiator($this);
+    }
+
+    /**
+     * @param ContainerInterface $container
+     * @param Encoding $encoding
+     * @param Decoding|null $decoding
+     * @return Codec
+     */
+    public function createCodec(ContainerInterface $container, Encoding $encoding, ?Decoding $decoding)
+    {
+        return new Codec($this, $container, $encoding, $decoding);
+    }
+
+    /**
+     * Create a Laravel validator that has JSON API error objects.
      *
      * @param array $data
+     * @param array $rules
+     * @param array $messages
+     * @param array $customAttributes
+     * @param \Closure|null $callback
+     *       a closure for creating an error, that will be bound to the error translator.
+     * @return ValidatorInterface
+     */
+    public function createValidator(
+        array $data,
+        array $rules,
+        array $messages = [],
+        array $customAttributes = [],
+        \Closure $callback = null
+    ): ValidatorInterface
+    {
+        $translator = $this->createErrorTranslator();
+
+        return new Validation\Validator(
+            $this->makeValidator($data, $rules, $messages, $customAttributes),
+            $translator,
+            $callback
+        );
+    }
+
+    /**
+     * Create a JSON API resource object validator.
+     *
+     * @param ResourceObject $resource
      * @param array $rules
      * @param array $messages
      * @param array $customAttributes
      * @return ValidatorInterface
      */
     public function createResourceValidator(
+        ResourceObject $resource,
+        array $rules,
+        array $messages = [],
+        array $customAttributes = []
+    ) {
+        return $this->createValidator(
+            $resource->all(),
+            $rules,
+            $messages,
+            $customAttributes,
+            function ($key, $detail, $failed) use ($resource) {
+                return $this->invalidResource(
+                    $resource->pointer($key, '/data'),
+                    $detail,
+                    $failed
+                );
+            }
+        );
+    }
+
+    /**
+     * Create a JSON API relationship validator.
+     *
+     * @param ResourceObject $resource
+     *      the resource object, containing only the relationship field.
+     * @param array $rules
+     * @param array $messages
+     * @param array $customAttributes
+     * @return ValidatorInterface
+     */
+    public function createRelationshipValidator(
+        ResourceObject $resource,
+        array $rules,
+        array $messages = [],
+        array $customAttributes = []
+    ) {
+        return $this->createValidator(
+            $resource->all(),
+            $rules,
+            $messages,
+            $customAttributes,
+            function ($key, $detail, $failed) use ($resource) {
+                return $this->invalidResource(
+                    $resource->pointerForRelationship($key, '/data'),
+                    $detail,
+                    $failed
+                );
+            }
+        );
+    }
+
+    /**
+     * @param array $data
+     * @param array $rules
+     * @param array $messages
+     * @param array $customAttributes
+     * @return ValidatorInterface
+     */
+    public function createDeleteValidator(
         array $data,
         array $rules,
         array $messages = [],
         array $customAttributes = []
     ) {
-        $resource = ResourceObject::create($data);
-
-        return new Validation\ResourceValidator(
-            $this->makeValidator($resource->all(), $rules, $messages, $customAttributes),
-            $this->createErrorTranslator(),
-            $resource
+        return $this->createValidator(
+            $data,
+            $rules,
+            $messages,
+            $customAttributes,
+            function ($key, $detail) {
+                return $this->resourceCannotBeDeleted($detail);
+            }
         );
     }
 
@@ -492,9 +567,14 @@ class Factory extends BaseFactory implements FactoryInterface
         array $messages = [],
         array $customAttributes = []
     ) {
-        return new Validation\QueryValidator(
-            $this->makeValidator($data, $rules, $messages, $customAttributes),
-            $this->createErrorTranslator()
+        return $this->createValidator(
+            $data,
+            $rules,
+            $messages,
+            $customAttributes,
+            function ($key, $detail, $failed) {
+                return $this->invalidQueryParameter($key, $detail, $failed);
+            }
         );
     }
 

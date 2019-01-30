@@ -29,7 +29,6 @@ use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Utils\ReplacerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\QueryValidatorInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorFactoryInterface;
-use Neomerx\JsonApi\Contracts\Codec\CodecMatcherInterface;
 use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
 use Neomerx\JsonApi\Contracts\Document\LinkInterface;
 use Neomerx\JsonApi\Contracts\Factories\FactoryInterface as BaseFactoryInterface;
@@ -44,7 +43,7 @@ use Psr\Http\Message\ResponseInterface as PsrResponse;
  * Interface FactoryInterface
  *
  * @package CloudCreativity\LaravelJsonApi
- * @deprecated type-hint `Factories\Factory` instead.
+ * @deprecated 2.0.0 type-hint `Factories\Factory` instead.
  */
 interface FactoryInterface extends BaseFactoryInterface
 {
@@ -59,6 +58,7 @@ interface FactoryInterface extends BaseFactoryInterface
      * @param SchemaContainerInterface $container
      * @param EncoderOptions|null $encoderOptions
      * @return SerializerInterface
+     * @deprecated 2.0.0 use `createEncoder`, which in Laravel JSON API returns a serializer.
      */
     public function createSerializer(SchemaContainerInterface $container, EncoderOptions $encoderOptions = null);
 
@@ -68,6 +68,7 @@ interface FactoryInterface extends BaseFactoryInterface
      * @param ErrorInterface|ErrorInterface[]|ErrorCollection $errors
      * @param int|null $defaultHttpCode
      * @param array $headers
+     * @deprecated 2.0.0
      */
     public function createErrorResponse($errors, $defaultHttpCode, array $headers = []);
 
@@ -78,6 +79,7 @@ interface FactoryInterface extends BaseFactoryInterface
      * @param PsrResponse $response
      * @return DocumentInterface|null
      *      the document, or null if the message does not contain body content.
+     * @deprecated 2.0.0
      */
     public function createDocumentObject(PsrRequest $request, PsrResponse $response = null);
 
@@ -89,16 +91,6 @@ interface FactoryInterface extends BaseFactoryInterface
      * @return ClientInterface
      */
     public function createClient($httpClient, SchemaContainerInterface $container, SerializerInterface $encoder);
-
-    /**
-     * Create a codec matcher that is configured using the supplied codecs array.
-     *
-     * @param SchemaContainerInterface $schemas
-     * @param array $codecs
-     * @param string|null $urlPrefix
-     * @return CodecMatcherInterface
-     */
-    public function createConfiguredCodecMatcher(SchemaContainerInterface $schemas, array $codecs, $urlPrefix = null);
 
     /**
      * Create a store.

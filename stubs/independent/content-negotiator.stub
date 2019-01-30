@@ -1,0 +1,43 @@
+<?php
+
+namespace DummyNamespace;
+
+use CloudCreativity\LaravelJsonApi\Http\ContentNegotiator as BaseContentNegotiator;
+
+class DummyClass extends BaseContentNegotiator
+{
+
+    /**
+     * Supported encoding media types.
+     *
+     * Configure supported encoding media types for this negotiator here.
+     * These are merged with the encoding media types from your API. The format
+     * of this array is identical to the format in your API config.
+     *
+     * If you need to programmatically work out encoding media types, or need
+     * to support media types for specific actions, refer to the Content
+     * Negotiation documentation for which methods to overload.
+     *
+     * @var array
+     */
+    protected $encoding = [
+        // @TODO encoding media types
+    ];
+
+    /**
+     * Supported decoding media types.
+     *
+     * Configure supported decoding media types for this negotiator here.
+     * These are merged with the decoding media types from your API. The format
+     * of this array is identical to the format in your API config.
+     *
+     * If you need to programmatically work out decoding media types, or need
+     * to support media types for specific actions, refer to the Content
+     * Negotiation documentation for which methods to overload.
+     *
+     * @var array
+     */
+    protected $decoding = [
+        // @TODO decoding media types
+    ];
+}

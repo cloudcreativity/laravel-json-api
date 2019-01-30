@@ -117,7 +117,7 @@ trait SortsModels
      */
     protected function getQualifiedSortColumn($query, $field)
     {
-        $key = $this->columnForField($field, $query->getModel());
+        $key = $this->getSortColumn($field, $query->getModel());
 
         return $query->qualifyColumn($key);
     }
@@ -139,16 +139,4 @@ trait SortsModels
         return $model::$snakeAttributes ? Str::underscore($field) : Str::camelize($field);
     }
 
-    /**
-     * Get the table column to use for the specified search field.
-     *
-     * @param string $field
-     * @param Model $model
-     * @return string
-     * @deprecated 1.0.0 use `getSortColumn`
-     */
-    protected function columnForField($field, Model $model)
-    {
-        return $this->getSortColumn($field, $model);
-    }
 }

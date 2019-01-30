@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Copyright 2019 Cloud Creativity Limited
  *
@@ -21,13 +20,12 @@ namespace CloudCreativity\LaravelJsonApi\Services;
 use Closure;
 use CloudCreativity\LaravelJsonApi\Api\Api;
 use CloudCreativity\LaravelJsonApi\Api\Repository;
-use CloudCreativity\LaravelJsonApi\Contracts\Http\Responses\ErrorResponseInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Utils\ErrorReporterInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Http\Requests\JsonApiRequest;
 use CloudCreativity\LaravelJsonApi\LaravelJsonApi;
-use CloudCreativity\LaravelJsonApi\Routing\ResourceRegistrar;
-use Exception;
+use CloudCreativity\LaravelJsonApi\Routing\ApiRegistration;
+use CloudCreativity\LaravelJsonApi\Routing\JsonApiRegistrar;
+use CloudCreativity\LaravelJsonApi\Routing\Route;
 use Illuminate\Contracts\Container\Container;
 
 /**
@@ -88,31 +86,24 @@ class JsonApiService
     }
 
     /**
-     * Get the JSON API request, if there is an inbound API handling the request.
+     * Get the current JSON API route.
      *
-     * @return JsonApiRequest|null
+     * @return Route
      */
-    public function request()
+    public function currentRoute(): Route
     {
-        if (!$this->container->bound(Api::class)) {
-            return null;
-        }
-
-        return $this->container->make('json-api.request');
+        return $this->container->make(Route::class);
     }
 
     /**
-     * Get the inbound JSON API request.
+     * Get the JSON API request.
      *
      * @return JsonApiRequest
+     * @deprecated 2.0.0 use `current()`
      */
-    public function requestOrFail()
+    public function request()
     {
-        if (!$request = $this->request()) {
-            throw new RuntimeException('No inbound JSON API request.');
-        }
-
-        return $request;
+        return $this->container->make('json-api.request');
     }
 
     /**
@@ -158,82 +149,16 @@ class JsonApiService
      * Register the routes for an API.
      *
      * @param $apiName
-     * @param array $options
-     * @param Closure $routes
-     * @return void
+     * @param array|Closure $options
+     * @param Closure|null $routes
+     * @return ApiRegistration
      */
-    public function register($apiName, array $options, Closure $routes)
+    public function register($apiName, $options = [], Closure $routes = null): ApiRegistration
     {
-        /** @var ResourceRegistrar $registrar */
+        /** @var JsonApiRegistrar $registrar */
         $registrar = $this->container->make('json-api.registrar');
-        $registrar->api($apiName, $options, $routes);
-    }
 
-    /**
-     * @param ErrorResponseInterface $response
-     * @param Exception|null $e
-     * @return void
-     * @deprecated 1.0.0
-     */
-    public function report(ErrorResponseInterface $response, Exception $e = null)
-    {
-        if (!$this->container->bound(ErrorReporterInterface::class)) {
-            return;
-        }
-
-        /** @var ErrorReporterInterface $reporter */
-        $reporter = $this->container->make(ErrorReporterInterface::class);
-        $reporter->report($response, $e);
-    }
-
-    /**
-     * Get the current API, if one has been bound into the container.
-     *
-     * @return Api
-     * @deprecated 1.0.0 use `requestApi`
-     */
-    public function getApi()
-    {
-        if (!$api = $this->requestApi()) {
-            throw new RuntimeException('No active API. The JSON API middleware has not been run.');
-        }
-
-        return $api;
-    }
-
-    /**
-     * @return bool
-     * @deprecated 1.0.0 use `requestApi()`
-     */
-    public function hasApi()
-    {
-        return !is_null($this->requestApi());
-    }
-
-    /**
-     * Get the current JSON API request, if one has been bound into the container.
-     *
-     * @return JsonApiRequest
-     * @deprecated 1.0.0 use `request()`
-     */
-    public function getRequest()
-    {
-        if (!$request = $this->request()) {
-            throw new RuntimeException('No JSON API request has been created.');
-        }
-
-        return $request;
-    }
-
-    /**
-     * Has a JSON API request been bound into the container?
-     *
-     * @return bool
-     * @deprecated 1.0.0 use `request()`
-     */
-    public function hasRequest()
-    {
-        return !is_null($this->request());
+        return $registrar->api($apiName, $options, $routes);
     }
 
 }

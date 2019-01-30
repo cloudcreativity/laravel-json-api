@@ -17,8 +17,8 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Issue154;
 
+use CloudCreativity\LaravelJsonApi\Routing\RouteRegistrar;
 use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
-use DummyApp\Http\Controllers\PostsController;
 use DummyApp\Post;
 
 class IssueTest extends TestCase
@@ -28,6 +28,23 @@ class IssueTest extends TestCase
      * @var string
      */
     protected $resourceType = 'posts';
+
+    /**
+     * @var bool
+     */
+    protected $appRoutes = false;
+
+    /**
+     * @return void
+     */
+    protected function setUp()
+    {
+        parent::setUp();
+
+        $this->withRoutes(function (RouteRegistrar $api) {
+            $api->resource('posts', ['controller' => true]);
+        });
+    }
 
     /**
      * @return array
@@ -137,7 +154,7 @@ class IssueTest extends TestCase
      */
     private function withResponse($hook, array $unexpected = [])
     {
-        $this->app->instance(PostsController::class, $controller = new Controller());
+        $this->app->instance('DummyApp\Http\Controllers\PostsController', $controller = new Controller());
         $controller->responses[$hook] = response('', 202);
         $controller->unexpected = $unexpected;
 

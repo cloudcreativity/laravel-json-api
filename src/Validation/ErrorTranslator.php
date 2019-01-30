@@ -17,10 +17,17 @@
 
 namespace CloudCreativity\LaravelJsonApi\Validation;
 
+use CloudCreativity\LaravelJsonApi\Exceptions\ValidationException;
+use CloudCreativity\LaravelJsonApi\LaravelJsonApi;
+use CloudCreativity\LaravelJsonApi\Utils\Str;
 use Illuminate\Contracts\Translation\Translator;
+use Illuminate\Contracts\Validation\Validator as ValidatorContract;
 use Illuminate\Http\Response;
+use Illuminate\Support\Collection;
 use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
 use Neomerx\JsonApi\Document\Error;
+use Neomerx\JsonApi\Exceptions\ErrorCollection;
+use Neomerx\JsonApi\Exceptions\JsonApiException;
 
 /**
  * Class ErrorTranslator
@@ -33,7 +40,14 @@ class ErrorTranslator
     /**
      * @var Translator
      */
-    private $translator;
+    protected $translator;
+
+    /**
+     * Is failed meta included in generated error objects?
+     *
+     * @var bool
+     */
+    private $includeFailed;
 
     /**
      * ErrorTranslator constructor.
@@ -43,6 +57,7 @@ class ErrorTranslator
     public function __construct(Translator $translator)
     {
         $this->translator = $translator;
+        $this->includeFailed = LaravelJsonApi::$validationFailures;
     }
 
     /**
@@ -295,14 +310,38 @@ class ErrorTranslator
     }
 
     /**
+     * Create an error for when a resource cannot be deleted.
+     *
+     * @param string|null $detail
+     * @return ErrorInterface
+     */
+    public function resourceCannotBeDeleted(string $detail = null): ErrorInterface
+    {
+        return new Error(
+            null,
+            null,
+            Response::HTTP_UNPROCESSABLE_ENTITY,
+            $this->trans('resource_cannot_be_deleted', 'code'),
+            $this->trans('resource_cannot_be_deleted', 'title'),
+            $detail ?: $this->trans('resource_cannot_be_deleted', 'detail')
+        );
+    }
+
+    /**
      * Create an error for an invalid resource.
      *
      * @param string $path
      * @param string|null $detail
      *      the validation message (already translated).
+     * @param array $failed
+     *      rule failure details
      * @return ErrorInterface
      */
-    public function invalidResource(string $path, ?string $detail = null): ErrorInterface
+    public function invalidResource(
+        string $path,
+        ?string $detail = null,
+        array $failed = []
+    ): ErrorInterface
     {
         return new Error(
             null,
@@ -311,7 +350,8 @@ class ErrorTranslator
             $this->trans('resource_invalid', 'code'),
             $this->trans('resource_invalid', 'title'),
             $detail ?: $this->trans('resource_invalid', 'detail'),
-            $this->pointer($path)
+            $this->pointer($path),
+            $failed ? compact('failed') : null
         );
     }
 
@@ -321,9 +361,11 @@ class ErrorTranslator
      * @param string $param
      * @param string|null $detail
      *      the validation message (already translated).
+     * @param array $failed
+     *      rule failure details.
      * @return ErrorInterface
      */
-    public function invalidQueryParameter(string $param, ?string $detail = null): ErrorInterface
+    public function invalidQueryParameter(string $param, ?string $detail = null, array $failed = []): ErrorInterface
     {
         return new Error(
             null,
@@ -332,8 +374,76 @@ class ErrorTranslator
             $this->trans('query_invalid', 'code'),
             $this->trans('query_invalid', 'title'),
             $detail ?: $this->trans('query_invalid', 'detail'),
-            [Error::SOURCE_PARAMETER => $param]
+            [Error::SOURCE_PARAMETER => $param],
+            $failed ? compact('failed') : null
         );
+    }
+
+    /**
+     * Create errors for a failed validator.
+     *
+     * @param ValidatorContract $validator
+     * @param \Closure|null $closure
+     *      a closure that is bound to the translator.
+     * @return ErrorCollection
+     */
+    public function failedValidator(ValidatorContract $validator, \Closure $closure = null): ErrorCollection
+    {
+        $failed = $this->doesIncludeFailed() ? $validator->failed() : [];
+        $errors = new ErrorCollection();
+
+        foreach ($validator->errors()->messages() as $key => $messages) {
+            $failures = $this->createValidationFailures($failed[$key] ?? []);
+
+            foreach ($messages as $detail) {
+                $failed = $failures->shift() ?: [];
+
+                if ($closure) {
+                    $errors->add($this->call($closure, $key, $detail, $failed));
+                    continue;
+                }
+
+                $errors->add(new Error(
+                    null,
+                    null,
+                    Response::HTTP_UNPROCESSABLE_ENTITY,
+                    $this->trans('failed_validator', 'code'),
+                    $this->trans('failed_validator', 'title'),
+                    $detail ?: $this->trans('failed_validator', 'detail')
+                ));
+            }
+        }
+
+        return $errors;
+    }
+
+    /**
+     * Create a JSON API exception for a failed validator.
+     *
+     * @param ValidatorContract $validator
+     * @param \Closure|null $closure
+     * @return JsonApiException
+     */
+    public function failedValidatorException(
+        ValidatorContract $validator,
+        \Closure $closure = null
+    ): JsonApiException
+    {
+        return new ValidationException(
+            $this->failedValidator($validator, $closure)
+        );
+    }
+
+    /**
+     * Create an error by calling the closure with it bound to the error translator.
+     *
+     * @param \Closure $closure
+     * @param mixed ...$args
+     * @return ErrorInterface
+     */
+    public function call(\Closure $closure, ...$args): ErrorInterface
+    {
+        return $closure->call($this, ...$args);
     }
 
     /**
@@ -372,5 +482,65 @@ class ErrorTranslator
         }
 
         return [Error::SOURCE_POINTER => $pointer];
+    }
+
+    /**
+     * @return bool
+     */
+    protected function doesIncludeFailed(): bool
+    {
+        return $this->includeFailed;
+    }
+
+    /**
+     * @param array $failures
+     * @return Collection
+     */
+    protected function createValidationFailures(array $failures): Collection
+    {
+        return collect($failures)->map(function ($options, $rule) {
+            return $this->createValidationFailure($rule, $options);
+        })->values();
+    }
+
+    /**
+     * @param string $rule
+     * @param array|null $options
+     * @return array
+     */
+    protected function createValidationFailure(string $rule, ?array $options): array
+    {
+        $failure = ['rule' => $this->convertRuleName($rule)];
+
+        if (!empty($options) && $this->failedRuleHasOptions($rule)) {
+            $failure['options'] = $options;
+        }
+
+        return $failure;
+    }
+
+    /**
+     * @param string $rule
+     * @return string
+     */
+    protected function convertRuleName(string $rule): string
+    {
+        return $this->translator->trans(
+            Str::dasherize(class_basename($rule))
+        );
+    }
+
+    /**
+     * Should options for the rule be displayed?
+     *
+     * @param string $rule
+     * @return bool
+     */
+    protected function failedRuleHasOptions(string $rule): bool
+    {
+        return !\in_array(strtolower($rule), [
+            'exists',
+            'unique',
+        ], true);
     }
 }

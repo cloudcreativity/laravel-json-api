@@ -21,13 +21,13 @@ namespace CloudCreativity\LaravelJsonApi\Http\Middleware;
 use Closure;
 use CloudCreativity\LaravelJsonApi\Contracts\Auth\AuthorizerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
-use CloudCreativity\LaravelJsonApi\Http\Requests\JsonApiRequest;
+use CloudCreativity\LaravelJsonApi\Routing\Route;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Request;
 
 /**
- * Class AuthorizeRequest
+ * Class Authorize
  *
  * @package CloudCreativity\LaravelJsonApi
  */
@@ -40,20 +40,20 @@ class Authorize
     private $container;
 
     /**
-     * @var JsonApiRequest
+     * @var Route
      */
-    private $jsonApiRequest;
+    private $route;
 
     /**
      * Authorize constructor.
      *
      * @param ContainerInterface $container
-     * @param JsonApiRequest $request
+     * @param Route $route
      */
-    public function __construct(ContainerInterface $container, JsonApiRequest $request)
+    public function __construct(ContainerInterface $container, Route $route)
     {
         $this->container = $container;
-        $this->jsonApiRequest = $request;
+        $this->route = $route;
     }
 
     /**
@@ -68,62 +68,91 @@ class Authorize
      */
     public function handle($request, Closure $next, $authorizer)
     {
-        $this->authorizeRequest(
-            $this->container->getAuthorizerByName($authorizer),
-            $this->jsonApiRequest,
-            $request
-        );
+        $authorizer = $this->container->getAuthorizerByName($authorizer);
+        $record = $this->route->getResource();
+
+        if ($field = $this->route->getRelationshipName()) {
+            $this->authorizeRelationship(
+                $authorizer,
+                $request,
+                $record,
+                $field
+            );
+        } else if ($record) {
+            $this->authorizeResource($authorizer, $request, $record);
+        } else {
+            $this->authorize($authorizer, $request, $this->route->getType());
+        }
 
         return $next($request);
     }
 
     /**
-     * Authorize the request.
-     *
      * @param AuthorizerInterface $authorizer
-     * @param JsonApiRequest $jsonApiRequest
-     * @param $request
+     * @param Request $request
+     * @param string $type
      * @throws AuthenticationException
      * @throws AuthorizationException
      */
-    protected function authorizeRequest(AuthorizerInterface $authorizer, JsonApiRequest $jsonApiRequest, $request)
+    protected function authorize(AuthorizerInterface $authorizer, $request, string $type): void
     {
-        $type = $jsonApiRequest->getType();
-
-        /** Index */
-        if ($jsonApiRequest->isIndex()) {
-            $authorizer->index($type, $request);
-            return;
-        } /** Create Resource */
-        elseif ($jsonApiRequest->isCreateResource()) {
+        if ($request->isMethod('POST')) {
             $authorizer->create($type, $request);
             return;
         }
 
-        $record = $jsonApiRequest->getResource();
+        $authorizer->index($type, $request);
+    }
 
-        /** Read Resource */
-        if ($jsonApiRequest->isReadResource()) {
-            $authorizer->read($record, $request);
-            return;
-        } /** Update Resource */
-        elseif ($jsonApiRequest->isUpdateResource()) {
+    /**
+     * @param AuthorizerInterface $authorizer
+     * @param Request $request
+     * @param $record
+     * @throws AuthenticationException
+     * @throws AuthorizationException
+     */
+    protected function authorizeResource(AuthorizerInterface $authorizer, $request, $record): void
+    {
+        if ($request->isMethod('PATCH')) {
             $authorizer->update($record, $request);
             return;
-        } /** Delete Resource */
-        elseif ($jsonApiRequest->isDeleteResource()) {
+        }
+
+        if ($request->isMethod('DELETE')) {
             $authorizer->delete($record, $request);
             return;
         }
 
-        $field = $jsonApiRequest->getRelationshipName();
+        $authorizer->read($record, $request);
+    }
 
-        /** Relationships */
-        if ($jsonApiRequest->isReadRelatedResource() || $jsonApiRequest->isReadRelationship()) {
-            $authorizer->readRelationship($record, $field, $request);
-        } else {
+    /**
+     * Authorize a relationship request.
+     *
+     * @param AuthorizerInterface $authorizer
+     * @param $request
+     * @param $record
+     * @param string $field
+     * @throws AuthenticationException
+     * @throws AuthorizationException
+     */
+    protected function authorizeRelationship(AuthorizerInterface $authorizer, $request, $record, string $field): void
+    {
+        if ($this->isModifyRelationship($request)) {
             $authorizer->modifyRelationship($record, $field, $request);
+            return;
         }
+
+        $authorizer->readRelationship($record, $field, $request);
+    }
+
+    /**
+     * @param Request $request
+     * @return bool
+     */
+    protected function isModifyRelationship($request): bool
+    {
+        return \in_array($request->getMethod(), ['POST', 'PATCH', 'DELETE']);
     }
 
 }

@@ -18,8 +18,8 @@
 
 namespace CloudCreativity\LaravelJsonApi\Pagination;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Factories\FactoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PageInterface;
+use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use CloudCreativity\LaravelJsonApi\Schema\CreatesLinks;
 use CloudCreativity\LaravelJsonApi\Utils\Str;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -84,7 +84,7 @@ trait CreatesPages
     {
         $params = $this->buildParams($parameters);
 
-        return app(FactoryInterface::class)->createPage(
+        return app(Factory::class)->createPage(
             $paginator,
             $this->createFirstLink($paginator, $params),
             $this->createPreviousLink($paginator, $params),

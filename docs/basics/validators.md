@@ -135,7 +135,7 @@ class Validators extends AbstractValidators
 }
 ```
 
-## Resource Object Validation
+## Modify Resource Validation
 
 Resource objects are validated using [Laravel validations](https://laravel.com/docs/validation). If any field
 fails the validation rules, a `422 Unprocessable Entity` response will be sent. JSON API errors will be included
@@ -289,9 +289,32 @@ class Validators extends AbstractValidators
 }
 ```
 
+#### Disabling or Customising Existing Values
+
 If you need to disable the merging of the existing values, set the `$validateExisting` property
 of your validators class to `false`. If you need to programmatically work out whether to merge the existing
 values, overload the `mustValidateExisting()` method.
+
+If you want to use the merging of existing values, but need to adjust the extraction of current
+attributes, you can overload the `existingAttributes` method. For example, if you are using the `not_present`
+rule for an attribute, you would not want the existing value to be merged in. In this case you could
+forget the existing value as follows:
+
+```php
+class Validators extends AbstractValidators
+{
+    // ...
+
+    /**
+     * @param \App\Post $record
+     * @return iterable
+     */
+    protected function existingAttributes($record): iterable
+    {
+        return collect(parent::existingAttributes($record))->forget('foobar');
+    }
+}
+```
 
 ### Defining Rules 
 
@@ -388,7 +411,7 @@ class Validators extends AbstractValidators
 }
 ```
 
-## Relationship Validation
+## Modify Relationship Validation
 
 The JSON API specification provides relationship endpoints for modifying resource relations. To-one and to-many
 relationships can be replaced using a `PATCH` request. For to-many relationships, resources can be added
@@ -439,6 +462,164 @@ method on your validators class.
 
 Custom validation messages (on the `$messages` property) and attribute names (on the `$attribtues` property)
 are also passed to your validator.
+
+## Delete Resource Validation
+
+It is possible to add validation rules for deleting resources. This is useful if you want to prevent
+the deletion of a resource in certain circumstances - for example, if you did not want to allow API clients
+to delete posts that have comments.
+
+This validation is optional. If your validators class does not define any delete rules, the delete request
+will be allowed.
+
+### Validation Data
+
+By default we pass the resource's current field values to the delete validator, using the 
+`existingRelationships` method to work out the values of any relationships. 
+(The `existingRelationships` method is discussed above in the update resource validation section.)
+
+If a `posts` resource had a `title` and `content` attributes, given the following validators class:
+
+```php
+class Validators extends AbstractValidators
+{
+    // ...
+
+    /**
+     * @param \App\Post $record
+     * @return iterable
+     */
+    protected function existingRelationships($record): iterable
+    {
+        return [
+            'author' => [
+                'data' => [
+                    'type' => 'users',
+                    'id' => (string) $record->user->getRouteKey(),
+                ],            
+            ],
+        ];
+    }
+}
+```
+
+The validator would receive this data:
+
+```php
+[
+    "title": "posts",
+    "id": "1",
+    "title": "Hello World!",
+    "content": "...",
+    "author": [
+        "type": "users",
+        "id": "123"
+    ]
+]
+```
+
+If you wanted to use different data for validating a delete request, overload the `dataForDelete` method.
+This is shown in the next example.
+
+### Defining Rules
+
+Define delete validation rules in your validators `deleteRules` method. For example, if we wanted to
+stop a `posts` resource from being deleted if it has any comments:
+
+```php
+class Validators extends AbstractValidators
+{
+    // ...
+    
+    /**
+     * @var array
+     */
+    protected $deleteMessages = [
+        'no_comments.accepted' => 'Cannot delete a post with comments.',
+    ];
+
+    /**
+     * @param \App\Post $record
+     * @return array|null
+     */
+    protected function deleteRules($record): ?array
+    {
+        return [
+            'no_comments' => 'accepted',
+        ];
+    }
+
+    /**
+     * @param \App\Post $record
+     * @return array
+     */
+    protected function dataForDelete($record): array
+    {
+        return [
+            'no_comments' => $record->comments()->doesntExist(),
+        ];
+    }
+}
+```
+
+> Returning an empty array or `null` from the `deleteRules` validator indicates that a delete
+request does not need to be validated.
+
+### Custom Error Messages
+
+To add any custom error messages for your delete resource rules, define them on the `$deleteMessages` property.
+This is shown in the example above.
+
+Alternatively you can overload the `deleteMessages` method. Like the `deleteRules` method, this receives the
+record being deleted.
+
+### Custom Attribute Names
+
+To define any custom attribute names for delete resource validation, add them to the `$deleteAttributes`
+property on your validators.
+
+Alternatively you can overload the `deleteAttributes` method. Like the `deleteRules` method, this receives the
+record being deleted.
+
+### Conditionally Adding Rules
+
+If you need to [conditionally add rules](https://laravel.com/docs/validation#conditionally-adding-rules), you can
+do this by overloading the `delete` method. For example:
+
+```php
+class Validators extends AbstractValidators
+{
+    // ...
+    
+    /**
+     * @param \App\Post $record
+     * @return array
+     */
+    protected function dataForDelete($record): array
+    {
+        return [
+            'is_author' => \Auth::user()->is($record->author),
+            'no_comments' => $record->comments()->doesntExist(),
+        ];
+    }
+    
+    /**
+     * @param \App\Post $record
+     * @return \CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorInterface
+     */
+    public function delete($record): ValidatorInterface
+    {
+        $validator = parent::create($document);
+    
+        $validator->sometimes('no_comments', 'accepted', function ($input) use ($record) {
+            return !$input->is_author;
+        });
+        
+        return $validator;
+    }
+
+}
+```
 
 ## Query Validation
 
@@ -576,4 +757,160 @@ use CloudCreativity\LaravelJsonApi\Rules\DateTimeIso8601;
 return [
     'published-at' => ['nullable', new DateTimeIso8601()]
 ];
+```
+
+## Confirmed Rule
+
+Laravel's `confirmed` rule expects there to be a field with the same name and `_confirmation` on the end: i.e.
+if using the `confirmed` rule on the `password` field, it expects there to be a `password_confirmation` field.
+
+If you are not using underscores in your field names, this means the `confirmed` rules will not work. For example
+if using dash-case your extra field will be called `password-confirmation`. Unfortunately Laravel does not
+provide a way of customising the expected confirmation field name.
+
+In this scenario you will need to use the following rules to get `password-confirmation` working:
+
+```php
+namespace App\JsonApi\Users;
+
+use CloudCreativity\LaravelJsonApi\Validation\AbstractValidators;
+
+class Validators extends AbstractValidators
+{
+    // ...
+
+    protected function rules($record = null): array
+    {
+        return [
+            'name' => 'required|string',
+            'password' => "required|string",
+            'password-confirmation' => "required_with:password|same:password",
+        ];
+    }
+}
+```
+
+Remember to note the guidance above about `PATCH` requests, where the server must assume that missing values
+being the current values. For password scenarios, your validator will not have access to the current value.
+You would therefore need to adjust your use of the `required` and `required_with` rules to only add them if
+the client has sent a password. For example:
+
+```php
+namespace App\JsonApi\Users;
+
+use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorInterface;
+use CloudCreativity\LaravelJsonApi\Validation\AbstractValidators;
+
+class Validators extends AbstractValidators
+{
+    // ...
+
+    public function update($record, array $document): ValidatorInterface
+    {
+        $validator = parent::update($record, $document);
+
+        $validator->sometimes('password-confirmation', 'required_with:password|same:password', function ($input) {
+            return isset($input['password']);
+        });
+
+        return $validator;
+    }
+
+    protected function rules($record = null): array
+    {
+        $rules = [
+            'name' => 'required|string',
+            'password' => [
+                $record ? 'filled' : 'required',
+                'string',
+            ],
+        ];
+
+        if (!$record) {
+            $rules['password-confirmation'] = 'required_with:password|same:password';
+        }
+
+        return $rules;
+    }
+}
+```
+
+## Failed Rules
+
+This package makes it possible to include a machine-readable reason why a value failed validation within
+the JSON API error object's `meta` member. This is an opt-in feature because it is not standard practice
+for Laravel to JSON encode validation failure information with validation error messages.
+
+For example, if a value fails to pass the `between` rule, then by default this package will return the
+following response content:
+
+```json
+{
+    "errors": [
+        {
+            "status": "422",
+            "title": "Unprocessable Entity",
+            "detail": "The value must be between 1 and 10.",
+            "source": {
+                "pointer": "/data/attributes/value"
+            }
+        }
+    ]
+}
+```
+
+If you opt-in to showing failed meta, the response content will be:
+
+```json
+{
+    "errors": [
+        {
+            "status": "422",
+            "title": "Unprocessable Entity",
+            "detail": "The value must be between 1 and 10.",
+            "source": {
+                "pointer": "/data/attributes/value"
+            },
+            "meta": {
+                "failed": {
+                    "rule": "between",
+                    "options": [
+                        "1",
+                        "10"
+                    ]
+                }
+            }
+        }
+    ]
+}
+```
+
+The rule name will be the dash-case version of the Laravel rule. For example, `before_or_equal` will
+be `before-or-equal`. If the rule is a rule object, we use the dash-case of the class basename.
+For example, `CloudCreativity\LaravelJsonApi\Rules\DateTimeIso8601` will be `date-time-iso8601`.
+
+The `options` member will only exist if the rule has options. We intentionally omit rule options
+for the `exists` and `unique` rules as the options for these database rules reveal information
+about your database setup.
+
+To opt-in to this feature, add the following to the `register` method of your `AppServiceProvider`:
+
+```php
+<?php
+
+namespace App\Providers;
+
+use CloudCreativity\LaravelJsonApi\LaravelJsonApi;
+use Illuminate\Support\ServiceProvider;
+
+class AppServiceProvider extends ServiceProvider
+{
+    public function register()
+    {
+        LaravelJsonApi::showValidatorFailures();
+    }
+    
+    // ...
+    
+}
 ```
