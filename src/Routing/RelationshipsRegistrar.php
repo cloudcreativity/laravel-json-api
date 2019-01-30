@@ -111,7 +111,7 @@ final class RelationshipsRegistrar implements \IteratorAggregate
      */
     private function add(string $field, array $options): void
     {
-        $inverse = $this->options['inverse'] ?? Str::plural($field);
+        $inverse = $options['inverse'] ?? Str::plural($field);
 
         $this->router->group([], function () use ($field, $options, $inverse) {
             foreach ($options['actions'] as $action) {

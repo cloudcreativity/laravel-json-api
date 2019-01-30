@@ -18,14 +18,15 @@
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Routing;
 
 use CloudCreativity\LaravelJsonApi\Http\Controllers\JsonApiController;
-use CloudCreativity\LaravelJsonApi\Routing\RouteRegistrar;
 use CloudCreativity\LaravelJsonApi\Routing\RelationshipsRegistration;
+use CloudCreativity\LaravelJsonApi\Routing\ResourceRegistrar;
+use CloudCreativity\LaravelJsonApi\Routing\RouteRegistrar;
+use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Route;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
 
 class Test extends TestCase
 {
@@ -440,6 +441,42 @@ class Test extends TestCase
         $this->assertRoutes($matches);
     }
 
+    public function testHasOneInverse(): void
+    {
+        $this->withRoutes(function (RouteRegistrar $api) {
+            $api->resource('posts', [
+                'has-one' => [
+                    'author' => [
+                        'inverse' => 'users',
+                    ],
+                ],
+            ]);
+        });
+
+        $route = $this->assertMatch('GET', '/api/v1/posts/1/author');
+        $this->assertEquals([
+            ResourceRegistrar::PARAM_RESOURCE_TYPE => 'posts',
+            ResourceRegistrar::PARAM_RELATIONSHIP_NAME => 'author',
+            ResourceRegistrar::PARAM_RELATIONSHIP_INVERSE_TYPE => 'users',
+        ], $route->defaults);
+    }
+
+    public function testFluentHasOneInverse(): void
+    {
+        $this->withRoutes(function (RouteRegistrar $api) {
+            $api->resource('posts')->relationships(function (RelationshipsRegistration $rel) {
+                $rel->hasOne('author', 'users');
+            });
+        });
+
+        $route = $this->assertMatch('GET', '/api/v1/posts/1/author');
+        $this->assertEquals([
+            ResourceRegistrar::PARAM_RESOURCE_TYPE => 'posts',
+            ResourceRegistrar::PARAM_RELATIONSHIP_NAME => 'author',
+            ResourceRegistrar::PARAM_RELATIONSHIP_INVERSE_TYPE => 'users',
+        ], $route->defaults);
+    }
+
     /**
      * @return array
      */
@@ -588,6 +625,43 @@ class Test extends TestCase
         });
 
         $this->assertRoutes($matches);
+    }
+
+
+    public function testHasManyInverse(): void
+    {
+        $this->withRoutes(function (RouteRegistrar $api) {
+            $api->resource('posts', [
+                'has-many' => [
+                    'tags' => [
+                        'inverse' => 'topics',
+                    ],
+                ],
+            ]);
+        });
+
+        $route = $this->assertMatch('GET', '/api/v1/posts/1/tags');
+        $this->assertEquals([
+            ResourceRegistrar::PARAM_RESOURCE_TYPE => 'posts',
+            ResourceRegistrar::PARAM_RELATIONSHIP_NAME => 'tags',
+            ResourceRegistrar::PARAM_RELATIONSHIP_INVERSE_TYPE => 'topics',
+        ], $route->defaults);
+    }
+
+    public function testFluentHasManyInverse(): void
+    {
+        $this->withRoutes(function (RouteRegistrar $api) {
+            $api->resource('posts')->relationships(function (RelationshipsRegistration $rel) {
+                $rel->hasMany('tags', 'topics');
+            });
+        });
+
+        $route = $this->assertMatch('GET', '/api/v1/posts/1/tags');
+        $this->assertEquals([
+            ResourceRegistrar::PARAM_RESOURCE_TYPE => 'posts',
+            ResourceRegistrar::PARAM_RELATIONSHIP_NAME => 'tags',
+            ResourceRegistrar::PARAM_RELATIONSHIP_INVERSE_TYPE => 'topics',
+        ], $route->defaults);
     }
 
     /**
