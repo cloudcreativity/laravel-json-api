@@ -78,15 +78,6 @@ so if you do and can help, please let us know on
 
 Documentation is available on [Read the Docs](http://laravel-json-api.readthedocs.io/en/latest/).
 
-## Status
-
-We are aiming for `v1.0.0` as soon as possible. Now we are on `1.0.0-beta.*` releases there will be a minimal
-amount of breaking changes to fixing the few remaining issues.
-[Check the progress here.](https://github.com/cloudcreativity/laravel-json-api/milestone/2)
-
-We have production applications that are using the package and extensive test coverage of this package and
-those applications.
-
 ## License
 
 Apache License (Version 2.0). Please see [License File](LICENSE) for more information.
