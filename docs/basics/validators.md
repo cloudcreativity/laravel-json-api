@@ -289,9 +289,32 @@ class Validators extends AbstractValidators
 }
 ```
 
+#### Disabling or Customising Existing Values
+
 If you need to disable the merging of the existing values, set the `$validateExisting` property
 of your validators class to `false`. If you need to programmatically work out whether to merge the existing
 values, overload the `mustValidateExisting()` method.
+
+If you want to use the merging of existing values, but need to adjust the extraction of current
+attributes, you can overload the `existingAttributes` method. For example, if you are using the `not_present`
+rule for an attribute, you would not want the existing value to be merged in. In this case you could
+forget the existing value as follows:
+
+```php
+class Validators extends AbstractValidators
+{
+    // ...
+
+    /**
+     * @param \App\Post $record
+     * @return iterable
+     */
+    protected function existingAttributes($record): iterable
+    {
+        return collect(parent::existingAttributes($record))->forget('foobar');
+    }
+}
+```
 
 ### Defining Rules 
 

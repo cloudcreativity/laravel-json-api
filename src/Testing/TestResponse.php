@@ -20,11 +20,8 @@ namespace CloudCreativity\LaravelJsonApi\Testing;
 use CloudCreativity\JsonApi\Testing\Compare;
 use CloudCreativity\JsonApi\Testing\Concerns\HasHttpAssertions;
 use CloudCreativity\JsonApi\Testing\Document;
-use Illuminate\Contracts\Routing\UrlRoutable;
 use Illuminate\Foundation\Testing\TestResponse as BaseTestResponse;
 use Illuminate\Http\Response;
-use Illuminate\Support\Collection;
-use Neomerx\JsonApi\Contracts\Http\Headers\MediaTypeInterface;
 use PHPUnit\Framework\Assert;
 
 /**

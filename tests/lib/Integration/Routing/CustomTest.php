@@ -18,11 +18,11 @@
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Routing;
 
 use CloudCreativity\LaravelJsonApi\Routing\RouteRegistrar;
+use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
 use DummyApp\Comment;
 use DummyApp\Jobs\SharePost;
 use DummyApp\Post;
 use Illuminate\Support\Facades\Queue;
-use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
 
 class CustomTest extends TestCase
 {

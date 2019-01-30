@@ -22,12 +22,12 @@ use CloudCreativity\LaravelJsonApi\Utils\Helpers;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
 use Illuminate\Http\Request as IlluminateRequest;
-use Neomerx\JsonApi\Document\Error;
-use function CloudCreativity\LaravelJsonApi\http_contains_body;
-use function CloudCreativity\LaravelJsonApi\json_decode;
 use Illuminate\Http\Response as IlluminateResponse;
+use Neomerx\JsonApi\Document\Error;
 use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
+use function CloudCreativity\LaravelJsonApi\http_contains_body;
+use function CloudCreativity\LaravelJsonApi\json_decode;
 
 class HelpersTest extends TestCase
 {

@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
-## Unreleased
+## [1.0.0-rc.1] - 2019-01-30
 
 ### Added
 - [#271](https://github.com/cloudcreativity/laravel-json-api/issues/271)
@@ -13,6 +13,9 @@ Can now add custom actions to resource controllers. Refer to the [Routing](./doc
 - [#242](https://github.com/cloudcreativity/laravel-json-api/issues/242)
 Can now override the default controller for an API. Refer to the [Controllers](./docs/basics/controllers.md)
 chapter for details.
+- [#289](https://github.com/cloudcreativity/laravel-json-api/pull/289)
+Can now opt-in to Laravel validation failure data being added to the `meta` member of JSON API
+error objects.
 
 ### Changed
 - [#254](https://github.com/cloudcreativity/laravel-json-api/pull/254)

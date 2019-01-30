@@ -19,7 +19,6 @@ namespace CloudCreativity\LaravelJsonApi\Http\Requests;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorProviderInterface;
-use CloudCreativity\LaravelJsonApi\Exceptions\DocumentRequiredException;
 use CloudCreativity\LaravelJsonApi\Exceptions\ValidationException;
 use CloudCreativity\LaravelJsonApi\Object\Document;
 
