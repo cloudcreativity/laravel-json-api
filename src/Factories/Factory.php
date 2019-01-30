@@ -572,8 +572,8 @@ class Factory extends BaseFactory implements FactoryInterface
             $rules,
             $messages,
             $customAttributes,
-            function ($key, $detail) {
-                return $this->invalidQueryParameter($key, $detail);
+            function ($key, $detail, $failed) {
+                return $this->invalidQueryParameter($key, $detail, $failed);
             }
         );
     }

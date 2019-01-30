@@ -18,6 +18,7 @@
 namespace CloudCreativity\LaravelJsonApi\Validation;
 
 use CloudCreativity\LaravelJsonApi\Exceptions\ValidationException;
+use CloudCreativity\LaravelJsonApi\LaravelJsonApi;
 use CloudCreativity\LaravelJsonApi\Utils\Str;
 use Illuminate\Contracts\Translation\Translator;
 use Illuminate\Contracts\Validation\Validator as ValidatorContract;
@@ -42,6 +43,13 @@ class ErrorTranslator
     protected $translator;
 
     /**
+     * Is failed meta included in generated error objects?
+     *
+     * @var bool
+     */
+    private $includeFailed;
+
+    /**
      * ErrorTranslator constructor.
      *
      * @param Translator $translator
@@ -49,6 +57,7 @@ class ErrorTranslator
     public function __construct(Translator $translator)
     {
         $this->translator = $translator;
+        $this->includeFailed = LaravelJsonApi::$validationFailures;
     }
 
     /**
@@ -352,9 +361,11 @@ class ErrorTranslator
      * @param string $param
      * @param string|null $detail
      *      the validation message (already translated).
+     * @param array $failed
+     *      rule failure details.
      * @return ErrorInterface
      */
-    public function invalidQueryParameter(string $param, ?string $detail = null): ErrorInterface
+    public function invalidQueryParameter(string $param, ?string $detail = null, array $failed = []): ErrorInterface
     {
         return new Error(
             null,
@@ -363,7 +374,8 @@ class ErrorTranslator
             $this->trans('query_invalid', 'code'),
             $this->trans('query_invalid', 'title'),
             $detail ?: $this->trans('query_invalid', 'detail'),
-            [Error::SOURCE_PARAMETER => $param]
+            [Error::SOURCE_PARAMETER => $param],
+            $failed ? compact('failed') : null
         );
     }
 
@@ -377,7 +389,7 @@ class ErrorTranslator
      */
     public function failedValidator(ValidatorContract $validator, \Closure $closure = null): ErrorCollection
     {
-        $failed = $validator->failed();
+        $failed = $this->doesIncludeFailed() ? $validator->failed() : [];
         $errors = new ErrorCollection();
 
         foreach ($validator->errors()->messages() as $key => $messages) {
@@ -470,6 +482,14 @@ class ErrorTranslator
         }
 
         return [Error::SOURCE_POINTER => $pointer];
+    }
+
+    /**
+     * @return bool
+     */
+    protected function doesIncludeFailed(): bool
+    {
+        return $this->includeFailed;
     }
 
     /**

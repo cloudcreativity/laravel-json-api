@@ -811,3 +811,83 @@ class Validators extends AbstractValidators
     }
 }
 ```
+
+## Failed Rules
+
+This package makes it possible to include a machine-readable reason why a value failed validation within
+the JSON API error object's `meta` member. This is an opt-in feature because it is not standard practice
+for Laravel to JSON encode validation failure information with validation error messages.
+
+For example, if a value fails to pass the `between` rule, then by default this package will return the
+following response content:
+
+```json
+{
+    "errors": [
+        {
+            "status": "422",
+            "title": "Unprocessable Entity",
+            "detail": "The value must be between 1 and 10.",
+            "source": {
+                "pointer": "/data/attributes/value"
+            }
+        }
+    ]
+}
+```
+
+If you opt-in to showing failed meta, the response content will be:
+
+```json
+{
+    "errors": [
+        {
+            "status": "422",
+            "title": "Unprocessable Entity",
+            "detail": "The value must be between 1 and 10.",
+            "source": {
+                "pointer": "/data/attributes/value"
+            },
+            "meta": {
+                "failed": {
+                    "rule": "between",
+                    "options": [
+                        "1",
+                        "10"
+                    ]
+                }
+            }
+        }
+    ]
+}
+```
+
+The rule name will be the dash-case version of the Laravel rule. For example, `before_or_equal` will
+be `before-or-equal`. If the rule is a rule object, we use the dash-case of the class basename.
+For example, `CloudCreativity\LaravelJsonApi\Rules\DateTimeIso8601` will be `date-time-iso8601`.
+
+The `options` member will only exist if the rule has options. We intentionally omit rule options
+for the `exists` and `unique` rules as the options for these database rules reveal information
+about your database setup.
+
+To opt-in to this feature, add the following to the `register` method of your `AppServiceProvider`:
+
+```php
+<?php
+
+namespace App\Providers;
+
+use CloudCreativity\LaravelJsonApi\LaravelJsonApi;
+use Illuminate\Support\ServiceProvider;
+
+class AppServiceProvider extends ServiceProvider
+{
+    public function register()
+    {
+        LaravelJsonApi::showValidatorFailures();
+    }
+    
+    // ...
+    
+}
+```

@@ -3,6 +3,7 @@
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Validation;
 
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
+use CloudCreativity\LaravelJsonApi\LaravelJsonApi;
 use CloudCreativity\LaravelJsonApi\Rules\DateTimeIso8601;
 use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
 use DummyApp\JsonApi\Posts\Validators;
@@ -25,6 +26,8 @@ class FailedMetaTest extends TestCase
     {
         parent::setUp();
 
+        LaravelJsonApi::showValidatorFailures();
+
         $this->validator = $this
             ->getMockBuilder(Validators::class)
             ->setMethods(['rules'])
@@ -32,6 +35,15 @@ class FailedMetaTest extends TestCase
             ->getMock();
 
         $this->app->instance(Validators::class, $this->validator);
+    }
+
+    /**
+     * @return void
+     */
+    protected function tearDown()
+    {
+        parent::tearDown();
+        LaravelJsonApi::$validationFailures = false;
     }
 
     /**
