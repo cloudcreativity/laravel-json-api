@@ -175,6 +175,49 @@ class ResourceTest extends TestCase
         ]);
     }
 
+    public function testCreateInvalid()
+    {
+        $model = factory(Post::class)->make();
+
+        $data = [
+            'type' => 'posts',
+            'attributes' => [
+                'title' => 1,
+                'content' => $model->content,
+                'slug' => $model->slug,
+            ],
+            'relationships' => [
+                'author' => [
+                    'data' => [
+                        'type' => 'users',
+                        'id' => (string) $model->author_id,
+                    ],
+                ],
+            ],
+        ];
+
+        $expected = [
+            [
+                'status' => '422',
+                'title' => 'Unprocessable Entity',
+                'detail' => 'The title must be a string.',
+                'source' => [
+                    'pointer' => '/data/attributes/title',
+                ],
+            ],
+            [
+                'status' => '422',
+                'title' => 'Unprocessable Entity',
+                'detail' => 'The title must be between 5 and 255 characters.',
+                'source' => [
+                    'pointer' => '/data/attributes/title',
+                ],
+            ],
+        ];
+
+        $this->doCreate($data)->assertErrors(422, $expected);
+    }
+
     /**
      * @see https://github.com/cloudcreativity/laravel-json-api/issues/255
      */
@@ -441,16 +484,15 @@ class ResourceTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data)->assertStatus(422)->assertJson([
-            'errors' => [
-                [
-                    'detail' => 'The published is not a valid ISO 8601 date and time.',
-                    'source' => [
-                        'pointer' => '/data/attributes/published',
-                    ],
-                ]
+        $expected = [
+            'status' => '422',
+            'detail' => 'The published date is not a valid ISO 8601 date and time.',
+            'source' => [
+                'pointer' => '/data/attributes/published',
             ],
-        ]);
+        ];
+
+        $this->doUpdate($data)->assertErrorStatus($expected);
     }
 
     public function testSoftDelete()

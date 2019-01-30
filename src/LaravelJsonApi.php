@@ -42,6 +42,13 @@ class LaravelJsonApi
     public static $queueBindings = true;
 
     /**
+     * Indicates if Laravel validator failed data is added to JSON API error objects.
+     *
+     * @var bool
+     */
+    public static $validationFailures = false;
+
+    /**
      * Set the default API name.
      *
      * @param string $name
@@ -74,6 +81,16 @@ class LaravelJsonApi
     public static function skipQueueBindings(): self
     {
         self::$queueBindings = false;
+
+        return new self();
+    }
+
+    /**
+     * @return LaravelJsonApi
+     */
+    public static function showValidatorFailures(): self
+    {
+        self::$validationFailures = true;
 
         return new self();
     }

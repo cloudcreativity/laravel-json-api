@@ -19,7 +19,6 @@ namespace CloudCreativity\LaravelJsonApi\Validation;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorInterface;
 use Illuminate\Contracts\Validation\Validator as ValidatorContract;
-use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
 use Neomerx\JsonApi\Exceptions\ErrorCollection;
 
 /**
@@ -38,7 +37,7 @@ class Validator implements ValidatorInterface
     /**
      * @var ErrorTranslator
      */
-    protected $errors;
+    protected $translator;
 
     /**
      * @var \Closure|null
@@ -49,16 +48,16 @@ class Validator implements ValidatorInterface
      * AbstractValidator constructor.
      *
      * @param ValidatorContract $validator
-     * @param ErrorTranslator $errors
+     * @param ErrorTranslator $translator
      * @param \Closure|null $callback
      */
     public function __construct(
         ValidatorContract $validator,
-        ErrorTranslator $errors,
+        ErrorTranslator $translator,
         \Closure $callback = null
     ) {
         $this->validator = $validator;
-        $this->errors = $errors;
+        $this->translator = $translator;
         $this->callback = $callback;
     }
 
@@ -123,29 +122,7 @@ class Validator implements ValidatorInterface
      */
     public function getErrors(): ErrorCollection
     {
-        $errors = new ErrorCollection();
-
-        foreach ($this->getMessageBag()->toArray() as $key => $messages) {
-            foreach ($messages as $detail) {
-                $errors->add($this->createError($key, $detail));
-            }
-        }
-
-        return $errors;
-    }
-
-    /**
-     * @param string $key
-     * @param string $detail
-     * @return ErrorInterface
-     */
-    protected function createError(string $key, string $detail): ErrorInterface
-    {
-        if ($fn = $this->callback) {
-            return $fn($key, $detail, $this->errors);
-        }
-
-        return $this->errors->invalidResource($key, $detail);
+        return $this->translator->failedValidator($this, $this->callback);
     }
 
 }

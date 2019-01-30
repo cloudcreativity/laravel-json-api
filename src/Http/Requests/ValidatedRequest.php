@@ -304,6 +304,10 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
      */
     protected function failedValidation($validator)
     {
+        if ($validator instanceof ValidatorInterface) {
+            throw ValidationException::create($validator);
+        }
+
         throw new ValidationException($validator->getErrors());
     }
 

@@ -157,13 +157,17 @@ class Helpers
      * code SHOULD be used in the response. For instance, 400 Bad Request might be appropriate for multiple
      * 4xx errors or 500 Internal Server Error might be appropriate for multiple 5xx errors.
      *
-     * @param iterable $errors
+     * @param iterable|ErrorInterface $errors
      * @param int $default
      * @return int
      * @see https://jsonapi.org/format/#errors
      */
-    public static function httpErrorStatus(iterable $errors, int $default = SymfonyResponse::HTTP_BAD_REQUEST): int
+    public static function httpErrorStatus($errors, int $default = SymfonyResponse::HTTP_BAD_REQUEST): int
     {
+        if ($errors instanceof ErrorInterface) {
+            $errors = [$errors];
+        }
+
         $statuses = collect($errors)->reject(function (ErrorInterface $error) {
             return is_null($error->getStatus());
         })->map(function (ErrorInterface $error) {

@@ -17,6 +17,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Validation;
 
+use CloudCreativity\LaravelJsonApi\LaravelJsonApi;
 use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
 use DummyApp\Country;
 
@@ -27,6 +28,15 @@ class QueryValidationTest extends TestCase
      * @var string
      */
     protected $resourceType;
+
+    /**
+     * @return void
+     */
+    protected function tearDown()
+    {
+        parent::tearDown();
+        LaravelJsonApi::$validationFailures = false;
+    }
 
     /**
      * @return array
@@ -114,6 +124,28 @@ class QueryValidationTest extends TestCase
 
         $this->resourceType = 'posts';
         $this->doSearch($params)
+            ->assertStatus(400)
+            ->assertExactJson(['errors' => [$expected]]);
+    }
+
+    public function testSearchWithFailureMeta(): void
+    {
+        LaravelJsonApi::showValidatorFailures();
+
+        $expected = [
+            'title' => 'Invalid Query Parameter',
+            'status' => "400",
+            'detail' => 'Filter parameter foo is not allowed.',
+            'source' => ['parameter' => 'filter'],
+            'meta' => [
+                'failed' => [
+                    'rule' => 'allowed-filter-parameters',
+                ],
+            ],
+        ];
+
+        $this->resourceType = 'posts';
+        $this->doSearch(['filter' => ['foo' => 'bar']])
             ->assertStatus(400)
             ->assertExactJson(['errors' => [$expected]]);
     }

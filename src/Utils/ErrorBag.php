@@ -29,6 +29,7 @@ use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
  * Class ErrorBag
  *
  * @package CloudCreativity\LaravelJsonApi
+ * @deprecated 2.0.0 use the error translator instead.
  */
 class ErrorBag extends AbstractErrorBag
 {
