@@ -334,10 +334,6 @@ class ErrorTranslator
         array $failed = []
     ): ErrorInterface
     {
-        if (isset($failed['rule'])) {
-            $failed['rule'] = Str::dasherize($failed['rule']);
-        }
-
         return new Error(
             null,
             null,
@@ -483,7 +479,48 @@ class ErrorTranslator
     protected function createValidationFailures(array $failures): Collection
     {
         return collect($failures)->map(function ($options, $rule) {
-            return array_filter(['rule' => $rule, 'options' => $options ?: null]);
+            return $this->createValidationFailure($rule, $options);
         })->values();
+    }
+
+    /**
+     * @param string $rule
+     * @param array|null $options
+     * @return array
+     */
+    protected function createValidationFailure(string $rule, ?array $options): array
+    {
+        $failure = ['rule' => $this->convertRuleName($rule)];
+
+        if (!empty($options) && $this->failedRuleHasOptions($rule)) {
+            $failure['options'] = $options;
+        }
+
+        return $failure;
+    }
+
+    /**
+     * @param string $rule
+     * @return string
+     */
+    protected function convertRuleName(string $rule): string
+    {
+        return $this->translator->trans(
+            Str::dasherize(class_basename($rule))
+        );
+    }
+
+    /**
+     * Should options for the rule be displayed?
+     *
+     * @param string $rule
+     * @return bool
+     */
+    protected function failedRuleHasOptions(string $rule): bool
+    {
+        return !\in_array(strtolower($rule), [
+            'exists',
+            'unique',
+        ], true);
     }
 }

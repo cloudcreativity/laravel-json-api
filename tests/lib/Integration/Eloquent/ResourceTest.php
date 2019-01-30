@@ -204,11 +204,6 @@ class ResourceTest extends TestCase
                 'source' => [
                     'pointer' => '/data/attributes/title',
                 ],
-                'meta' => [
-                    'failed' => [
-                        'rule' => 'string',
-                    ],
-                ],
             ],
             [
                 'status' => '422',
@@ -216,12 +211,6 @@ class ResourceTest extends TestCase
                 'detail' => 'The title must be between 5 and 255 characters.',
                 'source' => [
                     'pointer' => '/data/attributes/title',
-                ],
-                'meta' => [
-                    'failed' => [
-                        'rule' => 'between',
-                        'options' => ['5', '255'],
-                    ],
                 ],
             ],
         ];
@@ -257,11 +246,6 @@ class ResourceTest extends TestCase
             'detail' => 'The slug field is required.',
             'source' => [
                 'pointer' => '/data',
-            ],
-            'meta' => [
-                'failed' => [
-                    'rule' => 'required',
-                ],
             ],
         ]);
     }
