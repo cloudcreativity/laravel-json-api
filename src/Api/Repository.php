@@ -86,25 +86,14 @@ class Repository
             Jobs::fromArray($config['jobs'] ?? []),
             $config['use-eloquent'],
             $config['supported-ext'],
-            $config['errors']
+            $config['errors'],
+            $config['providers'] ?? []
         );
 
         /** Attach resource providers to the API. */
-        $this->createProviders($apiName)->registerAll($api);
+        $api->providers()->registerAll($api);
 
         return $api;
-    }
-
-    /**
-     * @param $apiName
-     * @return ResourceProviders
-     */
-    public function createProviders($apiName)
-    {
-        return new ResourceProviders(
-            $this->factory,
-            $this->config->get($this->configKey($apiName, 'providers'))
-        );
     }
 
     /**

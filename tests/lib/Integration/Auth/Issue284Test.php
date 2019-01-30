@@ -15,16 +15,14 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Issue224;
+namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Auth;
 
 use CloudCreativity\LaravelJsonApi\Facades\JsonApi;
 use CloudCreativity\LaravelJsonApi\Routing\RouteRegistrar;
 use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
-use DummyApp\JsonApi\Users\Adapter;
-use DummyApp\User;
 use Illuminate\Support\Facades\Route;
 
-class IssueTest extends TestCase
+class Issue284Test extends TestCase
 {
 
     /**
@@ -33,45 +31,39 @@ class IssueTest extends TestCase
     protected $appRoutes = false;
 
     /**
-     * @var string
+     * Test authorization exception *before* JSON API middleware.
      */
-    protected $resourceType = 'endUsers';
-
-    /**
-     * @return void
-     */
-    protected function setUp()
+    public function test()
     {
-        parent::setUp();
-
-        $this->app->bind('DummyApp\\JsonApi\\EndUsers\\Adapter', Adapter::class);
-        $this->app->bind('DummyApp\\JsonApi\\EndUsers\\Schema', Schema::class);
-
         Route::group([
-            'namespace' => 'DummyApp\\Http\\Controllers',
+            'namespace' => '\\DummyApp\\Http\\Controllers',
+            'middleware' => 'auth'
         ], function () {
             JsonApi::register('v1', [], function (RouteRegistrar $api) {
-                $api->resource('endUsers');
+                $api->resource('posts');
             });
         });
 
-        $this->refreshRoutes();
-
-        config()->set('json-api-v1.resources', [
-            'endUsers' => User::class,
+        $this->getJsonApi('/api/v1/posts')->assertErrorStatus([
+            'status' => '401',
+            'title' => 'Unauthenticated',
         ]);
     }
 
-    public function test()
+    public function testFluent()
     {
-        $user = factory(User::class)->create();
+        Route::group([
+            'namespace' => '\\DummyApp\\Http\\Controllers',
+            'middleware' => 'auth'
+        ], function () {
+            JsonApi::register('v1')->routes(function (RouteRegistrar $api) {
+                $api->resource('posts');
+            });
+        });
 
-        $this->getJsonApi("/api/v1/endUsers/{$user->getRouteKey()}")->assertRead([
-            'type' => 'endUsers',
-            'id' => (string) $user->getRouteKey(),
-            'attributes' => [
-                'name' => $user->name,
-            ],
+        $this->getJsonApi('/api/v1/posts')->assertErrorStatus([
+            'status' => '401',
+            'title' => 'Unauthenticated',
         ]);
     }
 }

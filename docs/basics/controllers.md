@@ -17,13 +17,15 @@ as long as it implements the methods expected for the registered routes.
 The following route registration:
 
 ```php
-JsonApi::register('default', ['namespace' => 'Api'], function ($api, $router) {
+JsonApi::register('default')->routes(function ($api, $router) {
     $api->resource('posts');
 });
 ```
 
 Will use the `CloudCreativity\LaravelJsonApi\Http\Controllers\JsonApiController` for the `posts` resource. This
 will work for all controller actions without any customisation. So by default, no controller is needed.
+
+> Refer to the [Routing](./routing.md) chapter for details on how to change the default controller.
 
 ## Extended Controller
 
@@ -32,8 +34,8 @@ you can extend the `JsonApiController`. When registering the resource routes you
 is to be used:
 
 ```php
-JsonApi::register('default', ['namespace' => 'Api'], function ($api, $router) {
-    $api->resource('posts', ['controller' => true]);
+JsonApi::register('default')->withNamespace('Api')->routes(function ($api, $router) {
+    $api->resource('posts')->controller();
 });
 ```
 
@@ -41,12 +43,12 @@ This will use the `PostsController` in the `Api` namespace. If you are using a d
 you can specify it as follows:
 
 ```php
-JsonApi::register('default', ['namespace' => 'Api'], function ($api, $router) {
-    $api->resource('posts', ['controller' => 'CustomPostsController']);
+JsonApi::register('default')->withNamespace('Api')->routes(function ($api, $router) {
+    $api->resource('posts')->controller('BlogPostsController');
 });
 ```
 
-> The `namespace` option is identical to Laravel's namespace option when registering a route group.
+> The `withNamespace` method is identical to Laravel's namespace method when registering a route group.
 
 Your controller would then look like this:
 
@@ -57,6 +59,8 @@ use CloudCreativity\LaravelJsonApi\Http\Controllers\JsonApiController;
 
 class PostsController extends JsonApiController
 {
+
+  // ...
 }
 ```
 
@@ -197,6 +201,90 @@ Content-Type: application/vnd.api+json
   }
 }
 ```
+
+## Custom Actions
+
+The [Routing Chapter](./routing.md) describes how you can register custom routes in your API. For example
+if we added an action to share a `posts` resource:
+
+```php
+JsonApi::register('default')->withNamespace('Api')->routes(function ($api) {
+    $api->resource('posts')->controller()->routes(function ($posts) {
+        $posts->post('{record}/share', 'share');
+    });
+});
+```
+
+This would expect the `share` method to be implemented on our resource's controller. For example:
+
+```php
+namespace App\Http\Controllers\Api;
+
+use CloudCreativity\LaravelJsonApi\Http\Controllers\JsonApiController;
+
+class PostsController extends JsonApiController
+{
+    
+    public function share(\App\Post $post): \Illuminate\Http\Response
+    {
+        \App\Jobs\SharePost::dispatch($post);
+        
+        return $this->reply()->content($post);
+    }
+}
+```
+
+When you do this, any query parameters sent by the client will be used when encoding the response. If you
+have not validated the request, this could result in an error.
+
+To avoid this, you will need to type-hint the JSON API request class to ensure the request is validated.
+This package provides a number of request classes that validated the different *types* of request that
+are defined by the JSON API specification. You should type-hint whichever is appropriate for your action.
+
+> These request classes are validated when they are resolved out of the container. I.e. they work like
+Laravel's form requests.
+
+The example *share* action does not expect there to be any request body content, but it is going to return
+a `posts` resource in the response. It is therefore the same as request to fetch a `posts` resource i.e.
+`GET /api/posts/123`. (This is the case even if we have registered the action as needing to be called as
+`POST /api/posts/123/share`.) We would therefore type-hint the `FetchResource` request object:
+
+```php
+namespace App\Http\Controllers\Api;
+
+use CloudCreativity\LaravelJsonApi\Http\Controllers\JsonApiController;
+use CloudCreativity\LaravelJsonApi\Http\Requests\FetchResource;
+
+class PostsController extends JsonApiController
+{
+    
+    public function share(FetchResource $request, \App\Post $post): \Illuminate\Http\Response
+    {
+        \App\Jobs\SharePost::dispatch($post);
+        
+        return $this->reply()->content($post);
+    }
+}
+```
+
+All request classes are in the `CloudCreativity\LaravelJsonApi\Http\Requests` namespace. These are
+the ones available:
+
+| Action | Request Class |
+| :-- | :-- |
+| `index` | `FetchResources` |
+| `create` | `CreateResource` |
+| `read` | `FetchResource` |
+| `update` | `UpdateResource` |
+| `delete` | `DeleteResource` |
+| `readRelatedResource` | `FetchRelated` |
+| `readRelationship` | `FetchRelationship` |
+| `replaceRelationship` | `UpdateRelationship` |
+| `addToRelationship` | `UpdateRelationship` |
+| `removeFromRelationship` | `UpdateRelationship` |
+
+> All of these classes extended the `ValidatedRequest` abstract class. If none of them do exactly what you
+need for your custom action, you can write you own request class that extends the abstract class.
 
 ## Custom Controller
 

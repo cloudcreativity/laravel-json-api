@@ -19,6 +19,7 @@
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration;
 
 use CloudCreativity\LaravelJsonApi\Facades\JsonApi;
+use CloudCreativity\LaravelJsonApi\Routing\ApiRegistration;
 use CloudCreativity\LaravelJsonApi\ServiceProvider;
 use CloudCreativity\LaravelJsonApi\Testing\MakesJsonApiRequests;
 use CloudCreativity\LaravelJsonApi\Testing\TestExceptionHandler;
@@ -137,10 +138,24 @@ abstract class TestCase extends BaseTestCase
         Route::group([
             'namespace' => '\\DummyApp\\Http\\Controllers',
         ], function () use ($api, $options, $callback) {
-            JsonApi::register($api, $options, $callback);
+
+            if (empty($options)) {
+                JsonApi::register($api, $callback);
+            } else {
+                JsonApi::register($api, $options, $callback);
+            }
         });
 
         return $this;
+    }
+
+    /**
+     * @param string $api
+     * @return ApiRegistration
+     */
+    protected function withFluentRoutes(string $api = 'v1'): ApiRegistration
+    {
+        return JsonApi::register($api)->withNamespace('\\DummyApp\\Http\\Controllers');
     }
 
     /**

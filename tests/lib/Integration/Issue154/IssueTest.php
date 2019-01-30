@@ -17,7 +17,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Issue154;
 
-use CloudCreativity\LaravelJsonApi\Routing\ApiGroup;
+use CloudCreativity\LaravelJsonApi\Routing\RouteRegistrar;
 use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
 use DummyApp\Post;
 
@@ -41,7 +41,7 @@ class IssueTest extends TestCase
     {
         parent::setUp();
 
-        $this->withRoutes(function (ApiGroup $api) {
+        $this->withRoutes(function (RouteRegistrar $api) {
             $api->resource('posts', ['controller' => true]);
         });
     }

@@ -98,6 +98,32 @@ return [
 ];
 ```
 
+### Routing
+
+We have made changes to the routing to introduce a fluent syntax for defining routes. This will
+not affect your application unless you type-hinted the `Routing\ApiGroup` class in any of your
+route definitions. You will now need to type-hint `Routing\RouteRegistrar` instead.
+
+Change this:
+
+```php
+use CloudCreativity\LaravelJsonApi\Routing\ApiGroup;
+
+JsonApi::register('v1', [], function (ApiGroup $api) {
+    // ...
+});
+```
+
+to this:
+
+```php
+use CloudCreativity\LaravelJsonApi\Routing\RouteRegistrar;
+
+JsonApi::register('v1', [], function (RouteRegistrar $api) {
+    // ...
+});
+```
+
 ### Controllers
 
 #### Eloquent
@@ -155,6 +181,7 @@ to your implementation.
 In our `Validation\AbstractValidators` class we have renamed the following two protected methods:
 - `createData` is now `dataForCreate`.
 - `updateData` is now `dataForUpdate`.
+- `relationshipData` is now `dataForRelationship`.
 - `createResourceValidator` is now `validatorForResource`.
 - `createQueryValidator` is now `validatorForQuery`.
   
@@ -163,6 +190,29 @@ been removed:
 - `Validation\AbstractValidator`: use `Factories\Factory::createValidator()` or extend `Validation\Validator`.
 - `Validation\ResourceValidator`: use `Factories\Factory::createResourceValidator()`.
 - `Validation\QueryValidator`: use `Factories\Factory::createQueryValidator()`.
+
+### Packages (Resource Providers)
+
+The method signature for the `mount` method on the `AbstractProvider` class has changed to this:
+
+```php
+/**
+ * Mount routes onto the provided API.
+ *
+ * @param \CloudCreativity\LaravelJsonApi\Routing\RouteRegistrar $api
+ * @return void
+ */
+public function mount(RouteRegistrar $api): void
+{
+    //
+}
+```
+
+> If you were previously using the second argument, check out the new documentation for adding
+custom routes to the API in the [Routing chapter.](./basics/routing.md)
+
+We have also added PHP 7 type-hinting to all other methods on the provider. (There were not many of them,
+so as we were changing the signature of one method, it made sense to change all.)
 
 ## 1.0.0-beta.5 to 1.0.0-beta.6
 

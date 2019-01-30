@@ -17,7 +17,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Http\Controllers;
 
-use CloudCreativity\LaravelJsonApi\Routing\ApiGroup;
+use CloudCreativity\LaravelJsonApi\Routing\RouteRegistrar;
 use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
 use DummyApp\Post;
 use DummyApp\Tag;
@@ -49,7 +49,7 @@ class HooksTest extends TestCase
 
         $this->app->instance('DummyApp\Http\Controllers\PostsController', new TestController());
 
-        $this->withRoutes(function (ApiGroup $api) {
+        $this->withRoutes(function (RouteRegistrar $api) {
             $api->resource('posts', [
                 'controller' => true,
                 'has-one' => 'author',

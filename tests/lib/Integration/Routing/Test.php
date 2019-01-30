@@ -15,17 +15,19 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\LaravelJsonApi\Tests\Integration;
+namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Routing;
 
-use CloudCreativity\LaravelJsonApi\Facades\JsonApi;
 use CloudCreativity\LaravelJsonApi\Http\Controllers\JsonApiController;
-use CloudCreativity\LaravelJsonApi\Routing\ApiGroup;
+use CloudCreativity\LaravelJsonApi\Routing\RouteRegistrar;
+use CloudCreativity\LaravelJsonApi\Routing\RelationshipsRegistration;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Route;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
 
-class RoutingTest extends TestCase
+class Test extends TestCase
 {
 
     /**
@@ -81,7 +83,7 @@ class RoutingTest extends TestCase
      */
     public function testDefaults($method, $url, $action)
     {
-        $this->withRoutes(function (ApiGroup $api) {
+        $this->withRoutes(function (RouteRegistrar $api) {
             $api->resource('posts', [
                 'has-one' => ['author'],
                 'has-many' => ['tags', 'comments'],
@@ -97,9 +99,28 @@ class RoutingTest extends TestCase
      * @param $action
      * @dataProvider defaultsProvider
      */
+    public function testFluentDefaults($method, $url, $action)
+    {
+        $this->withFluentRoutes()->routes(function (RouteRegistrar $api) {
+            $api->resource('posts')->relationships(function (RelationshipsRegistration $rel) {
+                $rel->hasOne('author');
+                $rel->hasMany('tags');
+                $rel->hasMany('comments');
+            });
+        });
+
+        $this->assertMatch($method, $url, '\\' . JsonApiController::class . $action);
+    }
+
+    /**
+     * @param $method
+     * @param $url
+     * @param $action
+     * @dataProvider defaultsProvider
+     */
     public function testControllerIsTrue($method, $url, $action)
     {
-        $this->withRoutes(function (ApiGroup $api) {
+        $this->withRoutes(function (RouteRegistrar $api) {
             $api->resource('posts', [
                 'controller' => true,
                 'has-one' => 'author',
@@ -118,16 +139,58 @@ class RoutingTest extends TestCase
      * @param $action
      * @dataProvider defaultsProvider
      */
+    public function testFluentControllerIsTrue($method, $url, $action)
+    {
+        $this->withRoutes(function (RouteRegistrar $api) {
+            $api->resource('posts')->controller()->relationships(function (RelationshipsRegistration $rel) {
+                $rel->hasOne('author');
+                $rel->hasMany('tags');
+                $rel->hasMany('comments');
+            });
+        });
+
+        $expected = '\DummyApp\Http\Controllers\PostsController';
+
+        $this->assertMatch($method, $url, $expected . $action);
+    }
+
+    /**
+     * @param $method
+     * @param $url
+     * @param $action
+     * @dataProvider defaultsProvider
+     */
     public function testControllerIsString($method, $url, $action)
     {
         $expected = '\Foo\Bar';
 
-        $this->withRoutes(function (ApiGroup $api) use ($expected) {
+        $this->withRoutes(function (RouteRegistrar $api) use ($expected) {
             $api->resource('posts', [
                 'controller' => $expected,
                 'has-one' => 'author',
                 'has-many' => 'comments',
             ]);
+        });
+
+        $this->assertMatch($method, $url, $expected . $action);
+    }
+
+    /**
+     * @param $method
+     * @param $url
+     * @param $action
+     * @dataProvider defaultsProvider
+     */
+    public function testFluentControllerIsString($method, $url, $action)
+    {
+        $expected = '\Foo\Bar';
+
+        $this->withRoutes(function (RouteRegistrar $api) use ($expected) {
+            $api->resource('posts')->controller($expected)->relationships(function (RelationshipsRegistration $rel) {
+                $rel->hasOne('author');
+                $rel->hasMany('tags');
+                $rel->hasMany('comments');
+            });
         });
 
         $this->assertMatch($method, $url, $expected . $action);
@@ -170,8 +233,24 @@ class RoutingTest extends TestCase
      */
     public function testOnly($only, array $matches)
     {
-        $this->withRoutes(function (ApiGroup $api) use ($only) {
+        $this->withRoutes(function (RouteRegistrar $api) use ($only) {
             $api->resource('posts', ['only' => $only]);
+        });
+
+        $this->assertRoutes($matches);
+    }
+
+    /**
+     * @param $only
+     * @param array $matches
+     * @dataProvider onlyProvider
+     */
+    public function testFluentOnly($only, array $matches)
+    {
+        $only = Arr::wrap($only);
+
+        $this->withRoutes(function (RouteRegistrar $api) use ($only) {
+            $api->resource('posts')->only(...$only);
         });
 
         $this->assertRoutes($matches);
@@ -214,8 +293,24 @@ class RoutingTest extends TestCase
      */
     public function testExcept($except, array $matches)
     {
-        $this->withRoutes(function (ApiGroup $api) use ($except) {
+        $this->withRoutes(function (RouteRegistrar $api) use ($except) {
             $api->resource('posts', ['except' => $except]);
+        });
+
+        $this->assertRoutes($matches);
+    }
+
+    /**
+     * @param $except
+     * @param array $matches
+     * @dataProvider exceptProvider
+     */
+    public function testFluentExcept($except, array $matches)
+    {
+        $except = Arr::wrap($except);
+
+        $this->withRoutes(function (RouteRegistrar $api) use ($except) {
+            $api->resource('posts')->except(...$except);
         });
 
         $this->assertRoutes($matches);
@@ -252,7 +347,7 @@ class RoutingTest extends TestCase
      */
     public function testHasOneOnly($only, array $matches)
     {
-        $this->withRoutes(function (ApiGroup $api) use ($only) {
+        $this->withRoutes(function (RouteRegistrar $api) use ($only) {
             $api->resource('posts', [
                 'has-one' => [
                     'author' => [
@@ -260,6 +355,24 @@ class RoutingTest extends TestCase
                     ],
                 ],
             ]);
+        });
+
+        $this->assertRoutes($matches);
+    }
+
+    /**
+     * @param $only
+     * @param array $matches
+     * @dataProvider hasOneOnlyProvider
+     */
+    public function testFluentHasOneOnly($only, array $matches)
+    {
+        $only = Arr::wrap($only);
+
+        $this->withFluentRoutes()->routes(function (RouteRegistrar $api) use ($only) {
+            $api->resource('posts')->relationships(function (RelationshipsRegistration $rel) use ($only) {
+                $rel->hasOne('author')->only(...$only);
+            });
         });
 
         $this->assertRoutes($matches);
@@ -296,7 +409,7 @@ class RoutingTest extends TestCase
      */
     public function testHasOneExcept($except, array $matches)
     {
-        $this->withRoutes(function (ApiGroup $api) use ($except) {
+        $this->withRoutes(function (RouteRegistrar $api) use ($except) {
             $api->resource('posts', [
                 'has-one' => [
                     'author' => [
@@ -304,6 +417,24 @@ class RoutingTest extends TestCase
                     ],
                 ],
             ]);
+        });
+
+        $this->assertRoutes($matches);
+    }
+
+    /**
+     * @param $except
+     * @param array $matches
+     * @dataProvider hasOneExceptProvider
+     */
+    public function testFluentHasOneExcept($except, array $matches)
+    {
+        $except = Arr::wrap($except);
+
+        $this->withRoutes(function (RouteRegistrar $api) use ($except) {
+            $api->resource('posts')->relationships(function (RelationshipsRegistration $rel) use ($except) {
+                $rel->hasOne('author')->except(...$except);
+            });
         });
 
         $this->assertRoutes($matches);
@@ -353,7 +484,7 @@ class RoutingTest extends TestCase
      */
     public function testHasManyOnly($only, array $matches)
     {
-        $this->withRoutes(function (ApiGroup $api) use ($only) {
+        $this->withRoutes(function (RouteRegistrar $api) use ($only) {
             $api->resource('posts', [
                 'has-many' => [
                     'tags' => [
@@ -366,6 +497,23 @@ class RoutingTest extends TestCase
         $this->assertRoutes($matches);
     }
 
+    /**
+     * @param $only
+     * @param array $matches
+     * @dataProvider hasManyOnlyProvider
+     */
+    public function testFluentHasManyOnly($only, array $matches)
+    {
+        $only = Arr::wrap($only);
+
+        $this->withRoutes(function (RouteRegistrar $api) use ($only) {
+            $api->resource('posts')->relationships(function (RelationshipsRegistration $rel) use ($only) {
+                $rel->hasMany('tags')->only(...$only);
+            });
+        });
+
+        $this->assertRoutes($matches);
+    }
 
     /**
      * @return array
@@ -411,7 +559,7 @@ class RoutingTest extends TestCase
      */
     public function testHasManyExcept($except, array $matches)
     {
-        $this->withRoutes(function (ApiGroup $api) use ($except) {
+        $this->withRoutes(function (RouteRegistrar $api) use ($except) {
             $api->resource('posts', [
                 'has-many' => [
                     'tags' => [
@@ -425,13 +573,31 @@ class RoutingTest extends TestCase
     }
 
     /**
+     * @param $except
+     * @param array $matches
+     * @dataProvider hasManyExceptProvider
+     */
+    public function testFluentHasManyExcept($except, array $matches)
+    {
+        $except = Arr::wrap($except);
+
+        $this->withRoutes(function (RouteRegistrar $api) use ($except) {
+            $api->resource('posts')->relationships(function (RelationshipsRegistration $rel) use ($except) {
+                $rel->hasMany('tags')->except(...$except);
+            });
+        });
+
+        $this->assertRoutes($matches);
+    }
+
+    /**
      * @param $method
      * @param $url
      * @dataProvider recordProvider
      */
     public function testResourceIdConstraint($method, $url)
     {
-        $this->withRoutes(function (ApiGroup $api) {
+        $this->withRoutes(function (RouteRegistrar $api) {
             $api->resource('posts', [
                 'has-one' => ['author'],
                 'has-many' => ['tags', 'comments'],
@@ -447,14 +613,50 @@ class RoutingTest extends TestCase
      * @param $url
      * @dataProvider recordProvider
      */
+    public function testFluentResourceIdConstraint($method, $url)
+    {
+        $this->withRoutes(function (RouteRegistrar $api) {
+            $api->resource('posts')->id('^[A-Z]+$')->relationships(function (RelationshipsRegistration $rel) {
+                $rel->hasOne('author');
+                $rel->hasMany('tags');
+                $rel->hasMany('comments');
+            });
+        });
+
+        $this->assertNotFound($method, $url);
+    }
+
+    /**
+     * @param $method
+     * @param $url
+     * @dataProvider recordProvider
+     */
     public function testDefaultIdConstraint($method, $url)
     {
-        $this->withRoutes(function (ApiGroup $api) {
+        $this->withRoutes(function (RouteRegistrar $api) {
             $api->resource('posts', [
                 'has-one' => ['author'],
                 'has-many' => ['tags', 'comments'],
             ]);
         }, ['id' => '^[A-Z]+$']);
+
+        $this->assertNotFound($method, $url);
+    }
+
+    /**
+     * @param $method
+     * @param $url
+     * @dataProvider recordProvider
+     */
+    public function testFluentDefaultIdConstraint($method, $url)
+    {
+        $this->withFluentRoutes()->defaultId('^[A-Z]+$')->routes(function (RouteRegistrar $api) {
+            $api->resource('posts')->relationships(function (RelationshipsRegistration $rel) {
+                $rel->hasOne('author');
+                $rel->hasMany('tags');
+                $rel->hasMany('comments');
+            });
+        });
 
         $this->assertNotFound($method, $url);
     }
@@ -468,13 +670,33 @@ class RoutingTest extends TestCase
      */
     public function testDefaultIdConstraintCanBeIgnoredByResource($method, $url)
     {
-        $this->withRoutes(function (ApiGroup $api) {
+        $this->withRoutes(function (RouteRegistrar $api) {
             $api->resource('posts', [
                 'has-one' => ['author'],
                 'has-many' => ['tags', 'comments'],
                 'id' => null,
             ]);
         }, ['id' => '^[A-Z]+$']);
+
+        $this->assertMatch($method, $url);
+    }
+
+    /**
+     * If there is a default ID constraint, it can be removed using `null` on a resource.
+     *
+     * @param $method
+     * @param $url
+     * @dataProvider recordProvider
+     */
+    public function testFluentDefaultIdConstraintCanBeIgnoredByResource($method, $url)
+    {
+        $this->withFluentRoutes()->defaultId('^[A-Z]+$')->routes(function (RouteRegistrar $api) {
+            $api->resource('posts')->id(null)->relationships(function (RelationshipsRegistration $rel) {
+                $rel->hasOne('author');
+                $rel->hasMany('tags');
+                $rel->hasMany('comments');
+            });
+        });
 
         $this->assertMatch($method, $url);
     }
@@ -488,13 +710,33 @@ class RoutingTest extends TestCase
      */
     public function testResourceIdConstraintOverridesDefaultIdConstraint($method, $url)
     {
-        $this->withRoutes(function (ApiGroup $api) {
+        $this->withRoutes(function (RouteRegistrar $api) {
             $api->resource('posts', [
                 'has-one' => ['author'],
                 'has-many' => ['tags', 'comments'],
                 'id' => '^[A-Z]+$',
             ]);
         }, ['id' => '^[0-9]+$']);
+
+        $this->assertNotFound($method, $url);
+    }
+
+    /**
+     * If there is a default and a resource ID constraint, the resource ID constraint is used.
+     *
+     * @param $method
+     * @param $url
+     * @dataProvider recordProvider
+     */
+    public function testFluentResourceIdConstraintOverridesDefaultIdConstraint($method, $url)
+    {
+        $this->withFluentRoutes()->defaultId('^[0-9]+$')->routes(function (RouteRegistrar $api) {
+            $api->resource('posts')->id('^[A-Z]+$')->relationships(function (RelationshipsRegistration $rel) {
+                $rel->hasOne('author');
+                $rel->hasMany('tags');
+                $rel->hasMany('comments');
+            });
+        });
 
         $this->assertNotFound($method, $url);
     }
@@ -518,7 +760,7 @@ class RoutingTest extends TestCase
      */
     public function testMultiWordResourceType($resourceType)
     {
-        $this->withRoutes(function (ApiGroup $api) use ($resourceType) {
+        $this->withRoutes(function (RouteRegistrar $api) use ($resourceType) {
             $api->resource($resourceType, [
                 'has-one' => ['author'],
                 'has-many' => ['tags'],
@@ -536,7 +778,7 @@ class RoutingTest extends TestCase
      */
     public function testMultiWordRelationship($relationship)
     {
-        $this->withRoutes(function (ApiGroup $api) use ($relationship) {
+        $this->withRoutes(function (RouteRegistrar $api) use ($relationship) {
             $api->resource('posts', [
                 'has-many' => $relationship,
             ]);
@@ -568,7 +810,7 @@ class RoutingTest extends TestCase
      */
     public function testAsync(string $method, string $url, string $action): void
     {
-        $this->withRoutes(function (ApiGroup $api) {
+        $this->withRoutes(function (RouteRegistrar $api) {
             $api->resource('photos', [
                 'async' => true,
             ]);
@@ -578,11 +820,26 @@ class RoutingTest extends TestCase
     }
 
     /**
+     * @param string $method
+     * @param string $url
+     * @param string $action
+     * @dataProvider processProvider
+     */
+    public function testFluentAsync(string $method, string $url, string $action): void
+    {
+        $this->withFluentRoutes()->defaultId('^\d+$')->routes(function (RouteRegistrar $api) {
+            $api->resource('photos')->async();
+        });
+
+        $this->assertMatch($method, $url, '\\' . JsonApiController::class . $action);
+    }
+
+    /**
      * Test that the default async job id constraint is a UUID.
      */
     public function testAsyncDefaultConstraint(): void
     {
-        $this->withRoutes(function (ApiGroup $api) {
+        $this->withRoutes(function (RouteRegistrar $api) {
             $api->resource('photos', [
                 'async' => true,
             ]);
@@ -596,11 +853,23 @@ class RoutingTest extends TestCase
      */
     public function testAsyncCustomConstraint(): void
     {
-        $this->withRoutes(function (ApiGroup $api) {
+        $this->withRoutes(function (RouteRegistrar $api) {
             $api->resource('photos', [
                 'async' => true,
                 'async_id' => '^\d+$',
             ]);
+        });
+
+        $this->assertMatch('GET', '/api/v1/photos/queue-jobs/123456');
+    }
+
+    /**
+     * Test that the default async job id constraint is a UUID.
+     */
+    public function testFluentAsyncCustomConstraint(): void
+    {
+        $this->withRoutes(function (RouteRegistrar $api) {
+            $api->resource('photos')->async('^\d+$');
         });
 
         $this->assertMatch('GET', '/api/v1/photos/queue-jobs/123456');
