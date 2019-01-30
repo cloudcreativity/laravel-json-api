@@ -518,10 +518,11 @@ class Factory extends BaseFactory implements FactoryInterface
             $rules,
             $messages,
             $customAttributes,
-            function ($key, $detail, ErrorTranslator $translator) use ($resource) {
-                return $translator->invalidResource(
+            function ($key, $detail, $failed) use ($resource) {
+                return $this->invalidResource(
                     $resource->pointerForRelationship($key, '/data'),
-                    $detail
+                    $detail,
+                    $failed
                 );
             }
         );
