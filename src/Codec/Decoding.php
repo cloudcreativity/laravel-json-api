@@ -20,6 +20,7 @@ namespace CloudCreativity\LaravelJsonApi\Codec;
 use CloudCreativity\LaravelJsonApi\Contracts\Decoder\DecoderInterface;
 use CloudCreativity\LaravelJsonApi\Decoder\JsonApiDecoder;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
+use Illuminate\Support\Collection;
 use Neomerx\JsonApi\Contracts\Http\Headers\MediaTypeInterface;
 use Neomerx\JsonApi\Http\Headers\MediaType;
 
@@ -145,10 +146,37 @@ class Decoding
     /**
      * @param MediaTypeInterface $mediaType
      * @return bool
+     * @todo normalization will not be necessary for neomerx/json-api:^3.0
+     * @see https://github.com/neomerx/json-api/issues/221
      */
     public function equalsTo(MediaTypeInterface $mediaType): bool
     {
-        return $this->mediaType->equalsTo($mediaType);
+        return $this->normalize($this->mediaType)->equalsTo(
+            $this->normalize($mediaType)
+        );
+    }
+
+    /**
+     * @return array
+     */
+    private function getWildCardParameters(): array
+    {
+        return collect((array) $this->mediaType->getParameters())->filter(function ($value) {
+            return '*' === $value;
+        })->keys()->all();
+    }
+
+    /**
+     * @param MediaTypeInterface $mediaType
+     * @return MediaTypeInterface
+     */
+    private function normalize(MediaTypeInterface $mediaType): MediaTypeInterface
+    {
+        $params = collect((array) $mediaType->getParameters())->forget(
+            $this->getWildCardParameters()
+        )->all();
+
+        return new MediaType($mediaType->getType(), $mediaType->getSubType(), $params ?: null);
     }
 
 }
