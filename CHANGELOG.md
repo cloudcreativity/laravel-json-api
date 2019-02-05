@@ -2,6 +2,13 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## [1.0.0-rc.2] - 2019-02-05
+
+### Added
+- [#265](https://github.com/cloudcreativity/laravel-json-api/issues/265)
+Allow wildcard media type parameters when matching decodings. Allows `multipart/form-data; boundary=*` to
+be accepted for decoding purposes.
+
 ## [1.0.0-rc.1] - 2019-01-30
 
 ### Added
