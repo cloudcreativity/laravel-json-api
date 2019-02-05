@@ -27,11 +27,25 @@ class CreateTest extends TestCase
 {
 
     /**
+     * @return array
+     */
+    public function multipartProvider(): array
+    {
+        return [
+            ['multipart/form-data'],
+            ['multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW'],
+        ];
+    }
+
+    /**
      * Test that a user can upload an avatar to the API using a standard
      * HTML form post. This means our API must allow a non-JSON API content media type
      * when creating the resource.
+     *
+     * @param string $contentType
+     * @dataProvider multipartProvider
      */
-    public function test(): void
+    public function test(string $contentType): void
     {
         $user = factory(User::class)->create();
         $file = UploadedFile::fake()->create('avatar.jpg');
@@ -45,7 +59,7 @@ class CreateTest extends TestCase
         $response = $this->actingAs($user, 'api')->post(
             '/api/v1/avatars?include=user',
             ['avatar' => $file],
-            ['Content-Type' => 'multipart/form-data', 'Content-Length' => '1']
+            ['Content-Type' => $contentType, 'Content-Length' => '1']
         );
 
         $id = $response

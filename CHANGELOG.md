@@ -28,6 +28,10 @@ are not meant to be extended.
 Also added PHP 7 type-hinting to all methods in the abstract class. 
 
 ### Fixed
+- [#265](https://github.com/cloudcreativity/laravel-json-api/issues/265)
+Allow wildcard media type parameters when matching decoders. This enables support for media types that
+include random parameter values, primarily the `multipart/form-data` type that has a `boundary` parameter
+that is unpredictable.
 - [#280](https://github.com/cloudcreativity/laravel-json-api/issues/280)
 Validation error objects for relationship objects now have correct source pointers.
 - [#284](https://github.com/cloudcreativity/laravel-json-api/issues/284)
