@@ -1,5 +1,9 @@
 # Upgrade Guide
 
+### 1.0.0-rc.1 to 1.0.0-rc.2
+
+No changes are required to upgrade.
+
 ## 1.0.0-beta.6 to 1.0.0-rc.1
 
 ### Config
