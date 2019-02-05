@@ -60,9 +60,9 @@ A demo application is available at [here](https://github.com/cloudcreativity/dem
 
 | Laravel | This Package | EOL? |
 | --- | --- | --- |
-| 5.7.* | `1.0.0-rc.1` | - |
-| 5.6.* | `1.0.0-rc.1` | - |
-| 5.5.* | `1.0.0-rc.1` | - |
+| 5.7.* | `1.0.0-rc.2` | - |
+| 5.6.* | `1.0.0-rc.2` | - |
+| 5.5.* | `1.0.0-rc.2` | - |
 | 5.4.* | `1.0.0-beta.3` | EOL |
 
 Make sure you consult the [Upgrade Guide](http://laravel-json-api.readthedocs.io/en/latest/upgrade/) 
@@ -77,15 +77,6 @@ so if you do and can help, please let us know on
 ## Documentation
 
 Documentation is available on [Read the Docs](http://laravel-json-api.readthedocs.io/en/latest/).
-
-## Status
-
-We are aiming for `v1.0.0` as soon as possible. Now we are on `1.0.0-beta.*` releases there will be a minimal
-amount of breaking changes to fixing the few remaining issues.
-[Check the progress here.](https://github.com/cloudcreativity/laravel-json-api/milestone/2)
-
-We have production applications that are using the package and extensive test coverage of this package and
-those applications.
 
 ## License
 
