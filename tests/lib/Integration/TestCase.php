@@ -115,7 +115,7 @@ abstract class TestCase extends BaseTestCase
     protected function withAppRoutes()
     {
         Route::middleware('web')
-            ->namespace($namespace = 'DummyApp\\Http\\Controllers')
+            ->namespace($namespace = 'DummyApp\Http\Controllers')
             ->group(__DIR__ . '/../../dummy/routes/web.php');
 
         Route::group(compact('namespace'), function () {
@@ -136,7 +136,7 @@ abstract class TestCase extends BaseTestCase
     protected function withRoutes(\Closure $callback, array $options = [], string $api = 'v1')
     {
         Route::group([
-            'namespace' => '\\DummyApp\\Http\\Controllers',
+            'namespace' => 'DummyApp\Http\Controllers',
         ], function () use ($api, $options, $callback) {
 
             if (empty($options)) {
@@ -155,7 +155,7 @@ abstract class TestCase extends BaseTestCase
      */
     protected function withFluentRoutes(string $api = 'v1'): ApiRegistration
     {
-        return JsonApi::register($api)->withNamespace('\\DummyApp\\Http\\Controllers');
+        return JsonApi::register($api)->withNamespace('DummyApp\Http\Controllers');
     }
 
     /**

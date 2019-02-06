@@ -129,7 +129,7 @@ class Test extends TestCase
             ]);
         });
 
-        $expected = '\DummyApp\Http\Controllers\PostsController';
+        $expected = 'DummyApp\Http\Controllers\PostsController';
 
         $this->assertMatch($method, $url, $expected . $action);
     }
@@ -150,7 +150,7 @@ class Test extends TestCase
             });
         });
 
-        $expected = '\DummyApp\Http\Controllers\PostsController';
+        $expected = 'DummyApp\Http\Controllers\PostsController';
 
         $this->assertMatch($method, $url, $expected . $action);
     }
