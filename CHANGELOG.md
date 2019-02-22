@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## Unreleased
+
+### Fixed
+- [#295](https://github.com/cloudcreativity/laravel-json-api/issues/295)
+Use `null` for empty `from`/`to` fields in cursor page meta.
+
 ## [1.0.0-rc.2] - 2019-02-05
 
 ### Added

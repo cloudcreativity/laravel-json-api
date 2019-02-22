@@ -53,6 +53,33 @@ class CursorPagingTest extends TestCase
         $this->app->instance(CursorStrategy::class, $this->strategy);
     }
 
+    public function testNoPages()
+    {
+        $links = [
+            'first' => $this->buildLink(
+                '/api/v1/comments',
+                [
+                    'page' => [
+                        'limit' => 10,
+                    ],
+                ]
+            ),
+        ];
+
+        $page = [
+            'per-page' => 10,
+            'from' => null,
+            'to' => null,
+            'has-more' => false,
+        ];
+
+        $this->actingAsUser()
+            ->doSearch(['page' => ['limit' => 10]])
+            ->assertFetchedNone()
+            ->assertExactMeta(compact('page'))
+            ->assertExactLinks($links);
+    }
+
     public function testOnlyLimit()
     {
         /** @var Collection $comments */
