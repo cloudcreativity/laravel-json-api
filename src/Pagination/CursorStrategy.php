@@ -263,7 +263,7 @@ class CursorStrategy implements PagingStrategyInterface
     /**
      * @param CursorPaginator $paginator
      * @param array $parameters
-     * @return LinkInterface
+     * @return LinkInterface|null
      */
     protected function createNextLink(CursorPaginator $paginator, array $parameters = [])
     {
@@ -280,10 +280,14 @@ class CursorStrategy implements PagingStrategyInterface
     /**
      * @param CursorPaginator $paginator
      * @param array $parameters
-     * @return LinkInterface
+     * @return LinkInterface|null
      */
     protected function createPrevLink(CursorPaginator $paginator, array $parameters = [])
     {
+        if ($paginator->isEmpty()) {
+            return null;
+        }
+
         return $this->createLink([
             $this->before => $paginator->firstItem(),
             $this->limit => $paginator->getPerPage(),
@@ -325,8 +329,8 @@ class CursorStrategy implements PagingStrategyInterface
     {
         $meta = [
             'per-page' => $paginator->getPerPage(),
-            'from' => (string) $paginator->firstItem(),
-            'to' => (string) $paginator->lastItem(),
+            'from' => $paginator->getFrom(),
+            'to' => $paginator->getTo(),
             'has-more' => $paginator->hasMore(),
         ];
 

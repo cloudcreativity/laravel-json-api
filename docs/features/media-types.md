@@ -589,6 +589,7 @@ class ContentNegotiator extends BaseContentNegotiator
 {
     protected $decoding = [
         'multipart/form-data' => \App\JsonApi\MultipartDecoder::class,
+        'multipart/form-data; boundary=*' => \App\JsonApi\MultipartDecoder::class,
     ];
 }
 ```
@@ -630,11 +631,12 @@ class ContentNegotiator extends BaseContentNegotiator
      */
     protected function decodingsForResource(?Avatar $avatar): DecodingList
     {
-        $multiPart = Decoding::create('multipart/form-data', new MultipartDecoder());
+        $decoder = new MultipartDecoder();
 
         return $this
             ->decodingMediaTypes()
-            ->when(is_null($avatar), $multiPart);
+            ->when(is_null($avatar), Decoding::create('multipart/form-data', $decoder))
+            ->when(is_null($avatar), Decoding::create('multipart/form-data; boundary=*', $decoder));
     }
 
 }

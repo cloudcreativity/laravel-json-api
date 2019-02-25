@@ -124,6 +124,26 @@ class CursorPaginator implements IteratorAggregate, Countable
     }
 
     /**
+     * @return string|null
+     */
+    public function getFrom(): ?string
+    {
+        $first = $this->firstItem();
+
+        return $first ? (string) $first : null;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getTo(): ?string
+    {
+        $last = $this->lastItem();
+
+        return $last ? (string) $last : null;
+    }
+
+    /**
      * @inheritDoc
      */
     public function getIterator()
@@ -137,6 +157,22 @@ class CursorPaginator implements IteratorAggregate, Countable
     public function count()
     {
         return $this->items->count();
+    }
+
+    /**
+     * @return bool
+     */
+    public function isEmpty(): bool
+    {
+        return $this->items->isEmpty();
+    }
+
+    /**
+     * @return bool
+     */
+    public function isNotEmpty(): bool
+    {
+        return !$this->isEmpty();
     }
 
 }

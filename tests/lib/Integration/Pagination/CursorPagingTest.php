@@ -44,13 +44,40 @@ class CursorPagingTest extends TestCase
     /**
      * @return void
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
         $this->faker = $this->app->make(Generator::class);
         /** Allow us to override settings in this test. */
         $this->strategy = $this->app->make(CursorStrategy::class);
         $this->app->instance(CursorStrategy::class, $this->strategy);
+    }
+
+    public function testNoPages()
+    {
+        $links = [
+            'first' => $this->buildLink(
+                '/api/v1/comments',
+                [
+                    'page' => [
+                        'limit' => 10,
+                    ],
+                ]
+            ),
+        ];
+
+        $page = [
+            'per-page' => 10,
+            'from' => null,
+            'to' => null,
+            'has-more' => false,
+        ];
+
+        $this->actingAsUser()
+            ->doSearch(['page' => ['limit' => 10]])
+            ->assertFetchedNone()
+            ->assertExactMeta(compact('page'))
+            ->assertExactLinks($links);
     }
 
     public function testOnlyLimit()
