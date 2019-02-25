@@ -338,7 +338,7 @@ class ResourceValidationTest extends TestCase
                     'title' => 'Non-Compliant JSON API Document',
                     'detail' => "The member 0 must be an object.",
                     'status' => '400',
-                    'source' => ['pointer' => '/data/relationships/tags/data'],
+                    'source' => ['pointer' => '/data/relationships/tags/data/0'],
                 ],
             ],
             'data.relationships.*.data.*.type:required' => [

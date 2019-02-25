@@ -5,6 +5,9 @@ All notable changes to this project will be documented in this file. This projec
 ## Unreleased
 
 ### Fixed
+- [#302](https://github.com/cloudcreativity/laravel-json-api/issues/302)
+Reject resource objects sent in relationships, as the spec defines that only resource identifiers
+are expected. This is based on the object having either an `attributes` or a `relationships` member.
 - [#295](https://github.com/cloudcreativity/laravel-json-api/issues/295)
 Use `null` for empty `from`/`to` fields in cursor page meta.
 

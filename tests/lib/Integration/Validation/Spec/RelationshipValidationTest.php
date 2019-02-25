@@ -175,6 +175,42 @@ class RelationshipValidationTest extends TestCase
                     'source' => ['pointer' => '/data'],
                 ],
             ],
+            'data:resource object with attributes' => [
+                [
+                    'data' => [
+                        'type' => 'users',
+                        'id' => '1',
+                        'attributes' => [
+                            'name' => 'John Doe',
+                        ],
+                    ],
+                ],
+                [
+                    'title' => 'Non-Compliant JSON API Document',
+                    'detail' => 'The member data must be a resource identifier.',
+                    'status' => '400',
+                    'source' => ['pointer' => '/data'],
+                ],
+            ],
+            'data:resource object with relationships' => [
+                [
+                    'data' => [
+                        'type' => 'users',
+                        'id' => '1',
+                        'relationships' => [
+                            'sites' => [
+                                'data' => [],
+                            ],
+                        ],
+                    ],
+                ],
+                [
+                    'title' => 'Non-Compliant JSON API Document',
+                    'detail' => 'The member data must be a resource identifier.',
+                    'status' => '400',
+                    'source' => ['pointer' => '/data'],
+                ],
+            ],
         ];
     }
 
@@ -307,6 +343,25 @@ class RelationshipValidationTest extends TestCase
                     'title' => 'Not Found',
                     'detail' => 'The related resource does not exist.',
                     'status' => '404',
+                    'source' => ['pointer' => '/data/0'],
+                ],
+            ],
+            'data:resource object with attributes' => [
+                [
+                    'data' => [
+                        [
+                            'type' => 'tags',
+                            'id' => '100',
+                            'attributes' => [
+                                'name' => 'News',
+                            ],
+                        ],
+                    ],
+                ],
+                [
+                    'title' => 'Non-Compliant JSON API Document',
+                    'detail' => 'The member 0 must be a resource identifier.',
+                    'status' => '400',
                     'source' => ['pointer' => '/data/0'],
                 ],
             ],

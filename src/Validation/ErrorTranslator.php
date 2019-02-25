@@ -101,6 +101,26 @@ class ErrorTranslator
     }
 
     /**
+     * Create an error for a member that must be a resource identifier.
+     *
+     * @param string $path
+     * @param string $member
+     * @return ErrorInterface
+     */
+    public function memberNotIdentifier(string $path, string $member): ErrorInterface
+    {
+        return new Error(
+            null,
+            null,
+            Response::HTTP_BAD_REQUEST,
+            $this->trans('member_identifier_expected', 'code'),
+            $this->trans('member_identifier_expected', 'title'),
+            $this->trans('member_identifier_expected', 'detail', compact('member')),
+            $this->pointer($path, $member)
+        );
+    }
+
+    /**
      * Create an error for when a member has a field that is not allowed.
      *
      * @param string $path
@@ -475,11 +495,9 @@ class ErrorTranslator
      */
     protected function pointer(string $path, ?string $member = null): array
     {
-        if (!$member) {
-            $pointer = $path;
-        } else {
-            $pointer = $member ? sprintf('%s/%s', rtrim($path, '/'), $member) : $path;
-        }
+        /** Member can be '0' which is an empty string. */
+        $withoutMember = is_null($member) || '' === $member;
+        $pointer = !$withoutMember ? sprintf('%s/%s', rtrim($path, '/'), $member) : $path;
 
         return [Error::SOURCE_POINTER => $pointer];
     }
