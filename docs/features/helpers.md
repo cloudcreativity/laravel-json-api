@@ -75,7 +75,7 @@ This helper returns a generator that allows you to create JSON API link objects 
 /** @var \Neomerx\JsonApi\Contracts\Document\LinkInterface $link */
 $link = json_api('v1')->links()->index('posts');
 $meta = ['foo' => 'bar'];
-$link = json_api('v1)->links()->index('posts', $meta);
+$link = json_api('v1')->links()->index('posts', $meta);
 ```
 
 The following methods on the links generator create links for resources within your API:
