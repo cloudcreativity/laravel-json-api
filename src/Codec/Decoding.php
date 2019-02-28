@@ -20,7 +20,6 @@ namespace CloudCreativity\LaravelJsonApi\Codec;
 use CloudCreativity\LaravelJsonApi\Contracts\Decoder\DecoderInterface;
 use CloudCreativity\LaravelJsonApi\Decoder\JsonApiDecoder;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
-use Illuminate\Support\Collection;
 use Neomerx\JsonApi\Contracts\Http\Headers\MediaTypeInterface;
 use Neomerx\JsonApi\Http\Headers\MediaType;
 

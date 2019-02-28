@@ -1,6 +1,6 @@
 # Upgrade Guide
 
-## 1.0.0-rc.1 to 1.0.0-rc.2
+## 1.0.0-rc.* to ^1.0
 
 No changes are required to upgrade.
 
