@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file. This projec
 
 ## Unreleased
 
+### Added
+- Package now supports Laravel 5.8.
+
 ### Fixed
 - [#295](https://github.com/cloudcreativity/laravel-json-api/issues/295)
 Use `null` for empty `from`/`to` fields in cursor page meta.
