@@ -35,7 +35,7 @@ class ResourceTest extends TestCase
     /**
      * @return void
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
         Carbon::setTestNow('2018-12-01 12:00:00');
@@ -44,7 +44,7 @@ class ResourceTest extends TestCase
     /**
      * @return void
      */
-    protected function tearDown()
+    protected function tearDown(): void
     {
         parent::tearDown();
         Carbon::setTestNow();

@@ -28,7 +28,7 @@ class QueueEventsTest extends TestCase
     /**
      * @return void
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
         Carbon::setTestNow('2018-10-23 12:00:00.123456');

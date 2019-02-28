@@ -32,7 +32,7 @@ class QueryValidationTest extends TestCase
     /**
      * @return void
      */
-    protected function tearDown()
+    protected function tearDown(): void
     {
         parent::tearDown();
         LaravelJsonApi::$validationFailures = false;

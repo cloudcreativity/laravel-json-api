@@ -170,22 +170,22 @@ abstract class AbstractValidator implements DocumentValidatorInterface
      * Validate an identifier object.
      *
      * @param mixed $value
-     * @param string $dataPath
+     * @param string $path
      *      the path to the data member in which the identifier is contained.
      * @param int|null $index
      *      the index for the identifier, if in a collection.
      * @return bool
      */
-    protected function validateIdentifier($value, string $dataPath, ?int $index = null): bool
+    protected function validateIdentifier($value, string $path, ?int $index = null): bool
     {
         $member = is_int($index) ? (string) $index : 'data';
 
         if (!is_object($value)) {
-            $this->memberNotObject($dataPath, $member);
+            $this->memberNotObject($path, $member);
             return false;
         }
 
-        $dataPath = sprintf('%s/%s', rtrim($dataPath, '/'), $member);
+        $dataPath = sprintf('%s/%s', rtrim($path, '/'), $member);
         $valid = true;
 
         if (!property_exists($value, 'type')) {
@@ -199,6 +199,12 @@ abstract class AbstractValidator implements DocumentValidatorInterface
             $this->memberRequired($dataPath, 'id');
             $valid = false;
         } else if (!$this->validateIdMember($value->id, $dataPath)) {
+            $valid = false;
+        }
+
+        /** If it has attributes or relationships, it is a resource object not a resource identifier */
+        if (property_exists($value, 'attributes') || property_exists($value, 'relationships')) {
+            $this->memberNotIdentifier($path, $member);
             $valid = false;
         }
 
@@ -361,6 +367,18 @@ abstract class AbstractValidator implements DocumentValidatorInterface
     protected function memberNotObject(string $path, string $member): void
     {
         $this->errors->add($this->translator->memberNotObject($path, $member));
+    }
+
+    /**
+     * Add an error for a member that must be an object.
+     *
+     * @param string $path
+     * @param string|null $member
+     * @return void
+     */
+    protected function memberNotIdentifier(string $path, string $member): void
+    {
+        $this->errors->add($this->translator->memberNotIdentifier($path, $member));
     }
 
     /**

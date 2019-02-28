@@ -36,7 +36,7 @@ class StandardPagingTest extends TestCase
     /**
      * @return void
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
         $this->app->instance(StandardStrategy::class, $this->strategy = new StandardStrategy());

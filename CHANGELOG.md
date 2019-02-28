@@ -2,6 +2,18 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## [1.0.0] - 2019-02-28
+
+### Added
+- Package now supports Laravel 5.8.
+
+### Fixed
+- [#302](https://github.com/cloudcreativity/laravel-json-api/issues/302)
+Reject resource objects sent in relationships, as the spec defines that only resource identifiers
+are expected. This is based on the object having either an `attributes` or a `relationships` member.
+- [#295](https://github.com/cloudcreativity/laravel-json-api/issues/295)
+Use `null` for empty `from`/`to` fields in cursor page meta.
+
 ## [1.0.0-rc.2] - 2019-02-05
 
 ### Added

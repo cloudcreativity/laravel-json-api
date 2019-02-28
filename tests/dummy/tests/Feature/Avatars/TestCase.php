@@ -33,7 +33,7 @@ abstract class TestCase extends BaseTestCase
     /**
      * @return void
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
         Storage::fake('local');

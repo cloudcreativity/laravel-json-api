@@ -338,7 +338,7 @@ class ResourceValidationTest extends TestCase
                     'title' => 'Non-Compliant JSON API Document',
                     'detail' => "The member 0 must be an object.",
                     'status' => '400',
-                    'source' => ['pointer' => '/data/relationships/tags/data'],
+                    'source' => ['pointer' => '/data/relationships/tags/data/0'],
                 ],
             ],
             'data.relationships.*.data.*.type:required' => [
@@ -543,5 +543,29 @@ class ResourceValidationTest extends TestCase
                 ]
             ],
         ]);
+    }
+
+    public function testIssue305(): void
+    {
+        $data = [
+            'type' => 'single',
+            'data' => [
+                [
+                    'key-1' => 'value-1'
+                ],
+            ],
+        ];
+
+        $expected = [
+            'status' => '400',
+            'title' => 'Non-Compliant JSON API Document',
+            'detail' => 'The member data must be an object.',
+            'source' => [
+                'pointer' => '/data',
+            ],
+        ];
+
+        $this->doInvalidRequest('/api/v1/posts', $data)
+            ->assertErrorStatus($expected);
     }
 }
