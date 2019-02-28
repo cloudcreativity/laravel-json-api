@@ -56,14 +56,24 @@ trait CreatesEloquentIdentities
             ));
         }
 
-        $id = $model->{$relation->getForeignKey()};
+        // support Laravel 5.8
+        $foreignKey = method_exists($relation, 'getForeignKeyName') ?
+            $relation->getForeignKeyName() :
+            $relation->getForeignKey();
+
+        $id = $model->{$foreignKey};
 
         if (is_null($id)) {
             return null;
         }
 
+        // support Laravel 5.8
+        $ownerKey = method_exists($relation, 'getOwnerKeyName') ?
+            $relation->getOwnerKeyName() :
+            $relation->getOwnerKey();
+
         $related = $relation->getRelated()->replicate();
-        $related->{$relation->getOwnerKey()} = $id;
+        $related->{$ownerKey} = $id;
 
         return $related;
     }

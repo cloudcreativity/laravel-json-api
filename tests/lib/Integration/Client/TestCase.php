@@ -45,7 +45,7 @@ abstract class TestCase extends BaseTestCase
     /**
      * @return void
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
         $this->handler = HandlerStack::create($this->mock = new MockHandler());

@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file. This projec
 
 ## Unreleased
 
+### Added
+- Package now supports Laravel 5.8.
+
 ### Fixed
 - [#302](https://github.com/cloudcreativity/laravel-json-api/issues/302)
 Reject resource objects sent in relationships, as the spec defines that only resource identifiers

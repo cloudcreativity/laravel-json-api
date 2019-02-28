@@ -60,6 +60,7 @@ A demo application is available at [here](https://github.com/cloudcreativity/dem
 
 | Laravel | This Package | EOL? |
 | --- | --- | --- |
+| 5.8.* | `dev-laravel-5.8` | - |
 | 5.7.* | `1.0.0-rc.2` | - |
 | 5.6.* | `1.0.0-rc.2` | - |
 | 5.5.* | `1.0.0-rc.2` | - |

@@ -32,7 +32,7 @@ class UpdateTest extends TestCase
     /**
      * @return void
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
         $this->post = factory(Post::class)->create();
