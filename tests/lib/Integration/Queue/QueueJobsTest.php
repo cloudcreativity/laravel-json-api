@@ -54,7 +54,7 @@ class QueueJobsTest extends TestCase
      */
     public function testReadNotPending()
     {
-       $job = factory(ClientJob::class)->states('success')->create();
+       $job = factory(ClientJob::class)->states('success', 'with_download')->create();
 
        $response = $this
            ->getJsonApi($this->jobUrl($job))
@@ -71,7 +71,22 @@ class QueueJobsTest extends TestCase
      */
     public function testReadNotPendingCannotSeeOther()
     {
-        $job = factory(ClientJob::class)->states('success')->create(['resource_id' => null]);
+        $job = factory(ClientJob::class)->states('success')->create();
+        $expected = $this->serialize($job);
+
+        $this->getJsonApi($this->jobUrl($job))
+            ->assertFetchedOneExact($expected)
+            ->assertHeaderMissing('Location');
+    }
+
+    /**
+     * If the async process fails, we do not expect it to return a See Other even if
+     * it has a resource id. This is because otherwise there is no way for the client
+     * to know that it failed.
+     */
+    public function testReadFailed()
+    {
+        $job = factory(ClientJob::class)->states('failed', 'with_download')->create();
         $expected = $this->serialize($job);
 
         $this->getJsonApi($this->jobUrl($job))

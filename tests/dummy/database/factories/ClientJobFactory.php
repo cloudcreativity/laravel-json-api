@@ -22,7 +22,7 @@ use Illuminate\Database\Eloquent\Factory;
 
 /** @var Factory $factory */
 
-$factory->define(ClientJob::class, function (Faker $faker) {
+$factory->define(ClientJob::class, function () {
     return [
         'api' => 'v1',
         'failed' => false,
@@ -36,6 +36,20 @@ $factory->state(ClientJob::class, 'success', function (Faker $faker) {
         'completed_at' => $faker->dateTimeBetween('-10 minutes', 'now'),
         'failed' => false,
         'attempts' => $faker->numberBetween(1, 3),
+    ];
+});
+
+$factory->state(ClientJob::class, 'failed', function (Faker $faker) {
+    return [
+        'completed_at' => $faker->dateTimeBetween('-10 minutes', 'now'),
+        'failed' => true,
+        'attempts' => $faker->numberBetween(1, 3),
+    ];
+});
+
+$factory->state(ClientJob::class, 'with_download', function () {
+    return [
+        'resource_type' => 'downloads',
         'resource_id' => factory(Download::class)->create()->getRouteKey(),
     ];
 });

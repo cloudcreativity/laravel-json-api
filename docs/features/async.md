@@ -217,6 +217,40 @@ class ProcessPodcast implements ShouldQueue
 }
 ```
 
+## Routing
+
+The final step of setup is to enable asynchronous process routes on a resource. These
+routes allow a client to check the current status of a process.
+
+For example, if our `podcasts` resource used asynchronous processes when a podcast is
+created, we would need to add the following to our [route definitions](../basics/routing.md):
+
+```php
+JsonApi::register('default')->withNamespace('Api')->routes(function ($api) {
+    $api->resource('podcasts')->async();
+});
+```
+
+This enables the following routes:
+
+- `GET /podcasts/queue-jobs`: this lists all `queue-jobs` resources for the `podcasts`
+resource type.
+- `GET /podcasts/queue-jobs/<UUID>`: this retrieves a specific `queue-jobs` resource 
+for the `podcasts` resource type.
+
+The resource type `queue-jobs` is the name used in the JSON API's recommendation for
+asynchronous processing. If you want to use a resource type, then you can change this 
+by editing the `jobs.resource` config setting in your API's configuration file.
+
+Note that we assume the resource id of a process is a valid UUID. If you use something
+different, then you can pass a constraint into the `async()` method, as follows:
+
+```php
+JsonApi::register('default')->withNamespace('Api')->routes(function ($api) {
+    $api->resource('podcasts')->async('^\d+$');
+});
+```
+
 ## HTTP Requests and Responses
 
 Once you have followed the above instructions, you can now make HTTP requests and receive

@@ -119,6 +119,10 @@ class ClientJob extends Model implements AsynchronousProcess
      */
     public function getLocation(): ?string
     {
+        if ($this->failed) {
+            return null;
+        }
+
         $type = $this->resource_type;
         $id = $this->resource_id;
 
