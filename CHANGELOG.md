@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
-## Unreleased
+## [1.0.1] - 2019-03-12
 
 ### Fixed
 - A `303 See Other` will now not be returned if a client job has failed. This is necessary because
