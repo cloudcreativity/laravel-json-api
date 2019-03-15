@@ -169,10 +169,10 @@ trait IncludesModels
      *
      * - If `true`, a field name of `user-history` or `user_history` will
      * expect the Eloquent model relation method to be `userHistory`.
-     * - If `false`, the field name will be expected to be identical to
-     * the Eloquent method, i.e. `user_history` in both JSON API and on the
-     * model. (For this scenario, `user-history` will not work as a field
-     * name.)
+     * - If `false`, a field name of `user-history` or `user_history` will
+     * expect the Eloquent model relation method to be `user_history`. I.e.
+     * if PSR1 is not being followed, the best guess is that method names
+     * are snake case.
      *
      * If the developer has different conversion logic, they should overload
      * this method and implement it themselves.
@@ -184,6 +184,6 @@ trait IncludesModels
      */
     protected function modelRelationForField($field)
     {
-        return $this->camelCaseRelations ? Str::camelize($field) : $field;
+        return $this->camelCaseRelations ? Str::camelize($field) : Str::underscore($field);
     }
 }
