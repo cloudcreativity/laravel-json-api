@@ -622,7 +622,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     {
         list($one, $two, $caller) = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3);
 
-        return $caller['function'];
+        return $this->methodForRelation($caller['function']);
     }
 
 }
