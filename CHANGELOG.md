@@ -2,6 +2,14 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## Unreleased
+
+### Added
+- [#315](https://github.com/cloudcreativity/laravel-json-api/issues/315)
+Allow developers to use the exact JSON API field name as the relationship method name on their
+adapters. Although we recommend following the PSR1 standard of using camel case for method names,
+this does allow a developer to use snake case field names with snake case method names.
+
 ## [1.0.1] - 2019-03-12
 
 ### Fixed

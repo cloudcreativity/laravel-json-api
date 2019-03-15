@@ -197,11 +197,32 @@ abstract class AbstractResourceAdapter implements ResourceAdapterInterface, Stor
     }
 
     /**
-     * @param $field
+     * Get the method name on this adapter for the supplied JSON API field.
+     *
+     * By default we expect the developer to be following the PSR1 standard,
+     * so the method name on the adapter should use camel case.
+     *
+     * However, some developers may prefer to use the actual JSON API field
+     * name. E.g. they could use `user_history` as the JSON API field name
+     * and the method name.
+     *
+     * Therefore we return the field name if it exactly exists on the adapter,
+     * otherwise we camelize it.
+     *
+     * A developer can use completely different logic by overloading this
+     * method.
+     *
+     * @param string $field
+     *      the JSON API field name.
      * @return string|null
+     *      the adapter's method name, or null if none is implemented.
      */
     protected function methodForRelation($field)
     {
+        if (method_exists($this, $field)) {
+            return $field;
+        }
+
         $method = Str::camelize($field);
 
         return method_exists($this, $method) ? $method : null;
