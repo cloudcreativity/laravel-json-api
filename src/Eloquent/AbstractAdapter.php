@@ -26,6 +26,7 @@ use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PagingStrategyInterface;
 use CloudCreativity\LaravelJsonApi\Document\ResourceObject;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Pagination\CursorStrategy;
+use CloudCreativity\LaravelJsonApi\Utils\Str;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations;
@@ -622,7 +623,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     {
         list($one, $two, $caller) = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3);
 
-        return $caller['function'];
+        return $this->modelRelationForField($caller['function']);
     }
 
 }
