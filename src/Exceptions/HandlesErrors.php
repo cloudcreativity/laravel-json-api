@@ -18,10 +18,15 @@
 
 namespace CloudCreativity\LaravelJsonApi\Exceptions;
 
+use CloudCreativity\LaravelJsonApi\Routing\Route;
+use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
 use CloudCreativity\LaravelJsonApi\Utils\Helpers;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
+use Neomerx\JsonApi\Exceptions\JsonApiException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 /**
  * Trait HandlesErrors
@@ -44,10 +49,19 @@ trait HandlesErrors
      */
     public function isJsonApi($request, Exception $e)
     {
-        return Helpers::wantsJsonApi($request);
+        if (Helpers::wantsJsonApi($request)) {
+            return true;
+        }
+
+        /** @var Route $route */
+        $route = app(JsonApiService::class)->currentRoute();
+
+        return $route->hasCodec() && $route->getCodec()->willEncode();
     }
 
     /**
+     * Render an exception as a JSON API error response.
+     *
      * @param Request $request
      * @param Exception $e
      * @return Response
@@ -55,6 +69,21 @@ trait HandlesErrors
     public function renderJsonApi($request, Exception $e)
     {
         return json_api()->response()->exception($e);
+    }
+
+    /**
+     * Prepare JSON API exception for non-JSON API rendering.
+     *
+     * @param JsonApiException $ex
+     * @return HttpException
+     */
+    protected function prepareJsonApiException(JsonApiException $ex)
+    {
+        $error = collect($ex->getErrors())->map(function (ErrorInterface $err) {
+            return $err->getDetail() ?: $err->getTitle();
+        })->filter()->first();
+
+        return new HttpException($ex->getHttpCode(), $error, $ex);
     }
 
 }

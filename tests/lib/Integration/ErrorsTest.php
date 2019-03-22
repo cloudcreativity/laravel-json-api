@@ -28,6 +28,8 @@ use Illuminate\Session\TokenMismatchException;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\MessageBag;
 use Illuminate\Validation\ValidationException;
+use Neomerx\JsonApi\Document\Error;
+use Neomerx\JsonApi\Exceptions\JsonApiException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class ErrorsTest extends TestCase
@@ -211,6 +213,49 @@ class ErrorsTest extends TestCase
             ->assertStatus(404)
             ->assertHeader('Content-Type', 'application/vnd.api+json')
             ->assertExactJson($expected);
+    }
+
+    /**
+     * If content negotiation has occurred on a JSON API route, then we always expect
+     * a JSON API response if the matched codec supports encoding to JSON API.
+     *
+     * This can occur when the client has said it accepts any media type: the JSON API
+     * media type will match, then any subsequent exceptions should be rendered as JSON
+     * API.
+     *
+     * @see https://github.com/cloudcreativity/laravel-json-api/issues/329
+     */
+    public function testAcceptAny()
+    {
+        $expected = [
+            'status' => '400',
+            'source' => [
+                'parameter' => 'include',
+            ],
+        ];
+
+        $this->get('/api/v1/posts?include=foo', ['Accept' => '*/*'])
+            ->assertErrorStatus($expected);
+    }
+
+    /**
+     * If we get a JSON API exception outside of a JSON API route, but have not
+     * asked for a JSON API response, then it must be converted to a HTTP exception.
+     * Otherwise it will always render as a 500 Internal Server error.
+     *
+     * @see https://github.com/cloudcreativity/laravel-json-api/issues/329
+     */
+    public function testUnexpectedJsonApiException()
+    {
+        config()->set('app.debug', true);
+
+        Route::get('/test', function () {
+            throw new JsonApiException(new Error(null, null, 422, null, null, 'My foobar error message.'), 418);
+        });
+
+        $this->get('/test', ['Accept' => '*/*'])
+            ->assertStatus(418)
+            ->assertSee('My foobar error message.');
     }
 
     public function testMaintenanceMode()

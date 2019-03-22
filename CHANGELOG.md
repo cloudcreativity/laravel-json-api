@@ -10,6 +10,14 @@ Allow developers to use the exact JSON API field name as the relationship method
 adapters, plus for default conversion of names in include paths. Although we recommend following
 the PSR1 standard of using camel case for method names, this does allow a developer to use snake
 case field names with snake case method names.
+- Exception handlers can now use the `parseJsonApiException()` helper method if they need to
+convert JSON API exceptions to HTTP exceptions. Refer to the [installation instructions](./docs/installation.md)
+for an example of how to do this on an exception handler.
+
+### Fixed
+- [#329](https://github.com/cloudcreativity/laravel-json-api/issues/329)
+Render JSON API error responses when a codec has matched, but the client has not explicitly
+asked for JSON API response (e.g. asked for `Accept: */*`).
 
 ## [1.0.1] - 2019-03-12
 
