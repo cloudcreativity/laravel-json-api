@@ -203,6 +203,24 @@ Your validator will be provided with the following array of data:
 ];
 ```
 
+### Basic Rule Example
+
+The following is an example query rule for the above-mentioned data:
+
+```php
+protected function rules($record = null): array
+{
+    return [
+        'title' => 'required|string|min:1|max:255',
+        'content' => 'required|string|min:1',
+        'author.type' => 'in:users',
+        'author.id' => 'exists:users,id',
+        'tags.*.id' => 'exists:tags,id'
+    ];
+}
+
+```
+
 ### Updating Resources
 
 When updating resources, the JSON API specification says:
