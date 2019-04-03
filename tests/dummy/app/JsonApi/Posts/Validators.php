@@ -28,6 +28,7 @@ class Validators extends AbstractValidators
      * @var array
      */
     protected $allowedSortParameters = [
+        'id',
         'created-at',
         'updated-at',
         'title',

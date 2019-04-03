@@ -151,6 +151,16 @@ class StandardPagingTest extends TestCase
             ->assertFetchedPage($posts->last(), $links, $meta);
     }
 
+    public function testPageWithReverseKey()
+    {
+        $posts = factory(Post::class, 4)->create()->reverse()->values();
+
+        $this->doSearch([
+            'page' => ['number' => 1, 'size' => 3],
+            'sort' => '-id',
+        ])->assertFetchedManyInOrder($posts->take(3));
+    }
+
     public function testCustomPageKeys()
     {
         factory(Post::class, 4)->create();
