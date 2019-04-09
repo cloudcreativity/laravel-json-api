@@ -327,16 +327,16 @@ means the most recently created model is the first in the list, and the oldest i
 column is not unique (there could be multiple rows created at the same time), it uses the resource id
 column as a secondary sort order, as the resource id must always be unique.
 
-To change the column that is used for the list order use the `withColumn` method. If you prefer your
-list to be in ascending order, use the `withAscending` method. For example:
+To change the column that is used for the list order use the `withQualifiedColumn` method. If you prefer
+your list to be in ascending order, use the `withAscending` method. For example:
 
 ```php
-$strategy->withColumn('published_at')->withAscending();
+$strategy->withQualfiedColumn('posts.published_at')->withAscending();
 ```
 
 > The Eloquent adapter will always set the secondary column for sort order to the same column that is
 being used for the resource ID. If you are using the cursor strategy in a custom adapter, you will
-need to set the unique column using the `withIdentifierColumn` method. Note that whatever you set the
+need to set the unique column using the `withQualifiedKeyName` method. Note that whatever you set the
 column to, this will mean the client needs to provide the value of that column for the `after` and
 `before` page parameters - so really it should always match whatever you are using for the resource ID.
 

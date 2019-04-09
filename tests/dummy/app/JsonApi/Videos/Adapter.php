@@ -19,6 +19,7 @@ namespace DummyApp\JsonApi\Videos;
 
 use CloudCreativity\LaravelJsonApi\Document\ResourceObject;
 use CloudCreativity\LaravelJsonApi\Eloquent\AbstractAdapter;
+use CloudCreativity\LaravelJsonApi\Pagination\StandardStrategy;
 use DummyApp\Video;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
@@ -29,10 +30,12 @@ class Adapter extends AbstractAdapter
 
     /**
      * Adapter constructor.
+     *
+     * @param StandardStrategy $paging
      */
-    public function __construct()
+    public function __construct(StandardStrategy $paging)
     {
-        parent::__construct(new Video());
+        parent::__construct(new Video(), $paging);
     }
 
     /**

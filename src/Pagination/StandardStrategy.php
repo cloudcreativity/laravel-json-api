@@ -20,6 +20,8 @@ namespace CloudCreativity\LaravelJsonApi\Pagination;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PagingStrategyInterface;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Collection;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use Neomerx\JsonApi\Contracts\Http\Query\QueryParametersParserInterface;
@@ -65,11 +67,29 @@ class StandardStrategy implements PagingStrategyInterface
     protected $metaKey;
 
     /**
+     * @var string|null
+     */
+    protected $primaryKey;
+
+    /**
      * StandardStrategy constructor.
      */
     public function __construct()
     {
         $this->metaKey = QueryParametersParserInterface::PARAM_PAGE;
+    }
+
+    /**
+     * Set the qualified column name that is being used for the resource's ID.
+     *
+     * @param $keyName
+     * @return $this
+     */
+    public function withQualifiedKeyName($keyName)
+    {
+        $this->primaryKey = $keyName;
+
+        return $this;
     }
 
     /**
@@ -147,7 +167,10 @@ class StandardStrategy implements PagingStrategyInterface
     public function paginate($query, EncodingParametersInterface $parameters)
     {
         $pageParameters = collect((array) $parameters->getPaginationParameters());
-        $paginator = $this->query($query, $pageParameters);
+
+        $paginator = $this
+            ->defaultOrder($query)
+            ->query($query, $pageParameters);
 
         return $this->createPage($paginator, $parameters);
     }
@@ -193,7 +216,55 @@ class StandardStrategy implements PagingStrategyInterface
     }
 
     /**
-     * @param mixed $query
+     * @param $query
+     * @return bool
+     */
+    protected function willSimplePaginate($query)
+    {
+        return $this->isSimplePagination() && method_exists($query, 'simplePaginate');
+    }
+
+    /**
+     * Apply a deterministic order to the page.
+     *
+     * @param Builder|Relation $query
+     * @return $this
+     * @see https://github.com/cloudcreativity/laravel-json-api/issues/313
+     */
+    protected function defaultOrder($query)
+    {
+        if ($this->doesRequireOrdering($query)) {
+            $query->orderBy($this->primaryKey);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Do we need to apply a deterministic order to the query?
+     *
+     * If the primary key has not been used for a sort order already, we use it
+     * to ensure the page has a deterministic order.
+     *
+     * @param Builder|Relation $query
+     * @return bool
+     */
+    protected function doesRequireOrdering($query)
+    {
+        if (!$this->primaryKey) {
+            return false;
+        }
+
+        $query = ($query instanceof Relation) ? $query->getBaseQuery() : $query->getQuery();
+
+        return !collect($query->orders ?: [])->contains(function (array $order) {
+            $col = $order['column'] ?? '';
+            return $this->primaryKey === $col;
+        });
+    }
+
+    /**
+     * @param Builder|Relation $query
      * @param Collection $pagingParameters
      * @return mixed
      */
@@ -203,7 +274,7 @@ class StandardStrategy implements PagingStrategyInterface
         $size = $this->getPerPage($pagingParameters) ?: $this->getDefaultPerPage($query);
         $cols = $this->getColumns();
 
-        return ($this->isSimplePagination() && method_exists($query, 'simplePaginate')) ?
+        return $this->willSimplePaginate($query) ?
             $query->simplePaginate($size, $cols, $pageName) :
             $query->paginate($size, $cols, $pageName);
     }
