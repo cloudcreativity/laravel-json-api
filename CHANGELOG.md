@@ -18,6 +18,9 @@ for an example of how to do this on an exception handler.
 - [#329](https://github.com/cloudcreativity/laravel-json-api/issues/329)
 Render JSON API error responses when a codec has matched, but the client has not explicitly
 asked for JSON API response (e.g. asked for `Accept: */*`).
+- [#313](https://github.com/cloudcreativity/laravel-json-api/issues/313)
+Ensure that the standard paging strategy uses the resource identifier so that pages have a
+[deterministic sort order](https://tighten.co/blog/a-cautionary-tale-of-nondeterministic-laravel-pagination).
 
 ## [1.0.1] - 2019-03-12
 
