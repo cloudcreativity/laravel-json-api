@@ -2,6 +2,26 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## [1.1.0] - 2019-04-12
+
+### Added
+- [#315](https://github.com/cloudcreativity/laravel-json-api/issues/315)
+Allow developers to use the exact JSON API field name as the relationship method name on their
+adapters, plus for default conversion of names in include paths. Although we recommend following
+the PSR1 standard of using camel case for method names, this does allow a developer to use snake
+case field names with snake case method names.
+- Exception handlers can now use the `parseJsonApiException()` helper method if they need to
+convert JSON API exceptions to HTTP exceptions. Refer to the [installation instructions](./docs/installation.md)
+for an example of how to do this on an exception handler.
+
+### Fixed
+- [#329](https://github.com/cloudcreativity/laravel-json-api/issues/329)
+Render JSON API error responses when a codec has matched, but the client has not explicitly
+asked for JSON API response (e.g. asked for `Accept: */*`).
+- [#313](https://github.com/cloudcreativity/laravel-json-api/issues/313)
+Ensure that the standard paging strategy uses the resource identifier so that pages have a
+[deterministic sort order](https://tighten.co/blog/a-cautionary-tale-of-nondeterministic-laravel-pagination).
+
 ## [1.0.1] - 2019-03-12
 
 ### Fixed
