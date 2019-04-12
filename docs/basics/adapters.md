@@ -597,7 +597,7 @@ class DummyClass extends AbstractResourceAdapter
 }
 ```
 
-The methods to implement are documented on the `ResourceAdpaterInterface` and the `AbstractResourceAdapter`.
+The methods to implement are documented on the `ResourceAdapterInterface` and the `AbstractResourceAdapter`.
 
 ### Relationships
 
