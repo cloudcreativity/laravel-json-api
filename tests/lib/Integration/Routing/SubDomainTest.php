@@ -15,11 +15,12 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\LaravelJsonApi\Tests\Integration;
+namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Routing;
 
+use CloudCreativity\LaravelJsonApi\Routing\RouteRegistrar;
+use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
 use DummyApp\Post;
 use DummyApp\User;
-use Illuminate\Support\Facades\Route;
 
 /**
  * Class SubDomainTest
@@ -38,16 +39,35 @@ class SubDomainTest extends TestCase
      */
     protected $resourceType = 'posts';
 
+    /**
+     * @var bool
+     */
+    protected $appRoutes = false;
+
+    /**
+     * @return void
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->withFluentRoutes()->domain('{wildcard}.example.com')->routes(function (RouteRegistrar $api) {
+            $api->resource('posts')->relationships(function ($relations) {
+               $relations->hasOne('author');
+            });
+        });
+    }
+
     public function testRead()
     {
         $post = factory(Post::class)->create();
-        $uri = route('api:v1:posts.read', ['foo', $post]);
+        $uri = "http://foo.example.com/api/v1/posts/{$post->getRouteKey()}";
 
         $this->getJsonApi($uri)->assertFetchedOne([
             'type' => 'posts',
             'id' => (string) $post->getRouteKey(),
             'links' => [
-                'self' => "http://foo.example.com/api/v1/posts/{$post->getRouteKey()}",
+                'self' => $uri,
             ],
         ]);
     }
@@ -55,7 +75,7 @@ class SubDomainTest extends TestCase
     public function testUpdate()
     {
         $post = factory(Post::class)->create();
-        $uri = route('api:v1:posts.update', ['foo', $post]);
+        $uri = "http://foo.example.com/api/v1/posts/{$post->getRouteKey()}";
 
         $data = [
             'type' => 'posts',
@@ -71,7 +91,7 @@ class SubDomainTest extends TestCase
     public function testDelete()
     {
         $post = factory(Post::class)->create();
-        $uri = route('api:v1:posts.delete', ['foo', $post]);
+        $uri = "http://foo.example.com/api/v1/posts/{$post->getRouteKey()}";
 
         $this->deleteJsonApi($uri)->assertStatus(204);
     }
@@ -79,7 +99,7 @@ class SubDomainTest extends TestCase
     public function testReadRelated()
     {
         $post = factory(Post::class)->create();
-        $uri = route('api:v1:posts.relationships.author', ['foo', $post]);
+        $uri = "http://foo.example.com/api/v1/posts/{$post->getRouteKey()}/author";
 
         $this->getJsonApi($uri)->assertStatus(200);
     }
@@ -87,7 +107,7 @@ class SubDomainTest extends TestCase
     public function testReadRelationship()
     {
         $post = factory(Post::class)->create();
-        $uri = route('api:v1:posts.relationships.author.read', ['foo', $post]);
+        $uri = "http://foo.example.com/api/v1/posts/{$post->getRouteKey()}/relationships/author";
 
         $this->getJsonApi($uri)->assertStatus(200);
     }
@@ -96,7 +116,7 @@ class SubDomainTest extends TestCase
     {
         $post = factory(Post::class)->create();
         $user = factory(User::class)->create();
-        $uri = route('api:v1:posts.relationships.author.replace', ['foo', $post]);
+        $uri = "http://foo.example.com/api/v1/posts/{$post->getRouteKey()}/relationships/author";
 
         $data = [
             'type' => 'users',
@@ -106,15 +126,4 @@ class SubDomainTest extends TestCase
         $this->patchJsonApi($uri, [], compact('data'))->assertStatus(204);
     }
 
-    /**
-     * @return $this|void
-     */
-    protected function withAppRoutes()
-    {
-        Route::group([
-            'domain' => '{wildcard}.example.com',
-        ], function () {
-            parent::withAppRoutes();
-        });
-    }
 }

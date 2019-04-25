@@ -134,6 +134,17 @@ final class ApiRegistration
     }
 
     /**
+     * @param string $domain
+     * @return ApiRegistration
+     */
+    public function domain(string $domain): self
+    {
+        $this->attributes['domain'] = $domain;
+
+        return $this;
+    }
+
+    /**
      * @param string $namespace
      * @return $this
      */
