@@ -75,15 +75,19 @@ namespace {
          *
          * @param string|null $apiName
          *      the API name, or null to get either the API handling the inbound request or the default.
+         * @param string|null $host
+         *      the host to use, or null to use the API's configured settings.
+         * @param array $parameters
+         *      route parameters to use for the API namespace.
          * @return Api
          * @throws RuntimeException
          */
-        function json_api($apiName = null) {
+        function json_api($apiName = null, $host = null, array $parameters = []) {
             if ($apiName) {
-                return app('json-api')->api($apiName);
+                return app('json-api')->api($apiName, $host, $parameters);
             }
 
-            return app('json-api')->requestApiOrDefault();
+            return app('json-api')->requestApiOrDefault($host, $parameters);
         }
 
         /**

@@ -73,16 +73,22 @@ class JsonApiService
      * Get an API by name.
      *
      * @param string|null $apiName
+     * @param string|null $host
+     * @param array $parameters
      * @return Api
      * @throws RuntimeException
      *      if the API name is invalid.
      */
-    public function api($apiName = null)
+    public function api($apiName = null, $host = null, array $parameters = [])
     {
         /** @var Repository $repo */
         $repo = $this->container->make(Repository::class);
 
-        return $repo->createApi($apiName ?: $this->defaultApi());
+        return $repo->createApi(
+            $apiName ?: $this->defaultApi(),
+            $host,
+            $parameters
+        );
     }
 
     /**
@@ -124,11 +130,13 @@ class JsonApiService
     /**
      * Get either the request API or the default API.
      *
+     * @param string|null $host
+     * @param array $parameters
      * @return Api
      */
-    public function requestApiOrDefault()
+    public function requestApiOrDefault($host = null, array $parameters = [])
     {
-        return $this->requestApi() ?: $this->api();
+        return $this->requestApi() ?: $this->api(null, $host, $parameters);
     }
 
     /**

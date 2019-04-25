@@ -18,7 +18,6 @@
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Routing;
 
 use CloudCreativity\LaravelJsonApi\Routing\RouteRegistrar;
-use CloudCreativity\LaravelJsonApi\Tests\Integration\Http\Controllers\TestEvent;
 use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
 use DummyApp\Post;
 use Illuminate\Support\Arr;
@@ -68,11 +67,10 @@ class RouteParameterTest extends TestCase
         $this->getJsonApi($url)->assertFetchedOne($expected);
     }
 
-    public function testBroadcasting(): void
+    public function testManual(): void
     {
         $post = factory(Post::class)->create();
-        $event = new TestEvent('created', $post);
-        $data = $event->broadcastWith();
+        $data = json_api(null, null, ['tenant' => 'bar'])->encoder()->serializeData($post);
 
         $this->assertSame(
             url('/foo/bar/api/posts', $post),
