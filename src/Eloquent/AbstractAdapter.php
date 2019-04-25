@@ -28,6 +28,7 @@ use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations;
+use Illuminate\Database\Eloquent\Scope;
 use Illuminate\Support\Collection;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use Neomerx\JsonApi\Encoder\Parameters\EncodingParameters;
@@ -87,6 +88,11 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     protected $defaultPagination = null;
 
     /**
+     * @var array
+     */
+    private $scopes;
+
+    /**
      * Apply the supplied filters to the builder instance.
      *
      * @param Builder $query
@@ -105,6 +111,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     {
         $this->model = $model;
         $this->paging = $paging;
+        $this->scopes = [];
     }
 
     /**
@@ -211,6 +218,37 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     }
 
     /**
+     * Add scopes.
+     *
+     * @param Scope ...$scopes
+     * @return $this
+     */
+    public function addScopes(Scope ...$scopes): self
+    {
+        foreach ($scopes as $scope) {
+            $this->scopes[get_class($scope)] = $scope;
+        }
+
+        return $this;
+    }
+
+    /**
+     * Add a global scope using a closure.
+     *
+     * @param \Closure $scope
+     * @param string|null $identifier
+     * @return $this
+     */
+    public function addClosureScope(\Closure $scope, string $identifier = null): self
+    {
+        $identifier = $identifier ?: spl_object_hash($scope);
+
+        $this->scopes[$identifier] = $scope;
+
+        return $this;
+    }
+
+    /**
      * Get a new query builder.
      *
      * Child classes can overload this method if they want to modify the query instance that
@@ -220,7 +258,14 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      */
     protected function newQuery()
     {
-        return $this->model->newQuery();
+        $builder = $this->model->newQuery();
+
+        /** @var Scope $scope */
+        foreach ($this->scopes as $identifier => $scope) {
+            $builder->withGlobalScope($identifier, $scope);
+        }
+
+        return $builder;
     }
 
     /**
