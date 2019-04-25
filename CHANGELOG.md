@@ -7,6 +7,10 @@ All notable changes to this project will be documented in this file. This projec
 ### Added
 - Added `domain` method to API fluent routing methods.
 
+### Fixed
+- [#347](https://github.com/cloudcreativity/laravel-json-api/issues/347)
+Update `zend-diactoros` dependency.
+
 ## [1.1.0] - 2019-04-12
 
 ### Added
