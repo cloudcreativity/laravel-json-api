@@ -504,6 +504,8 @@ the request as its first argument. For a create request, the argument will be `n
 resource. E.g. `GET /api/v1/posts` or when the resource is in a relationship such as
 `GET /api/v1/users/1/posts`.
 
+#### Encoding Example
+
 For example, say we wanted to support returning an avatar's image via our API we would need to
 support the media type of the stored avatar. Our avatar content negotiator may look like this:
 
@@ -534,7 +536,7 @@ class ContentNegotiator extends BaseContentNegotiator
 ```
 
 In this example, `encodingMediaTypes()` returns the list of the encodings supported by our API. The
-`when` method adds an encoding to the list if the first argument is true - in this case, if the
+`when` method adds an encoding to the list if the first argument is `true` - in this case, if the
 request method is `GET`.
 
 > The `EncodingList` class also has an `unless` method, along with other helper methods.
@@ -594,6 +596,9 @@ class ContentNegotiator extends BaseContentNegotiator
 }
 ```
 
+> The `MultipartDecoder` is a decoder you will need to write with your own logic. There's an
+example of what a decoder might look like below.
+
 The media types listed on your content negotiator are **added** to the list of media types that
 your API supports. They will be used for every controller action that the content negotiator
 is used for.
@@ -609,12 +614,35 @@ be `null`.
 relationship object. E.g. `POST /api/v1/posts/1/tags`. This method receives the domain record for
 the request as its first arguments, and the relationship field name as its second argument.
 
+#### Decoding Example
+
 For example, if we wanted to support uploading an Avatar image to create an `avatars` resource,
-our content negotiator could be:
+we would need to write a decoder that handled files:
 
 ```php
+namespace App\JsonApi;
 
-namespace DummyApp\JsonApi\Avatars;
+use CloudCreativity\LaravelJsonApi\Contracts\Decoder\DecoderInterface;
+
+class MultipartDecoder implements DecoderInterface
+{
+
+    /**
+     * @inheritdoc
+     */
+    public function decode($request): array
+    {
+        // return whatever array data you expect from the request.
+        // in this example we are expecting a file, so we will return all files.
+        return $request->allFiles();
+    }
+}
+```
+
+Then we would need to use this decoder in our `avatars` content negotiator:
+
+```php
+namespace App\JsonApi\Avatars;
 
 use App\Avatar;
 use App\JsonApi\MultipartDecoder;
