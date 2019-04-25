@@ -19,6 +19,7 @@ namespace CloudCreativity\LaravelJsonApi\Tests\Integration;
 
 use CloudCreativity\LaravelJsonApi\Tests\Integration\Http\Controllers\TestEvent;
 use DummyApp\Post;
+use Illuminate\Support\Arr;
 
 class BroadcastingTest extends TestCase
 {
@@ -29,7 +30,8 @@ class BroadcastingTest extends TestCase
         $event = new TestEvent('created', $post);
         $data = $event->broadcastWith();
 
-        $this->assertSame('posts', array_get($data, 'data.type'));
-        $this->assertEquals($id = $post->getKey(), array_get($data, 'data.id'));
+        $this->assertSame('posts', Arr::get($data, 'data.type'));
+        $this->assertEquals($post->getRouteKey(), Arr::get($data, 'data.id'));
+        $this->assertSame(url('/api/v1/posts', $post), Arr::get($data, 'data.links.self'));
     }
 }
