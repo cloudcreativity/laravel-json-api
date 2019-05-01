@@ -80,6 +80,13 @@ trait IncludesModels
     protected $includePaths = [];
 
     /**
+     * Whether Eloquent relations are camel cased.
+     *
+     * @var bool
+     */
+    protected $camelCaseRelations = true;
+
+    /**
      * Add eager loading to the query.
      *
      * @param Builder $query
@@ -145,7 +152,38 @@ trait IncludesModels
         }
 
         return collect(explode('.', $path))->map(function ($segment) {
-            return Str::camelize($segment);
+            return $this->modelRelationForField($segment);
         })->implode('.');
+    }
+
+    /**
+     * Convert a JSON API field name to an Eloquent model relation name.
+     *
+     * According to the PSR1 spec, method names on classes MUST be camel case.
+     * However, there seem to be some Laravel developers who snake case
+     * relationship methods on their models, so that the method name matches
+     * the snake case format of attributes (column values).
+     *
+     * The `$camelCaseRelations` property controls the behaviour of this
+     * conversion:
+     *
+     * - If `true`, a field name of `user-history` or `user_history` will
+     * expect the Eloquent model relation method to be `userHistory`.
+     * - If `false`, a field name of `user-history` or `user_history` will
+     * expect the Eloquent model relation method to be `user_history`. I.e.
+     * if PSR1 is not being followed, the best guess is that method names
+     * are snake case.
+     *
+     * If the developer has different conversion logic, they should overload
+     * this method and implement it themselves.
+     *
+     * @param string $field
+     *      the JSON API field name.
+     * @return string
+     *      the expected relation name on the Eloquent model.
+     */
+    protected function modelRelationForField($field)
+    {
+        return $this->camelCaseRelations ? Str::camelize($field) : Str::underscore($field);
     }
 }

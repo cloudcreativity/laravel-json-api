@@ -17,8 +17,10 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Pagination;
 
+use Carbon\Carbon;
 use CloudCreativity\LaravelJsonApi\Pagination\StandardStrategy;
 use DummyApp\Post;
+use DummyApp\Video;
 
 class StandardPagingTest extends TestCase
 {
@@ -149,6 +151,50 @@ class StandardPagingTest extends TestCase
 
         $this->doSearch(['page' => ['number' => 2, 'size' => 3]])
             ->assertFetchedPage($posts->last(), $links, $meta);
+    }
+
+    public function testPageWithReverseKey()
+    {
+        $posts = factory(Post::class, 4)->create()->reverse()->values();
+
+        $this->doSearch([
+            'page' => ['number' => 1, 'size' => 3],
+            'sort' => '-id',
+        ])->assertFetchedManyInOrder($posts->take(3));
+    }
+
+    /**
+     * If we are sorting by a column that might not be unique, we expect
+     * the page to always be returned in a particular order i.e. by the
+     * key column.
+     *
+     * @see https://github.com/cloudcreativity/laravel-json-api/issues/313
+     */
+    public function testDeterministicOrder()
+    {
+        $first = factory(Video::class)->create([
+            'created_at' => Carbon::now()->subWeek(),
+        ]);
+
+        $f = factory(Video::class)->create([
+            'uuid' => 'f3b3bea3-dca0-4ef9-b06c-43583a7e6118',
+            'created_at' => Carbon::now()->subHour(),
+        ]);
+
+        $d = factory(Video::class)->create([
+            'uuid' => 'd215f35c-feb7-4cc5-9631-61742f00d0b2',
+            'created_at' => $f->created_at,
+        ]);
+
+        $c = factory(Video::class)->create([
+            'uuid' => 'cbe17134-d7e2-4509-ba2c-3b3b5e3b2cbe',
+            'created_at' => $f->created_at,
+        ]);
+
+        $this->withResourceType('videos')->doSearch([
+            'page' => ['number' => '1', 'size' => '3'],
+            'sort' => 'created-at'
+        ])->assertFetchedManyInOrder([$first, $c, $d]);
     }
 
     public function testCustomPageKeys()

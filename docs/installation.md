@@ -71,7 +71,7 @@ add support for JSON API error rendering to your application's exception handler
 To do this, simply add the `CloudCreativity\LaravelJsonApi\Exceptions\HandlesErrors` trait to your handler and
 modify your `render()` method as follows:
 
-``` php
+```php
 namespace App\Exceptions;
 
 use CloudCreativity\LaravelJsonApi\Exceptions\HandlesErrors;
@@ -91,13 +91,22 @@ class Handler extends ExceptionHandler
 
 	// ...
 
-    public function render($request, Exception $e)
-    {
-      if ($this->isJsonApi($request, $e)) {
-        return $this->renderJsonApi($request, $e);
+  public function render($request, Exception $e)
+  {
+    if ($this->isJsonApi($request, $e)) {
+      return $this->renderJsonApi($request, $e);
+    }
+
+    // do standard exception rendering here...
+  }
+  
+  protected function prepareException(Exception $e)
+  {
+      if ($e instanceof JsonApiException) {
+        return $this->prepareJsonApiException($e);
       }
 
-      // do standard exception rendering here...
-    }
+      return parent::prepareException($e);
+  }
 }
 ```

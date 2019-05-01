@@ -25,7 +25,6 @@ use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PageInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PagingStrategyInterface;
 use CloudCreativity\LaravelJsonApi\Document\ResourceObject;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
-use CloudCreativity\LaravelJsonApi\Pagination\CursorStrategy;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations;
@@ -431,9 +430,14 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
             throw new RuntimeException('Paging is not supported on adapter: ' . get_class($this));
         }
 
-        /** If using the cursor strategy, we need to set the key name for the cursor. */
-        if ($this->paging instanceof CursorStrategy) {
-            $this->paging->withIdentifierColumn($this->getKeyName());
+        /**
+         * Set the key name on the strategy, so it knows what column is being used
+         * for the resource's ID.
+         *
+         * @todo 2.0 add `withQualifiedKeyName` to the paging strategy interface.
+         */
+        if (method_exists($this->paging, 'withQualifiedKeyName')) {
+            $this->paging->withQualifiedKeyName($this->getQualifiedKeyName());
         }
 
         return $this->paging->paginate($query, $parameters);
@@ -622,7 +626,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     {
         list($one, $two, $caller) = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3);
 
-        return $caller['function'];
+        return $this->modelRelationForField($caller['function']);
     }
 
 }

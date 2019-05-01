@@ -29,6 +29,14 @@ class Validators extends AbstractValidators
     protected $allowedIncludePaths = ['uploaded-by'];
 
     /**
+     * @var array
+     */
+    protected $allowedSortParameters = [
+        'created-at',
+        'updated-at',
+    ];
+
+    /**
      * @inheritDoc
      */
     protected function rules($record = null): array

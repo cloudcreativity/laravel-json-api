@@ -161,6 +161,27 @@ class CursorStrategy implements PagingStrategyInterface
      *
      * @param $column
      * @return $this
+     * @todo 2.0 pass qualified columns to the cursor builder.
+     */
+    public function withQualifiedColumn($column)
+    {
+        $parts = explode('.', $column);
+
+        if (!isset($parts[1])) {
+            throw new \InvalidArgumentException('Expecting a valid qualified column name.');
+        }
+
+        $this->withColumn($parts[1]);
+
+        return $this;
+    }
+
+    /**
+     * Set the cursor column.
+     *
+     * @param $column
+     * @return $this
+     * @deprecated 2.0 use `withQualifiedColumn` instead.
      */
     public function withColumn($column)
     {
@@ -170,10 +191,31 @@ class CursorStrategy implements PagingStrategyInterface
     }
 
     /**
+     * Set the column name for the resource's ID.
+     *
+     * @param string $keyName
+     * @return $this
+     * @todo 2.0 pass qualified key name to the cursor builder.
+     */
+    public function withQualifiedKeyName($keyName)
+    {
+        $parts = explode('.', $keyName);
+
+        if (!isset($parts[1])) {
+            throw new \InvalidArgumentException('Expecting a valid qualified column name.');
+        }
+
+        $this->withIdentifierColumn($parts[1]);
+
+        return $this;
+    }
+
+    /**
      * Set the column for the before/after identifiers.
      *
      * @param string|null $column
      * @return $this
+     * @deprecated 2.0 use `withQualifiedKeyName` instead.
      */
     public function withIdentifierColumn($column)
     {
@@ -183,6 +225,8 @@ class CursorStrategy implements PagingStrategyInterface
     }
 
     /**
+     * Set the select columns for the query.
+     *
      * @param $cols
      * @return $this
      */

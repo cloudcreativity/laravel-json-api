@@ -76,15 +76,28 @@ class TestExceptionHandler extends ExceptionHandler
 
     /**
      * @param \Illuminate\Http\Request $request
-     * @param \Exception $e
+     * @param Exception $e
      * @return \Illuminate\Http\Response
      */
-    public function render($request, \Exception $e)
+    public function render($request, Exception $e)
     {
         if ($this->isJsonApi($request, $e)) {
             return $this->renderJsonApi($request, $e);
         }
 
         return parent::render($request, $e);
+    }
+
+    /**
+     * @param Exception $e
+     * @return Exception
+     */
+    protected function prepareException(Exception $e)
+    {
+        if ($e instanceof JsonApiException) {
+            return $this->prepareJsonApiException($e);
+        }
+
+        return parent::prepareException($e);
     }
 }
