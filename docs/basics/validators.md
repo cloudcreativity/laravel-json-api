@@ -203,6 +203,35 @@ Your validator will be provided with the following array of data:
 ];
 ```
 
+### Basic Rule Example
+
+The following is an example query rule for the above-mentioned data:
+
+```php
+protected function rules($record = null): array
+{
+    return [
+        'title' => 'required|string|min:1|max:255',
+        'content' => 'required|string|min:1',
+        'author.type' => 'in:users',
+        'tags.*.type' => 'in:tags',
+    ];
+}
+
+```
+
+You'll notice that 'exists' is not used in the validation. This is because the package complies to the JSON API spec and validates if the record exists. Hence the following should **NOT** be used:
+
+```php
+protected function rules($record = null): array
+{
+    return [
+        'author.id' => 'exists:users,id',
+        'tags.*.id' => 'exists:tags,id'
+    ];
+}
+```
+
 ### Updating Resources
 
 When updating resources, the JSON API specification says:
