@@ -82,10 +82,6 @@ class ServiceProvider extends BaseServiceProvider
         if ($this->app->runningInConsole()) {
             $this->bootMigrations();
 
-            $this->publishes([
-                __DIR__ . '/../database/migrations' => database_path('migrations'),
-            ], 'json-api-migrations');
-
             $this->commands([
                 Console\Commands\MakeAdapter::class,
                 Console\Commands\MakeApi::class,
