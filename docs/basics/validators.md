@@ -788,6 +788,95 @@ return [
 ];
 ```
 
+## Required Rule
+
+Using the required rule can result in a JSON API error object with a JSON pointer to either `/data` or the
+actual field that is required, e.g. `/data/attributes/content`. This will vary based on whether the client
+omits the field or sends an empty value for the field.
+
+If you always want the pointer to relate to the actual field, e.g. `/data/attributes/content`, ensure
+your client *always* sends a value for the field, even if that value is empty (e.g. `null`).
+
+To illustrate this, here are two requests that fail the required rule and the resulting error response:
+
+### Field Omitted
+
+```http
+POST /api/posts HTTP/1.1
+Content-Type: application/vnd.api+json
+Accept: application/vnd.api+json
+
+{
+  "data": {
+    "type": "posts",
+    "attributes": {
+      "title": "Hello World"
+    }
+  }
+}
+```
+
+```http
+HTTP/1.1 422 Unprocessable Entity
+Content-Type: application/vnd.api+json
+
+{
+  "errors": [
+    {
+      "status": "422",
+      "title": "Unprocessable Entity",
+      "detail": "The content field is required.",
+      "source": {
+        "pointer": "/data"
+      }
+    }
+  ]
+}
+```
+
+In this scenario, a JSON pointer of `/data/attributes/content` cannot be used as it would point at a field
+that does not exist in the request JSON. Instead, the `/data` pointer indicates the error is caused by the
+resource object held in the top-level `data` member.
+
+### Field Empty
+
+```http
+POST /api/posts HTTP/1.1
+Content-Type: application/vnd.api+json
+Accept: application/vnd.api+json
+
+{
+  "data": {
+    "type": "posts",
+    "attributes": {
+      "title": "Hello World",
+      "content": null
+    }
+  }
+}
+```
+
+```http
+HTTP/1.1 422 Unprocessable Entity
+Content-Type: application/vnd.api+json
+
+{
+  "errors": [
+    {
+      "status": "422",
+      "title": "Unprocessable Entity",
+      "detail": "The content field is required.",
+      "source": {
+        "pointer": "/data/attributes/content"
+      }
+    }
+  ]
+}
+```
+
+In this scenario, the pointer can be `/data/attributes/content` as the field actually exists in the request
+JSON.
+
 ## Confirmed Rule
 
 Laravel's `confirmed` rule expects there to be a field with the same name and `_confirmation` on the end: i.e.
