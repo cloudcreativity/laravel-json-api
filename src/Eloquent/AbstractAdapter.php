@@ -137,8 +137,12 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      */
     public function queryToMany($relation, EncodingParametersInterface $parameters)
     {
+        $this->applyScopes(
+            $query = $relation->newQuery()
+        );
+
         return $this->queryAllOrOne(
-            $relation->newQuery(),
+            $query,
             $this->getQueryParameters($parameters)
         );
     }
@@ -155,8 +159,12 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      */
     public function queryToOne($relation, EncodingParametersInterface $parameters)
     {
+        $this->applyScopes(
+            $query = $relation->newQuery()
+        );
+
         return $this->queryOne(
-            $relation->newQuery(),
+            $query,
             $this->getQueryParameters($parameters)
         );
     }
@@ -249,6 +257,18 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     }
 
     /**
+     * @param Builder $query
+     * @return void
+     */
+    protected function applyScopes($query): void
+    {
+        /** @var Scope $scope */
+        foreach ($this->scopes as $identifier => $scope) {
+            $query->withGlobalScope($identifier, $scope);
+        }
+    }
+
+    /**
      * Get a new query builder.
      *
      * Child classes can overload this method if they want to modify the query instance that
@@ -258,12 +278,9 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      */
     protected function newQuery()
     {
-        $builder = $this->model->newQuery();
-
-        /** @var Scope $scope */
-        foreach ($this->scopes as $identifier => $scope) {
-            $builder->withGlobalScope($identifier, $scope);
-        }
+        $this->applyScopes(
+            $builder = $this->model->newQuery()
+        );
 
         return $builder;
     }

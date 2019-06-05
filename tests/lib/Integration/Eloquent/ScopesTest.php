@@ -18,6 +18,7 @@
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Eloquent;
 
 use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
+use DummyApp\Country;
 use DummyApp\JsonApi\Posts\Adapter;
 use DummyApp\Post;
 use DummyApp\User;
@@ -74,5 +75,55 @@ class ScopesTest extends TestCase
         $post = factory(Post::class)->create();
 
         $this->getJsonApi(url('/api/v1/posts', $post))->assertStatus(404);
+    }
+
+    public function testReadToOne(): void
+    {
+        $this->markTestIncomplete('@todo');
+    }
+
+    public function testReadToOneRelationship(): void
+    {
+        $this->markTestIncomplete('@todo');
+    }
+
+    public function testReadToMany(): void
+    {
+        $country = factory(Country::class)->create();
+
+        $this->user->country()->associate($country);
+        $this->user->save();
+
+        $expected = factory(Post::class, 2)->create(['author_id' => $this->user->getKey()]);
+
+        factory(Post::class)->create([
+            'author_id' => factory(User::class)->create([
+                'country_id' => $country->getKey(),
+            ]),
+        ]);
+
+        $url = url('/api/v1/countries', [$country, 'posts']);
+
+        $this->getJsonApi($url)->assertFetchedMany($expected);
+    }
+
+    public function testReadToManyRelationship(): void
+    {
+        $country = factory(Country::class)->create();
+
+        $this->user->country()->associate($country);
+        $this->user->save();
+
+        $expected = factory(Post::class, 2)->create(['author_id' => $this->user->getKey()]);
+
+        factory(Post::class)->create([
+            'author_id' => factory(User::class)->create([
+                'country_id' => $country->getKey(),
+            ]),
+        ]);
+
+        $url = url('/api/v1/countries', [$country, 'relationships', 'posts']);
+
+        $this->getJsonApi($url)->assertFetchedToMany($expected);
     }
 }
