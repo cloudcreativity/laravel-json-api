@@ -5,6 +5,8 @@ All notable changes to this project will be documented in this file. This projec
 ## Unreleased
 
 ### Added
+- [#360](https://github.com/cloudcreativity/laravel-json-api/issues/360)
+Allow soft delete attribute path to use dot notation.
 - Added `domain` method to API fluent routing methods.
 
 ### Fixed
