@@ -21,6 +21,7 @@ use Carbon\Carbon;
 use CloudCreativity\LaravelJsonApi\Utils\Str;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Schema\Builder;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
@@ -61,13 +62,14 @@ trait SoftDeletesModels
     protected function fillAttributes($record, Collection $attributes)
     {
         $field = $this->getSoftDeleteField($record);
+        $attributesArr = $attributes->toArray();
 
-        if ($attributes->has($field)) {
-            $this->fillSoftDelete($record, $field, $attributes->get($field));
+        if (Arr::has($attributesArr, $field)) {
+            $this->fillSoftDelete($record, $field, Arr::get($attributesArr, $field));
         }
 
         $record->fill(
-            $this->deserializeAttributes($attributes->forget($field), $record)
+            $this->deserializeAttributes(Arr::except($attributesArr, $field), $record)
         );
     }
 
