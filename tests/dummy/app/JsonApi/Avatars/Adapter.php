@@ -54,6 +54,32 @@ class Adapter extends AbstractAdapter
     }
 
     /**
+     * @param Avatar $record
+     * @param array $document
+     * @param EncodingParametersInterface $parameters
+     * @return mixed
+     */
+    public function update($record, array $document, EncodingParametersInterface $parameters)
+    {
+        if ($this->didDecode('application/vnd.api+json')) {
+            return parent::update($record, $document, $parameters);
+        }
+
+        $path = request()->file('avatar')->store('avatars');
+
+        $data = [
+            'type' => 'avatars',
+            'id' => $record->getRouteKey(),
+            'attributes' => [
+                'path' => $path,
+                'media-type' => Storage::disk('local')->mimeType($path),
+            ],
+        ];
+
+        return parent::update($record, compact('data'), $parameters);
+    }
+
+    /**
      * @param Avatar $avatar
      * @return void
      */
@@ -69,6 +95,5 @@ class Adapter extends AbstractAdapter
     {
         // TODO: Implement filter() method.
     }
-
 
 }

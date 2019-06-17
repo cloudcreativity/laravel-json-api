@@ -51,6 +51,18 @@ class Validators extends AbstractValidators
     }
 
     /**
+     * @inheritdoc
+     */
+    public function update($record, array $document): ValidatorInterface
+    {
+        if ($this->didNotDecode('application/vnd.api+json')) {
+            return $this->createValidator($document, ['avatar' => 'required']);
+        }
+
+        return parent::update($record, $document);
+    }
+
+    /**
      * Get resource validation rules.
      *
      * @param mixed|null $record

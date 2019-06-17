@@ -23,46 +23,60 @@ use DummyApp\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 
-class CreateTest extends TestCase
+class UpdateTest extends TestCase
 {
+
+    /**
+     * @var Avatar
+     */
+    private $avatar;
+
+    /**
+     * @return void
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->avatar = factory(Avatar::class)->create();
+    }
 
     /**
      * Test that a user can upload an avatar to the API using a standard
      * HTML form post. This means our API must allow a non-JSON API content media type
-     * when creating the resource.
+     * when updating the resource.
      *
      * @param string $contentType
      * @dataProvider multipartProvider
      */
     public function test(string $contentType): void
     {
-        $user = factory(User::class)->create();
         $file = UploadedFile::fake()->create('avatar.jpg');
 
         $expected = [
             'type' => 'avatars',
+            'id' => (string) $this->avatar->getRouteKey(),
             'attributes' => ['media-type' => 'image/jpeg'],
         ];
 
         /** @var TestResponse $response */
-        $response = $this->actingAs($user, 'api')->post(
-            '/api/v1/avatars?include=user',
+        $response = $this->withoutExceptionHandling()->actingAs($this->avatar->user, 'api')->patch(
+            "/api/v1/avatars/{$this->avatar->getRouteKey()}?include=user",
             ['avatar' => $file],
             ['Content-Type' => $contentType, 'Content-Length' => '1']
         );
 
-        $id = $response
-            ->assertCreatedWithServerId(url('/api/v1/avatars'), $expected)
-            ->assertIsIncluded('users', $user)
+        $response
+            ->assertUpdated($expected)
+            ->assertIsIncluded('users', $this->avatar->user)
             ->id();
 
         $this->assertDatabaseHas('avatars', [
-            'id' => $id,
+            'id' => $this->avatar->getKey(),
             'media_type' => 'image/jpeg',
-            'user_id' => $user->getKey(),
+            'user_id' => $this->avatar->user->getKey(),
         ]);
 
-        $path = Avatar::whereKey($id)->value('path');
+        $path = Avatar::whereKey($this->avatar->getKey())->value('path');
 
         Storage::disk('local')->assertExists($path);
     }

@@ -17,6 +17,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Http\Requests;
 
+use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorProviderInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\ValidationException;
 use CloudCreativity\LaravelJsonApi\Object\Document;
@@ -69,7 +70,7 @@ class UpdateResource extends ValidatedRequest
      */
     protected function validateDocument()
     {
-        $document = $this->decodeOrFail();
+        $document = $this->decode();
         $validators = $this->getValidators();
 
         /** Pre-1.0 validators */
@@ -78,18 +79,34 @@ class UpdateResource extends ValidatedRequest
             return;
         }
 
-        /** Check the document is compliant with the JSON API spec. */
-        $this->passes($this->factory->createExistingResourceDocumentValidator(
-            $document,
-            $this->getResourceType(),
-            $this->getResourceId()
-        ));
+        /** If there is a decoded JSON API document, check it complies with the spec. */
+        if ($document) {
+            $this->validateDocumentCompliance($document);
+        }
 
         if ($validators) {
             $this->passes(
                 $validators->update($this->getRecord(), $this->all())
             );
         }
+    }
+
+
+    /**
+     * Validate the JSON API document complies with the spec.
+     *
+     * @param object $document
+     * @return void
+     */
+    protected function validateDocumentCompliance($document): void
+    {
+        $this->passes(
+            $this->factory->createExistingResourceDocumentValidator(
+                $document,
+                $this->getResourceType(),
+                $this->getResourceId()
+            )
+        );
     }
 
     /**

@@ -53,6 +53,17 @@ abstract class TestCase extends BaseTestCase
     }
 
     /**
+     * @return array
+     */
+    public function multipartProvider(): array
+    {
+        return [
+            'form-data' => ['multipart/form-data'],
+            'form-data w/boundary' => ['multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW'],
+        ];
+    }
+
+    /**
      * Get the expected JSON API resource for the avatar model.
      *
      * @param Avatar $avatar
