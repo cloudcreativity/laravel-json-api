@@ -66,4 +66,22 @@ class CreateTest extends TestCase
 
         Storage::disk('local')->assertExists($path);
     }
+
+    public function testFileIsRequired(): void
+    {
+        $user = factory(User::class)->create();
+
+        /** @var TestResponse $response */
+        $response = $this->actingAs($user, 'api')->post(
+            '/api/v1/avatars',
+            ['avatar' => null],
+            ['Content-Type' => 'multipart/form-data', 'Content-Length' => '1']
+        );
+
+        $response->assertExactErrorStatus([
+            'title' => 'Unprocessable Entity',
+            'status' => '422',
+            'detail' => 'The avatar field is required.',
+        ]);
+    }
 }
