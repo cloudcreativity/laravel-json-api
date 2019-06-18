@@ -94,4 +94,25 @@ trait ClientDispatchable
             $this->clientJob->setResource($resource)->save();
         }
     }
+
+    /**
+     * Mark the client job as completed.
+     *
+     * Although our queue listeners handle this for you in most cases, there
+     * are some scenarios where it is not possible to do this. E.g. if your
+     * job deletes a model that is one of its properties, a `ModelNotFoundException`
+     * will be triggered when our listener deserializes the job.
+     *
+     * Therefore this method is provided so that you can manually mark the
+     * client job as completed, if needed.
+     *
+     * @param bool $success
+     * @return void
+     */
+    public function didComplete(bool $success = true): void
+    {
+        if ($this->wasClientDispatched()) {
+            $this->clientJob->completed($success);
+        }
+    }
 }

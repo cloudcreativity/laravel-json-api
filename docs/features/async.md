@@ -217,6 +217,43 @@ class ProcessPodcast implements ShouldQueue
 }
 ```
 
+## Manually Marking Client Jobs as Complete
+
+This package will, in most cases, automatically mark the stored representation of the job as complete.
+We do this by listening the Laravel's queue events.
+
+There is one scenario where we cannot do this: if your job deletes a model during its `handle` method.
+This is because we cannot deserialize the job in our listener without causing a `ModelNotFoundException`.
+
+In these scenarios, you will need to manually mark the stored representation of the job as complete.
+Use the `didComplete()` method, which accepts one argument: a boolean indicating success (will be
+`true` if not provided).
+
+For example:
+
+```php
+namespace App\Jobs;
+
+use CloudCreativity\LaravelJsonApi\Queue\ClientDispatchable;
+use Illuminate\Contracts\Queue\ShouldQueue;
+
+class RemovePodcast implements ShouldQueue
+{
+
+    use ClientDispatchable;
+
+    // ...
+
+    public function handle()
+    {
+        // ...logic to remove a podcast.
+
+        $this->podcast->delete();
+        $this->didComplete();
+    }
+}
+```
+
 ## Routing
 
 The final step of setup is to enable asynchronous process routes on a resource. These

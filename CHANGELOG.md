@@ -18,6 +18,9 @@ Update `zend-diactoros` dependency.
 Fix using an alternative decoding type for update (`PATCH`) requests.
 - [#370](https://github.com/cloudcreativity/laravel-json-api/pull/370)
 Fix wrong validation error title when creating a custom validator.
+- [#358](https://github.com/cloudcreativity/laravel-json-api/issues/358)
+Queue listener could trigger a `ModelNotFoundException` when deserializing a job that had deleted a
+model during its `handle()` method.
 
 ## [1.1.0] - 2019-04-12
 
