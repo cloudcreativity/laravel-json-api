@@ -659,11 +659,12 @@ class ResourceTest extends TestCase
         $post = factory(Comment::class)->states('post')->create()->commentable;
 
         $expected = [
+            'title' => 'Not Deletable',
             'status' => '422',
             'detail' => 'Cannot delete a post with comments.',
         ];
 
-        $this->doDelete($post)->assertErrorStatus($expected);
+        $this->doDelete($post)->assertExactErrorStatus($expected);
     }
 
     /**
