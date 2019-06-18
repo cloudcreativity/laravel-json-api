@@ -14,6 +14,8 @@ Allow soft delete attribute path to use dot notation.
 Update `zend-diactoros` dependency.
 - [#369](https://github.com/cloudcreativity/laravel-json-api/issues/369)
 Fix using an alternative decoding type for update (`PATCH`) requests.
+- [#370](https://github.com/cloudcreativity/laravel-json-api/pull/370)
+Fix wrong validation error title when creating a custom validator.
 
 ## [1.1.0] - 2019-04-12
 
