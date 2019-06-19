@@ -498,11 +498,19 @@ See the [Soft Deleting](../features/soft-deletes.md) for information on implemen
 ### Scopes
 
 Eloquent adapters allow you to apply scopes to your API resources, using Laravel's
-[global scopes](https://laravel.com/docs/eloquent#global-scopes) feature.
+[global scopes](https://laravel.com/docs/eloquent#global-scopes) feature. When a scope is applied
+to an Eloquent adapter, any routes that return that API resource in the response content will have
+the scope applied.
 
-When a scope is applied to an Eloquent adapter, any routes that return that API resource in the response
-content will have the scope applied. An example use would be if you only want a user to access their own `posts`
-resources - you would add a scope to the `posts` adapter.
+> An example use case for this would be if your API only contains resources related to the current signed
+in user. In this case, you would only ever want resources owned by that user to appear in the API. I.e.
+from the client's perspective, any resources belonging to other users do not exist. In this case, a global
+scope would ensure that a `404 Not Found` is returned for resources that belong to other users.
+
+> In contrast, if your API serves a mixture of resources belonging to different users, then 
+`401 Unauthorized` or `403 Forbidden` responses might be more appropriate when attempting to access other
+users' resources. In this scenario, [Authorizers](./security.md) would be a better approach than global
+scopes.
 
 Scopes can be added to an Eloquent adapter as either scope classes or as closure scopes. To use the former,
 write a class that implements Laravel's `Illuminate\Database\Eloquent\Scope` interface. The class can then
