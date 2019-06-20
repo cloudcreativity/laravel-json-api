@@ -141,12 +141,35 @@ class Route
     /**
      * Get the domain record type for the route.
      *
+     * For routes that support polymorphic types, the first PHP type that is
+     * registered will be returned.
+     *
      * @return string
+     * @deprecated 2.0 use `getTypes()` as some routes may support polymorphic types.
      */
     public function getType(): string
     {
+        $type = $this->getTypes()[0] ?? null;
+
+        if (!$type) {
+            throw new RuntimeException('Expecting at least one PHP type.');
+        }
+
+        return $type;
+    }
+
+    /**
+     * Get the domain record types for the route.
+     *
+     * As some routes support polymorphic types, this method returns an array of PHP types.
+     *
+     * @return string[]
+     */
+    public function getTypes(): array
+    {
+        /** If we have resolved a specific record for the route, we know the exact class. */
         if ($resource = $this->getResource()) {
-            return get_class($resource);
+            return [get_class($resource)];
         }
 
         $resourceType = $this->getResourceType();
@@ -155,7 +178,7 @@ class Route
             throw new RuntimeException("JSON API resource type {$resourceType} is not registered.");
         }
 
-        return $type;
+        return (array) $type;
     }
 
     /**

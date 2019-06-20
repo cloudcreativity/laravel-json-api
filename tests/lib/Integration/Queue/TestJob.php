@@ -45,15 +45,26 @@ class TestJob implements ShouldQueue
     public $tries = 2;
 
     /**
+     * @var Download|null
+     */
+    public $model;
+
+    /**
      * Execute the job.
      *
-     * @return Download
+     * @return Download|null
      * @throws \Exception
      */
-    public function handle(): Download
+    public function handle(): ?Download
     {
         if ($this->ex) {
             throw new \LogicException('Boom.');
+        }
+
+        if ($this->model) {
+            $this->model->delete();
+            $this->didComplete();
+            return null;
         }
 
         $download = factory(Download::class)->create();

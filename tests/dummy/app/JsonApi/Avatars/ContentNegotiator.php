@@ -17,8 +17,6 @@
 
 namespace DummyApp\JsonApi\Avatars;
 
-use CloudCreativity\LaravelJsonApi\Codec\Decoding;
-use CloudCreativity\LaravelJsonApi\Codec\DecodingList;
 use CloudCreativity\LaravelJsonApi\Codec\EncodingList;
 use CloudCreativity\LaravelJsonApi\Http\ContentNegotiator as BaseContentNegotiator;
 use DummyApp\Avatar;
@@ -26,6 +24,14 @@ use DummyApp\JsonApi\FileDecoder;
 
 class ContentNegotiator extends BaseContentNegotiator
 {
+
+    /**
+     * @var array
+     */
+    protected $decoding = [
+        'multipart/form-data' => FileDecoder::class,
+        'multipart/form-data; boundary=*' => FileDecoder::class,
+    ];
 
     /**
      * @param Avatar|null $avatar
@@ -38,18 +44,6 @@ class ContentNegotiator extends BaseContentNegotiator
         return $this
             ->encodingMediaTypes()
             ->when($this->request->isMethod('GET'), $mediaType);
-    }
-
-    /**
-     * @param Avatar|null $avatar
-     * @return DecodingList
-     */
-    protected function decodingsForResource(?Avatar $avatar): DecodingList
-    {
-        return $this
-            ->decodingMediaTypes()
-            ->when(is_null($avatar), Decoding::create('multipart/form-data', new FileDecoder()))
-            ->when(is_null($avatar), Decoding::create('multipart/form-data; boundary=*', new FileDecoder()));
     }
 
 }

@@ -172,6 +172,8 @@ class Adapter extends AbstractAdapter
 }
 ```
 
+> You can use dot notation for the `$softDeleteField` value, if you are using a nested attribute field.
+
 The client can now send the following request to soft-delete a resource:
 
 ```http

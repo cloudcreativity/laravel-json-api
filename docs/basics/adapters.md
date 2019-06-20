@@ -495,6 +495,58 @@ modify this default behaviour and expose soft-deleting capabilities to the clien
 
 See the [Soft Deleting](../features/soft-deletes.md) for information on implementing this.
 
+### Scopes
+
+Eloquent adapters allow you to apply scopes to your API resources, using Laravel's
+[global scopes](https://laravel.com/docs/eloquent#global-scopes) feature. When a scope is applied
+to an Eloquent adapter, any routes that return that API resource in the response content will have
+the scope applied.
+
+> An example use case for this would be if your API only contains resources related to the current signed
+in user. In this case, you would only ever want resources owned by that user to appear in the API. I.e.
+from the client's perspective, any resources belonging to other users do not exist. In this case, a global
+scope would ensure that a `404 Not Found` is returned for resources that belong to other users.
+
+> In contrast, if your API serves a mixture of resources belonging to different users, then 
+`401 Unauthorized` or `403 Forbidden` responses might be more appropriate when attempting to access other
+users' resources. In this scenario, [Authorizers](./security.md) would be a better approach than global
+scopes.
+
+Scopes can be added to an Eloquent adapter as either scope classes or as closure scopes. To use the former,
+write a class that implements Laravel's `Illuminate\Database\Eloquent\Scope` interface. The class can then
+be added to your adapter using constructor dependency injection and the `addScopes` method:
+
+```php
+namespace App\JsonApi\Posts;
+
+use CloudCreativity\LaravelJsonApi\Eloquent\AbstractAdapter;
+
+class Adapter extends AbstractAdapter
+{
+
+    public function __construct(\App\Scopes\UserScope $scope)
+    {
+      parent::__construct(new \App\Post());
+      $this->addScopes($scope);
+    }
+
+    // ...
+}
+```
+
+> Using a class scope allows you to reuse that scope across multiple adapters.
+
+If you prefer to use a closure for your scope, these can be added to an Eloquent adapter using the
+`addClosureScope` method. For example, in our `AppServiceProvider::register()` method:
+
+```php
+$this->app->afterResolving(\App\JsonApi\Posts\Adapter::class, function ($adapter) {
+  $adapter->addClosureScope(function ($query) {
+    $query->where('author_id', \Auth::id());
+  });
+});
+```
+
 ## Custom Adapters
 
 Custom adapters can be used for any domain record that is not an Eloquent model. Adapters will work with this

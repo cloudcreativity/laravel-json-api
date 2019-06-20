@@ -17,15 +17,12 @@
 
 namespace CloudCreativity\LaravelJsonApi\Http\Requests;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Http\DecoderInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceIdentifierInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Queue\AsynchronousProcess;
-use CloudCreativity\LaravelJsonApi\Http\Codec;
 use CloudCreativity\LaravelJsonApi\Routing\Route;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Http\Request;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
-use Neomerx\JsonApi\Contracts\Http\Headers\HeaderParametersInterface;
 
 /**
  * Class JsonApiRequest
@@ -50,21 +47,6 @@ class JsonApiRequest
      * @var Container
      */
     private $container;
-
-    /**
-     * @var HeaderParametersInterface|null
-     */
-    private $headers;
-
-    /**
-     * @var Codec|null
-     */
-    private $codec;
-
-    /**
-     * @var DecoderInterface|null
-     */
-    private $decoder;
 
     /**
      * @var EncodingParametersInterface|null

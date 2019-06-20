@@ -598,12 +598,7 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
         array $customAttributes = []
     ): ValidatorInterface
     {
-        return $this->createValidator(
-            $data,
-            $rules,
-            $messages,
-            $customAttributes
-        );
+        return $this->factory->createDeleteValidator($data, $rules, $messages, $customAttributes);
     }
 
     /**
@@ -622,7 +617,7 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
         array $customAttributes = []
     ): ValidatorInterface
     {
-        return $this->factory->createDeleteValidator($data, $rules, $messages, $customAttributes);
+        return $this->factory->createValidator($data, $rules, $messages, $customAttributes);
     }
 
     /**

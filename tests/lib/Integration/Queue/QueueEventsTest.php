@@ -34,7 +34,7 @@ class QueueEventsTest extends TestCase
         Carbon::setTestNow('2018-10-23 12:00:00.123456');
     }
 
-    public function testCompletes()
+    public function testCompletes(): void
     {
         $job = new TestJob();
         $job->clientJob = factory(ClientJob::class)->create();
@@ -53,7 +53,7 @@ class QueueEventsTest extends TestCase
         $this->assertInstanceOf(Download::class, $clientJob->getResource());
     }
 
-    public function testFails()
+    public function testFails(): void
     {
         $job = new TestJob();
         $job->ex = true;
@@ -71,6 +71,22 @@ class QueueEventsTest extends TestCase
             'attempts' => 1,
             'completed_at' => Carbon::now()->format('Y-m-d H:i:s'),
             'failed' => true,
+        ]);
+    }
+
+    public function testDoesNotCauseException(): void
+    {
+        $job = new TestJob();
+        $job->model = factory(Download::class)->create();
+        $job->clientJob = factory(ClientJob::class)->create();
+
+        dispatch($job);
+
+        $this->assertDatabaseHas('json_api_client_jobs', [
+            'uuid' => $job->clientJob->getKey(),
+            'attempts' => 1,
+            'completed_at' => Carbon::now()->format('Y-m-d H:i:s'),
+            'failed' => false,
         ]);
     }
 }

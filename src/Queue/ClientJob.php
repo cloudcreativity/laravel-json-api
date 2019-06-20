@@ -169,6 +169,19 @@ class ClientJob extends Model implements AsynchronousProcess
     }
 
     /**
+     * @param bool $success
+     * @return void
+     */
+    public function completed(bool $success = true): void
+    {
+        $this->update([
+            'attempts' => $this->attempts + 1,
+            'completed_at' => Carbon::now(),
+            'failed' => !$success,
+        ]);
+    }
+
+    /**
      * @return Api
      */
     public function getApi(): Api

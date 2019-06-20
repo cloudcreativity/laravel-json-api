@@ -19,6 +19,7 @@ namespace CloudCreativity\LaravelJsonApi\Queue;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Queue\AsynchronousProcess;
 use Illuminate\Contracts\Queue\Job;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Queue\Events\JobProcessed;
 
@@ -55,7 +56,15 @@ class UpdateClientProcess
         $data = $this->payload($job)['data'] ?? [];
         $command = $data['command'] ?? null;
 
-        return is_string($command) ? unserialize($command) : null;
+        if (!is_string($command)) {
+            return null;
+        }
+
+        try {
+            return unserialize($command) ?: null;
+        } catch (ModelNotFoundException $ex) {
+            return null;
+        }
     }
 
     /**

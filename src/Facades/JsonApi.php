@@ -20,17 +20,17 @@ namespace CloudCreativity\LaravelJsonApi\Facades;
 
 use CloudCreativity\LaravelJsonApi\Routing\ApiRegistration;
 use CloudCreativity\LaravelJsonApi\Routing\Route;
-use Illuminate\Support\Facades\Facade as BaseFacade;
+use Illuminate\Support\Facades\Facade;
 
 /**
- * Class Facade
+ * Class JsonApi
  *
  * @package CloudCreativity\LaravelJsonApi
  * @method static ApiRegistration register(string $apiName, array|\Closure $options = [], \Closure|null $callback = null)
  * @method static string defaultApi(string|null $apiName)
  * @method static Route currentRoute()
  */
-class JsonApi extends BaseFacade
+class JsonApi extends Facade
 {
 
     /**
