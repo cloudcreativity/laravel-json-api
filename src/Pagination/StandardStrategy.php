@@ -20,8 +20,8 @@ namespace CloudCreativity\LaravelJsonApi\Pagination;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PagingStrategyInterface;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Support\Collection;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use Neomerx\JsonApi\Contracts\Http\Query\QueryParametersParserInterface;
@@ -227,7 +227,7 @@ class StandardStrategy implements PagingStrategyInterface
     /**
      * Apply a deterministic order to the page.
      *
-     * @param Builder|Relation $query
+     * @param QueryBuilder|EloquentBuilder|Relation $query
      * @return $this
      * @see https://github.com/cloudcreativity/laravel-json-api/issues/313
      */
@@ -246,7 +246,7 @@ class StandardStrategy implements PagingStrategyInterface
      * If the primary key has not been used for a sort order already, we use it
      * to ensure the page has a deterministic order.
      *
-     * @param Builder|Relation $query
+     * @param QueryBuilder|EloquentBuilder|Relation $query
      * @return bool
      */
     protected function doesRequireOrdering($query)
@@ -264,7 +264,7 @@ class StandardStrategy implements PagingStrategyInterface
     }
 
     /**
-     * @param Builder|Relation $query
+     * @param QueryBuilder|EloquentBuilder|Relation $query
      * @param Collection $pagingParameters
      * @return mixed
      */
