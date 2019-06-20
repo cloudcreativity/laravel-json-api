@@ -37,7 +37,7 @@ interface ResolverInterface
      * Get the domain record type for the supplied JSON API resource type.
      *
      * @param string $resourceType
-     * @return string|null
+     * @return string|string[]|null
      */
     public function getType($resourceType);
 

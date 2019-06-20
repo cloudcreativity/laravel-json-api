@@ -12,15 +12,17 @@ Allow soft delete attribute path to use dot notation.
 Can now apply global scopes to JSON API resources via [adapter scopes.](./docs/basics/adapters.md#scopes)
 
 ### Fixed
-- [#347](https://github.com/cloudcreativity/laravel-json-api/issues/347)
-Update `zend-diactoros` dependency.
-- [#369](https://github.com/cloudcreativity/laravel-json-api/issues/369)
-Fix using an alternative decoding type for update (`PATCH`) requests.
 - [#370](https://github.com/cloudcreativity/laravel-json-api/pull/370)
 Fix wrong validation error title when creating a custom validator.
+- [#369](https://github.com/cloudcreativity/laravel-json-api/issues/369)
+Fix using an alternative decoding type for update (`PATCH`) requests.
+- [#362](https://github.com/cloudcreativity/laravel-json-api/issues/362)
+Fix fatal error in route class caused by polymorphic entity types.
 - [#358](https://github.com/cloudcreativity/laravel-json-api/issues/358)
 Queue listener could trigger a `ModelNotFoundException` when deserializing a job that had deleted a
 model during its `handle()` method.
+- [#347](https://github.com/cloudcreativity/laravel-json-api/issues/347)
+Update `zend-diactoros` dependency.
 
 ## [1.1.0] - 2019-04-12
 
