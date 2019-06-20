@@ -19,7 +19,6 @@ namespace DummyApp\Tests\Feature\Avatars;
 
 use CloudCreativity\LaravelJsonApi\Testing\TestResponse;
 use DummyApp\Avatar;
-use DummyApp\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 
