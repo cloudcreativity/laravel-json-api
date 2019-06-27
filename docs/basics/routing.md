@@ -240,25 +240,51 @@ JsonApi::register('default')->routes(function ($api) {
 ## Controllers
 
 By default no controller is required because this package contains a standard controller for processing JSON API
-requests. However it is possible to specify your own controller, using the `controller` option.
+requests. However it is possible to specify that a resource has its own controller, using the `controller` method.
 
 For example, the following would use the `PostsController` in the `Api` namespace:
 
 ```php
 JsonApi::register('default')->withNamespace('Api')->routes(function ($api, $router) {
-    $api->resource('posts')->controller();
+    $api->resource('posts')->controller(); // uses PostsController
 });
 ```
 
+### Controller Names
+
 If you call `controller()` without any arguments, we assume your controller is the camel case name version of 
 the resource type with `Controller` on the end. I.e. `posts` would expect `PostsController` and
-`blog-posts` would expect `BlogPostsController`.
+`blog-posts` would expect `BlogPostsController`. Or if your resource type was `post`,
+we would guess `PostController`.
 
-If your controller does not conform to this expectation, supply the controller name as follows:
+If your resource names are plural, e.g. `posts`, but you would like to use the singular for the controller
+name, i.e. `PostController`, use the `singularControllers()` method as follows:
+
+```php
+JsonApi::register('default')
+    ->withNamespace('Api')
+    ->singularControllers()
+    ->routes(function ($api, $router) {
+        $api->resource('posts')->controller(); // uses PostController
+    });
+```
+
+If your controller names do not conform to either of these patterns, you have two options. Either explicitly
+provide the controller name for each resource, e.g.:
 
 ```php
 JsonApi::register('default')->withNamespace('Api')->routes(function ($api, $router) {
-    $api->resource('posts')->controller('PostController');
+    $api->resource('posts')->controller('PostResourceController');
+});
+```
+
+Or you can provide a callback to work it out from the resource name:
+
+```php
+JsonApi::register('default')->withNamespace('Api')->controllerResolver(function ($resourceType) {
+    return ucfirst($resourceType) . 'ResourceController';
+})->routes(function ($api, $router) {
+    $api->resource('posts')->controller(); // expects PostsResourceController
 });
 ```
 
@@ -275,7 +301,7 @@ JsonApi::register('default')
     ->withNamespace('Api')
     ->defaultController('DefaultController')
     ->routes(function ($api, $router) {
-        $api->resource('posts')->controller();
+        $api->resource('posts'); // uses DefaultController instead of our JsonApiController
     });
 ```
 

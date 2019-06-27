@@ -17,9 +17,12 @@
 
 namespace CloudCreativity\LaravelJsonApi\Routing;
 
+use Closure;
 use CloudCreativity\LaravelJsonApi\Api\Api;
+use CloudCreativity\LaravelJsonApi\Utils\Str;
 use Illuminate\Contracts\Routing\Registrar;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str as IlluminateStr;
 
 /**
  * Class ApiRegistration
@@ -94,6 +97,33 @@ final class ApiRegistration
     }
 
     /**
+     * Use a callback to resolve a controller name for a resource.
+     *
+     * @param Closure $callback
+     * @return $this
+     */
+    public function controllerResolver(Closure $callback): self
+    {
+        $this->options['controller_resolver'] = $callback;
+
+        return $this;
+    }
+
+    /**
+     * Use singular resource names when resolving a controller name.
+     *
+     * @return ApiRegistration
+     */
+    public function singularControllers(): self
+    {
+        return $this->controllerResolver(function (string $resourceType): string {
+            $singular = IlluminateStr::singular($resourceType);
+
+            return Str::classify($singular) . 'Controller';
+        });
+    }
+
+    /**
      * Set the default content negotiator.
      *
      * @param string $negotiator
@@ -156,9 +186,9 @@ final class ApiRegistration
     }
 
     /**
-     * @param \Closure $callback
+     * @param Closure $callback
      */
-    public function routes(\Closure $callback): void
+    public function routes(Closure $callback): void
     {
         $this->routes->group($this->attributes(), function () use ($callback) {
             $group = new RouteRegistrar($this->routes, $this->options());

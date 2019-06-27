@@ -2,6 +2,13 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## Unreleased
+
+### Added
+- [#352](https://github.com/cloudcreativity/laravel-json-api/issues/352)
+Can now set an API's default controller name to the singular version of the resource type.
+- Can now register a callback for resolving a controller name from a resource type.
+
 ## [1.2.0] - 2019-06-20
 
 ### Added
