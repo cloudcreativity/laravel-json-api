@@ -8,6 +8,9 @@ All notable changes to this project will be documented in this file. This projec
 - [#352](https://github.com/cloudcreativity/laravel-json-api/issues/352)
 Can now set an API's default controller name to the singular version of the resource type.
 - Can now register a callback for resolving a controller name from a resource type.
+- [#373](https://github.com/cloudcreativity/laravel-json-api/issues/373)
+Can now change the JSON API controller's default connection and whether it uses transactions
+via an API's config.
 
 ## [1.2.0] - 2019-06-20
 

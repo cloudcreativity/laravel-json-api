@@ -131,6 +131,16 @@ class Api
     private $providers;
 
     /**
+     * @var string|null
+     */
+    private $connection;
+
+    /**
+     * @var bool
+     */
+    private $transactions;
+
+    /**
      * Api constructor.
      *
      * @param Factory $factory
@@ -144,6 +154,8 @@ class Api
      * @param string|null $supportedExt
      * @param array $errors
      * @param array $providers
+     * @param string|null $connection
+     * @param bool $transactions
      */
     public function __construct(
         Factory $factory,
@@ -156,7 +168,9 @@ class Api
         $useEloquent = true,
         $supportedExt = null,
         array $errors = [],
-        array $providers = []
+        array $providers = [],
+        string $connection = null,
+        bool $transactions = true
     ) {
         $this->factory = $factory;
         $this->resolver = $resolver;
@@ -169,6 +183,8 @@ class Api
         $this->supportedExt = $supportedExt;
         $this->errors = $errors;
         $this->providers = $providers;
+        $this->connection = $connection;
+        $this->transactions = $transactions;
     }
 
     /**
@@ -346,6 +362,26 @@ class Api
     public function getEncoder()
     {
         return $this->encoder();
+    }
+
+    /**
+     * Get the default database connection for the API.
+     *
+     * @return string|null
+     */
+    public function getConnection(): ?string
+    {
+        return $this->connection;
+    }
+
+    /**
+     * Are database transactions used by default?
+     *
+     * @return bool
+     */
+    public function hasTransactions(): bool
+    {
+        return $this->transactions;
     }
 
     /**

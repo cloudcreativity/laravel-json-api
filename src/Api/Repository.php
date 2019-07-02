@@ -87,7 +87,9 @@ class Repository
             $config['use-eloquent'],
             $config['supported-ext'],
             $config['errors'],
-            $config['providers'] ?? []
+            $config['providers'] ?? [],
+            $config['controllers']['connection'] ?? null,
+            $config['controllers']['transactions'] ?? true
         );
 
         /** Attach resource providers to the API. */
@@ -132,6 +134,7 @@ class Repository
         $config['resources'] = $this->normalizeResources($config['resources'] ?? [], $config);
         $config['url'] = $this->normalizeUrl($config['url'] ?? [], $host);
         $config['errors'] = array_replace($this->defaultErrors(), $config['errors'] ?? []);
+        $config['controllers'] = $config['controllers'] ?? [];
 
         return $config;
     }

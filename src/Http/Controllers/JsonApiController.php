@@ -39,6 +39,7 @@ use CloudCreativity\LaravelJsonApi\Utils\Str;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Routing\Controller;
 use Symfony\Component\HttpFoundation\Response;
+use function json_api;
 
 /**
  * Class JsonApiController
@@ -56,16 +57,29 @@ class JsonApiController extends Controller
     /**
      * The database connection name to use for transactions, or null for the default connection.
      *
+     * If null, the value from your API's config will be used. That config value defaults
+     * to `null`, i.e. use the default database connection.
+     *
+     * To override this on a per-controller basis, use the `withConnection()` method.
+     *
      * @var string|null
+     * @deprecated 2.0.0 will be moved to middleware.
      */
     protected $connection;
 
     /**
      * Whether database transactions should be used.
      *
-     * @var bool
+     * If null, the value from your API's config will be used. That config value defaults
+     * to `true`.
+     *
+     * To override this on a per-controller basis, use the `withTransactions()` or
+     * `withoutTransactions()` method.
+     *
+     * @var bool|null
+     * @deprecated 2.0.0 will be moved to middleware.
      */
-    protected $useTransactions = true;
+    protected $useTransactions = null;
 
     /**
      * Index action.
@@ -322,6 +336,40 @@ class JsonApiController extends Controller
     }
 
     /**
+     * @param string|null $connection
+     * @return $this
+     * @deprecated 2.0.0 will be moved to middleware
+     */
+    public function withConnection(?string $connection): self
+    {
+        $this->connection = $connection;
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     * @deprecated 2.0.0 will be moved to middleware
+     */
+    public function withTransactions(): self
+    {
+        $this->useTransactions = true;
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     * @deprecated 2.0.0 will be moved to middleware
+     */
+    public function withoutTransactions(): self
+    {
+        $this->useTransactions = false;
+
+        return $this;
+    }
+
+    /**
      * Search resources.
      *
      * @param StoreInterface $store
@@ -519,14 +567,15 @@ class JsonApiController extends Controller
      *
      * @param Closure $closure
      * @return mixed
+     * @deprecated 2.0.0 will be moved to middleware
      */
     protected function transaction(Closure $closure)
     {
-        if (!$this->useTransactions) {
+        if (!$this->useTransactions()) {
             return $closure();
         }
 
-        return app('db')->connection($this->connection)->transaction($closure);
+        return app('db')->connection($this->connection())->transaction($closure);
     }
 
     /**
@@ -538,6 +587,41 @@ class JsonApiController extends Controller
     protected function isResponse($value)
     {
         return $value instanceof Response || $value instanceof Responsable;
+    }
+
+    /**
+     * @param $value
+     * @return bool
+     */
+    protected function isInvokedResult($value): bool
+    {
+        return $value instanceof AsynchronousProcess || $this->isResponse($value);
+    }
+
+    /**
+     * @return string|null
+     * @deprecated 2.0.0 will be moved to middleware
+     */
+    private function connection(): ?string
+    {
+        if ($this->connection) {
+            return $this->connection;
+        }
+
+        return json_api()->getConnection();
+    }
+
+    /**
+     * @return bool
+     * @deprecated 2.0.0 transactions will be moved to middleware
+     */
+    private function useTransactions(): bool
+    {
+        if (is_bool($this->useTransactions)) {
+            return $this->useTransactions;
+        }
+
+        return json_api()->hasTransactions();
     }
 
     /**
@@ -600,15 +684,6 @@ class JsonApiController extends Controller
         $hooks = ["didRead{$field}", 'didReadRelationship'];
 
         return $this->invokeMany($hooks, $record, $related, $request);
-    }
-
-    /**
-     * @param $value
-     * @return bool
-     */
-    protected function isInvokedResult($value): bool
-    {
-        return $value instanceof AsynchronousProcess || $this->isResponse($value);
     }
 
 }
