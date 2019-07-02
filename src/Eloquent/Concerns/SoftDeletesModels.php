@@ -23,7 +23,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Schema\Builder;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
-use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 /**
  * Trait SoftDeletesModels
@@ -35,10 +34,9 @@ trait SoftDeletesModels
 
     /**
      * @param Model $record
-     * @param EncodingParametersInterface $params
      * @return bool
      */
-    public function delete($record, EncodingParametersInterface $params)
+    protected function destroy($record)
     {
         return (bool) $record->forceDelete();
     }
@@ -166,14 +164,34 @@ trait SoftDeletesModels
 
     /**
      * @param Model $record
+     * @return void
      */
     protected function saveOrRestore(Model $record)
     {
         if ($this->willRestore($record)) {
            $record->restore();
-       } else {
-            $record->save();
+           return;
+       }
+
+        /**
+         * To ensure Laravel still executes its soft-delete logic (e.g. firing events)
+         * we need to delete before a save when we are soft-deleting. Although this
+         * may result in two database calls in this scenario, it means we can guarantee
+         * that standard Laravel soft-delete logic is executed.
+         *
+         * @see https://github.com/cloudcreativity/laravel-json-api/issues/371
+         */
+        if ($this->willSoftDelete($record)) {
+            $key = $this->getSoftDeleteKey($record);
+            // save the original date so we can put it back later on
+            $deletedAt = $record{$key};
+            // delete on the record so that deleting and deleted events get fired
+            $record->delete();
+            // apply the original soft deleting date back before saving
+            $record{$key} = $deletedAt;
         }
+
+        $record->save();
     }
 
     /**
@@ -190,7 +208,30 @@ trait SoftDeletesModels
             return false;
         }
 
+        /**
+         * The use of `trashed()` here looks the wrong way round, but it is
+         * because that method checks the current value on the model. I.e.
+         * as we have filled the model by this point, it will think that it
+         * is not trashed even though that has not been persisted to the database.
+         */
         return $record->isDirty($key) && !$record->trashed();
+    }
+
+    /**
+     * @param Model $record
+     * @return bool
+     */
+    protected function willSoftDelete(Model $record)
+    {
+        if (!$record->exists) {
+            return false;
+        }
+
+        if (!$key = $this->getSoftDeleteKey($record)) {
+            return false;
+        }
+
+        return null === $record->getOriginal($key) && $record->trashed();
     }
 
 }

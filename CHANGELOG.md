@@ -12,6 +12,12 @@ Can now set an API's default controller name to the singular version of the reso
 Can now change the JSON API controller's default connection and whether it uses transactions
 via an API's config.
 
+### Fixed
+- [#371](https://github.com/cloudcreativity/laravel-json-api/issues/371)
+Ensure Eloquent delete/deleting events are fired when soft-deleting a resource.
+- Eloquent adapter hooks will now be invoked when force-deleting a resource that uses
+the `SoftDeletesModels` trait.
+
 ## [1.2.0] - 2019-06-20
 
 ### Added
