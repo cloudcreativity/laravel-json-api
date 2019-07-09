@@ -24,7 +24,7 @@ available to download, view the code and play around with as needed.
 
 ## Theory of Operation
 
-Your application will have one (or many) APIs that conform to the JSON API spec. You define an API in your via routes, 
+Your application will have one (or many) APIs that conform to the JSON API spec. You define an API in your app via routes, 
 while JSON API settings are configured in a config file for each API. If you have multiple APIs, each has a unique 
 *name*.
 
