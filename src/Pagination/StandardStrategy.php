@@ -134,6 +134,16 @@ class StandardStrategy implements PagingStrategyInterface
 
         return $this;
     }
+    
+    /**
+     * @return $this
+     */
+    public function withLengthAwarePagination()
+    {
+        $this->simplePagination = false;
+
+        return $this;
+    }
 
     /**
      * @return $this
