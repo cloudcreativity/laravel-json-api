@@ -293,7 +293,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     {
         return $this->newQuery()->where(
             $this->getQualifiedKeyName(),
-            $resourceId
+            $this->databaseId($resourceId)
         );
     }
 
@@ -305,7 +305,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     {
         return $this->newQuery()->whereIn(
             $this->getQualifiedKeyName(),
-            $resourceIds
+            $this->databaseIds($resourceIds)
         );
     }
 

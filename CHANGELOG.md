@@ -13,6 +13,9 @@ Can now change the JSON API controller's default connection and whether it uses 
 via an API's config.
 - [#377](https://github.com/cloudcreativity/laravel-json-api/issues/377)
 Can now toggle the simple pagination strategy back to using length aware pagination.
+- [#380](https://github.com/cloudcreativity/laravel-json-api/issues/380)
+Can now customise the conversion of a resource id to a database id on an adapter by overloading the
+`databaseId()` method.
 
 ### Fixed
 - [#371](https://github.com/cloudcreativity/laravel-json-api/issues/371)
