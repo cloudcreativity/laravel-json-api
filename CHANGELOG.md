@@ -11,6 +11,8 @@ Can now set an API's default controller name to the singular version of the reso
 - [#373](https://github.com/cloudcreativity/laravel-json-api/issues/373)
 Can now change the JSON API controller's default connection and whether it uses transactions
 via an API's config.
+- [#377](https://github.com/cloudcreativity/laravel-json-api/issues/377)
+Can now toggle the simple pagination strategy back to using length aware pagination.
 
 ### Fixed
 - [#371](https://github.com/cloudcreativity/laravel-json-api/issues/371)
