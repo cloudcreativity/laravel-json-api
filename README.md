@@ -33,13 +33,7 @@ The following additional features are also supported:
 - Support multiple media-types within your API.
 - Generators for all the classes you need to add a resource to your API.
 
-Installation instructions and documentation are available on
-[Read the Docs](http://laravel-json-api.readthedocs.io/en/latest/).
-
-> Credit where credit is due: this package is based on the framework agnostic package
-[neomerx/json-api](https://github.com/neomerx/json-api).
-
-## What is JSON API?
+### What is JSON API?
 
 From [jsonapi.org](http://jsonapi.org)
 
@@ -51,6 +45,13 @@ on what matters: your application. Clients built around JSON API are able to tak
 efficiently caching responses, sometimes eliminating network requests entirely.
 
 For full information on the spec, plus examples, see [http://jsonapi.org](http://jsonapi.org).
+
+## Tutorial and Documentation
+
+Want a tutorial to get started? Read the
+[Laravel tutorial on the *How to JSON:API* website.]((https://howtojsonapi.com/laravel.html))
+Full package documentation is available on
+[Read the Docs](http://laravel-json-api.readthedocs.io/en/latest/).
 
 ## Demo
 
@@ -74,10 +75,6 @@ when upgrading.
 Currently we have not integrated the package with Lumen. We do not have any active projects that use Lumen,
 so if you do and can help, please let us know on
 [this issue](https://github.com/cloudcreativity/laravel-json-api/issues/61).
-
-## Documentation
-
-Documentation is available on [Read the Docs](http://laravel-json-api.readthedocs.io/en/latest/).
 
 ## License
 
