@@ -49,7 +49,8 @@ For full information on the spec, plus examples, see [http://jsonapi.org](http:/
 ## Tutorial and Documentation
 
 Want a tutorial to get started? Read the
-[Laravel tutorial on the *How to JSON:API* website.]((https://howtojsonapi.com/laravel.html))
+[*How to JSON:API* Laravel tutorial.](https://howtojsonapi.com/laravel.html)
+
 Full package documentation is available on
 [Read the Docs](http://laravel-json-api.readthedocs.io/en/latest/).
 
