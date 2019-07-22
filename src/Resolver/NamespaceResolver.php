@@ -18,6 +18,7 @@
 namespace CloudCreativity\LaravelJsonApi\Resolver;
 
 use CloudCreativity\LaravelJsonApi\Utils\Str;
+use Illuminate\Support\Str as IlluminateStr;
 
 /**
  * Class NamespaceResolver
@@ -77,10 +78,10 @@ class NamespaceResolver extends AbstractResolver
             return $this->append($classified . '\\' . $unit);
         }
 
-        $classified = str_singular($classified);
-        $class = $this->withType ? $classified . str_singular($unit) : $classified;
+        $classified = IlluminateStr::singular($classified);
+        $class = $this->withType ? $classified . IlluminateStr::singular($unit) : $classified;
 
-        return $this->append(sprintf('%s\%s', str_plural($unit), $class));
+        return $this->append(sprintf('%s\%s', IlluminateStr::plural($unit), $class));
     }
 
     /**

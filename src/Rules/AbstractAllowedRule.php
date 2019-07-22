@@ -19,6 +19,7 @@ namespace CloudCreativity\LaravelJsonApi\Rules;
 
 use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 
 abstract class AbstractAllowedRule implements Rule
 {
@@ -110,7 +111,7 @@ abstract class AbstractAllowedRule implements Rule
      */
     public function message()
     {
-        $name = snake_case(class_basename($this));
+        $name = Str::snake(class_basename($this));
         $invalid = $this->invalid();
 
         if ($invalid->isEmpty()) {

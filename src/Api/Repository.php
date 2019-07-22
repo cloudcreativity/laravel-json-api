@@ -24,6 +24,7 @@ use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use CloudCreativity\LaravelJsonApi\Resolver\AggregateResolver;
 use Illuminate\Contracts\Config\Repository as Config;
+use Illuminate\Support\Arr;
 
 /**
  * Class Repository
@@ -166,7 +167,7 @@ class Repository
      */
     private function normalizeUrl(array $url, $host = null)
     {
-        $prependHost = false !== array_get($url, 'host');
+        $prependHost = false !== Arr::get($url, 'host');
 
         if ($host) {
             $url['host'] = $host;
@@ -176,8 +177,8 @@ class Repository
 
         return [
             'host' => $prependHost ? (string) $url['host'] : '',
-            'namespace' => (string) array_get($url, 'namespace'),
-            'name' => (string) array_get($url, 'name'),
+            'namespace' => (string) Arr::get($url, 'namespace'),
+            'name' => (string) Arr::get($url, 'name'),
         ];
     }
 

@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file. This projec
 
 ## Unreleased
 
+Package now supported Laravel 5.9.
+
 ### Added
 - [#352](https://github.com/cloudcreativity/laravel-json-api/issues/352)
 Can now set an API's default controller name to the singular version of the resource type.

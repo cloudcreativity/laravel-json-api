@@ -61,6 +61,7 @@ A demo application is available at [here](https://github.com/cloudcreativity/dem
 
 | Laravel | This Package | EOL? |
 | --- | --- | --- |
+| 5.9.* | `^1.3` | - |
 | 5.8.* | `^1.0` | - |
 | 5.7.* | `^1.0` | - |
 | 5.6.* | `^1.0` | - |
