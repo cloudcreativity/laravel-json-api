@@ -313,9 +313,9 @@ class BelongsToTest extends TestCase
 
         $expected = [
             'status' => '422',
-            'detail' => 'The selected author.type is invalid.',
+            'detail' => 'The author field must be a to-one relationship containing users resources.',
             'source' => [
-                'pointer' => '/data/type',
+                'pointer' => '/data',
             ],
         ];
 

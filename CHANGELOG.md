@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file. This projec
 
 ## Unreleased
 
-Package now supported Laravel 5.9.
+Package now supports Laravel 5.9.
 
 ### Added
 - [#352](https://github.com/cloudcreativity/laravel-json-api/issues/352)
@@ -18,6 +18,8 @@ Can now toggle the simple pagination strategy back to using length aware paginat
 - [#380](https://github.com/cloudcreativity/laravel-json-api/issues/380)
 Can now customise the conversion of a resource id to a database id on an adapter by overloading the
 `databaseId()` method.
+- New `HasOne` and `HasMany` rule objects for validating that a relationship is *to-one* or
+*to-many*, and has the expected resource type(s).
 
 ### Fixed
 - [#371](https://github.com/cloudcreativity/laravel-json-api/issues/371)

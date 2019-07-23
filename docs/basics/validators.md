@@ -208,19 +208,28 @@ Your validator will be provided with the following array of data:
 The following is an example query rule for the above-mentioned data:
 
 ```php
-protected function rules($record = null): array
-{
-    return [
-        'title' => 'required|string|min:1|max:255',
-        'content' => 'required|string|min:1',
-        'author.type' => 'in:users',
-        'tags.*.type' => 'in:tags',
-    ];
-}
+use CloudCreativity\LaravelJsonApi\Validation\Rule;
+use CloudCreativity\LaravelJsonApi\Validation\AbstractValidators;
 
+class Validators extends AbstractValidators
+{
+    // ...
+
+    protected function rules($record = null): array
+    {
+        return [
+            'title' => 'required|string|min:1|max:255',
+            'content' => 'required|string|min:1',
+            'author' => Rule::hasOne('users'),
+            'tags' => Rule::hasMany('tags'),
+        ];
+    }
+}
 ```
 
-You'll notice that 'exists' is not used in the validation. This is because the package complies to the JSON API spec and validates if the record exists. Hence the following should **NOT** be used:
+You'll notice that the `exists` rule is not used in the validation for the `author` and `tags` relationships.
+This is because the package complies with the JSON API spec and validates all relationship identifiers to
+check that they exist. Therefore the following **does not** need to be used:
 
 ```php
 protected function rules($record = null): array
@@ -231,6 +240,12 @@ protected function rules($record = null): array
     ];
 }
 ```
+
+The `Rule::hasOne()` and `Rule::hasMany()` methods accept a list of resource types for polymorphic relationships.
+They also return rule objects that have methods to determine whether empty relationships are acceptable.
+Use the `required()` method to indicate that an empty value is not acceptable, or use the `allowEmpty($bool)`
+method to toggle whether empty values are allowed. If neither method is called, the rule *will* accept
+an empty value.
 
 ### Updating Resources
 
