@@ -2,8 +2,8 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Unit\Validation\Rules;
 
+use CloudCreativity\LaravelJsonApi\Rules\HasOne;
 use CloudCreativity\LaravelJsonApi\Tests\Unit\TestCase;
-use CloudCreativity\LaravelJsonApi\Validation\Rule;
 
 class HasOneTest extends TestCase
 {
@@ -72,9 +72,17 @@ class HasOneTest extends TestCase
     public function testValid($types, $value): void
     {
         $types = (array) $types;
-        $rule = Rule::hasOne(...$types);
+        $rule = new HasOne(...$types);
 
         $this->assertTrue($rule->passes('author', $value));
+    }
+
+    public function testValidWithAttributeName(): void
+    {
+        $rule = new HasOne();
+
+        $this->assertTrue($rule->passes('author', ['type' => 'authors', 'id' => '1']));
+        $this->assertFalse($rule->passes('author', ['type' => 'users', 'id' => '1']));
     }
 
     /**
@@ -85,31 +93,8 @@ class HasOneTest extends TestCase
     public function testInvalid($types, $value): void
     {
         $types = (array) $types;
-        $rule = Rule::hasOne(...$types);
+        $rule = new HasOne(...$types);
 
         $this->assertFalse($rule->passes('author', $value));
-    }
-
-    public function testAllowEmpty(): void
-    {
-        $this->assertFalse(
-            Rule::hasOne('users')->required()->passes('author', null),
-            'required'
-        );
-
-        $this->assertTrue(
-            Rule::hasOne('users')->allowEmpty(true)->passes('author', null),
-            'allows empty'
-        );
-
-        $this->assertFalse(
-            Rule::hasOne('users')->allowEmpty(false)->passes('author', null),
-            'does not allow empty'
-        );
-
-        $this->assertFalse(
-            Rule::hasOne('users')->allowEmpty(true)->passes('author', []),
-            'rejects empty has-many when empty allowed'
-        );
     }
 }

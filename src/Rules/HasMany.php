@@ -16,10 +16,8 @@ class HasMany extends HasOne
             return false;
         }
 
-        if (empty($data) && $this->acceptsNone()) {
+        if (empty($data)) {
             return true;
-        } else if (empty($data)) {
-            return false;
         }
 
         if (Arr::isAssoc($data)) {

@@ -2,8 +2,8 @@
 
 namespace CloudCreativity\LaravelJsonApi\Rules;
 
-use CloudCreativity\LaravelJsonApi\Utils\Str;
 use Illuminate\Contracts\Validation\Rule;
+use Illuminate\Support\Str;
 
 class HasOne implements Rule
 {
@@ -14,11 +14,6 @@ class HasOne implements Rule
     private $types;
 
     /**
-     * @var bool
-     */
-    private $allowEmpty;
-
-    /**
      * HasOne constructor.
      *
      * @param string ...$types
@@ -27,30 +22,6 @@ class HasOne implements Rule
     public function __construct(string ...$types)
     {
         $this->types = $types;
-        $this->allowEmpty();
-    }
-
-    /**
-     * Set whether an empty `has-one` relationship is allowed.
-     *
-     * @param bool $bool
-     * @return $this
-     */
-    public function allowEmpty(bool $bool = true): self
-    {
-        $this->allowEmpty = $bool;
-
-        return $this;
-    }
-
-    /**
-     * Set a related resource to always be required.
-     *
-     * @return $this
-     */
-    public function required(): self
-    {
-        return $this->allowEmpty(false);
     }
 
     /**
@@ -62,6 +33,10 @@ class HasOne implements Rule
             return false;
         }
 
+        if (empty($this->types)) {
+            $this->types = [Str::plural($attribute)];
+        }
+
         return $this->accept($value);
     }
 
@@ -70,7 +45,7 @@ class HasOne implements Rule
      */
     public function message()
     {
-        $key = 'jsonapi::validation.' . Str::underscore(class_basename($this));;
+        $key = 'jsonapi::validation.' . Str::snake(class_basename($this));;
 
         return trans($key, [
             'types' => collect($this->types)->implode(', '),
@@ -85,7 +60,7 @@ class HasOne implements Rule
      */
     protected function accept(?array $data): bool
     {
-        if (is_null($data) && $this->acceptsNone()) {
+        if (is_null($data)) {
             return true;
         }
 
@@ -101,14 +76,6 @@ class HasOne implements Rule
         return is_array($data) && collect($this->types)->containsStrict(
             $data['type'] ?? null
         );
-    }
-
-    /**
-     * @return bool
-     */
-    protected function acceptsNone(): bool
-    {
-        return $this->allowEmpty;
     }
 
 }

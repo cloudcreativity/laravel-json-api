@@ -245,11 +245,22 @@ protected function rules($record = null): array
 }
 ```
 
-The `Rule::hasOne()` and `Rule::hasMany()` methods accept a list of resource types for polymorphic relationships.
-They also return rule objects that have methods to determine whether empty relationships are acceptable.
-Use the `required()` method to indicate that an empty value is not acceptable, or use the `allowEmpty($bool)`
-method to toggle whether empty values are allowed. If neither method is called, the rule *will* accept
-an empty value.
+The `HasOne` and `HasMany` rules accept a list of resource types for polymorphic relationships. If no
+type is provided to the constructor, then the plural form of the attribute name will be used. For
+example:
+
+```php
+protected function rules($record = null): array
+{
+    return [
+        'author' => [
+            'required',
+            new HasOne(), // expects 'authors' resources
+        ],
+        'tags' => new HasMany(), // expects 'tags' resources
+    ];
+}
+```
 
 ### Updating Resources
 
