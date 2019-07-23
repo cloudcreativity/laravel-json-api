@@ -208,7 +208,8 @@ Your validator will be provided with the following array of data:
 The following is an example query rule for the above-mentioned data:
 
 ```php
-use CloudCreativity\LaravelJsonApi\Validation\Rule;
+use CloudCreativity\LaravelJsonApi\Rules\HasMany;
+use CloudCreativity\LaravelJsonApi\Rules\HasOne;
 use CloudCreativity\LaravelJsonApi\Validation\AbstractValidators;
 
 class Validators extends AbstractValidators
@@ -220,8 +221,11 @@ class Validators extends AbstractValidators
         return [
             'title' => 'required|string|min:1|max:255',
             'content' => 'required|string|min:1',
-            'author' => Rule::hasOne('users'),
-            'tags' => Rule::hasMany('tags'),
+            'author' => [
+                'required',
+                new HasOne('users'),
+            ],
+            'tags' => new HasMany('tags'),
         ];
     }
 }
@@ -322,12 +326,7 @@ class Validators extends AbstractValidators
     protected function existingRelationships($record): iterable
     {
         return [
-            'author' => [
-                'data' => [
-                    'type' => 'users',
-                    'id' => (string) $record->user_id,
-                ],            
-            ],
+            'author' => $record->user,
         ];
     }
 }
@@ -366,6 +365,9 @@ Define resource object validation rules in your validators `rules` method.
 This method receives either the record being updated, or `null` for a create request. For example:
 
 ```php
+use CloudCreativity\LaravelJsonApi\Rules\HasOne;
+use CloudCreativity\LaravelJsonApi\Validation\AbstractValidators;
+
 class Validators extends AbstractValidators
 {
     // ...
@@ -375,10 +377,12 @@ class Validators extends AbstractValidators
         return [
             'title' => "required|string|min:3",
             'content' => "required|string",
-            'author.type' => 'in:users',
+            'author' => [
+                'required',
+                new HasOne('users'),
+            ],
         ];
     }
-
 }
 ```
 
@@ -536,12 +540,7 @@ class Validators extends AbstractValidators
     protected function existingRelationships($record): iterable
     {
         return [
-            'author' => [
-                'data' => [
-                    'type' => 'users',
-                    'id' => (string) $record->user->getRouteKey(),
-                ],            
-            ],
+            'author' => $record->user,
         ];
     }
 }

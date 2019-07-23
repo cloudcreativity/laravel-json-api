@@ -20,6 +20,9 @@ Can now customise the conversion of a resource id to a database id on an adapter
 `databaseId()` method.
 - New `HasOne` and `HasMany` rule objects for validating that a relationship is *to-one* or
 *to-many*, and has the expected resource type(s).
+- [#391](https://github.com/cloudcreativity/laravel-json-api/issues/391)
+Allow the validators `existingRelationships()` method to return the existing related records,
+and automatically convert these to JSON API identifiers.
 
 ### Fixed
 - [#371](https://github.com/cloudcreativity/laravel-json-api/issues/371)

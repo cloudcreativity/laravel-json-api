@@ -122,6 +122,17 @@ class Validators extends AbstractValidators
     }
 
     /**
+     * @inheritDoc
+     */
+    protected function existingRelationships($record): iterable
+    {
+        return [
+            'author' => $record->author,
+            'tags' => $record->tags,
+        ];
+    }
+
+    /**
      * @param Post $record
      * @return array|null
      */
