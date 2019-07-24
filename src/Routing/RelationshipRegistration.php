@@ -71,7 +71,11 @@ class RelationshipRegistration implements Arrayable
     }
 
     /**
-     * @return RelationshipRegistration
+     * Make the relationship read-only.
+     *
+     * This is a shorthand for only registering the `related` and `read` actions.
+     *
+     * @return $this
      */
     public function readOnly(): self
     {
