@@ -19,10 +19,9 @@ namespace CloudCreativity\LaravelJsonApi\Adapter\Concerns;
 
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
-use function is_array;
-use function is_null;
-use function is_string;
 use Neomerx\JsonApi\Contracts\Document\DocumentInterface;
+use function is_array;
+use function is_string;
 
 /**
  * Trait FindsManyResources
