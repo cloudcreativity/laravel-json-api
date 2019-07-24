@@ -17,13 +17,14 @@
 
 use Faker\Generator as Faker;
 use Illuminate\Database\Eloquent\Factory as EloquentFactory;
+use Illuminate\Support\Str;
 
 /** @var EloquentFactory $factory */
 
 /** Avatar */
 $factory->define(DummyApp\Avatar::class, function (Faker $faker) {
     return [
-        'path' => 'avatars/' . str_random(6) . '.jpg',
+        'path' => 'avatars/' . Str::random(6) . '.jpg',
         'media_type' => 'image/jpeg',
         'user_id' => function () {
             return factory(DummyApp\User::class)->create()->getKey();
@@ -120,7 +121,7 @@ $factory->define(DummyApp\User::class, function (Faker $faker) {
     return [
         'name' => $faker->name,
         'email' => $faker->unique()->email,
-        'password' => bcrypt(str_random(10)),
+        'password' => bcrypt(Str::random(10)),
     ];
 });
 

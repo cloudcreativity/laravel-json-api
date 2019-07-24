@@ -18,6 +18,7 @@
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Resolver;
 
 use CloudCreativity\LaravelJsonApi\Resolver\AbstractResolver;
+use Illuminate\Support\Str;
 
 class CustomResolver extends AbstractResolver
 {
@@ -27,7 +28,7 @@ class CustomResolver extends AbstractResolver
      */
     protected function resolve($unit, $resourceType)
     {
-        $units = str_plural(strtolower($unit));
+        $units = Str::plural(strtolower($unit));
 
         return "{$units}:{$resourceType}";
     }

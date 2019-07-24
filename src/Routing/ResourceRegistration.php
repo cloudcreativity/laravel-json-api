@@ -17,6 +17,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Routing;
 
+use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Utils\Str;
 use Illuminate\Contracts\Routing\Registrar;
 use Illuminate\Contracts\Support\Arrayable;
@@ -123,7 +124,7 @@ final class ResourceRegistration implements Arrayable
      */
     public function controller(string $controller = ''): self
     {
-        $this->options['controller'] = $controller ?: Str::classify($this->resourceType) . 'Controller';
+        $this->options['controller'] = $controller ?: $this->guessController();
 
         return $this;
     }
@@ -241,6 +242,24 @@ final class ResourceRegistration implements Arrayable
         if (!$this->registered) {
             $this->register();
         }
+    }
+
+    /**
+     * @return string
+     */
+    private function guessController(): string
+    {
+        if (!$fn = $this->options['controller_resolver'] ?? null) {
+            return Str::classify($this->resourceType) . 'Controller';
+        }
+
+        $controller = $fn($this->resourceType);
+
+        if (!is_string($controller) || empty($controller)) {
+            throw new RuntimeException('Expecting controller name callback to return a non-empty string.');
+        }
+
+        return $controller;
     }
 
 }

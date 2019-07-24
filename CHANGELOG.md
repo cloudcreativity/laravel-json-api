@@ -2,6 +2,34 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## [1.3.0] - 2019-07-24
+
+Package now supports Laravel 5.9.
+
+### Added
+- [#352](https://github.com/cloudcreativity/laravel-json-api/issues/352)
+Can now set an API's default controller name to the singular version of the resource type.
+- Can now register a callback for resolving a controller name from a resource type.
+- [#373](https://github.com/cloudcreativity/laravel-json-api/issues/373)
+Can now change the JSON API controller's default connection and whether it uses transactions
+via an API's config.
+- [#377](https://github.com/cloudcreativity/laravel-json-api/issues/377)
+Can now toggle the simple pagination strategy back to using length aware pagination.
+- [#380](https://github.com/cloudcreativity/laravel-json-api/issues/380)
+Can now customise the conversion of a resource id to a database id on an adapter by overloading the
+`databaseId()` method.
+- New `HasOne` and `HasMany` rule objects for validating that a relationship is *to-one* or
+*to-many*, and has the expected resource type(s).
+- [#391](https://github.com/cloudcreativity/laravel-json-api/issues/391)
+Allow the validators `existingRelationships()` method to return the existing related records,
+and automatically convert these to JSON API identifiers.
+
+### Fixed
+- [#371](https://github.com/cloudcreativity/laravel-json-api/issues/371)
+Ensure Eloquent delete/deleting events are fired when soft-deleting a resource.
+- Eloquent adapter hooks will now be invoked when force-deleting a resource that uses
+the `SoftDeletesModels` trait.
+
 ## [1.2.0] - 2019-06-20
 
 ### Added

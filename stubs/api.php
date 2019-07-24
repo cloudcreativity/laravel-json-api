@@ -96,6 +96,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Controllers
+    |--------------------------------------------------------------------------
+    |
+    | The default JSON API controller wraps write operations in transactions.
+    | You can customise the connection for the transaction here. Or if you
+    | want to turn transactions off, set `transactions` to `false`.
+    |
+    */
+    'controllers' => [
+        'transactions' => true,
+        'connection' => null,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Jobs
     |--------------------------------------------------------------------------
     |

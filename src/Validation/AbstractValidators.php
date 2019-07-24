@@ -503,7 +503,9 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
      */
     protected function extractRelationships($record, array $new): array
     {
-        return collect($this->existingRelationships($record))->merge($new)->all();
+        return collect($this->existingRelationships($record))->map(function ($value) {
+            return $this->convertExistingRelationships($value);
+        })->merge($new)->all();
     }
 
     /**
@@ -815,4 +817,62 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
         return new AllowedFilterParameters($this->allowedFilteringParameters);
     }
 
+    /**
+     * Convert relationships returned by the `existingRelationships()` method.
+     *
+     * We support the method returning JSON API formatted relationships, e.g.:
+     *
+     * ```
+     * return [
+ *          'author' => [
+     *          'data' => [
+     *              'type' => 'users',
+     *              'id' => (string) $record->author->getRouteKey(),
+     *          ]
+     *      ],
+     * ];
+     * ```
+     *
+     * Or this shorthand:
+     *
+     * ```php
+     * return [
+     *      'author' => $record->author,
+     * ];
+     * ```
+     *
+     * This method converts the shorthand into the JSON API formatted relationships.
+     *
+     * @param $value
+     * @return array
+     */
+    private function convertExistingRelationships($value)
+    {
+        if (is_array($value) && array_key_exists('data', $value)) {
+            return $value;
+        }
+
+        if (is_null($value)) {
+            return ['data' => null];
+        }
+
+        if (is_object($value) && !is_iterable($value)) {
+            $schema = $this->container->getSchema($value);
+
+            return [
+                'data' => [
+                    'type' => $schema->getResourceType(),
+                    'id' => $schema->getId($value),
+                ],
+            ];
+        }
+
+        $data = collect($value)->map(function ($v) {
+            $schema = $this->container->getSchema($v);
+
+            return ['type' => $schema->getResourceType(), 'id' => $schema->getId($v)];
+        })->all();
+
+        return compact('data');
+    }
 }

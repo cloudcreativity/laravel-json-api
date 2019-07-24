@@ -17,6 +17,7 @@
 
 namespace DummyApp\Entities;
 
+use Illuminate\Support\Arr;
 use InvalidArgumentException;
 
 class Site
@@ -116,11 +117,11 @@ class Site
      */
     public function exchangeArray(array $values)
     {
-        if ($domain = array_get($values, 'domain')) {
+        if ($domain = Arr::get($values, 'domain')) {
             $this->setDomain($domain);
         }
 
-        if ($name = array_get($values, 'name')) {
+        if ($name = Arr::get($values, 'name')) {
             $this->setName($name);
         }
 

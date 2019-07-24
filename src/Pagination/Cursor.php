@@ -17,6 +17,8 @@
 
 namespace CloudCreativity\LaravelJsonApi\Pagination;
 
+use Illuminate\Support\Arr;
+
 /**
  * Class Cursor
  *
@@ -56,9 +58,9 @@ class Cursor
         $limitKey = 'limit'
     ) {
         return new self(
-            array_get($parameters, $beforeKey),
-            array_get($parameters, $afterKey),
-            array_get($parameters, $limitKey, 15)
+            Arr::get($parameters, $beforeKey),
+            Arr::get($parameters, $afterKey),
+            Arr::get($parameters, $limitKey, 15)
         );
     }
 

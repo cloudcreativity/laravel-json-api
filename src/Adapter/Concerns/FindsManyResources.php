@@ -18,7 +18,10 @@
 namespace CloudCreativity\LaravelJsonApi\Adapter\Concerns;
 
 use Illuminate\Support\Collection;
+use InvalidArgumentException;
 use Neomerx\JsonApi\Contracts\Document\DocumentInterface;
+use function is_array;
+use function is_string;
 
 /**
  * Trait FindsManyResources
@@ -29,13 +32,12 @@ trait FindsManyResources
 {
 
     /**
-     * @return string
+     * @return string|null
+     * @deprecated 2.0 use `filterKeyForIds()`
      */
     protected function getFindManyKey()
     {
-        $key = property_exists($this, 'findManyFilter') ? $this->findManyFilter : null;
-
-        return $key ?: DocumentInterface::KEYWORD_ID;
+        return $this->filterKeyForIds();
     }
 
     /**
@@ -46,7 +48,11 @@ trait FindsManyResources
      */
     protected function isFindMany(Collection $filters)
     {
-        return $filters->has($this->getFindManyKey());
+        if (!$key = $this->getFindManyKey()) {
+            return false;
+        }
+
+        return $filters->has($key);
     }
 
     /**
@@ -61,11 +67,73 @@ trait FindsManyResources
     }
 
     /**
-     * @param $ids
+     * Get the filter key that is used for a find-many query.
+     *
+     * @return string|null
+     */
+    protected function filterKeyForIds(): ?string
+    {
+        $key = property_exists($this, 'findManyFilter') ? $this->findManyFilter : null;
+
+        return $key ?: DocumentInterface::KEYWORD_ID;
+    }
+
+    /**
+     * @param $resourceIds
+     * @return array
+     * @deprecated 2.0 use `deserializeIdFilter()`
+     */
+    protected function normalizeIds($resourceIds)
+    {
+        return $this->deserializeIdFilter($resourceIds);
+    }
+
+    /**
+     * Normalize the id filter.
+     *
+     * The id filter can either be a comma separated string of resource ids, or an
+     * array of resource ids.
+     *
+     * @param array|string|null $resourceIds
      * @return array
      */
-    protected function normalizeIds($ids)
+    protected function deserializeIdFilter($resourceIds): array
     {
-        return is_array($ids) ? $ids : explode(',', (string) $ids);
+        if (is_string($resourceIds)) {
+            $resourceIds = explode(',', $resourceIds);
+        }
+
+        if (!is_array($resourceIds)) {
+            throw new InvalidArgumentException('Expecting a string or array.');
+        }
+
+        return $this->databaseIds((array) $resourceIds);
+    }
+
+    /**
+     * Convert resource ids to database ids.
+     *
+     * @param iterable $resourceIds
+     * @return array
+     */
+    protected function databaseIds(iterable $resourceIds): array
+    {
+        return collect($resourceIds)->map(function ($resourceId) {
+            return $this->databaseId($resourceId);
+        })->all();
+    }
+
+    /**
+     * Convert a resource id to a database id.
+     *
+     * Child classes can overload this method if they need to perform
+     * any logic to convert a resource id to a database id.
+     *
+     * @param string $resourceId
+     * @return mixed
+     */
+    protected function databaseId(string $resourceId)
+    {
+        return $resourceId;
     }
 }

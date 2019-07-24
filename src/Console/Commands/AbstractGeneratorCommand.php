@@ -23,6 +23,7 @@ use CloudCreativity\LaravelJsonApi\Api\Repository;
 use CloudCreativity\LaravelJsonApi\Utils\Str;
 use Illuminate\Console\GeneratorCommand;
 use Illuminate\Filesystem\Filesystem;
+use Illuminate\Support\Str as IlluminateStr;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 
@@ -203,7 +204,7 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
         $name = ucwords($this->getResourceInput());
 
         if ($this->isByResource()) {
-            return str_plural($name);
+            return IlluminateStr::plural($name);
         }
 
         return $name;
@@ -240,7 +241,7 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
     protected function replaceRecord(&$stub)
     {
         $resource = $this->getResourceName();
-        $stub = str_replace('DummyRecord', Str::classify(str_singular($resource)), $stub);
+        $stub = str_replace('DummyRecord', Str::classify(IlluminateStr::singular($resource)), $stub);
 
         return $this;
     }

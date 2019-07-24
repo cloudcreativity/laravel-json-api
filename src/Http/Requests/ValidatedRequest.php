@@ -34,6 +34,7 @@ use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Validation\ValidatesWhenResolved;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Arr;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use Neomerx\JsonApi\Exceptions\JsonApiException;
 
@@ -116,7 +117,7 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
      */
     public function get($key, $default = null)
     {
-        return array_get($this->all(), $key, $default);
+        return Arr::get($this->all(), $key, $default);
     }
 
     /**

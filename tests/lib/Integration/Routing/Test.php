@@ -142,7 +142,7 @@ class Test extends TestCase
      */
     public function testFluentControllerIsTrue($method, $url, $action)
     {
-        $this->withRoutes(function (RouteRegistrar $api) {
+        $this->withFluentRoutes()->routes(function (RouteRegistrar $api) {
             $api->resource('posts')->controller()->relationships(function (RelationshipsRegistration $rel) {
                 $rel->hasOne('author');
                 $rel->hasMany('tags');
@@ -151,6 +151,27 @@ class Test extends TestCase
         });
 
         $expected = 'DummyApp\Http\Controllers\PostsController';
+
+        $this->assertMatch($method, $url, $expected . $action);
+    }
+
+    /**
+     * @param $method
+     * @param $url
+     * @param $action
+     * @dataProvider defaultsProvider
+     */
+    public function testFluentControllerIsTrueAndSingular($method, $url, $action)
+    {
+        $this->withFluentRoutes()->singularControllers()->routes(function (RouteRegistrar $api) {
+            $api->resource('posts')->controller()->relationships(function (RelationshipsRegistration $rel) {
+                $rel->hasOne('author');
+                $rel->hasMany('tags');
+                $rel->hasMany('comments');
+            });
+        });
+
+        $expected = 'DummyApp\Http\Controllers\PostController';
 
         $this->assertMatch($method, $url, $expected . $action);
     }

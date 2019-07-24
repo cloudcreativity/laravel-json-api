@@ -15,22 +15,32 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\LaravelJsonApi\Tests\Integration;
+namespace CloudCreativity\LaravelJsonApi\Rules;
 
-use CloudCreativity\LaravelJsonApi\Tests\Integration\Http\Controllers\TestEvent;
-use DummyApp\Post;
 use Illuminate\Support\Arr;
 
-class BroadcastingTest extends TestCase
+class HasMany extends HasOne
 {
 
-    public function testBroadcastWith()
+    /**
+     * @inheritDoc
+     */
+    protected function accept(?array $data): bool
     {
-        $post = factory(Post::class)->create();
-        $event = new TestEvent('created', $post);
-        $data = $event->broadcastWith();
+        if (is_null($data)) {
+            return false;
+        }
 
-        $this->assertSame('posts', Arr::get($data, 'data.type'));
-        $this->assertEquals($id = $post->getKey(), Arr::get($data, 'data.id'));
+        if (empty($data)) {
+            return true;
+        }
+
+        if (Arr::isAssoc($data)) {
+            return false;
+        }
+
+        return collect($data)->every(function ($value) {
+            return $this->acceptType($value);
+        });
     }
 }

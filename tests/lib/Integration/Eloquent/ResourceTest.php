@@ -19,6 +19,7 @@ namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Eloquent;
 
 use Carbon\Carbon;
 use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
+use Composer\Semver\Semver;
 use DummyApp\Comment;
 use DummyApp\Post;
 use DummyApp\Tag;
@@ -497,6 +498,8 @@ class ResourceTest extends TestCase
 
     public function testSoftDelete()
     {
+        Event::fake();
+
         $post = factory(Post::class)->create();
 
         $data = [
@@ -509,6 +512,16 @@ class ResourceTest extends TestCase
 
         $this->doUpdate($data)->assertUpdated($data);
         $this->assertSoftDeleted('posts', [$post->getKeyName() => $post->getKey()]);
+
+        Event::assertDispatched("eloquent.deleting: " . Post::class, function ($name, $actual) use ($post) {
+            return $post->is($actual);
+        });
+
+        Event::assertDispatched("eloquent.deleted: " . Post::class, function ($name, $actual) use ($post) {
+            return $post->is($actual);
+        });
+
+        Event::assertNotDispatched("eloquent.forceDeleted: " . Post::class);
     }
 
     public function testSoftDeleteWithBoolean()
@@ -645,10 +658,29 @@ class ResourceTest extends TestCase
      */
     public function testDelete()
     {
-        $model = $this->createPost();
+        Event::fake();
 
-        $this->doDelete($model)->assertDeleted();
-        $this->assertDatabaseMissing('posts', [$model->getKeyName() => $model->getKey()]);
+        $post = $this->createPost();
+
+        $this->doDelete($post)->assertDeleted();
+        $this->assertDatabaseMissing('posts', [$post->getKeyName() => $post->getKey()]);
+
+        Event::assertDispatched("eloquent.deleting: " . Post::class, function ($name, $actual) use ($post) {
+            return $post->is($actual);
+        });
+
+        Event::assertDispatched("eloquent.deleted: " . Post::class, function ($name, $actual) use ($post) {
+            return $post->is($actual);
+        });
+
+        /**
+         * Force deleted event was added in Laravel 5.6.
+         */
+        if (Semver::satisfies($this->app->version(), '>=5.6')) {
+            Event::assertDispatched("eloquent.forceDeleted: " . Post::class, function ($name, $actual) use ($post) {
+                return $post->is($actual);
+            });
+        }
     }
 
     /**
