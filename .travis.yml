@@ -27,7 +27,7 @@ matrix:
     - php: 7.2
       env:
         - LARAVEL_VERSION=5.9.*
-        - PHPUNIT_VERSION=^7.0
+        - PHPUNIT_VERSION=^8.0
     - php: 7.3
       env:
         - LARAVEL_VERSION=5.5.*
@@ -39,7 +39,7 @@ matrix:
     - php: 7.3
       env:
         - LARAVEL_VERSION=5.9.*
-        - PHPUNIT_VERSION=^7.5
+        - PHPUNIT_VERSION=^8.0
 
 install:
   - composer require "laravel/framework:${LARAVEL_VERSION}" --no-update -n

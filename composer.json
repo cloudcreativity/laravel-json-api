@@ -44,7 +44,7 @@
         "guzzlehttp/guzzle": "^6.3",
         "mockery/mockery": "^1.1",
         "orchestra/testbench": "3.5.*|3.6.*|3.7.*|3.8.*|3.9.*",
-        "phpunit/phpunit": "^6.0|^7.0"
+        "phpunit/phpunit": "^6.0|^7.0|^8.0"
     },
     "suggest": {
         "cloudcreativity/json-api-testing": "Required to use the test helpers."

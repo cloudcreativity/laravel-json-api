@@ -40,7 +40,7 @@ class RelationshipsTest extends TestCase
      */
     private $data;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $belongsTo = new stdClass();
         $belongsTo->{ResourceIdentifier::TYPE} = 'foo';
