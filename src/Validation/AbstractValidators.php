@@ -121,6 +121,7 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
      * Null = clients can specify any filtering fields they want.
      *
      * @var string[]|null
+     * @todo 3.0.0 make this `[]` by default, as we now loop through filter parameters.
      */
     protected $allowedFilteringParameters = null;
 

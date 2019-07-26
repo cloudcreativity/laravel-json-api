@@ -93,6 +93,32 @@ class Post extends Model
     }
 
     /**
+     * @param Builder $query
+     * @param bool $published
+     * @return Builder
+     */
+    public function scopePublished(Builder $query, bool $published = true): Builder
+    {
+        if ($published) {
+            $query->whereNotNull('published_at');
+        } else {
+            $query->whereNull('published_at');
+        }
+
+        return $query;
+    }
+
+    /**
+     * @param Builder $query
+     * @param string $title
+     * @return Builder
+     */
+    public function scopeLikeTitle(Builder $query, string $title): Builder
+    {
+        return $query->where('title', 'like', $title . '%');
+    }
+
+    /**
      * @return bool
      */
     protected function getPublishedAttribute()
