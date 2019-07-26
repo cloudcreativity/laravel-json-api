@@ -21,7 +21,6 @@ namespace CloudCreativity\LaravelJsonApi;
 use CloudCreativity\LaravelJsonApi\Api\Repository;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Exceptions\ExceptionParserInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Factories\FactoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Repositories\ErrorRepositoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
@@ -47,7 +46,7 @@ use Neomerx\JsonApi\Contracts\Encoder\Handlers\HandlerFactoryInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Parser\ParserFactoryInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Stack\StackFactoryInterface;
-use Neomerx\JsonApi\Contracts\Factories\FactoryInterface as NeomerxFactoryInterface;
+use Neomerx\JsonApi\Contracts\Factories\FactoryInterface;
 use Neomerx\JsonApi\Contracts\Http\Headers\HeaderParametersInterface;
 use Neomerx\JsonApi\Contracts\Http\Headers\HeaderParametersParserInterface;
 use Neomerx\JsonApi\Contracts\Http\HttpFactoryInterface;
@@ -199,7 +198,6 @@ class ServiceProvider extends BaseServiceProvider
         });
 
         $this->app->alias(Factory::class, FactoryInterface::class);
-        $this->app->alias(Factory::class, NeomerxFactoryInterface::class);
         $this->app->alias(Factory::class, DocumentFactoryInterface::class);
         $this->app->alias(Factory::class, HandlerFactoryInterface::class);
         $this->app->alias(Factory::class, HttpFactoryInterface::class);

@@ -18,10 +18,6 @@
 
 namespace CloudCreativity\LaravelJsonApi\Http\Query;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Factories\FactoryInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Validators\QueryValidatorInterface;
-use Neomerx\JsonApi\Contracts\Http\Query\QueryCheckerInterface;
-
 /**
  * Trait ChecksQueryParameters
  *
@@ -131,24 +127,6 @@ trait ChecksQueryParameters
         }
 
         return [];
-    }
-
-    /**
-     * @param FactoryInterface $factory
-     * @param QueryValidatorInterface|null $queryValidator
-     * @return QueryCheckerInterface
-     */
-    protected function createQueryChecker(FactoryInterface $factory, QueryValidatorInterface $queryValidator = null)
-    {
-        return $factory->createExtendedQueryChecker(
-            $this->allowUnrecognizedParameters(),
-            $this->allowedIncludePaths(),
-            $this->allowedFieldSetTypes(),
-            $this->allowedSortParameters(),
-            $this->allowedPagingParameters(),
-            $this->allowedFilteringParameters(),
-            $queryValidator
-        );
     }
 
 }

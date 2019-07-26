@@ -32,14 +32,12 @@ use CloudCreativity\LaravelJsonApi\Codec\Encoding;
 use CloudCreativity\LaravelJsonApi\Container;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Encoder\SerializerInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Factories\FactoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\ContentNegotiatorInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Repositories\ErrorRepositoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validation\DocumentValidatorInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Validators\QueryValidatorInterface;
 use CloudCreativity\LaravelJsonApi\Document\ResourceObject;
 use CloudCreativity\LaravelJsonApi\Encoder\Encoder;
 use CloudCreativity\LaravelJsonApi\Encoder\Parameters\EncodingParameters;
@@ -58,8 +56,6 @@ use CloudCreativity\LaravelJsonApi\Store\Store;
 use CloudCreativity\LaravelJsonApi\Utils\Replacer;
 use CloudCreativity\LaravelJsonApi\Validation;
 use CloudCreativity\LaravelJsonApi\Validation\ErrorTranslator;
-use CloudCreativity\LaravelJsonApi\Validators\ValidatorErrorFactory;
-use CloudCreativity\LaravelJsonApi\Validators\ValidatorFactory;
 use Illuminate\Contracts\Container\Container as IlluminateContainer;
 use Illuminate\Contracts\Routing\UrlGenerator as IlluminateUrlGenerator;
 use Illuminate\Contracts\Translation\Translator;
@@ -80,7 +76,7 @@ use function CloudCreativity\LaravelJsonApi\json_decode;
  *
  * @package CloudCreativity\LaravelJsonApi
  */
-class Factory extends BaseFactory implements FactoryInterface
+class Factory extends BaseFactory
 {
 
     /**
