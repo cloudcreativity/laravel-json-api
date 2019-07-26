@@ -21,7 +21,7 @@ use CloudCreativity\LaravelJsonApi\Container;
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\ResourceAdapterInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Auth\AuthorizerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorProviderInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use Illuminate\Container\Container as IlluminateContainer;
 use League\Flysystem\AdapterInterface;
@@ -170,7 +170,7 @@ class ContainerTest extends TestCase
 
     public function testValidators()
     {
-        $validators = $this->createMock(ValidatorProviderInterface::class);
+        $validators = $this->createMock(ValidatorFactoryInterface::class);
 
         $this->illuminateContainer
             ->expects($this->once())
@@ -190,8 +190,8 @@ class ContainerTest extends TestCase
 
     public function testValidatorsCreateReturnsNull()
     {
-        $this->resolver->method('getValidatorsByResourceType')->willReturn(ValidatorProviderInterface::class);
-        $this->illuminateContainer->expects($this->never())->method('make')->with(ValidatorProviderInterface::class);
+        $this->resolver->method('getValidatorsByResourceType')->willReturn(ValidatorFactoryInterface::class);
+        $this->illuminateContainer->expects($this->never())->method('make')->with(ValidatorFactoryInterface::class);
 
         $this->assertNull($this->container->getValidatorsByResourceType('posts'));
         $this->assertNull($this->container->getValidatorsByType(\stdClass::class));

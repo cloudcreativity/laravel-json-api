@@ -17,26 +17,11 @@
 
 namespace DummyApp\JsonApi\Comments;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Validators\RelationshipsValidatorInterface;
-use CloudCreativity\LaravelJsonApi\Validators\AbstractValidatorProvider;
+use CloudCreativity\LaravelJsonApi\Rules\HasOne;
+use CloudCreativity\LaravelJsonApi\Validation\AbstractValidators;
 
-class Validators extends AbstractValidatorProvider
+class Validators extends AbstractValidators
 {
-
-    /**
-     * @var string
-     */
-    protected $resourceType = 'comments';
-
-    /**
-     * @var array
-     */
-    protected $queryRules = [
-        'page.after' => 'filled|integer|min:1',
-        'page.before' => 'filled|integer|min:1',
-        'page.limit' => 'filled|integer|between:1,50',
-        'filter.created-by' => 'filled|numeric',
-    ];
 
     /**
      * @var array
@@ -60,21 +45,28 @@ class Validators extends AbstractValidatorProvider
     /**
      * @inheritdoc
      */
-    protected function attributeRules($record = null)
+    protected function rules($record = null): array
     {
-        $required = is_null($record) ? 'required' : 'filled';
-
         return [
-            'content' => "$required|string|min:1",
+            'content' => "required|string|min:1",
+            'commentable' => [
+                new HasOne('posts', 'videos'),
+            ],
         ];
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    protected function relationshipRules(RelationshipsValidatorInterface $relationships, $record = null)
+    protected function queryRules(): array
     {
-        $relationships->hasOne('commentable', ['posts', 'videos'], is_null($record), true);
+        return [
+            'page.after' => 'filled|integer|min:1',
+            'page.before' => 'filled|integer|min:1',
+            'page.limit' => 'filled|integer|between:1,50',
+            'filter.created-by' => 'filled|numeric',
+        ];
     }
+
 
 }

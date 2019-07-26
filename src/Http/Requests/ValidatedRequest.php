@@ -23,7 +23,6 @@ use CloudCreativity\LaravelJsonApi\Contracts\Object\DocumentInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validation\DocumentValidatorInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorProviderInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\DocumentRequiredException;
 use CloudCreativity\LaravelJsonApi\Exceptions\ValidationException;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
@@ -323,7 +322,7 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
     /**
      * Get the resource validators.
      *
-     * @return ValidatorFactoryInterface|ValidatorProviderInterface|null
+     * @return ValidatorFactoryInterface|null
      */
     protected function getValidators()
     {
@@ -333,7 +332,7 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
     /**
      * Get the inverse resource validators.
      *
-     * @return ValidatorFactoryInterface|ValidatorProviderInterface|null
+     * @return ValidatorFactoryInterface|null
      */
     protected function getInverseValidators()
     {

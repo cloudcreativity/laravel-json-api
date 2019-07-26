@@ -285,18 +285,15 @@ class ErrorsTest extends TestCase
     {
         $ex = new TokenMismatchException("The token is not valid.");
 
+        $expected = [
+            'title' => 'Invalid Token',
+            'detail' => 'The token is not valid.',
+            'status' => '419',
+        ];
+
         $this->request($ex)
-            ->assertStatus(419)
-            ->assertHeader('Content-Type', 'application/vnd.api+json')
-            ->assertExactJson([
-                'errors' => [
-                    [
-                        'title' => 'Invalid Token',
-                        'detail' => 'The token is not valid.',
-                        'status' => '419',
-                    ],
-                ],
-            ]);
+            ->assertErrorStatus($expected)
+            ->assertHeader('Content-Type', 'application/vnd.api+json');
     }
 
     /**

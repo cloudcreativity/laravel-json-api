@@ -2,6 +2,13 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## 2.x
+
+### Removed
+- The previously deprecated `0.x` validation implementation was removed. This deletes all interfaces
+in the `Contracts\Validators` namespace, and classes in the `Validators` namespace. You should
+use the [documented validation implementation](./docs/basics/validators.md) instead.
+
 ## Unreleased
 
 ### Added

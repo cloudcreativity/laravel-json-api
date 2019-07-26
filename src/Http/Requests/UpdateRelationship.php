@@ -17,10 +17,6 @@
 
 namespace CloudCreativity\LaravelJsonApi\Http\Requests;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorProviderInterface;
-use CloudCreativity\LaravelJsonApi\Exceptions\ValidationException;
-use CloudCreativity\LaravelJsonApi\Object\Document;
-
 class UpdateRelationship extends ValidatedRequest
 {
 
@@ -47,20 +43,11 @@ class UpdateRelationship extends ValidatedRequest
      */
     protected function validateQuery()
     {
-        if (!$validators = $this->getInverseValidators()) {
-            return;
+        if ($validators = $this->getInverseValidators()) {
+            $this->passes(
+                $validators->modifyRelationshipQuery($this->query())
+            );
         }
-
-        /** Pre-1.0 validators */
-        if ($validators instanceof ValidatorProviderInterface) {
-            $validators->relationshipQueryChecker()->checkQuery($this->getEncodingParameters());
-            return;
-        }
-
-        /** 1.0 validators */
-        $this->passes(
-            $validators->modifyRelationshipQuery($this->query())
-        );
     }
 
     /**
@@ -70,12 +57,6 @@ class UpdateRelationship extends ValidatedRequest
     {
         $document = $this->decodeOrFail();
         $validators = $this->getValidators();
-
-        /** Pre-1.0 validators */
-        if ($validators instanceof ValidatorProviderInterface) {
-            $this->validateDocumentWithProvider($validators, $document);
-            return;
-        }
 
         /** Check the document is compliant with the JSON API spec. */
         $this->passes(
@@ -89,24 +70,6 @@ class UpdateRelationship extends ValidatedRequest
                 $this->getRelationshipName(),
                 $this->all()
             ));
-        }
-    }
-
-    /**
-     * @param ValidatorProviderInterface $validators
-     * @param $document
-     * @deprecated 2.0.0
-     */
-    protected function validateDocumentWithProvider(ValidatorProviderInterface $validators, $document)
-    {
-        $validator = $validators->modifyRelationship(
-            $this->getResourceId(),
-            $this->getRelationshipName(),
-            $this->getRecord()
-        );
-
-        if (!$validator->isValid(new Document($document), $this->getRecord())) {
-            throw new ValidationException($validator->getErrors());
         }
     }
 

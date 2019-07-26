@@ -535,7 +535,7 @@ class ResourceValidationTest extends TestCase
         $this->actingAsUser()->doCreate($data)->assertStatus(400)->assertJson([
             'errors' => [
                 [
-                    'detail' => "Resource type 'post' is not recognised.",
+                    'detail' => "Resource type post is not recognised.",
                     'status' => '400',
                     'source' => [
                         'pointer' => '/data/relationships/commentable/data/type',

@@ -17,16 +17,10 @@
 
 namespace DummyApp\JsonApi\Sites;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Validators\RelationshipsValidatorInterface;
-use CloudCreativity\LaravelJsonApi\Validators\AbstractValidatorProvider;
+use CloudCreativity\LaravelJsonApi\Validation\AbstractValidators;
 
-class Validators extends AbstractValidatorProvider
+class Validators extends AbstractValidators
 {
-
-    /**
-     * @var string
-     */
-    protected $resourceType = 'sites';
 
     /**
      * @var array
@@ -38,22 +32,21 @@ class Validators extends AbstractValidatorProvider
     /**
      * @inheritdoc
      */
-    protected function attributeRules($record = null)
+    protected function rules($record = null): array
     {
-        $required = $record ? 'sometimes|required' : 'required';
-
         return [
-            'domain' => "$required|url",
-            'name' => "$required|string|min:1",
+            'id' => 'required|string',
+            'domain' => "required|url",
+            'name' => "required|string|min:1",
         ];
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    protected function relationshipRules(RelationshipsValidatorInterface $relationships, $record = null)
+    protected function queryRules(): array
     {
-        // no-op
+        return [];
     }
 
 }
