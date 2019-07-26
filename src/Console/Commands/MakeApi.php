@@ -18,6 +18,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Console\Commands;
 
+use CloudCreativity\LaravelJsonApi\LaravelJsonApi;
 use CloudCreativity\LaravelJsonApi\Utils\Str;
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
@@ -48,7 +49,7 @@ class MakeApi extends Command
      */
     public function handle(Filesystem $files)
     {
-        $name = $this->argument('name') ?: $this->laravel->make('json-api')->defaultApi();
+        $name = $this->argument('name') ?: LaravelJsonApi::$defaultApi;
 
         if (!$name) {
             $this->error('Invalid JSON API name.');

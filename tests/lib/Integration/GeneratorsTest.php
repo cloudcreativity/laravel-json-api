@@ -17,7 +17,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration;
 
-use CloudCreativity\LaravelJsonApi\Facades\JsonApi;
+use CloudCreativity\LaravelJsonApi\LaravelJsonApi;
 use Illuminate\Filesystem\Filesystem;
 
 class GeneratorsTest extends TestCase
@@ -66,6 +66,8 @@ class GeneratorsTest extends TestCase
     {
         parent::tearDown();
 
+        LaravelJsonApi::defaultApi('v1');
+
         $directories = [
             "{$this->path}/app/JsonApi/Companies",
             "{$this->path}/app/JsonApi/Adapters",
@@ -112,7 +114,7 @@ class GeneratorsTest extends TestCase
      */
     public function testGeneratesDefaultApi()
     {
-        JsonApi::defaultApi('default');
+        LaravelJsonApi::defaultApi('default');
 
         $result = $this->artisan('make:json-api');
 

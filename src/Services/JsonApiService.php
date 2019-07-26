@@ -21,12 +21,10 @@ use Closure;
 use CloudCreativity\LaravelJsonApi\Api\Api;
 use CloudCreativity\LaravelJsonApi\Api\Repository;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
-use CloudCreativity\LaravelJsonApi\Http\Requests\JsonApiRequest;
 use CloudCreativity\LaravelJsonApi\LaravelJsonApi;
 use CloudCreativity\LaravelJsonApi\Routing\ApiRegistration;
 use CloudCreativity\LaravelJsonApi\Routing\JsonApiRegistrar;
 use CloudCreativity\LaravelJsonApi\Routing\Route;
-use Illuminate\Contracts\Container\Container;
 
 /**
  * Class JsonApiService
@@ -35,39 +33,6 @@ use Illuminate\Contracts\Container\Container;
  */
 class JsonApiService
 {
-
-    /**
-     * @var Container
-     */
-    private $container;
-
-    /**
-     * JsonApiService constructor.
-     *
-     * @param Container $container
-     */
-    public function __construct(Container $container)
-    {
-        $this->container = $container;
-    }
-
-    /**
-     * Set or get the default API name.
-     *
-     * @param string|null $apiName
-     * @return string
-     * @deprecated 2.0.0 setting the API name via this method will be removed (getter will remain).
-     */
-    public function defaultApi($apiName = null)
-    {
-        if (is_null($apiName)) {
-            return LaravelJsonApi::$defaultApi;
-        }
-
-        LaravelJsonApi::defaultApi($apiName);
-
-        return $apiName;
-    }
 
     /**
      * Get an API by name.
@@ -80,9 +45,9 @@ class JsonApiService
     public function api($apiName = null)
     {
         /** @var Repository $repo */
-        $repo = $this->container->make(Repository::class);
+        $repo = app(Repository::class);
 
-        return $repo->createApi($apiName ?: $this->defaultApi());
+        return $repo->createApi($apiName ?: LaravelJsonApi::$defaultApi);
     }
 
     /**
@@ -92,18 +57,7 @@ class JsonApiService
      */
     public function currentRoute(): Route
     {
-        return $this->container->make(Route::class);
-    }
-
-    /**
-     * Get the JSON API request.
-     *
-     * @return JsonApiRequest
-     * @deprecated 2.0.0 use `current()`
-     */
-    public function request()
-    {
-        return $this->container->make('json-api.request');
+        return app(Route::class);
     }
 
     /**
@@ -114,11 +68,11 @@ class JsonApiService
      */
     public function requestApi()
     {
-        if (!$this->container->bound('json-api.inbound')) {
+        if (!app()->bound('json-api.inbound')) {
             return null;
         }
 
-        return $this->container->make('json-api.inbound');
+        return app('json-api.inbound');
     }
 
     /**
@@ -156,7 +110,7 @@ class JsonApiService
     public function register($apiName, $options = [], Closure $routes = null): ApiRegistration
     {
         /** @var JsonApiRegistrar $registrar */
-        $registrar = $this->container->make('json-api.registrar');
+        $registrar = app('json-api.registrar');
 
         return $registrar->api($apiName, $options, $routes);
     }

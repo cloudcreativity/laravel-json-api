@@ -67,7 +67,6 @@ namespace {
 
     use CloudCreativity\LaravelJsonApi\Api\Api;
     use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
-    use CloudCreativity\LaravelJsonApi\Http\Requests\JsonApiRequest;
 
     if (!function_exists('json_api')) {
         /**
@@ -84,16 +83,6 @@ namespace {
             }
 
             return app('json-api')->requestApiOrDefault();
-        }
-
-        /**
-         * Get the inbound JSON API request.
-         *
-         * @return JsonApiRequest
-         * @deprecated 2.0.0 use `\JsonApi::current()`
-         */
-        function json_api_request() {
-            return app('json-api')->request();
         }
     }
 }

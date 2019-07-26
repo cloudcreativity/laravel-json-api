@@ -8,9 +8,15 @@ All notable changes to this project will be documented in this file. This projec
 - The deprecated `0.x` validation implementation was removed. This deletes all interfaces
 in the `Contracts\Validators` namespace, and classes in the `Validators` namespace. You should
 use the [documented validation implementation](./docs/basics/validators.md) instead.
+- The deprecated `json_api_request()` helper was removed.
+- The following methods were removed from the JSON API service (and are therefore no
+longer available via the facade):
+  - `request()`: use `currentRoute()` instead.
+  - `defaultApi()`: set the default API via `LaravelJsonApi::defaultApi()` instead.
 - Additionally, the following deprecated interfaces, classes and traits were removed:
   - `Contracts\Factories\FactoryInterface`
   - `Http\Query\ChecksQueryParameters` trait.
+  - `Http\Requests\JsonApiRequest`
 
 ## Unreleased
 

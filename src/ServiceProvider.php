@@ -29,7 +29,6 @@ use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use CloudCreativity\LaravelJsonApi\Http\Middleware\Authorize;
 use CloudCreativity\LaravelJsonApi\Http\Middleware\BootJsonApi;
 use CloudCreativity\LaravelJsonApi\Http\Middleware\NegotiateContent;
-use CloudCreativity\LaravelJsonApi\Http\Requests\JsonApiRequest;
 use CloudCreativity\LaravelJsonApi\Queue\UpdateClientProcess;
 use CloudCreativity\LaravelJsonApi\Routing\JsonApiRegistrar;
 use CloudCreativity\LaravelJsonApi\Routing\Route;
@@ -231,9 +230,6 @@ class ServiceProvider extends BaseServiceProvider
      */
     protected function bindInboundRequest()
     {
-        $this->app->singleton(JsonApiRequest::class);
-        $this->app->alias(JsonApiRequest::class, 'json-api.request');
-
         $this->app->singleton(Route::class, function (Application $app) {
             return new Route(
                 $app->make(ResolverInterface::class),
