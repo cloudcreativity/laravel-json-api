@@ -468,18 +468,6 @@ class Api
     }
 
     /**
-     * @return ValidatorFactoryInterface
-     * @deprecated 2.0.0
-     */
-    public function validators()
-    {
-        return $this->factory->createValidatorFactory(
-            $this->getErrors(),
-            $this->getStore()
-        );
-    }
-
-    /**
      * Register a resource provider with this API.
      *
      * @param AbstractProvider $provider

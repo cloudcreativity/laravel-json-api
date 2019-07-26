@@ -8,8 +8,9 @@ All notable changes to this project will be documented in this file. This projec
 - The deprecated `0.x` validation implementation was removed. This deletes all interfaces
 in the `Contracts\Validators` namespace, and classes in the `Validators` namespace. You should
 use the [documented validation implementation](./docs/basics/validators.md) instead.
-- Additionally, the following deprecated interfaces/classes were removed:
+- Additionally, the following deprecated interfaces, classes and traits were removed:
   - `Contracts\Factories\FactoryInterface`
+  - `Http\Query\ChecksQueryParameters` trait.
 
 ## Unreleased
 

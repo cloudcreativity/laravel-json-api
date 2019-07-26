@@ -33,7 +33,6 @@ use CloudCreativity\LaravelJsonApi\Container;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Encoder\SerializerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\ContentNegotiatorInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Repositories\ErrorRepositoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validation\DocumentValidatorInterface;
@@ -44,7 +43,6 @@ use CloudCreativity\LaravelJsonApi\Encoder\Parameters\EncodingParameters;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Http\ContentNegotiator;
 use CloudCreativity\LaravelJsonApi\Http\Headers\RestrictiveHeadersChecker;
-use CloudCreativity\LaravelJsonApi\Http\Query\ValidationQueryChecker;
 use CloudCreativity\LaravelJsonApi\Http\Responses\ErrorResponse;
 use CloudCreativity\LaravelJsonApi\Http\Responses\Responses;
 use CloudCreativity\LaravelJsonApi\Object\Document;
@@ -221,30 +219,6 @@ class Factory extends BaseFactory
     /**
      * @inheritDoc
      */
-    public function createExtendedQueryChecker(
-        $allowUnrecognized = false,
-        array $includePaths = null,
-        array $fieldSetTypes = null,
-        array $sortParameters = null,
-        array $pagingParameters = null,
-        array $filteringParameters = null,
-        QueryValidatorInterface $validator = null
-    ) {
-        $checker = $this->createQueryChecker(
-            $allowUnrecognized,
-            $includePaths,
-            $fieldSetTypes,
-            $sortParameters,
-            $pagingParameters,
-            $filteringParameters
-        );
-
-        return new ValidationQueryChecker($checker, $validator);
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function createPage(
         $data,
         LinkInterface $first = null,
@@ -255,17 +229,6 @@ class Factory extends BaseFactory
         $metaKey = null
     ) {
         return new Page($data, $first, $previous, $next, $last, $meta, $metaKey);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function createValidatorFactory(ErrorRepositoryInterface $errors, StoreInterface $store)
-    {
-        /** @var ValidatorFactoryContract $laravelFactory */
-        $laravelFactory = $this->container->make(ValidatorFactoryContract::class);
-
-        return new ValidatorFactory($this->createValidatorErrorFactory($errors), $store, $laravelFactory);
     }
 
     /**
@@ -572,16 +535,6 @@ class Factory extends BaseFactory
                 return $this->invalidQueryParameter($key, $detail, $failed);
             }
         );
-    }
-
-    /**
-     * @param ErrorRepositoryInterface $errors
-     * @return ValidatorErrorFactory
-     * @deprecated 2.0.0
-     */
-    protected function createValidatorErrorFactory(ErrorRepositoryInterface $errors)
-    {
-        return new ValidatorErrorFactory($errors);
     }
 
     /**
