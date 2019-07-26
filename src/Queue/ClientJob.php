@@ -21,7 +21,6 @@ use Carbon\Carbon;
 use CloudCreativity\LaravelJsonApi\Api\Api;
 use CloudCreativity\LaravelJsonApi\Contracts\Queue\AsynchronousProcess;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
-use CloudCreativity\LaravelJsonApi\Object\ResourceIdentifier;
 use Illuminate\Database\Eloquent\Model;
 use Ramsey\Uuid\Uuid;
 
@@ -223,7 +222,8 @@ class ClientJob extends Model implements AsynchronousProcess
         }
 
         return $this->getApi()->getStore()->find(
-            ResourceIdentifier::create($this->resource_type, (string) $this->resource_id)
+            $this->resource_type,
+            (string) $this->resource_id
         );
     }
 

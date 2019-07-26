@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Copyright 2019 Cloud Creativity Limited
  *
@@ -18,8 +17,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Store;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceIdentifierInterface;
-use CloudCreativity\LaravelJsonApi\Exceptions\InvalidArgumentException;
+use InvalidArgumentException;
 
 /**
  * Class IdentityMap
@@ -41,37 +39,37 @@ class IdentityMap
      * record itself. However, a boolean cannot be inserted into the map if the map already holds the
      * record itself.
      *
-     * @param ResourceIdentifierInterface $identifier
-     * @param object|bool $record
-     * @return $this
+     * @param string $type
+     * @param string $id
+     * @param mixed|bool $record
+     * @return void
      */
-    public function add(ResourceIdentifierInterface $identifier, $record)
+    public function add(string $type, string $id, $record): void
     {
         if (!is_object($record) && !is_bool($record)) {
             throw new InvalidArgumentException('Expecting an object or a boolean to add to the identity map.');
         }
 
-        $existing = $this->lookup($identifier);
+        $existing = $this->lookup($type, $id);
 
         if (is_object($existing) && is_bool($record)) {
             throw new InvalidArgumentException('Attempting to push a boolean into the map in place of an object.');
         }
 
-        $this->map[$identifier->toString()] = $record;
-
-        return $this;
+        $this->map[$this->key($type, $id)] = $record;
     }
 
     /**
      * Does the identity map know that ths supplied identifier exists?
      *
-     * @param ResourceIdentifierInterface $identifier
+     * @param string $type
+     * @param string $id
      * @return bool|null
      *      the answer, or null if the identity map does not know
      */
-    public function exists(ResourceIdentifierInterface $identifier)
+    public function exists(string $type, string $id): ?bool
     {
-        $record = $this->lookup($identifier);
+        $record = $this->lookup($type, $id);
 
         return is_object($record) ? true : $record;
     }
@@ -79,13 +77,14 @@ class IdentityMap
     /**
      * Get the record from the identity map.
      *
-     * @param ResourceIdentifierInterface $identifier
+     * @param string $type
+     * @param string $id
      * @return object|bool|null
      *      the record, false if it is known not to exist, or null if the identity map does not have the object.
      */
-    public function find(ResourceIdentifierInterface $identifier)
+    public function find(string $type, string $id)
     {
-        $record = $this->lookup($identifier);
+        $record = $this->lookup($type, $id);
 
         if (false === $record) {
             return false;
@@ -95,13 +94,24 @@ class IdentityMap
     }
 
     /**
-     * @param ResourceIdentifierInterface $identifier
-     * @return object|bool|null
+     * @param string $type
+     * @param string $id
+     * @return mixed|bool|null
      */
-    private function lookup(ResourceIdentifierInterface $identifier)
+    private function lookup(string $type, string $id)
     {
-        $key = $identifier->toString();
+        $key = $this->key($type, $id);
 
-        return isset($this->map[$key]) ? $this->map[$key] : null;
+        return $this->map[$key] ?? null;
+    }
+
+    /**
+     * @param string $type
+     * @param string $id
+     * @return string
+     */
+    private function key(string $type, string $id): string
+    {
+        return "{$type}:{$id}";
     }
 }

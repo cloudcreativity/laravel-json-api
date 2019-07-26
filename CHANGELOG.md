@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. This projec
 
 ## 2.x
 
+### Changed
+- Amended the store interface so that it always takes a string resource type and string id,
+instead of the deprecated resource identifier object.
+
 ### Removed
 - The deprecated `0.x` validation implementation was removed. This deletes all interfaces
 in the `Contracts\Validators` namespace, and classes in the `Validators` namespace. You should

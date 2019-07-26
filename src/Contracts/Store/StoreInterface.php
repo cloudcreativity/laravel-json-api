@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Copyright 2019 Cloud Creativity Limited
  *
@@ -19,12 +18,8 @@
 namespace CloudCreativity\LaravelJsonApi\Contracts\Store;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\ResourceAdapterInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceIdentifierCollectionInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceIdentifierInterface;
-use CloudCreativity\LaravelJsonApi\Exceptions\RecordNotFoundException;
 use CloudCreativity\LaravelJsonApi\Exceptions\ResourceNotFoundException;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
-use Illuminate\Support\Collection;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 /**
@@ -46,10 +41,10 @@ interface StoreInterface
     /**
      * Is the supplied resource type valid?
      *
-     * @param $resourceType
+     * @param string $resourceType
      * @return bool
      */
-    public function isType($resourceType);
+    public function isType(string $resourceType): bool;
 
     /**
      * Query the store for records using the supplied parameters.
@@ -208,7 +203,7 @@ interface StoreInterface
      * @param array $document
      *      the JSON API document received from the client.
      * @param EncodingParametersInterface $params
-     * @return object
+     * @return mixed
      *      the updated domain record.
      * @throws RuntimeException
      *      if the relationship object is a has-one relationship.
@@ -223,52 +218,37 @@ interface StoreInterface
     /**
      * Does the specified resource exist?
      *
-     * @param ResourceIdentifierInterface|string $type
-     * @param string|null $id
+     * @param string $type
+     * @param string $id
      * @return bool
-     * @todo in 2.0.0 this will only accept type and id, not a resource identifier object.
      */
-    public function exists($type, $id = null);
+    public function exists(string $type, string $id): bool;
 
     /**
      * Find the domain record for the specified resource.
      *
-     * @param ResourceIdentifierInterface|array|string $type
-     *      the resource identifier, or the string resource type.
-     * @param string|null $id
-     *      the resource id, required if `$type` is a string.
-     * @return object|null
+     * @param string $type
+     *      the resource type.
+     * @param string $id
+     *      the resource id.
+     * @return mixed|null
      *      the record, or null if it does not exist.
-     * @todo in 2.0.0 this will only accept type and id, not a resource identifier object.
      */
-    public function find($type, $id = null);
+    public function find(string $type, string $id);
 
     /**
      * Find the domain record that this resource identifier refers to, or fail if it cannot be found.
      *
-     * @param ResourceIdentifierInterface|array|string $type
-     *      the resource identifier, or the string resource type.
-     * @param string|null $id
-     *      the resource id, required if `$type` is a string.
-     * @return object|null
+     * @param string $type
+     *      the resource type.
+     * @param string $id
+     *      the resource id.
+     * @return mixed|null
      *      the record, or null if it does not exist.
      * @throws ResourceNotFoundException
      *      if the record does not exist.
-     * @throws RecordNotFoundException
-     *      if the record does not exist and a resource identifier is provided.
-     * @todo in 2.0.0 this will only accept type and id, not a resource identifier object.
      */
-    public function findOrFail($type, $id = null);
-
-    /**
-     * @param ResourceIdentifierInterface $identifier
-     * @return object
-     *      the record
-     * @throws RecordNotFoundException
-     *      if the record does not exist.
-     * @deprecated 2.0.0 use `find`
-     */
-    public function findRecord(ResourceIdentifierInterface $identifier);
+    public function findOrFail(string $type, string $id);
 
     /**
      * Find a related record for a to-one relationship.
@@ -283,10 +263,10 @@ interface StoreInterface
      * Find related records for a to-many relationship.
      *
      * @param array $relationship
-     * @return Collection
+     * @return iterable
      *      containing the related domain records.
      */
-    public function findToMany(array $relationship);
+    public function findToMany(array $relationship): iterable;
 
     /**
      * Find many domain records using the supplied resource identifiers.
@@ -297,16 +277,17 @@ interface StoreInterface
      * identifiers, it must still return a collection - i.e. the returned collection can
      * be of a length shorter than the collection of identifiers.
      *
-     * @param ResourceIdentifierCollectionInterface|array $identifiers
-     * @return array
-     *      an array of domain records that match the supplied identifiers.
+     * @param array $identifiers
+     * @return iterable
+     *      the domain records that match the supplied identifiers.
      */
-    public function findMany($identifiers);
+    public function findMany(iterable $identifiers): iterable;
 
     /**
      * Get the adapter for the supplied JSON API resource type or domain record.
      *
-     * @param string|object $resourceType
+     * @param string|mixed $resourceType
+     *      the resource type (string), or the domain record (object).
      * @return ResourceAdapterInterface
      */
     public function adapterFor($resourceType);

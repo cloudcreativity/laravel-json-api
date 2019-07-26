@@ -91,7 +91,7 @@ interface ResourceAdapterInterface
      * @param string $resourceId
      * @return bool
      */
-    public function exists($resourceId);
+    public function exists(string $resourceId): bool;
 
     /**
      * Get the domain record that relates to the specified JSON API resource id, if it exists.
@@ -99,7 +99,7 @@ interface ResourceAdapterInterface
      * @param string $resourceId
      * @return mixed|null
      */
-    public function find($resourceId);
+    public function find(string $resourceId);
 
     /**
      * Find many domain records for the specified JSON API resource ids.
@@ -110,16 +110,16 @@ interface ResourceAdapterInterface
      * may contain less domain records than the supplied number of ids.
      *
      * @param array $resourceIds
-     * @return array
+     * @return iterable
      */
-    public function findMany(array $resourceIds);
+    public function findMany(iterable $resourceIds): iterable;
 
     /**
      * Get the relationship adapter for the specified relationship.
      *
-     * @param $field
+     * @param string $field
      * @return RelationshipAdapterInterface
      */
-    public function getRelated($field);
+    public function getRelated(string $field): RelationshipAdapterInterface;
 
 }

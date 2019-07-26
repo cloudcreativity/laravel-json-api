@@ -62,7 +62,7 @@ class Adapter extends AbstractResourceAdapter
     /**
      * @inheritdoc
      */
-    public function exists($resourceId)
+    public function exists(string $resourceId): bool
     {
         return !is_null($this->find($resourceId));
     }
@@ -70,7 +70,7 @@ class Adapter extends AbstractResourceAdapter
     /**
      * @inheritdoc
      */
-    public function find($resourceId)
+    public function find(string $resourceId)
     {
         return $this->repository->find($resourceId);
     }
@@ -78,7 +78,7 @@ class Adapter extends AbstractResourceAdapter
     /**
      * @inheritDoc
      */
-    public function findMany(array $resourceIds)
+    public function findMany(iterable $resourceIds): iterable
     {
         return collect($resourceIds)->map(function ($resourceId) {
             return $this->find($resourceId);
