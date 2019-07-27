@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. This projec
 
 ## 2.x
 
+### Added
+- [#348](https://github.com/cloudcreativity/laravel-json-api/issues/348)
+Can now use route parameters in the API's URL configuration value.
+
 ### Changed
 - Amended the store interface so that it always takes a string resource type and string id,
 instead of the deprecated resource identifier object.

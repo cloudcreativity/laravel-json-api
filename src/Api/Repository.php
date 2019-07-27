@@ -66,15 +66,19 @@ class Repository
     }
 
     /**
-     * @param $apiName
+     * Create an API instance.
+     *
+     * @param string $apiName
      * @param string|null $host
+     * @param array $parameters
+     *      route parameters, if needed.
      * @return Api
      */
-    public function createApi($apiName, $host = null)
+    public function createApi($apiName, $host = null, array $parameters = [])
     {
         $config = $this->configFor($apiName);
         $config = $this->normalize($config, $host);
-        $url = Url::fromArray($config['url']);
+        $url = Url::fromArray($config['url'])->replace($parameters);
         $resolver = new AggregateResolver($this->factory->createResolver($apiName, $config));
 
         $api = new Api(
