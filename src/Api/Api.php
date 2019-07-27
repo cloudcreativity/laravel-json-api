@@ -354,17 +354,6 @@ class Api
     }
 
     /**
-     * Get the matched encoder, or a default encoder.
-     *
-     * @return EncoderInterface
-     * @deprecated 2.0.0 use `encoder` to create an encoder.
-     */
-    public function getEncoder()
-    {
-        return $this->encoder();
-    }
-
-    /**
      * Get the default database connection for the API.
      *
      * @return string|null

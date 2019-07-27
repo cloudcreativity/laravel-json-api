@@ -32,15 +32,6 @@ trait FindsManyResources
 {
 
     /**
-     * @return string|null
-     * @deprecated 2.0 use `filterKeyForIds()`
-     */
-    protected function getFindManyKey()
-    {
-        return $this->filterKeyForIds();
-    }
-
-    /**
      * Do the filters contain a `find-many` parameter?
      *
      * @param Collection $filters
@@ -48,7 +39,7 @@ trait FindsManyResources
      */
     protected function isFindMany(Collection $filters)
     {
-        if (!$key = $this->getFindManyKey()) {
+        if (!$key = $this->filterKeyForIds()) {
             return false;
         }
 
@@ -61,9 +52,9 @@ trait FindsManyResources
      */
     protected function extractIds(Collection $filters)
     {
-        $ids = $filters->get($this->getFindManyKey());
+        $ids = $filters->get($this->filterKeyForIds());
 
-        return $this->normalizeIds($ids);
+        return $this->deserializeIdFilter($ids);
     }
 
     /**
@@ -76,16 +67,6 @@ trait FindsManyResources
         $key = property_exists($this, 'findManyFilter') ? $this->findManyFilter : null;
 
         return $key ?: DocumentInterface::KEYWORD_ID;
-    }
-
-    /**
-     * @param $resourceIds
-     * @return array
-     * @deprecated 2.0 use `deserializeIdFilter()`
-     */
-    protected function normalizeIds($resourceIds)
-    {
-        return $this->deserializeIdFilter($resourceIds);
     }
 
     /**

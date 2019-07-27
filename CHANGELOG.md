@@ -23,11 +23,13 @@ longer available via the facade):
   - `Contracts\Object\*` - all interfaces in this namespace.
   - `Eloquent\AbstractSchema` - extend the `neomerx/json-api` schema instead.
   - `Eloquent\Concerns\SerializesModels` trait.
+  - `Exceptions\RecordNotFoundException` - use `Exceptions\ResourceNotFoundException` instead.
   - `Http\Query\ChecksQueryParameters` trait.
   - `Http\Requests\JsonApiRequest`
   - `Object\*` - all classes in this namespace.
   - `Schema\AbstractSchema` - extend the `neomerx/json-api` schema instead.
   - `Schema\CreatesEloquentIdentities` trait.
+  - `Schema\CreatesLinks` trait.
   - `Schema\EloquentSchema` - extend the `neomerx/json-api` schema instead.
 
 ## Unreleased

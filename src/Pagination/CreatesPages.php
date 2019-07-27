@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Copyright 2019 Cloud Creativity Limited
  *
@@ -20,7 +19,6 @@ namespace CloudCreativity\LaravelJsonApi\Pagination;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PageInterface;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
-use CloudCreativity\LaravelJsonApi\Schema\CreatesLinks;
 use CloudCreativity\LaravelJsonApi\Utils\Str;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Contracts\Pagination\Paginator;
@@ -36,8 +34,6 @@ use Neomerx\JsonApi\Contracts\Http\Query\QueryParametersParserInterface;
  */
 trait CreatesPages
 {
-
-    use CreatesLinks;
 
     /**
      * @return string
@@ -177,7 +173,7 @@ trait CreatesPages
      */
     protected function createLink($page, $perPage, array $parameters = [], $meta = null)
     {
-        return $this->links()->current($meta, array_merge($parameters, [
+        return json_api()->links()->current($meta, array_merge($parameters, [
             QueryParametersParserInterface::PARAM_PAGE => [
                 $this->getPageKey() => $page,
                 $this->getPerPageKey() => $perPage,

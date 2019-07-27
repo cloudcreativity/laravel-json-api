@@ -64,7 +64,7 @@ trait FiltersModels
     protected function filterWithScopes($query, Collection $filters): void
     {
         foreach ($filters as $name => $value) {
-            if ($name === $this->getFindManyKey()) {
+            if ($name === $this->filterKeyForIds()) {
                 continue;
             }
 

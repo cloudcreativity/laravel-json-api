@@ -204,17 +204,6 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
     }
 
     /**
-     * Get the JSON API encoding parameters.
-     *
-     * @return EncodingParametersInterface
-     * @deprecated 2.0.0 use `getEncodingParameters`
-     */
-    public function getParameters()
-    {
-        return $this->getEncodingParameters();
-    }
-
-    /**
      * @return EncodingParametersInterface
      */
     public function getEncodingParameters()
