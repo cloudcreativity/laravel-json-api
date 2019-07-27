@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Copyright 2019 Cloud Creativity Limited
  *
@@ -18,8 +17,8 @@
 
 namespace CloudCreativity\LaravelJsonApi\Exceptions;
 
-use CloudCreativity\LaravelJsonApi\Document\Error;
 use Exception;
+use Neomerx\JsonApi\Document\Error;
 use Neomerx\JsonApi\Exceptions\JsonApiException;
 
 /**
@@ -100,11 +99,13 @@ class InvalidJsonException extends JsonApiException
      */
     protected function createError()
     {
-        return Error::create([
-            Error::TITLE => $this->getTitle(),
-            Error::STATUS => self::HTTP_CODE_BAD_REQUEST,
-            Error::CODE => $this->getJsonError(),
-            Error::DETAIL => $this->getJsonErrorMessage(),
-        ]);
+        return new Error(
+            null,
+            null,
+            self::HTTP_CODE_BAD_REQUEST,
+            $this->getJsonError(),
+            $this->getTitle(),
+            $this->getJsonErrorMessage()
+        );
     }
 }

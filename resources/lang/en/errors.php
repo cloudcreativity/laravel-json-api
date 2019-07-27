@@ -34,6 +34,24 @@ return [
     | @see http://jsonapi.org/format/#errors
     */
 
+    'unauthorized' => [
+        'title' => 'Unauthenticated',
+        'detail' => '',
+        'code' => '',
+    ],
+
+    'forbidden' => [
+        'title' => 'Unauthorized',
+        'detail' => '',
+        'code' => '',
+    ],
+
+    'token_mismatch' => [
+        'title' => 'Invalid Token',
+        'detail' => 'The token is not valid.',
+        'code' => '',
+    ],
+
     'member_required' => [
         'title' => 'Non-Compliant JSON API Document',
         'detail' => "The member :member is required.",

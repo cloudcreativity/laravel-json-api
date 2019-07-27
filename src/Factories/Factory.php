@@ -36,28 +36,24 @@ use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validation\DocumentValidatorInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorInterface;
+use CloudCreativity\LaravelJsonApi\Document\Error\Translator as ErrorTranslator;
 use CloudCreativity\LaravelJsonApi\Document\ResourceObject;
 use CloudCreativity\LaravelJsonApi\Encoder\Encoder;
+use CloudCreativity\LaravelJsonApi\Encoder\Neomerx\Factory as EncoderFactory;
 use CloudCreativity\LaravelJsonApi\Encoder\Parameters\EncodingParameters;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Http\ContentNegotiator;
-use CloudCreativity\LaravelJsonApi\Http\Headers\RestrictiveHeadersChecker;
-use CloudCreativity\LaravelJsonApi\Http\Responses\ErrorResponse;
 use CloudCreativity\LaravelJsonApi\Http\Responses\Responses;
 use CloudCreativity\LaravelJsonApi\Pagination\Page;
-use CloudCreativity\LaravelJsonApi\Repositories\ErrorRepository;
 use CloudCreativity\LaravelJsonApi\Resolver\ResolverFactory;
 use CloudCreativity\LaravelJsonApi\Routing\Route;
 use CloudCreativity\LaravelJsonApi\Store\Store;
-use CloudCreativity\LaravelJsonApi\Utils\Replacer;
 use CloudCreativity\LaravelJsonApi\Validation;
-use CloudCreativity\LaravelJsonApi\Validation\ErrorTranslator;
 use Illuminate\Contracts\Container\Container as IlluminateContainer;
 use Illuminate\Contracts\Routing\UrlGenerator as IlluminateUrlGenerator;
 use Illuminate\Contracts\Translation\Translator;
 use Illuminate\Contracts\Validation\Factory as ValidatorFactoryContract;
 use Illuminate\Contracts\Validation\Validator;
-use Neomerx\JsonApi\Contracts\Codec\CodecMatcherInterface;
 use Neomerx\JsonApi\Contracts\Document\LinkInterface;
 use Neomerx\JsonApi\Contracts\Schema\ContainerInterface as SchemaContainerInterface;
 use Neomerx\JsonApi\Encoder\EncoderOptions;
@@ -119,14 +115,6 @@ class Factory extends BaseFactory
     /**
      * @inheritdoc
      */
-    public function createHeadersChecker(CodecMatcherInterface $codecMatcher)
-    {
-        return new RestrictiveHeadersChecker($codecMatcher, json_api()->getErrors());
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function createExtendedContainer(ResolverInterface $resolver)
     {
         return new Container($this->container, $resolver);
@@ -154,14 +142,6 @@ class Factory extends BaseFactory
     /**
      * @inheritDoc
      */
-    public function createErrorResponse($errors, $defaultHttpCode, array $headers = [])
-    {
-        return new ErrorResponse($errors, $defaultHttpCode, $headers);
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function createClient($httpClient, SchemaContainerInterface $container, SerializerInterface $encoder)
     {
         return new GuzzleClient(
@@ -177,25 +157,6 @@ class Factory extends BaseFactory
     public function createStore(ContainerInterface $container)
     {
         return new Store($container);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function createErrorRepository(array $errors)
-    {
-        $repository = new ErrorRepository($this->createReplacer());
-        $repository->configure($errors);
-
-        return $repository;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function createReplacer()
-    {
-        return new Replacer();
     }
 
     /**
@@ -231,7 +192,7 @@ class Factory extends BaseFactory
     public function createResponseFactory(Api $api)
     {
         return new Responses(
-            $this,
+            $this->container->make(EncoderFactory::class),
             $api,
             $this->container->make(Route::class),
             $this->container->make('json-api.exceptions')
@@ -368,6 +329,7 @@ class Factory extends BaseFactory
      * @param Encoding $encoding
      * @param Decoding|null $decoding
      * @return Codec
+     * @deprecated 2.0.0 use `Encoder\Neomerx\Factory::createCodec()`
      */
     public function createCodec(ContainerInterface $container, Encoding $encoding, ?Decoding $decoding)
     {

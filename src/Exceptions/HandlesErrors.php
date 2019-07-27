@@ -68,7 +68,9 @@ trait HandlesErrors
      */
     public function renderJsonApi($request, Exception $e)
     {
-        return json_api()->response()->exception($e);
+        $headers = ($e instanceof HttpException) ? $e->getHeaders() : [];
+
+        return json_api()->exceptions()->parse($e)->toResponse($request)->withHeaders($headers);
     }
 
     /**

@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file. This projec
 ### Changed
 - Amended the store interface so that it always takes a string resource type and string id,
 instead of the deprecated resource identifier object.
+- Moved the `Validation\ErrorTranslator` class to `Error\Translator`.
 
 ### Removed
 - The deprecated `0.x` validation implementation was removed. This deletes all interfaces
@@ -21,18 +22,35 @@ longer available via the facade):
 were removed.
 - Additionally, the following deprecated interfaces, classes and traits were removed:
   - `Api\ResourceProvider` - extend `Api\AbstractProvider` instead.
+  - `Contracts\Document\MutableErrorInterface`
+  - `Contracts\Exceptions\ErrorIdAllocatorInterface`
   - `Contracts\Factories\FactoryInterface`
+  - `Contracts\Http\Responses\ErrorResponseInterface`
   - `Contracts\Object\*` - all interfaces in this namespace.
+  - `Contracts\Repositories\ErrorRepositoryInterface`
+  - `Contracts\Utils\ErrorReporterInterface`
+  - `Contracts\Utils\ErrorsAwareInterface`
+  - `Contracts\Utils\ReplacerInterface`
+  - `Document\Error` - use `Document\Error\Error` instead.
   - `Eloquent\AbstractSchema` - extend the `neomerx/json-api` schema instead.
   - `Eloquent\Concerns\SerializesModels` trait.
+  - `Exceptions\MutableErrorCollection`
+  - `Exceptions\NotFoundException`
   - `Exceptions\RecordNotFoundException` - use `Exceptions\ResourceNotFoundException` instead.
   - `Http\Query\ChecksQueryParameters` trait.
   - `Http\Requests\JsonApiRequest`
+  - `Http\Responses\ErrorResponse`
   - `Object\*` - all classes in this namespace.
+  - `Repositories\ErrorRepository`
   - `Schema\AbstractSchema` - extend the `neomerx/json-api` schema instead.
   - `Schema\CreatesEloquentIdentities` trait.
   - `Schema\CreatesLinks` trait.
   - `Schema\EloquentSchema` - extend the `neomerx/json-api` schema instead.
+  - `Utils\AbstractErrorBag`
+  - `Utils\ErrorBag`
+  - `Utils\ErrorCreatorTrait`
+  - `Utils\ErrorsAwareTrait`
+  - `Utils\Replacer`
 
 ## Unreleased
 

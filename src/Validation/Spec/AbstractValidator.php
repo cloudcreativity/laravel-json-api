@@ -19,8 +19,8 @@ namespace CloudCreativity\LaravelJsonApi\Validation\Spec;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validation\DocumentValidatorInterface;
+use CloudCreativity\LaravelJsonApi\Document\Error\Translator as ErrorTranslator;
 use CloudCreativity\LaravelJsonApi\Exceptions\InvalidArgumentException;
-use CloudCreativity\LaravelJsonApi\Validation\ErrorTranslator;
 use Neomerx\JsonApi\Exceptions\ErrorCollection;
 
 /**

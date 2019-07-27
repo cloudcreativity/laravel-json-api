@@ -15,30 +15,30 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\LaravelJsonApi\Validation;
+namespace CloudCreativity\LaravelJsonApi\Document\Error;
 
 use CloudCreativity\LaravelJsonApi\Exceptions\ValidationException;
 use CloudCreativity\LaravelJsonApi\LaravelJsonApi;
 use CloudCreativity\LaravelJsonApi\Utils\Str;
-use Illuminate\Contracts\Translation\Translator;
+use Illuminate\Contracts\Translation\Translator as IlluminateTranslator;
 use Illuminate\Contracts\Validation\Validator as ValidatorContract;
 use Illuminate\Http\Response;
 use Illuminate\Support\Collection;
 use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
-use Neomerx\JsonApi\Document\Error;
+use Neomerx\JsonApi\Document\Error as NeomerxError;
 use Neomerx\JsonApi\Exceptions\ErrorCollection;
 use Neomerx\JsonApi\Exceptions\JsonApiException;
 
 /**
- * Class ErrorTranslator
+ * Class Translator
  *
  * @package CloudCreativity\LaravelJsonApi
  */
-class ErrorTranslator
+class Translator
 {
 
     /**
-     * @var Translator
+     * @var IlluminateTranslator
      */
     protected $translator;
 
@@ -50,14 +50,65 @@ class ErrorTranslator
     private $includeFailed;
 
     /**
-     * ErrorTranslator constructor.
+     * Translator constructor.
      *
-     * @param Translator $translator
+     * @param IlluminateTranslator $translator
      */
-    public function __construct(Translator $translator)
+    public function __construct(IlluminateTranslator $translator)
     {
         $this->translator = $translator;
         $this->includeFailed = LaravelJsonApi::$validationFailures;
+    }
+
+    /**
+     * Create an error for when a request is not authenticated.
+     *
+     * @return ErrorInterface
+     */
+    public function authentication(): ErrorInterface
+    {
+        return new NeomerxError(
+            null,
+            null,
+            Response::HTTP_UNAUTHORIZED,
+            $this->trans('unauthorized', 'code'),
+            $this->trans('unauthorized', 'title'),
+            $this->trans('unauthorized', 'detail')
+        );
+    }
+
+    /**
+     * Create an error for when a request is not authorized.
+     *
+     * @return ErrorInterface
+     */
+    public function authorization(): ErrorInterface
+    {
+        return new NeomerxError(
+            null,
+            null,
+            Response::HTTP_FORBIDDEN,
+            $this->trans('forbidden', 'code'),
+            $this->trans('forbidden', 'title'),
+            $this->trans('forbidden', 'detail')
+        );
+    }
+
+    /**
+     * Create an error for a token mismatch.
+     *
+     * @return ErrorInterface
+     */
+    public function tokenMismatch(): ErrorInterface
+    {
+        return new NeomerxError(
+            null,
+            null,
+            419,
+            $this->trans('token_mismatch', 'code'),
+            $this->trans('token_mismatch', 'title'),
+            $this->trans('token_mismatch', 'detail')
+        );
     }
 
     /**
@@ -69,7 +120,7 @@ class ErrorTranslator
      */
     public function memberRequired(string $path, string $member): ErrorInterface
     {
-        return new Error(
+        return new NeomerxError(
             null,
             null,
             Response::HTTP_BAD_REQUEST,
@@ -89,7 +140,7 @@ class ErrorTranslator
      */
     public function memberNotObject(string $path, string $member): ErrorInterface
     {
-        return new Error(
+        return new NeomerxError(
             null,
             null,
             Response::HTTP_BAD_REQUEST,
@@ -109,7 +160,7 @@ class ErrorTranslator
      */
     public function memberNotIdentifier(string $path, string $member): ErrorInterface
     {
-        return new Error(
+        return new NeomerxError(
             null,
             null,
             Response::HTTP_BAD_REQUEST,
@@ -130,7 +181,7 @@ class ErrorTranslator
      */
     public function memberFieldNotAllowed(string $path, string $member, string $field): ErrorInterface
     {
-        return new Error(
+        return new NeomerxError(
             null,
             null,
             Response::HTTP_BAD_REQUEST,
@@ -150,7 +201,7 @@ class ErrorTranslator
      */
     public function memberNotString(string $path, string $member): ErrorInterface
     {
-        return new Error(
+        return new NeomerxError(
             null,
             null,
             Response::HTTP_BAD_REQUEST,
@@ -170,7 +221,7 @@ class ErrorTranslator
      */
     public function memberEmpty(string $path, string $member): ErrorInterface
     {
-        return new Error(
+        return new NeomerxError(
             null,
             null,
             Response::HTTP_BAD_REQUEST,
@@ -191,7 +242,7 @@ class ErrorTranslator
      */
     public function resourceTypeNotSupported(string $type, string $path = '/data'): ErrorInterface
     {
-        return new Error(
+        return new NeomerxError(
             null,
             null,
             Response::HTTP_CONFLICT,
@@ -212,7 +263,7 @@ class ErrorTranslator
      */
     public function resourceTypeNotRecognised(string $type, string $path = '/data'): ErrorInterface
     {
-        return new Error(
+        return new NeomerxError(
             null,
             null,
             Response::HTTP_BAD_REQUEST,
@@ -233,7 +284,7 @@ class ErrorTranslator
      */
     public function resourceIdNotSupported(string $id, string $path = '/data'): ErrorInterface
     {
-        return new Error(
+        return new NeomerxError(
             null,
             null,
             Response::HTTP_CONFLICT,
@@ -253,7 +304,7 @@ class ErrorTranslator
      */
     public function resourceDoesNotSupportClientIds(string $type, string $path = '/data'): ErrorInterface
     {
-        return new Error(
+        return new NeomerxError(
             null,
             null,
             Response::HTTP_FORBIDDEN,
@@ -276,7 +327,7 @@ class ErrorTranslator
      */
     public function resourceExists(string $type, string $id, string $path = '/data'): ErrorInterface
     {
-        return new Error(
+        return new NeomerxError(
             null,
             null,
             Response::HTTP_CONFLICT,
@@ -295,7 +346,7 @@ class ErrorTranslator
      */
     public function resourceDoesNotExist(string $path): ErrorInterface
     {
-        return new Error(
+        return new NeomerxError(
             null,
             null,
             Response::HTTP_NOT_FOUND,
@@ -318,7 +369,7 @@ class ErrorTranslator
         string $path = '/data'
     ): ErrorInterface
     {
-        return new Error(
+        return new NeomerxError(
             null,
             null,
             Response::HTTP_BAD_REQUEST,
@@ -337,7 +388,7 @@ class ErrorTranslator
      */
     public function resourceCannotBeDeleted(string $detail = null): ErrorInterface
     {
-        return new Error(
+        return new NeomerxError(
             null,
             null,
             Response::HTTP_UNPROCESSABLE_ENTITY,
@@ -363,7 +414,7 @@ class ErrorTranslator
         array $failed = []
     ): ErrorInterface
     {
-        return new Error(
+        return new NeomerxError(
             null,
             null,
             Response::HTTP_UNPROCESSABLE_ENTITY,
@@ -387,14 +438,14 @@ class ErrorTranslator
      */
     public function invalidQueryParameter(string $param, ?string $detail = null, array $failed = []): ErrorInterface
     {
-        return new Error(
+        return new NeomerxError(
             null,
             null,
             Response::HTTP_BAD_REQUEST,
             $this->trans('query_invalid', 'code'),
             $this->trans('query_invalid', 'title'),
             $detail ?: $this->trans('query_invalid', 'detail'),
-            [Error::SOURCE_PARAMETER => $param],
+            [NeomerxError::SOURCE_PARAMETER => $param],
             $failed ? compact('failed') : null
         );
     }
@@ -423,7 +474,7 @@ class ErrorTranslator
                     continue;
                 }
 
-                $errors->add(new Error(
+                $errors->add(new NeomerxError(
                     null,
                     null,
                     Response::HTTP_UNPROCESSABLE_ENTITY,
@@ -499,7 +550,7 @@ class ErrorTranslator
         $withoutMember = is_null($member) || '' === $member;
         $pointer = !$withoutMember ? sprintf('%s/%s', rtrim($path, '/'), $member) : $path;
 
-        return [Error::SOURCE_POINTER => $pointer];
+        return [NeomerxError::SOURCE_POINTER => $pointer];
     }
 
     /**

@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Copyright 2019 Cloud Creativity Limited
  *
@@ -21,7 +20,6 @@ namespace CloudCreativity\LaravelJsonApi;
 use CloudCreativity\LaravelJsonApi\Api\Repository;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Exceptions\ExceptionParserInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Repositories\ErrorRepositoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\ExceptionParser;
@@ -110,7 +108,6 @@ class ServiceProvider extends BaseServiceProvider
         $this->bindApiRepository();
         $this->bindExceptionParser();
         $this->bindRenderer();
-        $this->mergePackageConfig();
     }
 
     /**
@@ -245,10 +242,6 @@ class ServiceProvider extends BaseServiceProvider
             return json_api()->getResolver();
         });
 
-        $this->app->bind(ErrorRepositoryInterface::class, function () {
-            return json_api()->getErrors();
-        });
-
         $this->app->bind(ContainerInterface::class, function () {
             return json_api()->getContainer();
         });
@@ -296,14 +289,6 @@ class ServiceProvider extends BaseServiceProvider
     {
         $this->app->singleton(Renderer::class);
         $this->app->alias(Renderer::class, 'json-api.renderer');
-    }
-
-    /**
-     * Merge default package config.
-     */
-    protected function mergePackageConfig()
-    {
-        $this->mergeConfigFrom(__DIR__ . '/../config/json-api-errors.php', 'json-api-errors');
     }
 
     /**

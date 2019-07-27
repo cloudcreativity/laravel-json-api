@@ -41,12 +41,6 @@ abstract class AbstractProvider
     protected $byResource = true;
 
     /**
-     * @var array
-     * @deprecated 2.0.0 use package translations instead.
-     */
-    protected $errors = [];
-
-    /**
      * Mount routes onto the provided API.
      *
      * @param RouteRegistrar $api
@@ -65,15 +59,6 @@ abstract class AbstractProvider
     public function getResolver(): ResolverInterface
     {
         return new NamespaceResolver($this->getRootNamespace(), $this->resources, $this->byResource);
-    }
-
-    /**
-     * @return array
-     * @deprecated 2.0.0
-     */
-    public function getErrors(): array
-    {
-        return $this->errors;
     }
 
 }

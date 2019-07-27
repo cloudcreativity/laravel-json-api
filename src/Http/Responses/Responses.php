@@ -22,19 +22,19 @@ use CloudCreativity\LaravelJsonApi\Api\Api;
 use CloudCreativity\LaravelJsonApi\Codec\Codec;
 use CloudCreativity\LaravelJsonApi\Codec\Encoding;
 use CloudCreativity\LaravelJsonApi\Contracts\Exceptions\ExceptionParserInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Http\Responses\ErrorResponseInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PageInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Queue\AsynchronousProcess;
-use CloudCreativity\LaravelJsonApi\Document\Error;
-use CloudCreativity\LaravelJsonApi\Factories\Factory;
+use CloudCreativity\LaravelJsonApi\Document\Error\Error;
+use CloudCreativity\LaravelJsonApi\Encoder\Neomerx\Factory;
 use CloudCreativity\LaravelJsonApi\Routing\Route;
+use CloudCreativity\LaravelJsonApi\Utils\Helpers;
 use Illuminate\Http\Response;
 use Neomerx\JsonApi\Contracts\Document\DocumentInterface;
 use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use Neomerx\JsonApi\Contracts\Http\Headers\MediaTypeInterface;
-use Neomerx\JsonApi\Exceptions\ErrorCollection;
 use Neomerx\JsonApi\Http\Responses as BaseResponses;
+use UnexpectedValueException;
 
 /**
  * Class Responses
@@ -385,82 +385,40 @@ class Responses extends BaseResponses
     /**
      * Create a response containing a single error.
      *
-     * @param string|array|ErrorInterface $error
+     * @param Error|ErrorInterface|array $error
      * @param int|null $defaultStatusCode
      * @param array $headers
      * @return mixed
      */
-    public function error($error, $defaultStatusCode = null, array $headers = [])
+    public function error($error, int $defaultStatusCode = null, array $headers = [])
     {
-        if (is_string($error)) {
-            $error = $this->api->getErrors()->error($error);
-        } else if (is_array($error)) {
-            $error = Error::create($error);
+        if (!$error instanceof ErrorInterface) {
+            $error = $this->factory->createError(
+                Error::cast($error)
+            );
         }
 
         if (!$error instanceof ErrorInterface) {
-            throw new \InvalidArgumentException('Expecting a string, array or error object.');
+            throw new UnexpectedValueException('Expecting an error object or array.');
         }
 
-        return $this->errors($error, $defaultStatusCode, $headers);
+        return $this->errors([$error], $defaultStatusCode, $headers);
     }
 
     /**
      * Create a response containing multiple errors.
      *
-     * @param mixed $errors
+     * @param iterable $errors
      * @param int|null $defaultStatusCode
      * @param array $headers
      * @return mixed
      */
-    public function errors($errors, $defaultStatusCode = null, array $headers = [])
+    public function errors(iterable $errors, $defaultStatusCode = null, array $headers = [])
     {
-        if ($errors instanceof ErrorResponseInterface) {
-            return $this->getErrorResponse($errors);
-        }
+        $errors = $this->factory->createErrors($errors);
+        $statusCode = Helpers::httpErrorStatus($errors, $defaultStatusCode);
 
-        if (is_array($errors)) {
-            $errors = $this->api->getErrors()->errors(...$errors);
-        }
-
-        return $this->errors(
-            $this->factory->createErrorResponse($errors, $defaultStatusCode, $headers)
-        );
-    }
-
-    /**
-     * Render an exception that has arisen from the exception handler.
-     *
-     * @param \Exception $ex
-     * @return mixed
-     */
-    public function exception(\Exception $ex)
-    {
-        /** If the current codec cannot encode JSON API, we need to reset it. */
-        if ($this->getCodec()->willNotEncode()) {
-            $this->codec = $this->api->getDefaultCodec();
-        }
-
-        return $this->getErrorResponse(
-            $this->exceptions->parse($ex)
-        );
-    }
-
-    /**
-     * @param ErrorInterface|ErrorInterface[]|ErrorCollection|ErrorResponseInterface $errors
-     * @param int $statusCode
-     * @param array $headers
-     * @return mixed
-     */
-    public function getErrorResponse($errors, $statusCode = self::HTTP_BAD_REQUEST, array $headers = [])
-    {
-        if ($errors instanceof ErrorResponseInterface) {
-            $statusCode = $errors->getHttpCode();
-            $headers = $errors->getHeaders();
-            $errors= $errors->getErrors();
-        }
-
-        return parent::getErrorResponse($errors, $statusCode, $headers);
+        return $this->getErrorResponse($errors, $statusCode, $headers);
     }
 
     /**
