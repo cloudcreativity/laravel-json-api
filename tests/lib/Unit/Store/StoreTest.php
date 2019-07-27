@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Copyright 2019 Cloud Creativity Limited
  *
@@ -24,13 +23,8 @@ use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\ResourceNotFoundException;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
-use CloudCreativity\LaravelJsonApi\Object\ResourceIdentifier;
-use CloudCreativity\LaravelJsonApi\Object\ResourceIdentifierCollection;
-use CloudCreativity\LaravelJsonApi\Object\ResourceObject;
-use CloudCreativity\LaravelJsonApi\Pagination\Page;
 use CloudCreativity\LaravelJsonApi\Store\Store;
 use CloudCreativity\LaravelJsonApi\Tests\Unit\TestCase;
-use CloudCreativity\Utils\Object\StandardObject;
 use Neomerx\JsonApi\Encoder\Parameters\EncodingParameters;
 use PHPUnit\Framework\MockObject\MockObject;
 
@@ -63,7 +57,7 @@ class StoreTest extends TestCase
     public function testQuery()
     {
         $params = new EncodingParameters();
-        $expected = new Page([]);
+        $expected = new \DateTime();
 
         $store = $this->store([
             'posts' => $this->willNotQuery(),
@@ -142,13 +136,13 @@ class StoreTest extends TestCase
     public function testDeleteRecord()
     {
         $params = new EncodingParameters();
-        $record = new StandardObject();
+        $record = new \DateTime();
 
         $adapter = $this->willDeleteRecord($record, $params);
 
         $store = $this->storeByTypes([
-            ResourceObject::class => $this->willNotQuery(),
-            StandardObject::class => $adapter,
+            \DateTimeZone::class => $this->willNotQuery(),
+            \DateTime::class => $adapter,
         ]);
 
         $this->assertNull($store->deleteRecord($record, $params));
@@ -157,13 +151,13 @@ class StoreTest extends TestCase
     public function testDeleteRecordFails()
     {
         $params = new EncodingParameters();
-        $record = new StandardObject();
+        $record = new \DateTime();
 
         $adapter = $this->willDeleteRecord($record, $params, false);
 
         $store = $this->storeByTypes([
-            ResourceObject::class => $this->willNotQuery(),
-            StandardObject::class => $adapter,
+            \DateTimeZone::class => $this->willNotQuery(),
+            \DateTime::class => $adapter,
         ]);
 
         $this->expectException(RuntimeException::class);
@@ -177,12 +171,12 @@ class StoreTest extends TestCase
     public function testQueryRelated()
     {
         $parameters = new EncodingParameters();
-        $record = new StandardObject();
-        $expected = new Page([]);
+        $record = new \DateTime();
+        $expected = new \DateInterval('P1W');
 
         $store = $this->storeByTypes([
-            ResourceObject::class => $this->willNotQuery(),
-            StandardObject::class => $this->willQueryRelated($record, 'user', $parameters, $expected),
+            \DateTimeZone::class => $this->willNotQuery(),
+            \DateTime::class => $this->willQueryRelated($record, 'user', $parameters, $expected),
         ]);
 
         $this->assertSame($expected, $store->queryRelated($record, 'user', $parameters));
@@ -195,12 +189,12 @@ class StoreTest extends TestCase
     public function testQueryRelationship()
     {
         $parameters = new EncodingParameters();
-        $record = new StandardObject();
-        $expected = new Page([]);
+        $record = new \DateTime();
+        $expected = new \DateInterval('P1W');
 
         $store = $this->storeByTypes([
-            ResourceObject::class => $this->willNotQuery(),
-            StandardObject::class => $this->willQueryRelationship($record, 'user', $parameters, $expected),
+            \DateTimeZone::class => $this->willNotQuery(),
+            \DateTime::class => $this->willQueryRelationship($record, 'user', $parameters, $expected),
         ]);
 
         $this->assertSame($expected, $store->queryRelationship($record, 'user', $parameters));
@@ -262,7 +256,7 @@ class StoreTest extends TestCase
 
     public function testFindWithIdentifier()
     {
-        $expected = new StandardObject();
+        $expected = new \DateTime();
 
         $store = $this->store([
             'posts' => $this->adapter(),
@@ -305,7 +299,7 @@ class StoreTest extends TestCase
      */
     public function testFindCalledOnce()
     {
-        $expected = new StandardObject();
+        $expected = new \DateTime();
 
         $store = $this->store([
             'posts' => $this->adapter(),
@@ -322,7 +316,7 @@ class StoreTest extends TestCase
      */
     public function testFindBeforeExists()
     {
-        $expected = new StandardObject();
+        $expected = new \DateTime();
 
         $mock = $this->adapter();
         $mock->expects($this->never())->method('exists');

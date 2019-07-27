@@ -19,8 +19,10 @@ longer available via the facade):
   - `defaultApi()`: set the default API via `LaravelJsonApi::defaultApi()` instead.
 - Additionally, the following deprecated interfaces, classes and traits were removed:
   - `Contracts\Factories\FactoryInterface`
+  - `Contracts\Object\*` - all interfaces in this namespace.
   - `Http\Query\ChecksQueryParameters` trait.
   - `Http\Requests\JsonApiRequest`
+  - `Object\*` - all classes in this namespace.
 
 ## Unreleased
 

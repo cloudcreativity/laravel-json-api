@@ -45,7 +45,6 @@ use CloudCreativity\LaravelJsonApi\Http\ContentNegotiator;
 use CloudCreativity\LaravelJsonApi\Http\Headers\RestrictiveHeadersChecker;
 use CloudCreativity\LaravelJsonApi\Http\Responses\ErrorResponse;
 use CloudCreativity\LaravelJsonApi\Http\Responses\Responses;
-use CloudCreativity\LaravelJsonApi\Object\Document;
 use CloudCreativity\LaravelJsonApi\Pagination\Page;
 use CloudCreativity\LaravelJsonApi\Repositories\ErrorRepository;
 use CloudCreativity\LaravelJsonApi\Resolver\ResolverFactory;
@@ -163,18 +162,6 @@ class Factory extends BaseFactory
     public function createErrorResponse($errors, $defaultHttpCode, array $headers = [])
     {
         return new ErrorResponse($errors, $defaultHttpCode, $headers);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function createDocumentObject(PsrRequest $request, PsrResponse $response = null)
-    {
-        if (!http_contains_body($request, $response)) {
-            return null;
-        }
-
-        return new Document(json_decode($response ? $response->getBody() : $request->getBody()));
     }
 
     /**
