@@ -104,7 +104,7 @@ class ResourceTest extends TestCase
         $expected = $this->serialize($post);
 
         $this->doSearch(['filter' => ['slug' => 'my-first-post']])
-            ->assertReadHasOne($expected);
+            ->assertFetchedOne($expected);
     }
 
     public function testSearchOneIsNull()
@@ -112,7 +112,7 @@ class ResourceTest extends TestCase
         factory(Post::class)->create(['slug' => 'my-first-post']);
 
         $this->doSearch(['filter' => ['slug' => 'my-second-post']])
-            ->assertReadHasOne(null);
+            ->assertFetchedNull();
     }
 
     /**
@@ -130,10 +130,10 @@ class ResourceTest extends TestCase
      */
     public function testSearchWithIncluded()
     {
-        factory(Comment::class, 5)->states('post')->create();
+        $expected = factory(Comment::class, 5)->states('post')->create();
 
         $this->doSearch(['include' => 'comments.created-by'])
-            ->assertSearchedMany();
+            ->assertFetchedMany($expected);
     }
 
     /**
@@ -175,7 +175,10 @@ class ResourceTest extends TestCase
         $expected = $data;
         unset($expected['relationships']);
 
-        $id = $this->doCreate($data)->assertCreatedWithId($expected);
+        $id = $this
+            ->doCreate($data)
+            ->assertCreatedWithServerId(url('/api/v1/posts'), $expected)
+            ->id();
 
         $this->assertDatabaseHas('posts', [
             'id' => $id,

@@ -66,7 +66,10 @@ class HasOneTest extends TestCase
         $expected = $data;
         unset($expected['attributes']['password'], $expected['attributes']['password-confirmation']);
 
-        $id = $this->doCreate($data, ['include' => 'phone'])->assertCreatedWithId($expected);
+        $id = $this
+            ->doCreate($data, ['include' => 'phone'])
+            ->assertCreatedWithServerId(url('/api/v1/users'), $expected)
+            ->id();
 
         $this->assertNotNull($refreshed = User::find($id));
         $this->assertNull($refreshed->phone);
@@ -153,7 +156,10 @@ class HasOneTest extends TestCase
         $expected = $data;
         unset($expected['attributes']['password'], $expected['attributes']['password-confirmation']);
 
-        $id = $this->doCreate($data, ['include' => 'phone'])->assertCreatedWithId($expected);
+        $id = $this
+            ->doCreate($data, ['include' => 'phone'])
+            ->assertCreatedWithServerId(url('/api/v1/users'), $expected)
+            ->id();
 
         $this->assertDatabaseHas('phones', [
             'id' => $phone->getKey(),
@@ -280,7 +286,7 @@ class HasOneTest extends TestCase
             ],
         ];
 
-        $this->doReadRelated($user, 'phone', ['include' => 'user'])->assertReadHasOne($data);
+        $this->doReadRelated($user, 'phone', ['include' => 'user'])->assertFetchedOne($data);
     }
 
     /**
@@ -292,7 +298,8 @@ class HasOneTest extends TestCase
         $phone = factory(Phone::class)->states('user')->create();
 
         $this->doReadRelationship($phone->user, 'phone')
-            ->assertReadHasOneIdentifier('phones', $phone->getKey());
+            ->willSeeType('phones')
+            ->assertFetchedToOne($phone);
     }
 
     /**

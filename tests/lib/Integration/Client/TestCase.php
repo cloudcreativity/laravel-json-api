@@ -49,7 +49,7 @@ abstract class TestCase extends BaseTestCase
     {
         parent::setUp();
         $this->handler = HandlerStack::create($this->mock = new MockHandler());
-        $this->client = $this->api()->client('http://example.com', ['handler' => $this->handler]);
+        $this->client = json_api()->client('http://example.com', ['handler' => $this->handler]);
     }
 
     /**
@@ -60,7 +60,7 @@ abstract class TestCase extends BaseTestCase
      */
     protected function willSeeResource($resource, $status = 200, array $headers = [])
     {
-        $json = $this->api()->encoder()->serializeData($resource);
+        $json = json_api()->encoder()->serializeData($resource);
 
         return $this->willSeeResponse($json, $status, $headers);
     }
@@ -73,7 +73,7 @@ abstract class TestCase extends BaseTestCase
      */
     protected function willSeeIdentifiers($data, $status = 200, array $headers = [])
     {
-        $json = $this->api()->encoder()->serializeIdentifiers($data);
+        $json = json_api()->encoder()->serializeIdentifiers($data);
 
         return $this->willSeeResponse($json, $status, $headers);
     }

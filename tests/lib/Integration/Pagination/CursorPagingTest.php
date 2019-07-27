@@ -91,7 +91,7 @@ class CursorPagingTest extends TestCase
 
         $this->actingAsUser()
             ->doSearch(['page' => ['limit' => 4]])
-            ->assertSearchedIds($comments->take(4))
+            ->assertFetchedMany($comments->take(4))
             ->assertJson([
                 'meta' => [
                     'page' => [
@@ -127,7 +127,7 @@ class CursorPagingTest extends TestCase
 
         $this->actingAsUser()
             ->doSearch(compact('page'))
-            ->assertSearchedIds($expected)
+            ->assertFetchedMany($expected)
             ->assertJson([
                 'meta' => [
                     'page' => [
@@ -165,7 +165,7 @@ class CursorPagingTest extends TestCase
 
         $this->actingAsUser()
             ->doSearch(compact('page'))
-            ->assertSearchedIds($expected)
+            ->assertFetchedMany($expected)
             ->assertJson([
                 'meta' => [
                     'page' => [
@@ -206,7 +206,7 @@ class CursorPagingTest extends TestCase
 
         $this->actingAsUser()
             ->doSearch(compact('page'))
-            ->assertSearchedIds($expected)
+            ->assertFetchedMany($expected)
             ->assertJson([
                 'meta' => [
                     'page' => [
@@ -255,7 +255,7 @@ class CursorPagingTest extends TestCase
 
         $this->actingAsUser()
             ->doSearch(compact('page'))
-            ->assertSearchedIds($expected)
+            ->assertFetchedMany($expected)
             ->assertJson([
                 'meta' => [
                     'page' => [
@@ -292,7 +292,7 @@ class CursorPagingTest extends TestCase
 
         $this->actingAsUser()
             ->doSearch(compact('page'))
-            ->assertSearchedIds($expected)
+            ->assertFetchedMany($expected)
             ->assertJson([
                 'meta' => [
                     'page' => [
@@ -327,7 +327,7 @@ class CursorPagingTest extends TestCase
         $response = $this
             ->actingAsUser()
             ->doSearch(compact('page'))
-            ->assertSearchedIds($expected)
+            ->assertFetchedMany($expected)
             ->assertJson([
                 'meta' => [
                     'page' => [
@@ -370,7 +370,7 @@ class CursorPagingTest extends TestCase
 
         $this->actingAsUser()
             ->doSearch(compact('page'))
-            ->assertSearchedIds($expected)
+            ->assertFetchedMany($expected)
             ->assertJson([
                 'meta' => [
                     'page' => [
@@ -413,7 +413,7 @@ class CursorPagingTest extends TestCase
 
         $this->actingAsUser()
             ->doSearch(compact('page'))
-            ->assertSearchedIds($expected)
+            ->assertFetchedMany($expected)
             ->assertJson([
                 'meta' => [
                     'page' => [
@@ -494,7 +494,7 @@ class CursorPagingTest extends TestCase
 
         $this->actingAsUser()
             ->doSearch(compact('page'))
-            ->assertSearchedIds($expected)
+            ->assertFetchedMany($expected)
             ->assertJson([
                 'meta' => [
                     'page' => [
@@ -537,7 +537,7 @@ class CursorPagingTest extends TestCase
 
         $this->actingAsUser()
             ->doSearch(compact('page'))
-            ->assertSearchedIds($expected)
+            ->assertFetchedMany($expected)
             ->assertJson([
                 'meta' => [
                     'page' => [
@@ -578,7 +578,7 @@ class CursorPagingTest extends TestCase
 
         $this->actingAsUser()
             ->doSearch(compact('page'))
-            ->assertSearchedIds($expected)
+            ->assertFetchedMany($expected)
             ->assertJson([
                 'meta' => [
                     'cursor' => [
@@ -618,7 +618,7 @@ class CursorPagingTest extends TestCase
 
         $this->actingAsUser()
             ->doSearch(compact('page'))
-            ->assertSearchedIds($expected)
+            ->assertFetchedMany($expected)
             ->assertJson([
                 'meta' => [
                     'page' => [

@@ -141,7 +141,7 @@ class ErrorsTest extends TestCase
     public function testIgnoresData($content, $method = 'GET')
     {
         $model = factory(Post::class)->create();
-        $uri = $this->api()->url()->update('posts', $model);
+        $uri = $this->jsonApiUrl('posts', $model);
 
         $this->doInvalidRequest($uri, $content, $method)
             ->assertSuccessful();

@@ -68,7 +68,10 @@ class PolymorphicHasManyTest extends TestCase
         $expected = $data;
         unset($expected['relationships']);
 
-        $id = $this->doCreate($data)->assertCreatedWithId($expected);
+        $id = $this
+            ->doCreate($data)
+            ->assertCreatedWithServerId(url('/api/v1/tags'), $expected)
+            ->id();
 
         $this->assertDatabaseMissing('taggables', [
             'tag_id' => $id,
@@ -109,7 +112,11 @@ class PolymorphicHasManyTest extends TestCase
         $expected = $data;
         unset($expected['relationships']);
 
-        $id = $this->doCreate($data)->assertCreatedWithId($expected);
+        $id = $this
+            ->doCreate($data)
+            ->assertCreatedWithServerId(url('/api/v1/tags'), $expected)
+            ->id();
+
         $tag = Tag::findUuid($id);
 
         $this->assertTaggablesAre($tag, [$post], $videos);

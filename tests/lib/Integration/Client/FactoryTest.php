@@ -28,7 +28,7 @@ class FactoryTest extends TestCase
      */
     public function testWithoutHost()
     {
-        $client = $this->api()->client(['handler' => $this->handler]);
+        $client = json_api()->client(['handler' => $this->handler]);
         $post = factory(Post::class)->make();
 
         $this->willSeeResource($post, 201);
@@ -45,7 +45,7 @@ class FactoryTest extends TestCase
      */
     public function testWithOptionsIncludingBaseUri()
     {
-        $client = $this->api()->client([
+        $client = json_api()->client([
             'handler' => $this->handler,
             'base_uri' => 'http://external.com/api/v1/',
         ]);
@@ -66,7 +66,7 @@ class FactoryTest extends TestCase
      */
     public function testWithHostAndPath()
     {
-        $client = $this->api()->client(
+        $client = json_api()->client(
             'http://example.com/foo',
             ['handler' => $this->handler]
         );
@@ -92,7 +92,7 @@ class FactoryTest extends TestCase
             'base_uri' => 'http://foobar.local/baz/bat/',
         ]);
 
-        $client = $this->api()->client($guzzle);
+        $client = json_api()->client($guzzle);
         $post = factory(Post::class)->make();
 
         $this->willSeeResource($post, 201);

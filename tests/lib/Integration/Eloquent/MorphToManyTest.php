@@ -60,7 +60,8 @@ class MorphToManyTest extends TestCase
             ],
         ];
 
-        $this->doCreate($data, ['include' => 'tags'])->assertCreatedWithId($data);
+        $this->doCreate($data, ['include' => 'tags'])
+            ->assertCreatedWithServerId(url('/api/v1/posts'), $data);
 
         $this->assertDatabaseMissing('taggables', [
             'taggable_type' => Post::class,
@@ -95,7 +96,8 @@ class MorphToManyTest extends TestCase
 
         $id = $this
             ->doCreate($data, ['include' => 'tags'])
-            ->assertCreatedWithId($data);
+            ->assertCreatedWithServerId(url('/api/v1/posts'), $data)
+            ->id();
 
         $this->assertTagIs(Post::find($id), $tag);
     }
@@ -131,7 +133,8 @@ class MorphToManyTest extends TestCase
 
         $id = $this
             ->doCreate($data, ['include' => 'tags'])
-            ->assertCreatedWithId($data);
+            ->assertCreatedWithServerId(url('/api/v1/posts'), $data)
+            ->id();
 
         $this->assertTagsAre(Post::find($id), $tags);
     }
@@ -236,7 +239,8 @@ class MorphToManyTest extends TestCase
         $post->tags()->sync($tags);
 
         $this->doReadRelated($post, 'tags')
-            ->assertReadHasMany('tags', $expected);
+            ->willSeeType('tags')
+            ->assertFetchedMany($expected);
     }
 
     public function testReadRelatedEmpty()
@@ -245,7 +249,7 @@ class MorphToManyTest extends TestCase
         $post = factory(Post::class)->create();
 
         $this->doReadRelated($post, 'tags')
-            ->assertReadHasMany(null);
+            ->assertFetchedNone();
     }
 
     public function testReadRelationship()
@@ -259,7 +263,8 @@ class MorphToManyTest extends TestCase
         });
 
         $this->doReadRelationship($post, 'tags')
-            ->assertReadHasManyIdentifiers('tags', $expected);
+            ->willSeeType('tags')
+            ->assertFetchedToMany($expected);
     }
 
     public function testReadEmptyRelationship()
@@ -267,7 +272,7 @@ class MorphToManyTest extends TestCase
         $post = factory(Post::class)->create();
 
         $this->doReadRelationship($post, 'tags')
-            ->assertReadHasManyIdentifiers(null);
+            ->assertFetchedNone();
     }
 
     public function testReplaceEmptyRelationshipWithRelatedResource()

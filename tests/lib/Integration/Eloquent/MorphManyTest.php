@@ -59,7 +59,8 @@ class MorphManyTest extends TestCase
             ],
         ];
 
-        $this->doCreate($data, ['include' => 'comments'])->assertCreatedWithId($data);
+        $this->doCreate($data, ['include' => 'comments'])
+            ->assertCreatedWithServerId(url('/api/v1/posts'), $data);
 
         $this->assertDatabaseMissing('comments', [
             'commentable_type' => Post::class,
@@ -94,7 +95,8 @@ class MorphManyTest extends TestCase
 
         $id = $this
             ->doCreate($data, ['include' => 'comments'])
-            ->assertCreatedWithId($data);
+            ->assertCreatedWithServerId(url('/api/v1/posts'), $data)
+            ->id();
 
         $this->assertCommentIs(Post::find($id), $comment);
     }
@@ -130,7 +132,8 @@ class MorphManyTest extends TestCase
 
         $id = $this
             ->doCreate($data, ['include' => 'comments'])
-            ->assertCreatedWithId($data);
+            ->assertCreatedWithServerId(url('/api/v1/posts'), $data)
+            ->id();
 
         $this->assertCommentsAre(Post::find($id), $comments);
     }
@@ -246,7 +249,8 @@ class MorphManyTest extends TestCase
         factory(Comment::class)->states('post')->create();
 
         $this->doReadRelated($model, 'comments')
-            ->assertReadHasMany('comments', $comments);
+            ->willSeeType('comments')
+            ->assertFetchedMany($comments);
     }
 
     public function testReadRelatedWithFilter()
@@ -267,7 +271,8 @@ class MorphManyTest extends TestCase
         ]);
 
         $this->doReadRelated($post, 'comments', ['filter' => ['created-by' => $user->getRouteKey()]])
-            ->assertReadHasMany('comments', $expected);
+            ->willSeeType('comments')
+            ->assertFetchedMany($expected);
     }
 
     public function testReadRelatedWithInvalidFilter()
@@ -295,7 +300,8 @@ class MorphManyTest extends TestCase
         ]);
 
         $this->doReadRelated($post, 'comments', ['sort' => 'content'])
-            ->assertReadHasMany('comments', [$b, $a]);
+            ->willSeeType('comments')
+            ->assertFetchedMany([$b, $a]);
     }
 
     public function testReadRelatedWithInvalidSort()
@@ -322,7 +328,8 @@ class MorphManyTest extends TestCase
         })->all();
 
         $this->doReadRelated($post, 'comments', ['include' => 'created-by'])
-            ->assertReadHasMany('comments', $comments)
+            ->willSeeType('comments')
+            ->assertFetchedMany($comments)
             ->assertIncluded($expected);
     }
 
@@ -379,7 +386,8 @@ class MorphManyTest extends TestCase
         factory(Comment::class)->states('post')->create();
 
         $this->doReadRelated($model, 'comments')
-            ->assertReadHasManyIdentifiers('comments', $comments);
+            ->willSeeType('comments')
+            ->assertFetchedMany($comments);
     }
 
     public function testReadEmptyRelationship()
@@ -387,7 +395,7 @@ class MorphManyTest extends TestCase
         $post = factory(Post::class)->create();
 
         $this->doReadRelationship($post, 'comments')
-            ->assertReadHasManyIdentifiers(null);
+            ->assertFetchedNone();
     }
 
     public function testReplaceEmptyRelationshipWithRelatedResource()

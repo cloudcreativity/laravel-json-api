@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Copyright 2019 Cloud Creativity Limited
  *
@@ -18,9 +17,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Testing;
 
-use CloudCreativity\LaravelJsonApi\Api\Api;
 use Illuminate\Contracts\Routing\UrlRoutable;
-use InvalidArgumentException;
 use Neomerx\JsonApi\Contracts\Http\Headers\MediaTypeInterface;
 use PHPUnit\Framework\Assert;
 
@@ -31,14 +28,6 @@ use PHPUnit\Framework\Assert;
  */
 trait MakesJsonApiRequests
 {
-
-    /**
-     * The API to test, if empty uses the default API.
-     *
-     * @var string
-     * @deprecated 2.0.0 use `$baseApiUrl` instead.
-     */
-    protected $api = '';
 
     /**
      * The base URL of the API to test.
@@ -100,7 +89,7 @@ trait MakesJsonApiRequests
             $uri .= '?' . http_build_query($queryParams->toArray());
         }
 
-        return $this->json($method, $uri, $data, $this->normalizeHeaders($headers));
+        return $this->json($method, $uri, $data, $this->jsonApiHeaders($headers));
     }
 
     /**
@@ -198,29 +187,18 @@ trait MakesJsonApiRequests
      */
     protected function doSearchById($ids, iterable $queryParams = [], iterable $headers = []): TestResponse
     {
-        $queryParams['filter'] = $queryParams['filter'] ?? [];
-        $queryParams['filter']['id'] = $this->normalizeIds($ids);
-
-        return $this->doSearch($queryParams, $headers);
-    }
-
-    /**
-     * Assert that the resource's search (index) route has not been registered.
-     *
-     * @return void
-     * @deprecated 2.0.0 use `doSearch` and check for 404/405 status.
-     */
-    protected function assertCannotSearch()
-    {
-        $searchable = true;
-
-        try {
-            $this->api()->url()->index($this->resourceType(), $this->addDefaultRouteParams([]));
-        } catch (InvalidArgumentException $ex) {
-            $searchable = false;
+        if ($ids instanceof UrlRoutable) {
+            $ids = [$ids];
         }
 
-        $this->assertFalse($searchable, 'Resource search route exists.');
+        $ids = collect($ids)->map(function ($id) {
+            return ($id instanceof UrlRoutable) ? $id->getRouteKey() : $id;
+        })->all();
+
+        $queryParams['filter'] = $queryParams['filter'] ?? [];
+        $queryParams['filter']['id'] = $ids;
+
+        return $this->doSearch($queryParams, $headers);
     }
 
     /**
@@ -238,25 +216,6 @@ trait MakesJsonApiRequests
     }
 
     /**
-     * Assert that the resource's create route has not been registered.
-     *
-     * @return void
-     * @deprecated 2.0.0 use `doCreate` and check for 404/405 status.
-     */
-    protected function assertCannotCreate()
-    {
-        $creatable = true;
-
-        try {
-            $this->api()->url()->create($this->resourceType(), $this->addDefaultRouteParams([]));
-        } catch (InvalidArgumentException $ex) {
-            $creatable = false;
-        }
-
-        $this->assertFalse($creatable, 'Resource create route exists.');
-    }
-
-    /**
      * @param mixed $resourceId
      * @param iterable $queryParams
      * @param iterable $headers
@@ -267,25 +226,6 @@ trait MakesJsonApiRequests
         $uri = $this->resourceUrl($resourceId);
 
         return $this->getJsonApi($uri, $queryParams, $headers);
-    }
-
-    /**
-     * Assert that the resource's read route has not been registered.
-     *
-     * @return void
-     * @deprecated 2.0.0 use `doRead` and check for 404/405 status.
-     */
-    protected function assertCannotRead()
-    {
-        $readable = true;
-
-        try {
-            $this->api()->url()->read($this->resourceType(), '1', $this->addDefaultRouteParams([]));
-        } catch (InvalidArgumentException $ex) {
-            $readable = false;
-        }
-
-        $this->assertFalse($readable, 'Resource read route exists.');
     }
 
     /**
@@ -308,25 +248,6 @@ trait MakesJsonApiRequests
     }
 
     /**
-     * Assert that the resource's update route has not been registered.
-     *
-     * @return void
-     * @deprecated 2.0.0 use `doUpdate` and check for 404/405 status.
-     */
-    protected function assertCannotUpdate()
-    {
-        $exists = true;
-
-        try {
-            $this->api()->url()->update($this->resourceType(), '1', $this->addDefaultRouteParams([]));
-        } catch (InvalidArgumentException $ex) {
-            $exists = false;
-        }
-
-        $this->assertFalse($exists, 'Resource update route exists.');
-    }
-
-    /**
      * @param mixed $resourceId
      * @param iterable $queryParams
      * @param iterable $headers
@@ -337,25 +258,6 @@ trait MakesJsonApiRequests
         $uri = $this->resourceUrl($resourceId);
 
         return $this->deleteJsonApi($uri, $queryParams, [], $headers);
-    }
-
-    /**
-     * Assert that the resource's delete route has not been registered.
-     *
-     * @return void
-     * @deprecated 2.0.0 use `doDelete` and check for 404/405 status.
-     */
-    protected function assertCannotDelete()
-    {
-        $deletable = true;
-
-        try {
-            $this->api()->url()->delete($this->resourceType(), '1', $this->addDefaultRouteParams([]));
-        } catch (InvalidArgumentException $ex) {
-            $deletable = false;
-        }
-
-        $this->assertFalse($deletable, 'Resource delete route exists.');
     }
 
     /**
@@ -379,32 +281,6 @@ trait MakesJsonApiRequests
     }
 
     /**
-     * Assert that the related resource route has not been registered for the supplied relationship name.
-     *
-     * @param $field
-     *      the relationship field name.
-     * @return void
-     * @deprecated 2.0.0 use `doReadRelated` and check for 404/405 status.
-     */
-    protected function assertCannotReadRelated($field)
-    {
-        $readable = true;
-
-        try {
-            $this->api()->url()->relatedResource(
-                $this->resourceType(),
-                '1',
-                $field,
-                $this->addDefaultRouteParams([])
-            );
-        } catch (InvalidArgumentException $ex) {
-            $readable = false;
-        }
-
-        $this->assertFalse($readable, "Related resource $field route exists.");
-    }
-
-    /**
      * @param mixed $resourceId
      * @param string $field
      *      the relationship field name.
@@ -422,32 +298,6 @@ trait MakesJsonApiRequests
         $uri = $this->resourceUrl($resourceId, 'relationships', $field);
 
         return $this->getJsonApi($uri, $queryParams, $headers);
-    }
-
-    /**
-     * Assert that the read relationship route has not been registered for the supplied relationship name.
-     *
-     * @param $field
-     *      the relationship field name.
-     * @return void
-     * @deprecated 2.0.0 use `doReadRelationship` and check for 404/405 status.
-     */
-    protected function assertCannotReadRelationship($field)
-    {
-        $readable = true;
-
-        try {
-            $this->api()->url()->readRelationship(
-                $this->resourceType(),
-                '1',
-                $field,
-                $this->addDefaultRouteParams([])
-            );
-        } catch (InvalidArgumentException $ex) {
-            $readable = false;
-        }
-
-        $this->assertFalse($readable, "Read relationship $field route exists.");
     }
 
     /**
@@ -477,32 +327,6 @@ trait MakesJsonApiRequests
     }
 
     /**
-     * Assert that the replace relationship route has not been registered for the supplied relationship name.
-     *
-     * @param $field
-     *      the relationship field name.
-     * @return void
-     * @deprecated 2.0.0 use `doReplaceRelationship` and check for 404/405 status.
-     */
-    protected function assertCannotReplaceRelationship($field)
-    {
-        $replaceable = true;
-
-        try {
-            $this->api()->url()->replaceRelationship(
-                $this->resourceType(),
-                '1',
-                $field,
-                $this->addDefaultRouteParams([])
-            );
-        } catch (InvalidArgumentException $ex) {
-            $replaceable = false;
-        }
-
-        $this->assertFalse($replaceable, "Replace relationship $field route exists.");
-    }
-
-    /**
      * @param mixed $resourceId
      * @param string $field
      *      the relationship field name.
@@ -526,32 +350,6 @@ trait MakesJsonApiRequests
     }
 
     /**
-     * Assert that the add-to relationship route has not been registered for the supplied relationship name.
-     *
-     * @param $field
-     *      the relationship field name.
-     * @return void
-     * @deprecated 2.0.0 use `doAddToRelationship` and check for 404/405 status.
-     */
-    protected function assertCannotAddToRelationship($field)
-    {
-        $replaceable = true;
-
-        try {
-            $this->api()->url()->addRelationship(
-                $this->resourceType(),
-                '1',
-                $field,
-                $this->addDefaultRouteParams([])
-            );
-        } catch (InvalidArgumentException $ex) {
-            $replaceable = false;
-        }
-
-        $this->assertFalse($replaceable, "Add to relationship $field route exists.");
-    }
-
-    /**
      * @param mixed $resourceId
      * @param string $field
      *      the relationship field name.
@@ -572,75 +370,6 @@ trait MakesJsonApiRequests
         $uri = $this->resourceUrl($resourceId, 'relationships', $field);
 
         return $this->deleteJsonApi($uri, $queryParams, ['data' => $data], $headers);
-    }
-
-    /**
-     * Assert that the remove-from relationship route has not been registered for the supplied relationship name.
-     *
-     * @param $field
-     *      the relationship field name.
-     * @return void
-     * @deprecated 2.0.0 use `doRemoveFromRelationship` and check for 404/405 status.
-     */
-    protected function assertCannotRemoveFromRelationship($field)
-    {
-        $replaceable = true;
-
-        try {
-            $this->api()->url()->removeRelationship(
-                $this->resourceType(),
-                '1',
-                $field,
-                $this->addDefaultRouteParams([])
-            );
-        } catch (InvalidArgumentException $ex) {
-            $replaceable = false;
-        }
-
-        $this->assertFalse($replaceable, "Remove from relationship $field route exists.");
-    }
-
-    /**
-     * Assert that the resource's create, update and delete routes do not exist.
-     *
-     * @return void
-     * @deprecated 2.0.0
-     */
-    protected function assertReadOnly()
-    {
-        $this->assertCannotCreate();
-        $this->assertCannotUpdate();
-        $this->assertCannotDelete();
-    }
-
-    /**
-     * Assert that the resource relationship's replace, add-to and remove-from routes do not exist.
-     *
-     * @param $field
-     *      the relationship field name.
-     * @return void
-     * @deprecated 2.0.0
-     */
-    protected function assertRelationshipIsReadOnly($field)
-    {
-        $this->assertCannotReplaceRelationship($field);
-        $this->assertCannotAddToRelationship($field);
-        $this->assertCannotRemoveFromRelationship($field);
-    }
-
-    /**
-     * Set the API to test.
-     *
-     * @param string|null $api
-     *      the API, or null to test the default API.
-     * @return $this
-     * @deprecated 2.0.0 use `withBaseApiUrl()`.
-     */
-    protected function withApi(?string $api): self
-    {
-        $this->api = $api;
-
-        return $this;
     }
 
     /**
@@ -742,15 +471,6 @@ trait MakesJsonApiRequests
     }
 
     /**
-     * @return Api
-     * @deprecated 2.0.0
-     */
-    protected function api()
-    {
-        return json_api($this->api ?: null);
-    }
-
-    /**
      * @param string $url
      * @return $this
      */
@@ -767,7 +487,7 @@ trait MakesJsonApiRequests
     protected function baseApiUrl(): string
     {
         if (!$this->baseApiUrl) {
-            $this->baseApiUrl = $this->api()->getUrl()->getNamespace();
+            $this->baseApiUrl = json_api()->getUrl()->getNamespace();
         }
 
         return $this->prepareUrlForRequest($this->baseApiUrl);
@@ -797,61 +517,6 @@ trait MakesJsonApiRequests
         array_unshift($extra, $this->resourceType());
 
         return $this->jsonApiUrl(...$extra);
-    }
-
-    /**
-     * Add default parameters to those provided to `assertCannot*` method.
-     *
-     * Classes can override this method if they need to add any default parameters for constructing
-     * the route link.
-     *
-     * @param array $params
-     * @return array
-     * @deprecated 2.0.0
-     */
-    protected function addDefaultRouteParams(array $params)
-    {
-        return $params;
-    }
-
-    /**
-     * Normalize ids for a find many request
-     *
-     * @param iterable|UrlRoutable $ids
-     * @return array
-     * @deprecated 2.0.0
-     */
-    protected function normalizeIds($ids)
-    {
-        if ($ids instanceof UrlRoutable) {
-            $ids = [$ids];
-        }
-
-        return collect($ids)->map(function ($id) {
-            return $this->normalizeId($id);
-        })->all();
-    }
-
-    /**
-     * Normalize an id for a resource request.
-     *
-     * @param $id
-     * @return string|int
-     * @deprecated 2.0.0
-     */
-    protected function normalizeId($id)
-    {
-        return ($id instanceof UrlRoutable) ? $id->getRouteKey() : $id;
-    }
-
-    /**
-     * @param iterable|null $headers
-     * @return array
-     * @deprecated 2.0.0 use `jsonApiHeaders()`
-     */
-    protected function normalizeHeaders(?iterable $headers): array
-    {
-        return $this->jsonApiHeaders($headers);
     }
 
     /**

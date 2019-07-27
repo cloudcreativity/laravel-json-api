@@ -17,6 +17,8 @@ use the [documented validation implementation](./docs/basics/validators.md) inst
 longer available via the facade):
   - `request()`: use `currentRoute()` instead.
   - `defaultApi()`: set the default API via `LaravelJsonApi::defaultApi()` instead.
+- All deprecated methods on the `Testing\MakesJsonApiRequests` trait and `Testing\TestResponse` class
+were removed.
 - Additionally, the following deprecated interfaces, classes and traits were removed:
   - `Api\ResourceProvider` - extend `Api\AbstractProvider` instead.
   - `Contracts\Factories\FactoryInterface`

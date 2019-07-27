@@ -75,7 +75,8 @@ class MorphToTest extends TestCase
         $id = $this
             ->actingAs($comment->user)
             ->doCreate($data, ['include' => 'created-by,commentable'])
-            ->assertCreatedWithId($data);
+            ->assertCreatedWithServerId(url('/api/v1/comments'), $data)
+            ->id();
 
         $this->assertDatabaseHas('comments', [
             'id' => $id,
@@ -106,7 +107,8 @@ class MorphToTest extends TestCase
 
         $id = $this
             ->doCreate($data, ['include' => 'commentable'])
-            ->assertCreatedWithId($data);
+            ->assertCreatedWithServerId(url('/api/v1/comments'), $data)
+            ->id();
 
         $this->assertDatabaseHas('comments', [
             'id' => $id,
@@ -215,7 +217,7 @@ class MorphToTest extends TestCase
         ];
 
         $this->doReadRelated($comment, 'commentable')
-            ->assertReadHasOne($expected);
+            ->assertFetchedOne($expected);
     }
 
     public function testReadRelatedNull()
@@ -224,7 +226,7 @@ class MorphToTest extends TestCase
         $comment = factory(Comment::class)->create();
 
         $this->doReadRelated($comment, 'commentable')
-            ->assertReadHasOne(null);
+            ->assertFetchedNull();
     }
 
     public function testReadRelationship()
@@ -232,7 +234,8 @@ class MorphToTest extends TestCase
         $comment = factory(Comment::class)->states('video')->create();
 
         $this->doReadRelationship($comment, 'commentable')
-            ->assertReadHasOneIdentifier('videos', $comment->commentable_id);
+            ->willSeeType('videos')
+            ->assertFetchedToOne($comment->commentable_id);
     }
 
     public function testReadEmptyRelationship()
@@ -240,7 +243,7 @@ class MorphToTest extends TestCase
         $comment = factory(Comment::class)->create();
 
         $this->doReadRelationship($comment, 'commentable')
-            ->assertReadHasOneIdentifier(null);
+            ->assertFetchedNull();
     }
 
     public function testReplaceNullRelationshipWithRelatedResource()
