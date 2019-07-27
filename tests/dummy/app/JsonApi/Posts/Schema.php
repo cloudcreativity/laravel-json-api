@@ -17,10 +17,10 @@
 
 namespace DummyApp\JsonApi\Posts;
 
-use CloudCreativity\LaravelJsonApi\Schema\EloquentSchema;
 use DummyApp\Post;
+use Neomerx\JsonApi\Schema\SchemaProvider;
 
-class Schema extends EloquentSchema
+class Schema extends SchemaProvider
 {
 
     /**
@@ -29,23 +29,31 @@ class Schema extends EloquentSchema
     protected $resourceType = 'posts';
 
     /**
-     * @var array
+     * @param Post $resource
+     * @return string
      */
-    protected $attributes = [
-        'title',
-        'slug',
-        'content',
-        'published_at' => 'published',
-    ];
+    public function getId($resource)
+    {
+        return (string) $resource->getRouteKey();
+    }
 
     /**
-     * @var array
+     * @param Post $resource
+     * @return array
      */
-    protected $relationships = [
-        'author',
-        'comments',
-        'tags',
-    ];
+    public function getAttributes($resource)
+    {
+        return [
+            /** There are some client tests that use an unsaved post. */
+            'created-at' => $resource->created_at ? $resource->created_at->toAtomString() : null,
+            'content' => $resource->content,
+            'deleted-at' => $resource->deleted_at ? $resource->deleted_at->toAtomString() : null,
+            'published' => $resource->published_at ? $resource->published_at->toAtomString() : null,
+            'slug' => $resource->slug,
+            'title' => $resource->title,
+            'updated-at' => $resource->updated_at ? $resource->updated_at->toAtomString() : null,
+        ];
+    }
 
     /**
      * @param Post $record
@@ -55,11 +63,34 @@ class Schema extends EloquentSchema
      */
     public function getRelationships($record, $isPrimary, array $includedRelationships)
     {
-        $relationships = parent::getRelationships($record, $isPrimary, $includedRelationships);
-        $relationships['comments'][self::META] = function () use ($record, $isPrimary) {
-            return $isPrimary ? ['count' => $record->comments()->count()] : null;
-        };
-
-        return $relationships;
+        return [
+            'author' => [
+                self::SHOW_SELF => true,
+                self::SHOW_RELATED => true,
+                self::SHOW_DATA => isset($includedRelationships['author']),
+                self::DATA => function () use ($record) {
+                    return $record->author;
+                },
+            ],
+            'comments' => [
+                self::SHOW_SELF => true,
+                self::SHOW_RELATED => true,
+                self::SHOW_DATA => isset($includedRelationships['comments']),
+                self::DATA => function () use ($record) {
+                    return $record->comments;
+                },
+                self::META => function () use ($record, $isPrimary) {
+                    return $isPrimary ? ['count' => $record->comments()->count()] : null;
+                },
+            ],
+            'tags' => [
+                self::SHOW_SELF => true,
+                self::SHOW_RELATED => true,
+                self::SHOW_DATA => isset($includedRelationships['tags']),
+                self::DATA => function () use ($record) {
+                    return $record->tags;
+                },
+            ],
+        ];
     }
 }

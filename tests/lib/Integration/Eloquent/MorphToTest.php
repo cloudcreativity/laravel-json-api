@@ -74,7 +74,7 @@ class MorphToTest extends TestCase
 
         $id = $this
             ->actingAs($comment->user)
-            ->doCreate($data)
+            ->doCreate($data, ['include' => 'created-by,commentable'])
             ->assertCreatedWithId($data);
 
         $this->assertDatabaseHas('comments', [
@@ -105,7 +105,7 @@ class MorphToTest extends TestCase
         ];
 
         $id = $this
-            ->doCreate($data)
+            ->doCreate($data, ['include' => 'commentable'])
             ->assertCreatedWithId($data);
 
         $this->assertDatabaseHas('comments', [
@@ -130,7 +130,7 @@ class MorphToTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data)->assertUpdated($data);
+        $this->doUpdate($data, ['include' => 'commentable'])->assertUpdated($data);
 
         $this->assertDatabaseHas('comments', [
             'id' => $comment->getKey(),
@@ -160,7 +160,7 @@ class MorphToTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data)->assertUpdated($data);
+        $this->doUpdate($data, ['include' => 'commentable'])->assertUpdated($data);
 
         $this->assertDatabaseHas('comments', [
             'id' => $comment->getKey(),
@@ -190,7 +190,7 @@ class MorphToTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data)->assertUpdated($data);
+        $this->doUpdate($data, ['include' => 'commentable'])->assertUpdated($data);
 
         $this->assertDatabaseHas('comments', [
             'id' => $comment->getKey(),

@@ -17,9 +17,9 @@
 
 namespace DummyPackage\Resources\Blogs;
 
-use CloudCreativity\LaravelJsonApi\Eloquent\AbstractSchema;
+use Neomerx\JsonApi\Schema\SchemaProvider;
 
-class Schema extends AbstractSchema
+class Schema extends SchemaProvider
 {
 
     /**
@@ -28,12 +28,26 @@ class Schema extends AbstractSchema
     protected $resourceType = 'blogs';
 
     /**
-     * @var array
+     * @inheritDoc
      */
-    protected $attributes = [
-        'title',
-        'article',
-        'published_at',
-    ];
+    public function getId($resource)
+    {
+        return (string) $resource->getRouteKey();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getAttributes($resource)
+    {
+        return [
+            'article' => $resource->article,
+            'created-at' => $resource->created_at->toAtomString(),
+            'published-at' => $resource->published_at ? $resource->published_at->toAtomString() : null,
+            'title' => $resource->title,
+            'updated-at' => $resource->updated_at->toAtomString(),
+        ];
+    }
+
 
 }

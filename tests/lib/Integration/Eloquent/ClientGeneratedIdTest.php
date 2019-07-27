@@ -36,9 +36,9 @@ class ClientGeneratedIdTest extends TestCase
             'type' => 'videos',
             'id' => $video->getKey(),
             'attributes' => [
-                'url' => $video->url,
-                'title' => $video->title,
                 'description' => $video->description,
+                'title' => $video->title,
+                'url' => $video->url,
             ],
         ];
 

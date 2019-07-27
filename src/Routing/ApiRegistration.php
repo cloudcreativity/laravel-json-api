@@ -193,7 +193,7 @@ final class ApiRegistration
         $this->routes->group($this->attributes(), function () use ($callback) {
             $group = new RouteRegistrar($this->routes, $this->options());
             $callback($group, $this->routes);
-            $this->api->providers()->mountAll($group, $this->routes);
+            $this->api->providers()->mountAll($group);
         });
     }
 

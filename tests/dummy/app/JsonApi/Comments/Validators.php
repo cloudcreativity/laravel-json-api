@@ -40,7 +40,13 @@ class Validators extends AbstractValidators
         'created-by',
     ];
 
-    protected $allowedIncludePaths = ['created-by'];
+    /**
+     * @var array
+     */
+    protected $allowedIncludePaths = [
+        'commentable',
+        'created-by',
+    ];
 
     /**
      * @inheritdoc

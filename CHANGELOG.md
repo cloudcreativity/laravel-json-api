@@ -18,11 +18,17 @@ longer available via the facade):
   - `request()`: use `currentRoute()` instead.
   - `defaultApi()`: set the default API via `LaravelJsonApi::defaultApi()` instead.
 - Additionally, the following deprecated interfaces, classes and traits were removed:
+  - `Api\ResourceProvider` - extend `Api\AbstractProvider` instead.
   - `Contracts\Factories\FactoryInterface`
   - `Contracts\Object\*` - all interfaces in this namespace.
+  - `Eloquent\AbstractSchema` - extend the `neomerx/json-api` schema instead.
+  - `Eloquent\Concerns\SerializesModels` trait.
   - `Http\Query\ChecksQueryParameters` trait.
   - `Http\Requests\JsonApiRequest`
   - `Object\*` - all classes in this namespace.
+  - `Schema\AbstractSchema` - extend the `neomerx/json-api` schema instead.
+  - `Schema\CreatesEloquentIdentities` trait.
+  - `Schema\EloquentSchema` - extend the `neomerx/json-api` schema instead.
 
 ## Unreleased
 

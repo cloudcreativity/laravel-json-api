@@ -17,10 +17,10 @@
 
 namespace DummyApp\JsonApi\Comments;
 
-use CloudCreativity\LaravelJsonApi\Schema\EloquentSchema;
 use DummyApp\Comment;
+use Neomerx\JsonApi\Schema\SchemaProvider;
 
-class Schema extends EloquentSchema
+class Schema extends SchemaProvider
 {
 
     /**
@@ -37,10 +37,31 @@ class Schema extends EloquentSchema
 
     /**
      * @param Comment $resource
+     * @return string
+     */
+    public function getId($resource)
+    {
+        return (string) $resource->getRouteKey();
+    }
+
+    /**
+     * @param Comment $resource
+     * @return array
+     */
+    public function getAttributes($resource)
+    {
+        return [
+            'created-at' => $resource->created_at->toAtomString(),
+            'content' => $resource->content,
+            'updated-at' => $resource->updated_at->toAtomString(),
+        ];
+    }
+
+    /**
+     * @param Comment $resource
      * @param bool $isPrimary
      * @param array $includeRelationships
      * @return array
-     * @todo have left this in so that deprecated methods are tested.
      */
     public function getRelationships($resource, $isPrimary, array $includeRelationships)
     {
@@ -48,14 +69,18 @@ class Schema extends EloquentSchema
             'commentable' => [
                 self::SHOW_SELF => true,
                 self::SHOW_RELATED => true,
-                self::DATA => isset($includeRelationships['commentable']) ?
-                    $resource->commentable : $this->createBelongsToIdentity($resource, 'commentable'),
+                self::SHOW_DATA => isset($includeRelationships['commentable']),
+                self::DATA => function () use ($resource) {
+                    return $resource->commentable;
+                },
             ],
             'created-by' => [
                 self::SHOW_SELF => true,
                 self::SHOW_RELATED => true,
-                self::DATA => isset($includeRelationships['created-by']) ?
-                    $resource->user : $this->createBelongsToIdentity($resource, 'user'),
+                self::SHOW_DATA => isset($includeRelationships['created-by']),
+                self::DATA => function () use ($resource) {
+                    return $resource->user;
+                },
             ],
         ];
     }

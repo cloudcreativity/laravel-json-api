@@ -21,7 +21,6 @@ namespace CloudCreativity\LaravelJsonApi\Factories;
 use CloudCreativity\LaravelJsonApi\Api\AbstractProvider;
 use CloudCreativity\LaravelJsonApi\Api\Api;
 use CloudCreativity\LaravelJsonApi\Api\LinkGenerator;
-use CloudCreativity\LaravelJsonApi\Api\ResourceProvider;
 use CloudCreativity\LaravelJsonApi\Api\Url;
 use CloudCreativity\LaravelJsonApi\Api\UrlGenerator;
 use CloudCreativity\LaravelJsonApi\Client\ClientSerializer;
@@ -63,10 +62,6 @@ use Neomerx\JsonApi\Contracts\Document\LinkInterface;
 use Neomerx\JsonApi\Contracts\Schema\ContainerInterface as SchemaContainerInterface;
 use Neomerx\JsonApi\Encoder\EncoderOptions;
 use Neomerx\JsonApi\Factories\Factory as BaseFactory;
-use Psr\Http\Message\RequestInterface as PsrRequest;
-use Psr\Http\Message\ResponseInterface as PsrResponse;
-use function CloudCreativity\LaravelJsonApi\http_contains_body;
-use function CloudCreativity\LaravelJsonApi\json_decode;
 
 /**
  * Class Factory
@@ -220,17 +215,11 @@ class Factory extends BaseFactory
 
     /**
      * @param $fqn
-     * @return ResourceProvider
+     * @return AbstractProvider
      */
-    public function createResourceProvider($fqn)
+    public function createResourceProvider($fqn): AbstractProvider
     {
-        $provider = $this->container->make($fqn);
-
-        if (!$provider instanceof AbstractProvider) {
-            throw new RuntimeException("Expecting $fqn to resolve to a resource provider instance.");
-        }
-
-        return $provider;
+        return $this->container->make($fqn);
     }
 
     /**
