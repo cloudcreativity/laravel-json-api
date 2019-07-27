@@ -50,6 +50,7 @@ were removed.
   - `Utils\ErrorBag`
   - `Utils\ErrorCreatorTrait`
   - `Utils\ErrorsAwareTrait`
+  - `Utils\Pointer`
   - `Utils\Replacer`
 
 ## Unreleased

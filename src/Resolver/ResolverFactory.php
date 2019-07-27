@@ -17,6 +17,8 @@
 
 namespace CloudCreativity\LaravelJsonApi\Resolver;
 
+use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
+
 /**
  * Class ResolverFactory
  *
@@ -35,18 +37,15 @@ class ResolverFactory
     public function __invoke($apiName, array $config)
     {
         $byResource = $config['by-resource'];
-        $withType = true;
 
         if ('false-0.x' === $byResource) {
-            $byResource = false;
-            $withType = false;
+            throw new RuntimeException("The 'false-0.x' resolver option is no longer supported.");
         }
 
         return new NamespaceResolver(
             $config['namespace'],
             (array) $config['resources'],
-            (bool) $byResource,
-            $withType
+            (bool) $byResource
         );
     }
 

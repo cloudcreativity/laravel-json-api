@@ -118,11 +118,6 @@ class NamespaceResolverTest extends TestCase
             ['foo-bar', 'App\JsonApi\Authorizers\FooBarAuthorizer', false],
             ['foo_bar', 'App\JsonApi\Authorizers\FooBarAuthorizer', false],
             ['fooBar', 'App\JsonApi\Authorizers\FooBarAuthorizer', false],
-            // Not by resource without type appended:
-            ['generic', 'App\JsonApi\Authorizers\Generic', false, false],
-            ['foo-bar', 'App\JsonApi\Authorizers\FooBar', false, false],
-            ['foo_bar', 'App\JsonApi\Authorizers\FooBar', false, false],
-            ['fooBar', 'App\JsonApi\Authorizers\FooBar', false, false],
         ];
     }
 
@@ -142,11 +137,6 @@ class NamespaceResolverTest extends TestCase
             ['foo-bar', 'App\JsonApi\ContentNegotiators\FooBarContentNegotiator', false],
             ['foo_bar', 'App\JsonApi\ContentNegotiators\FooBarContentNegotiator', false],
             ['fooBar', 'App\JsonApi\ContentNegotiators\FooBarContentNegotiator', false],
-            // Not by resource without type appended:
-            ['generic', 'App\JsonApi\ContentNegotiators\Generic', false, false],
-            ['foo-bar', 'App\JsonApi\ContentNegotiators\FooBar', false, false],
-            ['foo_bar', 'App\JsonApi\ContentNegotiators\FooBar', false, false],
-            ['fooBar', 'App\JsonApi\ContentNegotiators\FooBar', false, false],
         ];
     }
 
@@ -176,19 +166,6 @@ class NamespaceResolverTest extends TestCase
         $this->assertUnitNamespace($resolver, $resourceType, $type,  'App\JsonApi', $singular);
     }
 
-    /**
-     * @param $resourceType
-     * @param $type
-     * @param $singular
-     * @dataProvider notByResourceProvider
-     */
-    public function testNotByResourceWithoutType($resourceType, $type, $singular)
-    {
-        $resolver = $this->createResolver(false, false);
-
-        $this->assertUnitNamespaceWithoutType($resolver, $resourceType, $type, 'App\JsonApi', $singular);
-    }
-
     public function testAll()
     {
         $resolver = $this->createResolver();
@@ -208,12 +185,11 @@ class NamespaceResolverTest extends TestCase
      * @param $name
      * @param $expected
      * @param $byResource
-     * @param $withType
      * @dataProvider genericAuthorizerProvider
      */
-    public function testNamedAuthorizer($name, $expected, $byResource, $withType = true)
+    public function testNamedAuthorizer($name, $expected, $byResource)
     {
-        $resolver = $this->createResolver($byResource, $withType);
+        $resolver = $this->createResolver($byResource);
         $this->assertSame($expected, $resolver->getAuthorizerByName($name));
     }
 
@@ -323,24 +299,4 @@ class NamespaceResolverTest extends TestCase
         );
     }
 
-    /**
-     * @param $resolver
-     * @param $resourceType
-     * @param $type
-     * @param $namespace
-     * @param $singular
-     */
-    private function assertUnitNamespaceWithoutType($resolver, $resourceType, $type, $namespace, $singular)
-    {
-        $this->assertResolver(
-            $resolver,
-            $resourceType,
-            $type,
-            "{$namespace}\Schemas\\{$singular}",
-            "{$namespace}\Adapters\\{$singular}",
-            "{$namespace}\Validators\\{$singular}",
-            "{$namespace}\Authorizers\\{$singular}",
-            "{$namespace}\ContentNegotiators\\{$singular}"
-        );
-    }
 }

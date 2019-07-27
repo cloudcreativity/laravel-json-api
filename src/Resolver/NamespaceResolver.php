@@ -39,32 +39,17 @@ class NamespaceResolver extends AbstractResolver
     private $byResource;
 
     /**
-     * If not by resource, whether the type is included in the class name.
-     *
-     * From 2.0.0, the type will always be appended to the class name when resolution
-     * is not by resource. This option is provided for backwards compatibility with the
-     * 0.x and pre-1.0.0-alpha.3 versions.
-     *
-     * @var bool
-     * @deprecated 2.0.0 Will always append the type to the class name.
-     * @since 1.0.0-alpha.3
-     */
-    private $withType;
-
-    /**
      * NamespaceResolver constructor.
      *
      * @param string $rootNamespace
      * @param array $resources
      * @param bool $byResource
-     * @param bool $withType
      */
-    public function __construct($rootNamespace, array $resources, $byResource = true, $withType = true)
+    public function __construct($rootNamespace, array $resources, $byResource = true)
     {
         parent::__construct($resources);
         $this->rootNamespace = $rootNamespace;
         $this->byResource = $byResource;
-        $this->withType = $withType;
     }
 
     /**
@@ -79,7 +64,7 @@ class NamespaceResolver extends AbstractResolver
         }
 
         $classified = IlluminateStr::singular($classified);
-        $class = $this->withType ? $classified . IlluminateStr::singular($unit) : $classified;
+        $class = $classified . IlluminateStr::singular($unit);
 
         return $this->append(sprintf('%s\%s', IlluminateStr::plural($unit), $class));
     }
