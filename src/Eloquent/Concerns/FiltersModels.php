@@ -64,10 +64,6 @@ trait FiltersModels
     protected function filterWithScopes($query, Collection $filters): void
     {
         foreach ($filters as $name => $value) {
-            if ($name === $this->filterKeyForIds()) {
-                continue;
-            }
-
             if ($scope = $this->modelScopeForFilter($name)) {
                 $this->filterWithScope($query, $scope, $value);
             }
@@ -95,6 +91,11 @@ trait FiltersModels
         /** If the developer has specified a scope for this filter, use that. */
         if (array_key_exists($name, $this->filterScopes)) {
             return $this->filterScopes[$name];
+        }
+
+        /** If it matches our default `id` filter, we ignore it. */
+        if ($name === $this->filterKeyForIds()) {
+            return null;
         }
 
         return $this->guessScope($name);
