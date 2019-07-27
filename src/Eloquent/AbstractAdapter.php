@@ -339,7 +339,6 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
          */
         if ($this->isFindMany($filters)) {
             $this->filterByIds($query, $filters);
-            $filters->forget($this->getFindManyKey());
         }
 
         /** Hook for custom filters. */
