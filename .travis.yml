@@ -26,7 +26,7 @@ matrix:
         - PHPUNIT_VERSION=^7.0
     - php: 7.2
       env:
-        - LARAVEL_VERSION=5.9.*
+        - LARAVEL_VERSION=^6.0
         - PHPUNIT_VERSION=^8.0
     - php: 7.3
       env:
@@ -38,7 +38,7 @@ matrix:
         - PHPUNIT_VERSION=^7.0
     - php: 7.3
       env:
-        - LARAVEL_VERSION=5.9.*
+        - LARAVEL_VERSION=^6.0
         - PHPUNIT_VERSION=^8.0
 
 install:
