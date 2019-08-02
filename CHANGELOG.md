@@ -5,14 +5,13 @@ All notable changes to this project will be documented in this file. This projec
 ## Unreleased
 
 ### Added
+- Package now supports Laravel 6.
 - [#333](https://github.com/cloudcreativity/laravel-json-api/issues/333)
 Eloquent adapters now have a `filterWithScopes()` method, that maps JSON API filters to
 model scopes and the Eloquent `where*` method names. This is opt-in: i.e. to use, the
 developer must call `filterWithScopes()` within their adapter's `filter()` method.
 
 ## [1.3.0] - 2019-07-24
-
-Package now supports Laravel 5.9.
 
 ### Added
 - [#352](https://github.com/cloudcreativity/laravel-json-api/issues/352)
