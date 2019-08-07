@@ -311,7 +311,14 @@ class TestResponse extends BaseTestResponse
         $id = $this->getId();
 
         Assert::assertNotEmpty($id, 'Create response does not include a valid id.');
-        Assert::assertInternalType('string', $id);
+
+        // Assert::assertIsString does not exist in PHPUnit < 7.5 but
+        // Assert::assertInternalType is deprecated in PHPUnit >= 8.0
+        if (method_exists(Assert::class, 'assertIsString')) {
+            Assert::assertIsString($id);
+        } else {
+            Assert::assertInternalType('string', $id);
+        }
 
         return $id;
     }
