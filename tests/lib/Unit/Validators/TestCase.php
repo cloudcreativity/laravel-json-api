@@ -132,7 +132,11 @@ class TestCase extends BaseTestCase
     {
         $error = $this->findErrorAt($errors, $pointer);
 
-        $this->assertContains($needle, $error->getDetail(), "Invalid detail for error: $pointer");
+        if (method_exists($this, 'assertStringContainsString')) {
+            $this->assertStringContainsString($needle, $error->getDetail(), "Invalid detail for error: $pointer");
+        } else {
+            $this->assertContains($needle, $error->getDetail(), "Invalid detail for error: $pointer");
+        }
     }
 
     /**
