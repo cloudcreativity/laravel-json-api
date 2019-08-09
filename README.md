@@ -60,17 +60,19 @@ A demo application is available at [here](https://github.com/cloudcreativity/dem
 
 ## Laravel Versions
 
-| Laravel | This Package | EOL? |
-| --- | --- | --- |
-| 5.9.* | `^1.3` | - |
-| 5.8.* | `^1.0` | - |
-| 5.7.* | `^1.0` | - |
-| 5.6.* | `^1.0` | - |
-| 5.5.* | `^1.0` | - |
-| 5.4.* | `1.0.0-beta.3` | EOL |
+| Laravel | Laravel JSON API |
+| --- | --- |
+| ^6.0 | `^1.4` |
+| 5.8.* | `^1.0` |
+| 5.7.* | `^1.0` |
+| 5.6.* | `^1.0` |
+| 5.5.* | `^1.0` |
 
 Make sure you consult the [Upgrade Guide](http://laravel-json-api.readthedocs.io/en/latest/upgrade/) 
-when upgrading.
+when upgrading between major or pre-release versions.
+
+> You may notice that there are `2.0.0-alpha` tags. We **do not** recommend using these versions
+> until we hit `beta` releases.
 
 ## Lumen
 
