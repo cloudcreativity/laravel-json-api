@@ -364,7 +364,6 @@ class GeneratorsTest extends TestCase
 
     /**
      * @param bool $bool
-     * @param bool $withoutType
      * @return $this
      */
     private function byResource($bool)
@@ -377,7 +376,6 @@ class GeneratorsTest extends TestCase
     }
 
     /**
-     * @param bool $withoutType
      * @return $this
      */
     private function notByResource()
@@ -415,9 +413,9 @@ class GeneratorsTest extends TestCase
     {
         $content = $this->assertAdapter();
 
-        $this->assertContains('Eloquent\AbstractAdapter', $content);
-        $this->assertNotContains('use DummyApp\Company;', $content);
-        $this->assertContains('parent::__construct(new \DummyApp\Company(), $paging);', $content);
+        $this->assertContentContains('Eloquent\AbstractAdapter', $content);
+        $this->assertContentNotContains('use DummyApp\Company;', $content);
+        $this->assertContentContains('parent::__construct(new \DummyApp\Company(), $paging);', $content);
     }
 
     /**
@@ -426,7 +424,7 @@ class GeneratorsTest extends TestCase
     private function assertGenericAdapter()
     {
         $content = $this->assertAdapter();
-        $this->assertContains('Adapter\AbstractResourceAdapter', $content);
+        $this->assertContentContains('Adapter\AbstractResourceAdapter', $content);
     }
 
     /**
@@ -442,11 +440,11 @@ class GeneratorsTest extends TestCase
         $content = $this->files->get($file);
 
         if ($this->byResource) {
-            $this->assertContains('namespace DummyApp\JsonApi\Companies;', $content);
-            $this->assertContains('class Adapter extends', $content);
+            $this->assertContentContains('namespace DummyApp\JsonApi\Companies;', $content);
+            $this->assertContentContains('class Adapter extends', $content);
         } else {
-            $this->assertContains('namespace DummyApp\JsonApi\Adapters;', $content);
-            $this->assertContains("class CompanyAdapter extends", $content);
+            $this->assertContentContains('namespace DummyApp\JsonApi\Adapters;', $content);
+            $this->assertContentContains("class CompanyAdapter extends", $content);
         }
 
         return $content;
@@ -458,7 +456,7 @@ class GeneratorsTest extends TestCase
     private function assertEloquentSchema()
     {
         $content = $this->assertSchema();
-        $this->assertContains('return (string) $resource->getRouteKey();', $content);
+        $this->assertContentContains('return (string) $resource->getRouteKey();', $content);
     }
 
     /**
@@ -467,7 +465,7 @@ class GeneratorsTest extends TestCase
     private function assertGenericSchema()
     {
         $content = $this->assertSchema();
-        $this->assertNotContains('return (string) $resource->getRouteKey();', $content);
+        $this->assertContentNotContains('return (string) $resource->getRouteKey();', $content);
     }
 
     /**
@@ -482,15 +480,15 @@ class GeneratorsTest extends TestCase
         $this->assertFileExists($file);
         $content = $this->files->get($file);
 
-        $this->assertContains('extends SchemaProvider', $content);
-        $this->assertContains("protected \$resourceType = 'companies';", $content);
+        $this->assertContentContains('extends SchemaProvider', $content);
+        $this->assertContentContains("protected \$resourceType = 'companies';", $content);
 
         if ($this->byResource) {
-            $this->assertContains('namespace DummyApp\JsonApi\Companies;', $content);
-            $this->assertContains('class Schema extends', $content);
+            $this->assertContentContains('namespace DummyApp\JsonApi\Companies;', $content);
+            $this->assertContentContains('class Schema extends', $content);
         } else {
-            $this->assertContains('namespace DummyApp\JsonApi\Schemas;', $content);
-            $this->assertContains("class CompanySchema extends", $content);
+            $this->assertContentContains('namespace DummyApp\JsonApi\Schemas;', $content);
+            $this->assertContentContains("class CompanySchema extends", $content);
         }
 
         return $content;
@@ -508,15 +506,15 @@ class GeneratorsTest extends TestCase
         $this->assertFileExists($file);
         $content = $this->files->get($file);
 
-        $this->assertNotContains('use DummyApp\Company;', $content);
-        $this->assertContains('@param mixed|null $record', $content);
+        $this->assertContentNotContains('use DummyApp\Company;', $content);
+        $this->assertContentContains('@param mixed|null $record', $content);
 
         if ($this->byResource) {
-            $this->assertContains('namespace DummyApp\JsonApi\Companies;', $content);
-            $this->assertContains('class Validators extends', $content);
+            $this->assertContentContains('namespace DummyApp\JsonApi\Companies;', $content);
+            $this->assertContentContains('class Validators extends', $content);
         } else {
-            $this->assertContains('namespace DummyApp\JsonApi\Validators;', $content);
-            $this->assertContains("class CompanyValidator extends", $content);
+            $this->assertContentContains('namespace DummyApp\JsonApi\Validators;', $content);
+            $this->assertContentContains("class CompanyValidator extends", $content);
         }
     }
 
@@ -533,12 +531,12 @@ class GeneratorsTest extends TestCase
         $this->assertFileExists($file);
         $content = $this->files->get($file);
 
-        $this->assertContains("class {$class} extends AbstractAuthorizer", $content);
+        $this->assertContentContains("class {$class} extends AbstractAuthorizer", $content);
 
         if ($this->byResource) {
-            $this->assertContains('namespace DummyApp\JsonApi;', $content);
+            $this->assertContentContains('namespace DummyApp\JsonApi;', $content);
         } else {
-            $this->assertContains('namespace DummyApp\JsonApi\Authorizers;', $content);
+            $this->assertContentContains('namespace DummyApp\JsonApi\Authorizers;', $content);
         }
     }
 
@@ -555,11 +553,11 @@ class GeneratorsTest extends TestCase
         $content = $this->files->get($file);
 
         if ($this->byResource) {
-            $this->assertContains('namespace DummyApp\JsonApi\Companies;', $content);
-            $this->assertContains('class Authorizer extends AbstractAuthorizer', $content);
+            $this->assertContentContains('namespace DummyApp\JsonApi\Companies;', $content);
+            $this->assertContentContains('class Authorizer extends AbstractAuthorizer', $content);
         } else {
-            $this->assertContains('namespace DummyApp\JsonApi\Authorizers;', $content);
-            $this->assertContains("class CompanyAuthorizer extends", $content);
+            $this->assertContentContains('namespace DummyApp\JsonApi\Authorizers;', $content);
+            $this->assertContentContains("class CompanyAuthorizer extends", $content);
         }
     }
 
@@ -577,12 +575,12 @@ class GeneratorsTest extends TestCase
         $this->assertFileExists($file);
         $content = $this->files->get($file);
 
-        $this->assertContains("class {$class} extends BaseContentNegotiator", $content);
+        $this->assertContentContains("class {$class} extends BaseContentNegotiator", $content);
 
         if ($this->byResource) {
-            $this->assertContains('namespace DummyApp\JsonApi;', $content);
+            $this->assertContentContains('namespace DummyApp\JsonApi;', $content);
         } else {
-            $this->assertContains('namespace DummyApp\JsonApi\ContentNegotiators;', $content);
+            $this->assertContentContains('namespace DummyApp\JsonApi\ContentNegotiators;', $content);
         }
     }
 
@@ -599,11 +597,39 @@ class GeneratorsTest extends TestCase
         $content = $this->files->get($file);
 
         if ($this->byResource) {
-            $this->assertContains('namespace DummyApp\JsonApi\Companies;', $content);
-            $this->assertContains('class ContentNegotiator extends BaseContentNegotiator', $content);
+            $this->assertContentContains('namespace DummyApp\JsonApi\Companies;', $content);
+            $this->assertContentContains('class ContentNegotiator extends BaseContentNegotiator', $content);
         } else {
-            $this->assertContains('namespace DummyApp\JsonApi\ContentNegotiators;', $content);
-            $this->assertContains("class CompanyContentNegotiator extends BaseContentNegotiator", $content);
+            $this->assertContentContains('namespace DummyApp\JsonApi\ContentNegotiators;', $content);
+            $this->assertContentContains("class CompanyContentNegotiator extends BaseContentNegotiator", $content);
+        }
+    }
+
+    /**
+     * @param string $expected
+     * @param string $content
+     * @param string $message
+     */
+    private function assertContentContains($expected, $content, $message = '')
+    {
+        if (method_exists($this, 'assertStringContainsString')) {
+            $this->assertStringContainsString($expected, $content, $message);
+        } else {
+            $this->assertContains($expected, $content, $message);
+        }
+    }
+
+    /**
+     * @param string $expected
+     * @param string $content
+     * @param string $message
+     */
+    private function assertContentNotContains($expected, $content, $message = '')
+    {
+        if (method_exists($this, 'assertStringNotContainsString')) {
+            $this->assertStringNotContainsString($expected, $content, $message);
+        } else {
+            $this->assertNotContains($expected, $content, $message);
         }
     }
 }
