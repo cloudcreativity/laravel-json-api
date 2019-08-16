@@ -416,10 +416,8 @@ class ErrorTranslator
             $failures = $this->createValidationFailures($failed[$key] ?? []);
 
             foreach ($messages as $detail) {
-                $failed = $failures->shift() ?: [];
-
                 if ($closure) {
-                    $errors->add($this->call($closure, $key, $detail, $failed));
+                    $errors->add($this->call($closure, $key, $detail, ($failures->shift() ?: [])));
                     continue;
                 }
 
