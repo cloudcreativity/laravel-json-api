@@ -60,13 +60,13 @@ A demo application is available at [here](https://github.com/cloudcreativity/dem
 
 ## Laravel Versions
 
-| Laravel | Laravel JSON API |
+| Laravel | This Package |
 | --- | --- |
-| ^6.0 | `^1.4` |
-| 5.8.* | `^1.0` |
-| 5.7.* | `^1.0` |
-| 5.6.* | `^1.0` |
-| 5.5.* | `^1.0` |
+| `^6.0` | `^1.4` |
+| `5.8.*` | `^1.0` |
+| `5.7.*` | `^1.0` |
+| `5.6.*` | `^1.0` |
+| `5.5.*` | `^1.0` |
 
 Make sure you consult the [Upgrade Guide](http://laravel-json-api.readthedocs.io/en/latest/upgrade/) 
 when upgrading between major or pre-release versions.
