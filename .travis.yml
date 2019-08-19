@@ -35,12 +35,12 @@ matrix:
     - php: "7.3"
       env:
         - LARAVEL_VERSION=^6.0
-        - PHPUNIT_VERSION=^7.5
+        - PHPUNIT_VERSION=^8.0
   allow_failures:
     - php: "7.3"
       env:
         - LARAVEL_VERSION=^6.0
-        - PHPUNIT_VERSION=^7.5
+        - PHPUNIT_VERSION=^8.0
 
 install:
   - composer require "laravel/framework:${LARAVEL_VERSION}" --no-update -n
