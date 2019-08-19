@@ -417,8 +417,7 @@ class ErrorTranslator
 
             foreach ($messages as $detail) {
                 if ($closure) {
-                    
-                    $currentFailure = $failures->shift() ?: []; 
+                    $currentFailure = $failures->shift() ?: [];
                     $errors->add($this->call($closure, $key, $detail, $currentFailure));
                     continue;
                 }

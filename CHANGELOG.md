@@ -2,10 +2,12 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
-## Unreleased
+## [1.3.1] - 2019-08-19
 
 ### Fixed
 - Updated Travis config for Laravel `5.9` being renamed `6.0`.
+- [#400](https://github.com/cloudcreativity/laravel-json-api/pull/400)
+Fix overridden variable in error translator.
 
 ## [1.3.0] - 2019-07-24
 
