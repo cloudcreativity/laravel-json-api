@@ -478,7 +478,10 @@ class ErrorTranslator
      */
     protected function trans(string $key, string $member, array $replace = [], ?string $locale = null)
     {
-        return $this->translator->trans(
+        // Laravel 6.0 changes the interface from `trans` to `get`.
+        $fn = method_exists($this->translator, 'trans') ? 'trans' : 'get';
+
+        return $this->translator->{$fn}(
             "jsonapi::errors.{$key}.{$member}",
             $replace,
             $locale
@@ -542,7 +545,10 @@ class ErrorTranslator
      */
     protected function convertRuleName(string $rule): string
     {
-        return $this->translator->trans(
+        // Laravel 6.0 changes interface from `trans` to `get`
+        $fn = method_exists($this->translator, 'trans') ? 'trans' : 'get';
+
+        return $this->translator->{$fn}(
             Str::dasherize(class_basename($rule))
         );
     }
