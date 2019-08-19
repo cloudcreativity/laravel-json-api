@@ -2,9 +2,12 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
-## [1.3.0] - 2019-07-24
+## Unreleased
 
-Package now supports Laravel 5.9.
+### Fixed
+- Updated Travis config for Laravel `5.9` being renamed `6.0`.
+
+## [1.3.0] - 2019-07-24
 
 ### Added
 - [#352](https://github.com/cloudcreativity/laravel-json-api/issues/352)
