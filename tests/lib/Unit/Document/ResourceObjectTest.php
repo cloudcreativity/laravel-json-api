@@ -74,7 +74,7 @@ class ResourceObjectTest extends TestCase
                 ],
             ],
         ];
-        
+
         $this->resource = ResourceObject::create($this->values);
     }
 
@@ -388,6 +388,62 @@ class ResourceObjectTest extends TestCase
         $expected['relationships']['comments']['data'] = $comments;
 
         $this->assertNotSame($this->resource, $actual = $this->resource->replace('comments', $comments));
+        $this->assertSame($this->values, $this->resource->toArray(), 'original resource is not modified');
+        $this->assertSame($expected, $actual->toArray());
+    }
+
+    public function testPutAttribute(): void
+    {
+        $expected = $this->values;
+        $expected['attributes']['foobar'] = 'My first post.';
+
+        $this->assertNotSame($this->resource, $actual = $this->resource->put('foobar', 'My first post.'));
+        $this->assertSame($this->values, $this->resource->toArray(), 'original resource is not modified');
+        $this->assertSame($expected, $actual->toArray());
+    }
+
+    public function testPutArrayAttribute(): void
+    {
+        $expected = $this->values;
+        $expected['attributes']['foobar'] = ['baz', 'bat'];
+
+        $this->assertNotSame($this->resource, $actual = $this->resource->put('foobar', ['baz', 'bat']));
+        $this->assertSame($this->values, $this->resource->toArray(), 'original resource is not modified');
+        $this->assertSame($expected, $actual->toArray());
+    }
+
+    public function testPutToOne(): void
+    {
+        $author = ['type' => 'users', 'id' => '999'];
+
+        $expected = $this->values;
+        $expected['relationships']['foobar']['data'] = $author;
+
+        $this->assertNotSame($this->resource, $actual = $this->resource->putRelation('foobar', $author));
+        $this->assertSame($this->values, $this->resource->toArray(), 'original resource is not modified');
+        $this->assertSame($expected, $actual->toArray());
+    }
+
+    public function testPutToOneNull(): void
+    {
+        $expected = $this->values;
+        $expected['relationships']['foobar']['data'] = null;
+
+        $this->assertNotSame($this->resource, $actual = $this->resource->putRelation('foobar', null));
+        $this->assertSame($this->values, $this->resource->toArray(), 'original resource is not modified');
+        $this->assertSame($expected, $actual->toArray());
+    }
+
+    public function testPutToMany(): void
+    {
+        $comments = [
+            ['type' => 'comments', 'id' => '123456'],
+        ];
+
+        $expected = $this->values;
+        $expected['relationships']['foobar']['data'] = $comments;
+
+        $this->assertNotSame($this->resource, $actual = $this->resource->putRelation('foobar', $comments));
         $this->assertSame($this->values, $this->resource->toArray(), 'original resource is not modified');
         $this->assertSame($expected, $actual->toArray());
     }

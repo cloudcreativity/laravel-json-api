@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file. This projec
 Eloquent adapters now have a `filterWithScopes()` method, that maps JSON API filters to
 model scopes and the Eloquent `where*` method names. This is opt-in: i.e. to use, the
 developer must call `filterWithScopes()` within their adapter's `filter()` method.
+- Added `put`, `putAttr` and `putRelation` methods to the `ResourceObject` class.
 
 ## [1.3.1] - 2019-08-19
 
