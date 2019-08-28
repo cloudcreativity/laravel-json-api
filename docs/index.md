@@ -20,7 +20,7 @@ For full information on the spec, plus examples, see [http://jsonapi.org](http:/
 ## Tutorial
 
 Want a tutorial to get started? Read the
-[Laravel tutorial on the *How to JSON:API* website.](https://howtojsonapi.com/laravel.html).
+[Laravel tutorial on the *How to JSON:API* website.](https://howtojsonapi.com/laravel.html)
 
 ## Demo
 
