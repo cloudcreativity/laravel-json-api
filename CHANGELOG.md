@@ -65,6 +65,14 @@ were removed.
 Eloquent adapters now have a `filterWithScopes()` method, that maps JSON API filters to
 model scopes and the Eloquent `where*` method names. This is opt-in: i.e. to use, the
 developer must call `filterWithScopes()` within their adapter's `filter()` method.
+- Added `put`, `putAttr` and `putRelation` methods to the `ResourceObject` class.
+
+## [1.3.1] - 2019-08-19
+
+### Fixed
+- Updated Travis config for Laravel `5.9` being renamed `6.0`.
+- [#400](https://github.com/cloudcreativity/laravel-json-api/pull/400)
+Fix overridden variable in error translator.
 
 ## [1.3.0] - 2019-07-24
 
