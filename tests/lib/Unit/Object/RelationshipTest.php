@@ -37,7 +37,7 @@ class RelationshipTest extends TestCase
     protected $belongsTo;
     protected $hasMany;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->belongsTo = new stdClass();
         $this->belongsTo->{ResourceIdentifier::TYPE} = 'foo';

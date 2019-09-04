@@ -116,6 +116,16 @@ class ResourceTest extends TestCase
     }
 
     /**
+     * As the posts adapter uses the `FiltersModel` trait we need to check
+     * how it handles unrecognised parameters.
+     */
+    public function testUnrecognisedFilter()
+    {
+        $this->doSearch(['filter' => ['foo' => 'bar', 'slug' => 'my-first-post']])
+            ->assertStatus(400);
+    }
+
+    /**
      * Test searching with included resources.
      */
     public function testSearchWithIncluded()

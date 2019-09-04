@@ -26,12 +26,13 @@ use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use Illuminate\Container\Container as IlluminateContainer;
 use League\Flysystem\AdapterInterface;
 use Neomerx\JsonApi\Contracts\Schema\SchemaProviderInterface;
+use PHPUnit\Framework\MockObject\MockObject;
 
 class ContainerTest extends TestCase
 {
 
     /**
-     * @var \PHPUnit_Framework_MockObject_MockObject|ResolverInterface
+     * @var MockObject|ResolverInterface
      */
     private $resolver;
 
@@ -41,14 +42,14 @@ class ContainerTest extends TestCase
     private $container;
 
     /**
-     * @var \PHPUnit_Framework_MockObject_MockObject|IlluminateContainer
+     * @var MockObject|IlluminateContainer
      */
     private $illuminateContainer;
 
     /**
      * @return void
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
         $this->resolver = $this->createMock(ResolverInterface::class);

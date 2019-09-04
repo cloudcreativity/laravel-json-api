@@ -56,6 +56,13 @@ class Adapter extends AbstractAdapter
     ];
 
     /**
+     * @var array
+     */
+    protected $filterScopes = [
+        'title' => 'likeTitle',
+    ];
+
+    /**
      * Adapter constructor.
      *
      * @param StandardStrategy $paging
@@ -114,17 +121,7 @@ class Adapter extends AbstractAdapter
      */
     protected function filter($query, Collection $filters)
     {
-        if ($slug = $filters->get('slug')) {
-            $query->where('slug', $slug);
-        }
-
-        if ($title = $filters->get('title')) {
-            $query->where('title', 'like', $title . '%');
-        }
-
-        if ($filters->has('published')) {
-            $query->whereNotNull('published_at');
-        }
+        $this->filterWithScopes($query, $filters);
     }
 
     /**

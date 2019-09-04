@@ -2,6 +2,16 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## [1.4.0] - 2019-09-04
+
+### Added
+- Package now supports Laravel 6.
+- [#333](https://github.com/cloudcreativity/laravel-json-api/issues/333)
+Eloquent adapters now have a `filterWithScopes()` method, that maps JSON API filters to
+model scopes and the Eloquent `where*` method names. This is opt-in: i.e. to use, the
+developer must call `filterWithScopes()` within their adapter's `filter()` method.
+- Added `put`, `putAttr` and `putRelation` methods to the `ResourceObject` class.
+
 ## [1.3.1] - 2019-08-19
 
 ### Fixed

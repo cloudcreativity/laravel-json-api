@@ -11,7 +11,8 @@ highly coupled with the application's logic and choice of data storage.
 This package therefore provides the following capabilities:
 
 - Validation of the `filter` parameter.
-- An easy hook in the Eloquent adapter to convert validated filter parameters to database queries. 
+- An easy hook in the Eloquent adapter to convert validated filter parameters to database queries.
+- An opt-in implementation to map JSON API filters to model scopes and/or Eloquent's magic `where*` method.
 
 ## Example Requests
 
@@ -72,13 +73,15 @@ class Validators extends AbstractValidators
 
 ## Validation
 
-Filter parameters should always be validated to ensure that their use in database queries is valid. You can
-validate them in your [Validators](../basics/validators.md) query rules. For example:
+Filter parameters should always be validated to ensure that their use in database queries is valid. 
+You can validate them in your [Validators](../basics/validators.md) query rules. For example:
 
 ```php
 class Validators extends AbstractValidators
 {
     // ...
+
+    protected $allowedFilteringParameters = ['title', 'slug', 'authors'];
 
     protected function queryRules(): array
     {
@@ -93,29 +96,8 @@ class Validators extends AbstractValidators
 }
 ```
 
-By default we allow a client to submit any filter parameters as we assume that you will validate the values
-of expected filters as in the example above. However, you can whitelist expected filter parameters by listing
-them on the `$allowedFilteringParameters` of your validators class. For example:
-
-```php
-class Validators extends AbstractValidators
-{
-    // ...
-    
-    protected $allowedFilteringParameters = ['title', 'authors'];
-
-    protected function queryRules(): array
-    {
-        return [
-            'filter.title' => 'filled|string',
-            'filter.slug' => 'filled|string',
-            'filter.authors' => 'array|min:1',
-            'filter.authors.*' => 'integer',
-        ];
-    }
-
-}
-```
+The above whitelists the allowed filter parameters, and then also validates the values that can be
+submitted for each.
 
 Any requests that contain filter keys that are not in your allowed filtering parameters list will be rejected
 with a `400 Bad Request` response, for example:
@@ -143,7 +125,75 @@ Content-Type: application/vnd.api+json
 The Eloquent adapter provides a `filter` method that allows you to implement your filtering logic.
 This method is provided with an Eloquent query builder and the filters provided by the client.
 
-For example, our `posts` adapter filtering implementation could be:
+### Filter Scopes
+
+A newly generated Eloquent adapter will use our `filterWithScopes()` implementation. For example:
+
+```php
+class Adapter extends AbstractAdapter
+{
+
+    // ...
+
+    /**
+     * Mapping of JSON API filter names to model scopes.
+     *
+     * @var array
+     */
+    protected $filterScopes = [];
+
+    /**
+     * @param Builder $query
+     * @param Collection $filters
+     * @return void
+     */
+    protected function filter($query, Collection $filters)
+    {
+        $this->filterWithScopes($query, $filters);
+    }
+}
+```
+
+The `filterWithScopes` method will map JSON API filters to model scopes, and pass the filter value to that scope.
+For example, if the client has sent a `filter[slug]` query parameter, we expect either there to be a 
+`scopeSlug` method on the model, or we will use Eloquent's magic `whereSlug` method.
+
+If you need to map a filter parameter to a different scope name, then you can define it here.
+For example if `filter[slug]` needed to be passed to the `onlySlug` scope, it can be defined
+as follows:
+
+```php
+protected $filterScopes = [
+    'slug' => 'onlySlug'
+];
+```
+
+If you want a filter parameter to not be mapped, define the mapping as `null`, for example:
+
+```php
+protected $filterScopes = [
+    'slug' => null
+];
+```
+
+Alternatively you could let some filters be applied using scopes, and then implement your own logic
+for others. For example:
+
+```php
+protected function filter($query, Collection $filters)
+{
+    $this->filterWithScopes($query, $filters->only('foo', 'bar', 'bat'));
+
+    if ($baz = $filters->get('baz')) {
+        // filter logic for baz.
+    }
+}
+```
+
+### Custom Filter Logic
+
+If you do not want to use our filter by scope implementation, then it is easy to implement your
+own logic. Remove the call to `filterWithScopes()` and insert your own logic. For example:
 
 ```php
 class Adapter extends AbstractAdapter
@@ -166,5 +216,7 @@ class Adapter extends AbstractAdapter
 }
 ```
 
-> As filters are also applied when filtering the resource through a relationship, it is good practice
+### Relationships
+
+Filters are also applied when filtering the resource through a relationship. It is good practice
 to qualify any column names.

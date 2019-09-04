@@ -69,7 +69,10 @@ A demo application is available at [here](https://github.com/cloudcreativity/dem
 | `5.5.*` | `^1.0` |
 
 Make sure you consult the [Upgrade Guide](http://laravel-json-api.readthedocs.io/en/latest/upgrade/) 
-when upgrading.
+when upgrading between major or pre-release versions.
+
+> You may notice that there are `2.0.0-alpha` tags. We **do not** recommend using these versions
+> until we hit `beta` releases.
 
 ## Lumen
 

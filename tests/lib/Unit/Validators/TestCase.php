@@ -65,7 +65,7 @@ class TestCase extends BaseTestCase
     /**
      * @return void
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
         $store = $this->createMock(StoreInterface::class);
@@ -132,7 +132,11 @@ class TestCase extends BaseTestCase
     {
         $error = $this->findErrorAt($errors, $pointer);
 
-        $this->assertContains($needle, $error->getDetail(), "Invalid detail for error: $pointer");
+        if (method_exists($this, 'assertStringContainsString')) {
+            $this->assertStringContainsString($needle, $error->getDetail(), "Invalid detail for error: $pointer");
+        } else {
+            $this->assertContains($needle, $error->getDetail(), "Invalid detail for error: $pointer");
+        }
     }
 
     /**

@@ -42,7 +42,7 @@ class ErrorCreatorTraitTest extends TestCase
      */
     private $repository;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->repository = new ErrorRepository(new Replacer());
     }

@@ -522,6 +522,58 @@ class ResourceObject implements Arrayable, \IteratorAggregate, \JsonSerializable
     }
 
     /**
+     * Set a field.
+     *
+     * Sets the provided value as a relation if it is already defined as a relation.
+     * Otherwise, sets it as an attribute.
+     *
+     * @param string $field
+     * @param mixed|null $value
+     * @return ResourceObject
+     */
+    public function put(string $field, $value): self
+    {
+        if ($this->isRelationship($field)) {
+            return $this->putRelation($field, $value);
+        }
+
+        return $this->putAttr($field, $value);
+    }
+
+    /**
+     * Set an attribute.
+     *
+     * @param string $field
+     * @param mixed|null $value
+     * @return ResourceObject
+     */
+    public function putAttr(string $field, $value): self
+    {
+        $copy = clone $this;
+        $copy->attributes[$field] = $value;
+        $copy->normalize();
+
+        return $copy;
+    }
+
+    /**
+     * Set a relation.
+     *
+     * @param string $field
+     * @param array|null $value
+     * @return ResourceObject
+     */
+    public function putRelation(string $field, ?array $value): self
+    {
+        $copy = clone $this;
+        $copy->relationships[$field] = $copy->relationships[$field] ?? [];
+        $copy->relationships[$field]['data'] = $value;
+        $copy->normalize();
+
+        return $copy;
+    }
+
+    /**
      * Convert a validation key to a JSON pointer.
      *
      * @param string $key
@@ -683,35 +735,6 @@ class ResourceObject implements Arrayable, \IteratorAggregate, \JsonSerializable
         $copy = clone $this;
         $copy->type = $type;
         $copy->id = $id;
-        $copy->normalize();
-
-        return $copy;
-    }
-
-    /**
-     * @param string $field
-     * @param $value
-     * @return ResourceObject
-     */
-    private function putAttr(string $field, $value): self
-    {
-        $copy = clone $this;
-        $copy->attributes[$field] = $value;
-        $copy->normalize();
-
-        return $copy;
-    }
-
-    /**
-     * @param string $field
-     * @param array|null $value
-     * @return ResourceObject
-     */
-    private function putRelation(string $field, ?array $value): self
-    {
-        $copy = clone $this;
-        $copy->relationships[$field] = $copy->relationships[$field] ?? [];
-        $copy->relationships[$field]['data'] = $value;
         $copy->normalize();
 
         return $copy;

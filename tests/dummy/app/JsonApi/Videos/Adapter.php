@@ -17,7 +17,6 @@
 
 namespace DummyApp\JsonApi\Videos;
 
-use CloudCreativity\LaravelJsonApi\Document\ResourceObject;
 use CloudCreativity\LaravelJsonApi\Eloquent\AbstractAdapter;
 use CloudCreativity\LaravelJsonApi\Pagination\StandardStrategy;
 use DummyApp\Video;
@@ -40,12 +39,12 @@ class Adapter extends AbstractAdapter
 
     /**
      * @param Video $video
-     * @param ResourceObject $resource
+     * @param $resource
      * @return void
      */
-    protected function creating(Video $video, ResourceObject $resource)
+    protected function creating(Video $video, $resource)
     {
-        $video->{$video->getKeyName()} = $resource->getId();
+        $video->{$video->getKeyName()} = $resource['id'];
         $video->user()->associate(Auth::user());
     }
 

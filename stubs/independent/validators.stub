@@ -24,6 +24,14 @@ class DummyClass extends AbstractValidators
     protected $allowedSortParameters = [];
 
     /**
+     * The filters a client is allowed send.
+     *
+     * @var string[]|null
+     *      the allowed filters, an empty array for none allowed, or null to allow all.
+     */
+    protected $allowedFilteringParameters = [];
+
+    /**
      * Get resource validation rules.
      *
      * @param mixed|null $record

@@ -96,6 +96,9 @@ class Adapter extends AbstractAdapter
 }
 ```
 
+If your resource supports client-generated ids, refer to the client-generated ids section in the
+[Creating Resources chapter.](../crud/creating.md)
+
 ### Attributes
 
 When filling a model with attributes received in a JSON API request, the adapter will convert the JSON API
@@ -707,19 +710,8 @@ class Adapter extends AbstractAdapter
 }
 ```
 
-Or if your resource uses a client-generated ID, you can assign the id in the `creating` hook:
-
-```php
-class Adapter extends AbstractAdapter
-{
-    // ...
-    
-    protected function creating(Comment $comment, $resource): void
-    {
-        $comment->{$comment->getRouteKeyName()} = $resource['id']; 
-    }
-}
-```
+> If your resource uses a [client-generated ID](../crud/creating.md#client-generated-ids), you 
+will need to use the `creating` hook to assign the id to the model.
 
 There are two additional hooks that are invoked when an adapter is deleting a resource: `deleting` and `deleted`.
 These receive the record being deleted as the first function argument.

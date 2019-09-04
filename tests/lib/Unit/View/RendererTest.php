@@ -52,7 +52,7 @@ class RendererTest extends TestCase
     /**
      * @return void
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         /** @var JsonApiService $service */
         $service = $this->service = $this->createMock(JsonApiService::class);

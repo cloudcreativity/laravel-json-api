@@ -18,6 +18,13 @@ class DummyClass extends AbstractAdapter
     protected $attributes = [];
 
     /**
+     * Mapping of JSON API filter names to model scopes.
+     *
+     * @var array
+     */
+    protected $filterScopes = [];
+
+    /**
      * Adapter constructor.
      *
      * @param StandardStrategy $paging
@@ -34,7 +41,7 @@ class DummyClass extends AbstractAdapter
      */
     protected function filter($query, Collection $filters)
     {
-        // TODO
+        $this->filterWithScopes($query, $filters);
     }
 
 }

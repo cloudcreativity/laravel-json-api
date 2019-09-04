@@ -43,7 +43,8 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
 
     use Concerns\DeserializesAttributes,
         Concerns\IncludesModels,
-        Concerns\SortsModels;
+        Concerns\SortsModels,
+        Concerns\FiltersModels;
 
     /**
      * @var Model
@@ -332,7 +333,10 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      */
     protected function applyFilters($query, Collection $filters)
     {
-        /** By default we support the `id` filter. */
+        /**
+         * By default we support the `id` filter. If we use the filter,
+         * we remove it so that it is not re-used by the `filter` method.
+         */
         if ($this->isFindMany($filters)) {
             $this->filterByIds($query, $filters);
         }

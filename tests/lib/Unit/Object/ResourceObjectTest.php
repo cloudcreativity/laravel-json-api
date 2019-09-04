@@ -46,7 +46,7 @@ class ResourceObjectTest extends TestCase
     /**
      * @return void
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->data = (object) [
             'type' => 'foo',

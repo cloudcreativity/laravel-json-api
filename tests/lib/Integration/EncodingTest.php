@@ -19,6 +19,7 @@ namespace CloudCreativity\LaravelJsonApi\Tests\Integration;
 
 use CloudCreativity\LaravelJsonApi\Encoder\Encoder;
 use DummyApp\Post;
+use Illuminate\Support\Arr;
 
 class EncodingTest extends TestCase
 {
@@ -174,12 +175,8 @@ class EncodingTest extends TestCase
      */
     private function assertSelfLink($link, array $json)
     {
-        $this->assertArraySubset([
-            'data' => [
-                'links' => [
-                    'self' => $link,
-                ],
-            ],
-        ], $json);
+        $actual = Arr::get($json, 'data.links.self');
+
+        $this->assertSame($link, $actual);
     }
 }

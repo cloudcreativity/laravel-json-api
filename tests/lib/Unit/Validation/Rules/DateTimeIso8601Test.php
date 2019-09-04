@@ -32,7 +32,7 @@ class DateTimeIso8601Test extends TestCase
     /**
      * @return void
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
         $this->rule = new DateTimeIso8601();
