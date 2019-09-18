@@ -41,5 +41,5 @@ pages:
     - Packages: features/packages.md
     - Resolvers: features/resolvers.md
     - Responses: features/responses.md
-    - Soft-Deting: features/soft-deletes.md
+    - Soft-Deleting: features/soft-deletes.md
     - Views: features/views.md
