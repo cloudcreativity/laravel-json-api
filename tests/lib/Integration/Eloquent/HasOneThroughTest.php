@@ -21,6 +21,7 @@ use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
 use DummyApp\History;
 use DummyApp\Supplier;
 use DummyApp\User;
+use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 
 /**
  * Class HasOneThroughTest
@@ -49,6 +50,8 @@ class HasOneThroughTest extends TestCase
      */
     public function testReadRelated(): void
     {
+        $this->checkSupported();
+
         $supplier = factory(Supplier::class)->create();
         $user = factory(User::class)->create(['supplier_id' => $supplier->getKey()]);
         $history = factory(History::class)->create(['user_id' => $user->getKey()]);
@@ -76,6 +79,8 @@ class HasOneThroughTest extends TestCase
 
     public function testReadRelatedEmpty(): void
     {
+        $this->checkSupported();
+
         $supplier = factory(Supplier::class)->create();
 
         $this->withoutExceptionHandling()
@@ -85,6 +90,8 @@ class HasOneThroughTest extends TestCase
 
     public function testReadRelationship(): void
     {
+        $this->checkSupported();
+
         $supplier = factory(Supplier::class)->create();
         $user = factory(User::class)->create(['supplier_id' => $supplier->getKey()]);
         $history = factory(History::class)->create(['user_id' => $user->getKey()]);
@@ -97,10 +104,23 @@ class HasOneThroughTest extends TestCase
 
     public function testReadEmptyRelationship(): void
     {
+        $this->checkSupported();
+
         $supplier = factory(Supplier::class)->create();
 
         $this->withoutExceptionHandling()
             ->doReadRelationship($supplier, 'user-history')
             ->assertFetchedNull();
+    }
+
+    /**
+     * @return void
+     * @todo remove when minimum Laravel version is 5.8.
+     */
+    private function checkSupported(): void
+    {
+        if (!class_exists(HasOneThrough::class)) {
+            $this->markTestSkipped('Eloquent has-one-through not supported.');
+        }
     }
 }
