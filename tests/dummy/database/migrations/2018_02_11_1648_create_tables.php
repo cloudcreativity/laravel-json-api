@@ -37,6 +37,7 @@ class CreateTables extends Migration
             $table->rememberToken();
             $table->timestamps();
             $table->unsignedInteger('country_id')->nullable();
+            $table->unsignedInteger('supplier_id')->nullable();
         });
 
         Schema::create('avatars', function (Blueprint $table) {
@@ -107,6 +108,19 @@ class CreateTables extends Migration
             $table->timestamps();
             $table->string('category');
         });
+
+        Schema::create('suppliers', function (Blueprint $table) {
+            $table->increments('id');
+            $table->timestamps();
+            $table->string('name');
+        });
+
+        Schema::create('histories', function (Blueprint $table) {
+            $table->increments('id');
+            $table->timestamps();
+            $table->text('detail');
+            $table->unsignedInteger('user_id');
+        });
     }
 
     /**
@@ -122,5 +136,7 @@ class CreateTables extends Migration
         Schema::dropIfExists('phones');
         Schema::dropIfExists('countries');
         Schema::dropIfExists('downloads');
+        Schema::dropIfExists('suppliers');
+        Schema::dropIfExists('histories');
     }
 }

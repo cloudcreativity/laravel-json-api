@@ -62,4 +62,10 @@ JsonApi::register('v1', [], function (RouteRegistrar $api) {
     $api->resource('sites', [
         'controller' => true,
     ]);
+
+    $api->resource('suppliers', [
+        'has-one' => [
+            'user-history' => ['only' => ['read', 'related']],
+        ],
+    ]);
 });
