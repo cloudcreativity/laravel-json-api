@@ -557,6 +557,15 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
 
     /**
      * @param string|null $modelKey
+     * @return HasOneThrough
+     */
+    protected function hasOneThrough($modelKey = null)
+    {
+        return new HasOneThrough($modelKey ?: $this->guessRelation());
+    }
+
+    /**
+     * @param string|null $modelKey
      * @return HasMany
      */
     protected function hasMany($modelKey = null)

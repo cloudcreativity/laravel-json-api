@@ -23,9 +23,9 @@ use DummyApp\Post;
 use DummyApp\User;
 
 /**
- * Class HasManyTest
+ * Class HasManyThroughTest
  *
- * Test a JSON API has-many relationship that relates to an Eloquent
+ * Test a JSON API has-many-through relationship that relates to an Eloquent
  * has-many-through relationship.
  *
  * In our dummy app, this is the posts relationship on a country model.

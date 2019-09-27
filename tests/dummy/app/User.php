@@ -80,4 +80,12 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Country::class);
     }
+
+    /**
+     * @return BelongsTo
+     */
+    public function supplier()
+    {
+        return $this->belongsTo(Supplier::class);
+    }
 }
