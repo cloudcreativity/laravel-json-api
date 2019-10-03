@@ -4,8 +4,11 @@ Install using [Composer](http://getcomposer.org):
 
 ``` bash
 $ composer require cloudcreativity/laravel-json-api
-$ composer require --dev cloudcreativity/json-api-testing
+# see note below for which version of the testing package to use.
+$ composer require --dev cloudcreativity/json-api-testing:^2.0
 ```
+
+> For Laravel 5.5, 5.6 and 5.7, you will need to use `^1.2` for the `json-api-testing` package.
 
 This package's service provider and facade will be automatically added using package discovery. You will
 then need to check your API route prefix and update your Exception handler as follows...

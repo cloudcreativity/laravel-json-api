@@ -39,7 +39,7 @@
     },
     "require-dev": {
         "ext-sqlite3": "*",
-        "cloudcreativity/json-api-testing": "^1.2",
+        "cloudcreativity/json-api-testing": "^1.2|^2.0",
         "composer/semver": "^1.5",
         "guzzlehttp/guzzle": "^6.3",
         "mockery/mockery": "^1.1",
@@ -78,7 +78,7 @@
             }
         }
     },
-    "minimum-stability": "stable",
+    "minimum-stability": "dev",
     "prefer-stable": true,
     "config": {
         "sort-packages": true
