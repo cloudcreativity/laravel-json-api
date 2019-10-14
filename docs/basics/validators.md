@@ -519,7 +519,7 @@ starting with `tags`.
 > If you need to customise the rules used to validate relationships, overload the `relationshipRules()`
 method on your validators class.
 
-Custom validation messages (on the `$messages` property) and attribute names (on the `$attribtues` property)
+Custom validation messages (on the `$messages` property) and attribute names (on the `$attributes` property)
 are also passed to your validator.
 
 ## Delete Resource Validation

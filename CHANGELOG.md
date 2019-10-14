@@ -57,7 +57,23 @@ were removed.
   - `Utils\Pointer`
   - `Utils\Replacer`
 
-## Unreleased
+## [1.5.0] - 2019-10-14
+
+### Added
+- [#415](https://github.com/cloudcreativity/laravel-json-api/issues/415)
+Added a has-one-through JSON API resource relationship for the Eloquent has-one-through
+relationship that was added in Laravel 5.8.
+
+### Fixed
+- [#439](https://github.com/cloudcreativity/laravel-json-api/issues/439)
+Fixed tests failing in Laravel `^6.1`. **Applications using Laravel 6 need to upgrade
+the JSON API testing package to `^2.0`** as follows:
+
+```bash
+$ composer require --dev cloudcreativity/json-api-testing:^2.0
+```
+
+## [1.4.0] - 2019-09-04
 
 ### Added
 - Package now supports Laravel 6.
