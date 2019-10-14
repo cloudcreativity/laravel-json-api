@@ -224,6 +224,7 @@ for Eloquent models. The relationship types available are `belongsTo`, `hasOne`,
 | Eloquent | JSON API |
 | :-- | :-- |
 | `hasOne` | `hasOne` |
+| `hasOneThrough` | `hasOneThrough` |
 | `belongsTo` | `belongsTo` |
 | `hasMany` | `hasMany` |
 | `belongsToMany` | `hasMany` |
@@ -338,15 +339,16 @@ class Adapter extends AbstractAdapter
 }
 ```
 
-#### Has-Many-Through
+#### Has-One-Through and Has-Many-Through
 
-The JSON API `hasManyThrough` relation can be used for an Eloquent `hasManyThrough` relation. The important thing
-to note about this relationship is it is **read-only**. This is because the relationship can be modified in your API
-by modifying the intermediary model. For example, a `countries` resource might have many `posts` resources through
-an intermediate `users` resource. The relationship is effectively modified by creating and deleting posts and/or a
-user changing which country they are associated to.
+The JSON API `hasOneThrough` and `hasManyThrough` relations can be used for an Eloquent `hasOneThrough`
+and `hasManyThrough` relation. The important thing to note about these relationships is that both are **read-only**.
+This is because the relationship can be modified in your API by modifying the intermediary model.
+For example, a `countries` resource might have many `posts` resources through an intermediate `users` resource.
+The relationship is effectively modified by creating and deleting posts and/or a user changing which country they
+are associated to.
 
-Define a has-many-through relationship on an adapter as follows:
+Use the `hasOneThrough()` or `hasManyThrough()` methods on your adapter as follows:
 
 ```php
 class Adapter extends AbstractAdapter

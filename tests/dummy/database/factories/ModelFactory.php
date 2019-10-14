@@ -145,3 +145,20 @@ $factory->define(DummyApp\Video::class, function (Faker $faker) {
         },
     ];
 });
+
+/** Supplier */
+$factory->define(DummyApp\Supplier::class, function (Faker $faker) {
+    return [
+        'name' => $faker->company,
+    ];
+});
+
+/** History */
+$factory->define(DummyApp\History::class, function (Faker $faker) {
+    return [
+        'detail' => $faker->paragraph,
+        'user_id' => function () {
+            return factory(DummyApp\User::class)->create()->getKey();
+        },
+    ];
+});

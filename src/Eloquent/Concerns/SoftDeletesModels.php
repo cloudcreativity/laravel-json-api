@@ -19,8 +19,8 @@ namespace CloudCreativity\LaravelJsonApi\Eloquent\Concerns;
 
 use Carbon\Carbon;
 use CloudCreativity\LaravelJsonApi\Utils\Str;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Schema\Builder;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 
