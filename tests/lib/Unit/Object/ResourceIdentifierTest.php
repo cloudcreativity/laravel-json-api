@@ -146,4 +146,10 @@ class ResourceIdentifierTest extends TestCase
         $this->expectException(RuntimeException::class);
         ResourceIdentifier::create('posts', $id)->getId();
     }
+
+    public function testZeroId()
+    {
+        $identifier = ResourceIdentifier::create('posts', '0');
+        $this->assertSame('0', $identifier->getId());
+    }
 }

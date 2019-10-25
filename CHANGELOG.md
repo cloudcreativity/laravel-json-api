@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## Unreleased
+
+### Fixed
+- [#445](https://github.com/cloudcreativity/laravel-json-api/issues/445)
+Allow resource identifier to be zero.
+
 ## [1.5.0] - 2019-10-14
 
 ### Added
