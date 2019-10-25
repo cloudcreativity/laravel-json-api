@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. This projec
 
 ## Unreleased
 
+### Changed
+- [#440](https://github.com/cloudcreativity/laravel-json-api/pull/440)
+Amend query method signature on validated request to match Laravel request signature.
+
 ### Fixed
 - [#445](https://github.com/cloudcreativity/laravel-json-api/issues/445)
 Allow resource identifier to be zero.
