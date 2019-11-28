@@ -211,7 +211,7 @@ class Schema extends SchemaProvider
         return [
             'author' => [
                 self::DATA => function () use ($post) {
-                    return $post->createdBy;
+                    return $post->author;
                 },
             ],
         ];
@@ -256,7 +256,7 @@ class Schema extends SchemaProvider
             'author' => [
                 self::SHOW_DATA => isset($includeRelationships['author']),
                 self::DATA => function () use ($post) {
-                    return $post->createdBy;
+                    return $post->author;
                 },
             ],
         ];
@@ -337,7 +337,7 @@ class Schema extends SchemaProvider
                 self::SHOW_RELATED => true,
                 self::SHOW_DATA => isset($includeRelationships['author']),
                 self::DATA => function () use ($post) {
-                    return $post->createdBy;
+                    return $post->author;
                 },
             ],
         ];
