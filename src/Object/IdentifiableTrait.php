@@ -75,7 +75,7 @@ trait IdentifiableTrait
             throw new RuntimeException('Id member is not a string.');
         }
 
-        if (empty($id)) {
+        if (empty($id) && '0' !== $id) {
             throw new RuntimeException('Id member is an empty string.');
         }
 
