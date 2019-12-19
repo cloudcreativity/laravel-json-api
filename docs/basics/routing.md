@@ -179,7 +179,7 @@ JsonApi::register('default')->routes(function ($api, $router) {
 To apply an id constraint to every resource in your API, use the `defaultId` method on the API as follows:
 
 ```php
-JsonApi::register('default')->defaultId('[\d]+')->(function ($api, $router) {
+JsonApi::register('default')->defaultId('[\d]+')->routes(function ($api, $router) {
     $api->resource('posts');
 });
 ```
@@ -187,7 +187,7 @@ JsonApi::register('default')->defaultId('[\d]+')->(function ($api, $router) {
 If using a default constraint for the API, you can override it for a specific resource. For example:
 
 ```php
-JsonApi::register('default')->defaultId('[\d]+')->(function ($api, $router) {
+JsonApi::register('default')->defaultId('[\d]+')->routes(function ($api, $router) {
     $api->resource('posts'); // has the default constraint
     $api->resource('comments')->id('[A-Z]+'); // has its own constraint
     $api->resource('tags')->id(null); // has no constaint
