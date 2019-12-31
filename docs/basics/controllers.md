@@ -100,8 +100,8 @@ or dispatching jobs.
 | `searched` | results, request | `FetchResources` |
 | `reading` | record, request | `FetchResource` |
 | `didRead` | result, request | `FetchResource` |
-| `saving` | record, request | `CreateReource` or `UpdateResource` |
-| `creating` | request | `CreateReource` |
+| `saving` | record, request | `CreateResource` or `UpdateResource` |
+| `creating` | request | `CreateResource` |
 | `updating` | record, request | `UpdateResource` |
 | `created` | record, request | `CreateResource` |
 | `saved` | record, request | `CreateResource` or `UpdateResource` |
