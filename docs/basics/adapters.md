@@ -694,8 +694,8 @@ Adapter provide a number of hooks that allow you to perform custom filling logic
 created or updated.
 
 When a resource is being created, the `saving`, `creating`, `created` and `saved` hooks will be invoked.
-For an update, the `saving`, `updating`, `updated` and `saved` hooks are invoked. All these hooks received the
-record as the first object, and the resource object sent by the client as the second argument.
+For an update, the `saving`, `updating`, `updated` and `saved` hooks are invoked. All these hooks receive the
+record as the first argument, and the resource object sent by the client as the second argument.
 
 For example, if we wanted to store the user creating a comment resource, we could use the `creating` hook
 on our adapter:
