@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright 2019 Cloud Creativity Limited
+ * Copyright 2020 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -702,10 +702,6 @@ class ResourceObject implements Arrayable, \IteratorAggregate, \JsonSerializable
      */
     private function normalize(): void
     {
-        if (collect($this->attributes)->intersectByKeys($this->relationships)->isNotEmpty()) {
-            throw new \LogicException('Attributes and relationships cannot have the same field names.');
-        }
-
         $this->fieldValues = $this->fieldValues();
         $this->fieldNames = $this->fieldNames();
     }

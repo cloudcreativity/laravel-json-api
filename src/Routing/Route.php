@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright 2019 Cloud Creativity Limited
+ * Copyright 2020 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,11 +81,13 @@ class Route
     public function substituteBindings(StoreInterface $store): void
     {
         /** Cache the ID values so that we still have access to them. */
-        $this->resourceId = $this->getResourceId() ?: false;
-        $this->processId = $this->getProcessId() ?: false;
+        $tempResourceId = $this->getResourceId();
+        $tempProcessId = $this->getProcessId();
+        $this->resourceId = isset($tempResourceId) ? $tempResourceId : false;
+        $this->processId = isset($tempProcessId) ? $tempProcessId : false;
 
         /** Bind the domain record. */
-        if ($this->resourceId) {
+        if (!empty($this->resourceId) || '0' === $this->resourceId) {
             $this->route->setParameter(
                 ResourceRegistrar::PARAM_RESOURCE_ID,
                 $store->findOrFail($this->getResourceType(), $this->resourceId)
@@ -93,7 +95,7 @@ class Route
         }
 
         /** Bind the async process. */
-        if ($this->processId) {
+        if (!empty($this->processId) || '0' === $this->processId) {
             $this->route->setParameter(
                 ResourceRegistrar::PARAM_PROCESS_ID,
                 $store->findOrFail($this->getProcessType(), $this->processId)

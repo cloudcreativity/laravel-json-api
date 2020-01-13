@@ -57,6 +57,21 @@ were removed.
   - `Utils\Pointer`
   - `Utils\Replacer`
 
+## [1.6.0] - 2020-01-13
+
+### Added
+- Updated to support PHP `7.4` (minimum PHP remains `7.1`).
+
+### Changed
+- [#440](https://github.com/cloudcreativity/laravel-json-api/pull/440)
+Amend query method signature on validated request to match Laravel request signature.
+
+### Fixed
+- [#445](https://github.com/cloudcreativity/laravel-json-api/issues/445)
+Allow resource identifier to be zero.
+- [#447](https://github.com/cloudcreativity/laravel-json-api/issues/447)
+Ensure deserialized attributes do not include relations if the relation has been sent as an attribute.
+
 ## [1.5.0] - 2019-10-14
 
 ### Added
@@ -206,7 +221,7 @@ Refactored content negotiation so that multiple media types can be supported. Re
 - Renamed a lot of classes in the `Routing` namespace. They are also marked as `final` because they
 are not meant to be extended.
 - Modified the abstract `mount` method that package providers use to add routes to an API.
-Also added PHP 7 type-hinting to all methods in the abstract class. 
+Also added PHP 7 type-hinting to all methods in the abstract class.
 
 ### Fixed
 - [#265](https://github.com/cloudcreativity/laravel-json-api/issues/265)
@@ -256,7 +271,7 @@ some time.
 - [#277](https://github.com/cloudcreativity/laravel-json-api/pull/277)
 Eloquent adapter can now support soft-deleting, restoring and force-deleting resources by applying
 a trait to the adapter. See the soft-deletes documentation chapter for details.
-- [#247](https://github.com/cloudcreativity/laravel-json-api/issues/247) 
+- [#247](https://github.com/cloudcreativity/laravel-json-api/issues/247)
 New date time rule object to validate a JSON date string is a valid ISO 8601 date and time format.
 - [#261](https://github.com/cloudcreativity/laravel-json-api/pull/261)
 Package now supports the JSON API recommendation for asynchronous processing. See the
@@ -308,7 +323,7 @@ If a client sends a client-generated ID for a resource that does not support cli
 `403 Forbidden` response will be sent, as defined in the JSON API spec.
 
 ### Removed
-- The deprecated `Contracts\Store\AdapterInterface` was removed. Use 
+- The deprecated `Contracts\Store\AdapterInterface` was removed. Use
 `Contracts\Adapter\ResourceAdapterInterface` instead.
 - The deprecated `Adapter\HydratesAttributesTrait` was removed.
 - The `Contracts\Http\Requests\RequestInterface` was removed as it is no longer necessary (because the
@@ -381,7 +396,7 @@ at `2.0`. You should use the error interface/class from the `neomerx/jsonapi` pa
   - `Utils/ErrorsAwareTrait` and `Contracts\Utils\ErrorsAwareInterface`
   - `Utils/Pointers`
   - `Utils/Replacer` and `Contracts\Utils\ReplacerInterface`
-- The `Contracts\Factories\FactoryInterface` is deprecated and will be removed at `1.0`. 
+- The `Contracts\Factories\FactoryInterface` is deprecated and will be removed at `1.0`.
 You should type-hint `Factories\Factory` directly instead.
 
 ## [1.0.0-beta.3] - 2018-09-21
@@ -477,7 +492,7 @@ allows schemas, adapters etc to be bound into the container rather than having t
 classes.
 
 ### Fixed
-- [#202](https://github.com/cloudcreativity/laravel-json-api/issues/202) 
+- [#202](https://github.com/cloudcreativity/laravel-json-api/issues/202)
 When appending the schema and host on a request, the base URL is now also appended. This caters
 for Laravel applications that are served from host sub-directories.
 
@@ -502,7 +517,7 @@ contains the implementation that was previously on the Eloquent adapter.
 can now be used when testing JSON API packages.
 - Merged the two resolvers provided by this package into a single class.
 - [#176](https://github.com/cloudcreativity/laravel-json-api/issues/176)
-When using *not-by-resource* resolution, the type of the class is now appended to the class name. E.g. 
+When using *not-by-resource* resolution, the type of the class is now appended to the class name. E.g.
 `App\JsonApi\Adapters\PostAdapter` is now expected instead of `App\JsonApi\Adapters\Post`. The previous
 behaviour can be maintained by setting the `by-resource` config option to the string `false-0.x`.
 - The constructor dependencies for the `Repositories\ErrorRepository` have been simplified.
@@ -558,14 +573,14 @@ classes/traits are deprecated:
 
 ## [1.0.0-alpha.1] - 2018-04-29
 
-As we are now only developing JSON API within Laravel applications, we have deprecated our framework agnostic 
+As we are now only developing JSON API within Laravel applications, we have deprecated our framework agnostic
 `cloudcreativity/json-api` package. All the classes from that package have been merged into this package and
 renamed to the `CloudCreativity\LaravelJsonApi` namespace. This will allow us to more rapidly develop this
 Laravel package and simplify the code in subsequent releases.
 
 ### Added
 - New Eloquent relationship adapters allows full support for relationship endpoints.
-- Message bags can now have their keys mapped and/or dasherized when converting them to JSON API errors 
+- Message bags can now have their keys mapped and/or dasherized when converting them to JSON API errors
 in the `ErrorBag` class.
 - JSON API resource paths are now automatically converted to model relationship paths for eager loading in
 the Eloquent adapter.
@@ -606,7 +621,7 @@ returned an empty array, `getFillable` would be used instead.
 - The `Schema\CreatesEloquentIdentities` trait is deprecated.
 
 ### Fixed
-- [#128](https://github.com/cloudcreativity/laravel-json-api/issues/128) 
+- [#128](https://github.com/cloudcreativity/laravel-json-api/issues/128)
 Filter, sort and page parameters validation rules are excluded for resource requests for which those
 parameters do not apply (create, read, update and delete).
 - [#92](https://github.com/cloudcreativity/laravel-json-api/issues/92)

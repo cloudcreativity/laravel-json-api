@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright 2019 Cloud Creativity Limited
+ * Copyright 2020 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -166,7 +166,7 @@ class ResourceTest extends TestCase
                 'author' => [
                     'data' => [
                         'type' => 'users',
-                        'id' => (string) $model->author_id,
+                        'id' => (string) $model->author->getRouteKey(),
                     ],
                 ],
             ],
@@ -185,7 +185,7 @@ class ResourceTest extends TestCase
             'title' => $model->title,
             'slug' => $model->slug,
             'content' => $model->content,
-            'author_id' => $model->author_id,
+            'author_id' => $model->author->getKey(),
         ]);
     }
 
@@ -455,6 +455,32 @@ class ResourceTest extends TestCase
         $this->assertDatabaseHas('posts', [
             'id' => $post->getKey(),
             'title' => 'Hello World',
+        ]);
+    }
+
+    /**
+     * The client sends an unexpected attribute with the same name as a
+     * relationship.
+     */
+    public function testUpdateWithRelationshipAsAttribute()
+    {
+        $post = factory(Post::class)->create();
+
+        $data = [
+            'type' => 'posts',
+            'id' => (string) $post->getRouteKey(),
+            'attributes' => [
+                'title' => 'Hello World',
+                'author' => 'foobar',
+            ],
+        ];
+
+        $this->doUpdate($data)->assertStatus(200);
+
+        $this->assertDatabaseHas('posts', [
+            'id' => $post->getKey(),
+            'title' => 'Hello World',
+            'author_id' => $post->author_id,
         ]);
     }
 
