@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright 2019 Cloud Creativity Limited
+ * Copyright 2020 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -184,11 +184,11 @@ trait SoftDeletesModels
         if ($this->willSoftDelete($record)) {
             $key = $this->getSoftDeleteKey($record);
             // save the original date so we can put it back later on
-            $deletedAt = $record{$key};
+            $deletedAt = $record->{$key};
             // delete on the record so that deleting and deleted events get fired
             $record->delete();
             // apply the original soft deleting date back before saving
-            $record{$key} = $deletedAt;
+            $record->{$key} = $deletedAt;
         }
 
         $record->save();

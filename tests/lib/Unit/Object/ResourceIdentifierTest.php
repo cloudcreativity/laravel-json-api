@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copyright 2019 Cloud Creativity Limited
+ * Copyright 2020 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -145,5 +145,11 @@ class ResourceIdentifierTest extends TestCase
     {
         $this->expectException(RuntimeException::class);
         ResourceIdentifier::create('posts', $id)->getId();
+    }
+
+    public function testZeroId()
+    {
+        $identifier = ResourceIdentifier::create('posts', '0');
+        $this->assertSame('0', $identifier->getId());
     }
 }

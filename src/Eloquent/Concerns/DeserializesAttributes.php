@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright 2019 Cloud Creativity Limited
+ * Copyright 2020 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -103,8 +103,8 @@ trait DeserializesAttributes
      */
     protected function deserializeAttributes($attributes, $record)
     {
-        return collect($attributes)->reject(function ($v, $field) use ($record) {
-            return $this->isNotFillable($field, $record);
+        return collect($attributes)->filter(function ($v, $field) use ($record) {
+            return $this->isFillableAttribute($field, $record);
         })->mapWithKeys(function ($value, $field) use ($record) {
             $key = $this->modelKeyForField($field, $record);
 
@@ -167,6 +167,18 @@ trait DeserializesAttributes
         }
 
         return in_array($field, $this->dates, true);
+    }
+
+    /**
+     * Is the field a fillable attribute?
+     *
+     * @param string $field
+     * @param mixed $record
+     * @return bool
+     */
+    protected function isFillableAttribute($field, $record)
+    {
+        return $this->isFillable($field, $record) && !$this->isRelation($field);
     }
 
 }
