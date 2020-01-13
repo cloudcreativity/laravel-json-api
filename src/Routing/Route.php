@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright 2019 Cloud Creativity Limited
+ * Copyright 2020 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -87,7 +87,7 @@ class Route
         $tempProcessId = $this->getProcessId();
         $this->resourceId = isset($tempResourceId) ? $tempResourceId : false;
         $this->processId = isset($tempProcessId) ? $tempProcessId : false;
-        
+
         /** Bind the domain record. */
         if (!empty($this->resourceId) || '0' === $this->resourceId) {
             $this->route->setParameter(
@@ -95,7 +95,7 @@ class Route
                 $store->findOrFail($this->getResourceType(), $this->resourceId)
             );
         }
-        
+
         /** Bind the async process. */
         if (!empty($this->processId) || '0' === $this->processId) {
             $this->route->setParameter(
