@@ -182,16 +182,16 @@ class ResourceObjectTest extends TestCase
 
     /**
      * Fields share a common namespace, so if there is a duplicate field
-     * name in the attributes and relationships, we expect an exception as the resource
-     * is not valid.
+     * name in the attributes and relationships, there is a collision.
+     * We expect the relationship to be returned.
      */
     public function testDuplicateFields(): void
     {
         $this->values['attributes']['author'] = null;
 
-        $this->expectException(\LogicException::class);
-        $this->expectExceptionMessage('same field names');
-        ResourceObject::create($this->values);
+        $resource = ResourceObject::create($this->values);
+
+        $this->assertSame($this->values['relationships']['author']['data'], $resource['author']);
     }
 
     public function testCannotSetOffset(): void

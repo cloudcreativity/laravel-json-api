@@ -14,6 +14,8 @@ Amend query method signature on validated request to match Laravel request signa
 ### Fixed
 - [#445](https://github.com/cloudcreativity/laravel-json-api/issues/445)
 Allow resource identifier to be zero.
+- [#447](https://github.com/cloudcreativity/laravel-json-api/issues/447)
+Ensure deserialized attributes do not include relations if the relation has been sent as an attribute.
 
 ## [1.5.0] - 2019-10-14
 

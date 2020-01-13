@@ -717,10 +717,6 @@ class ResourceObject implements Arrayable, \IteratorAggregate, \JsonSerializable
      */
     private function normalize(): void
     {
-        if (collect($this->attributes)->intersectByKeys($this->relationships)->isNotEmpty()) {
-            throw new \LogicException('Attributes and relationships cannot have the same field names.');
-        }
-
         $this->fieldValues = $this->fieldValues();
         $this->fieldNames = $this->fieldNames();
     }
