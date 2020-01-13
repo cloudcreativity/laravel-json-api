@@ -184,11 +184,11 @@ trait SoftDeletesModels
         if ($this->willSoftDelete($record)) {
             $key = $this->getSoftDeleteKey($record);
             // save the original date so we can put it back later on
-            $deletedAt = $record{$key};
+            $deletedAt = $record->{$key};
             // delete on the record so that deleting and deleted events get fired
             $record->delete();
             // apply the original soft deleting date back before saving
-            $record{$key} = $deletedAt;
+            $record->{$key} = $deletedAt;
         }
 
         $record->save();
