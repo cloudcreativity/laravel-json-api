@@ -161,7 +161,8 @@ Accept: application/vnd.api+json
     "type": "posts",
     "attributes": {
       "title": "Hello World",
-      "content": "..."
+      "content": "...",
+      "another-field": "..."
     },
     "relationships": {
       "author": {
@@ -195,6 +196,7 @@ Your validator will be provided with the following array of data:
     "id" => null,
     "title" => "Hello World",
     "content" => "...",
+    "another-field" => "...",
     "author" => ["type" => "users", "id" => "123"],
     "tags" => [
         ["type" => "tags", "id" => "1"],
@@ -221,6 +223,7 @@ class Validators extends AbstractValidators
         return [
             'title' => 'required|string|min:1|max:255',
             'content' => 'required|string|min:1',
+            "another-field" => 'string|unique:posts,another_field',
             'author' => [
                 'required',
                 new HasOne('users'),
