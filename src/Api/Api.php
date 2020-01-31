@@ -141,6 +141,11 @@ class Api
     private $transactions;
 
     /**
+     * @var string
+     */
+    private $modelNamespace;
+
+    /**
      * Api constructor.
      *
      * @param Factory $factory
@@ -156,6 +161,7 @@ class Api
      * @param array $providers
      * @param string|null $connection
      * @param bool $transactions
+     * @param string $modelNamespace
      */
     public function __construct(
         Factory $factory,
@@ -170,7 +176,8 @@ class Api
         array $errors = [],
         array $providers = [],
         string $connection = null,
-        bool $transactions = true
+        bool $transactions = true,
+        string $modelNamespace = 'App'
     ) {
         $this->factory = $factory;
         $this->resolver = $resolver;
@@ -185,6 +192,7 @@ class Api
         $this->providers = $providers;
         $this->connection = $connection;
         $this->transactions = $transactions;
+        $this->modelNamespace = $modelNamespace;
     }
 
     /**
@@ -383,6 +391,16 @@ class Api
     {
         return $this->transactions;
     }
+
+    /**
+     * @return string
+     */
+    public function getModelNamespace(): string
+    {
+        return $this->modelNamespace;
+    }
+
+
 
     /**
      * Create an encoder for the API.

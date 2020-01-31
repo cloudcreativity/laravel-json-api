@@ -41,6 +41,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Model Namespace
+    |--------------------------------------------------------------------------
+    |
+    | Here you can decide where your api models live.
+    |
+    | By default Models live on the root of the application like App\Post hence the model-namespace: 'App'
+    | but you can set it any other place like App\Models\Post hence the model-namespace: 'App\Models'
+    |
+    */
+    'model-namespace' => 'DummyApp',
+
+    /*
+    |--------------------------------------------------------------------------
     | Resources
     |--------------------------------------------------------------------------
     |

@@ -13,7 +13,7 @@ class DummyClass extends SchemaProvider
     protected $resourceType = 'dummyResourceType';
 
     /**
-     * @param $resource
+     * @param \DummyModelNamespace\DummyRecord $resource
      *      the domain record being serialized.
      * @return string
      */
@@ -23,7 +23,7 @@ class DummyClass extends SchemaProvider
     }
 
     /**
-     * @param $resource
+     * @param \DummyModelNamespace\DummyRecord $resource
      *      the domain record being serialized.
      * @return array
      */
