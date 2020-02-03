@@ -45,11 +45,12 @@ return [
     |--------------------------------------------------------------------------
     |
     | Here you can decide where your api models live.
+    | By default (i.e. set to null), the package assumes they will live on
+    | your root namespace
+    |   - e.g. namespace: 'App', Models: 'App\Foo', 'App\Bar'
     |
-    | By default Models live on the root of the application like App\Post hence the model-namespace: 'App'
-    | but you can set it any other place like App\Models\Post hence the model-namespace: 'App\Models'
     */
-    'model-namespace' => 'App',
+    'model-namespace' => null,
 
     /*
     |--------------------------------------------------------------------------

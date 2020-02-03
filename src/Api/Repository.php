@@ -91,7 +91,7 @@ class Repository
             $config['providers'] ?? [],
             $config['controllers']['connection'] ?? null,
             $config['controllers']['transactions'] ?? true,
-            $config['model-namespace'] ?? 'App'
+            $config['model-namespace'] ?? null
         );
 
         /** Attach resource providers to the API. */

@@ -282,7 +282,7 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
      */
     private function replaceModelNamespace(&$stub) {
 
-        $modelNamespace = $this->getApi()->getModelNamespace();
+        $modelNamespace = $this->getApi()->getModelNamespace() ?? rtrim($this->laravel->getNamespace(), "\\");
         $stub = str_replace('DummyModelNamespace', $modelNamespace, $stub);
 
         return $this;

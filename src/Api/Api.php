@@ -141,7 +141,7 @@ class Api
     private $transactions;
 
     /**
-     * @var string
+     * @var string|null
      */
     private $modelNamespace;
 
@@ -161,7 +161,7 @@ class Api
      * @param array $providers
      * @param string|null $connection
      * @param bool $transactions
-     * @param string $modelNamespace
+     * @param string|null $modelNamespace
      */
     public function __construct(
         Factory $factory,
@@ -177,7 +177,7 @@ class Api
         array $providers = [],
         string $connection = null,
         bool $transactions = true,
-        string $modelNamespace = 'App'
+        string $modelNamespace = null
     ) {
         $this->factory = $factory;
         $this->resolver = $resolver;
@@ -393,9 +393,9 @@ class Api
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getModelNamespace(): string
+    public function getModelNamespace(): ?string
     {
         return $this->modelNamespace;
     }
