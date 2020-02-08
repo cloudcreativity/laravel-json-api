@@ -90,7 +90,8 @@ class Repository
             $config['errors'],
             $config['providers'] ?? [],
             $config['controllers']['connection'] ?? null,
-            $config['controllers']['transactions'] ?? true
+            $config['controllers']['transactions'] ?? true,
+            $config['model-namespace'] ?? null
         );
 
         /** Attach resource providers to the API. */

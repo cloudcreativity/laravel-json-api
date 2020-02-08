@@ -475,6 +475,7 @@ class GeneratorsTest extends TestCase
     {
         $content = $this->assertSchema();
         $this->assertContentContains('return (string) $resource->getRouteKey();', $content);
+        $this->assertContentContains(' @param \DummyApp\Company $resource', $content);
     }
 
     /**

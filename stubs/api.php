@@ -41,6 +41,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Model Namespace
+    |--------------------------------------------------------------------------
+    |
+    | Here you can decide where your api models live.
+    | By default (i.e. set to null), the package assumes they will live on
+    | your root namespace
+    |   - e.g. namespace: 'App', Models: 'App\Foo', 'App\Bar'
+    |
+    */
+    'model-namespace' => null,
+
+    /*
+    |--------------------------------------------------------------------------
     | Resources
     |--------------------------------------------------------------------------
     |

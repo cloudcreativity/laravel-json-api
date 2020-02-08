@@ -141,7 +141,8 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
             ->replaceClassName($stub, $name)
             ->replaceResourceType($stub)
             ->replaceApplicationNamespace($stub)
-            ->replaceRecord($stub);
+            ->replaceRecord($stub)
+            ->replaceModelNamespace($stub);
 
         return $stub;
     }
@@ -269,6 +270,20 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
     protected function replaceClassName(&$stub, $name)
     {
         $stub = $this->replaceClass($stub, $name);
+
+        return $this;
+    }
+
+    /**
+     * Replace the model namespace name.
+     *
+     * @param $stub
+     * @return $this
+     */
+    private function replaceModelNamespace(&$stub) {
+
+        $modelNamespace = $this->getApi()->getModelNamespace() ?? rtrim($this->laravel->getNamespace(), "\\");
+        $stub = str_replace('DummyModelNamespace', $modelNamespace, $stub);
 
         return $this;
     }
