@@ -19,7 +19,6 @@ namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Eloquent;
 
 use Carbon\Carbon;
 use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
-use Composer\Semver\Semver;
 use DummyApp\Comment;
 use DummyApp\Post;
 use DummyApp\Tag;
@@ -712,14 +711,9 @@ class ResourceTest extends TestCase
             return $post->is($actual);
         });
 
-        /**
-         * Force deleted event was added in Laravel 5.6.
-         */
-        if (Semver::satisfies($this->app->version(), '>=5.6')) {
-            Event::assertDispatched("eloquent.forceDeleted: " . Post::class, function ($name, $actual) use ($post) {
-                return $post->is($actual);
-            });
-        }
+        Event::assertDispatched("eloquent.forceDeleted: " . Post::class, function ($name, $actual) use ($post) {
+            return $post->is($actual);
+        });
     }
 
     /**
