@@ -5,16 +5,21 @@ namespace CloudCreativity\LaravelJsonApi\Testing;
 use Illuminate\Foundation\Testing\Concerns\MakesHttpRequests;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
+use PHPUnit\Framework\Assert;
+use PHPUnit\Framework\TestCase;
+use function array_walk_recursive;
 use function collect;
 use function http_build_query;
 use function implode;
+use function is_bool;
 use function is_null;
+use function is_scalar;
 
-class TestBuilder
+final class TestBuilder
 {
 
     /**
-     * @var MakesHttpRequests
+     * @var TestCase|MakesHttpRequests
      */
     private $test;
 
@@ -62,7 +67,7 @@ class TestBuilder
      * @param string $resourceType
      * @return $this
      */
-    public function expects(string $resourceType)
+    public function expects(string $resourceType): self
     {
         $this->expectedResourceType = $resourceType;
 
@@ -75,7 +80,7 @@ class TestBuilder
      * @param string|null $mediaType
      * @return $this
      */
-    public function accept(?string $mediaType)
+    public function accept(?string $mediaType): self
     {
         $this->accept = $mediaType;
 
@@ -88,7 +93,7 @@ class TestBuilder
      * @param string|null $mediaType
      * @return $this
      */
-    public function contentType(?string $mediaType)
+    public function contentType(?string $mediaType): self
     {
         $this->contentType = $mediaType;
 
@@ -101,7 +106,7 @@ class TestBuilder
      * @param iterable $query
      * @return $this
      */
-    public function query(iterable $query)
+    public function query(iterable $query): self
     {
         $this->query = collect($query)->merge($query);
 
@@ -114,7 +119,7 @@ class TestBuilder
      * @param string ...$paths
      * @return $this
      */
-    public function includePaths(string ...$paths)
+    public function includePaths(string ...$paths): self
     {
         $this->query['include'] = implode(',', $paths);
 
@@ -128,7 +133,7 @@ class TestBuilder
      * @param string|string[] $fieldNames
      * @return $this
      */
-    public function sparseFields(string $resourceType, $fieldNames)
+    public function sparseFields(string $resourceType, $fieldNames): self
     {
         $this->query['fields'] = collect($this->query->get('fields'))
             ->put($resourceType, implode(',', Arr::wrap($fieldNames)));
@@ -142,7 +147,7 @@ class TestBuilder
      * @param iterable $filter
      * @return $this
      */
-    public function filter(iterable $filter)
+    public function filter(iterable $filter): self
     {
         $this->query['filter'] = collect($filter);
 
@@ -155,7 +160,7 @@ class TestBuilder
      * @param string ...$sort
      * @return $this
      */
-    public function sort(string ...$sort)
+    public function sort(string ...$sort): self
     {
         $this->query['sort'] = implode(',', $sort);
 
@@ -168,7 +173,7 @@ class TestBuilder
      * @param iterable $page
      * @return $this
      */
-    public function page(iterable $page)
+    public function page(iterable $page): self
     {
         $this->query['page'] = collect($page);
 
@@ -181,7 +186,7 @@ class TestBuilder
      * @param mixed|null $data
      * @return $this
      */
-    public function data($data)
+    public function data($data): self
     {
         if (is_null($data)) {
             $this->document->put('data', null);
@@ -199,7 +204,7 @@ class TestBuilder
      * @param string|null $contentType
      * @return $this
      */
-    public function content($document, string $contentType = null)
+    public function content($document, string $contentType = null): self
     {
         $this->document = collect($document);
 
@@ -217,7 +222,7 @@ class TestBuilder
      * @param iterable $headers
      * @return TestResponse
      */
-    public function get(string $uri, iterable $headers = [])
+    public function get(string $uri, iterable $headers = []): TestResponse
     {
         return $this->call('GET', $uri, $headers);
     }
@@ -229,7 +234,7 @@ class TestBuilder
      * @param iterable $headers
      * @return TestResponse
      */
-    public function post(string $uri, iterable $headers = [])
+    public function post(string $uri, iterable $headers = []): TestResponse
     {
         return $this->call('POST', $uri, $headers);
     }
@@ -241,7 +246,7 @@ class TestBuilder
      * @param iterable $headers
      * @return TestResponse
      */
-    public function patch(string $uri, iterable $headers = [])
+    public function patch(string $uri, iterable $headers = []): TestResponse
     {
         return $this->call('PATCH', $uri, $headers);
     }
@@ -253,7 +258,7 @@ class TestBuilder
      * @param iterable $headers
      * @return TestResponse
      */
-    public function delete(string $uri, iterable $headers = [])
+    public function delete(string $uri, iterable $headers = []): TestResponse
     {
         return $this->call('DELETE', $uri, $headers);
     }
@@ -267,7 +272,7 @@ class TestBuilder
     public function call(string $method, string $uri, iterable $headers = []): TestResponse
     {
         if ($this->query->isNotEmpty()) {
-            $uri .= '?' . http_build_query($this->query->toArray());
+            $uri .= '?' . $this->buildQuery();
         }
 
         $headers = collect([
@@ -287,5 +292,29 @@ class TestBuilder
         }
 
         return $response;
+    }
+
+    /**
+     * Convert query params to a string.
+     *
+     * We check all values are strings, integers or floats as these are the only
+     * valid values that can be sent in the query params. E.g. if the developer
+     * uses a `boolean`, they actually need to test where the strings `'true'`
+     * or `'false'` (or the string/integer equivalents) work.
+     *
+     * @return string
+     * @see https://github.com/cloudcreativity/laravel-json-api/issues/427
+     */
+    private function buildQuery(): string
+    {
+        $query = $this->query->toArray();
+
+        array_walk_recursive($query, function ($value, $key) {
+            if (!is_scalar($value) || is_bool($value)) {
+                Assert::fail("Test query parameter at {$key} is not a string, integer or float.");
+            }
+        });
+
+        return http_build_query($query);
     }
 }

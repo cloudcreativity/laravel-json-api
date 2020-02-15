@@ -8,6 +8,9 @@ All notable changes to this project will be documented in this file. This projec
 - [#348](https://github.com/cloudcreativity/laravel-json-api/issues/348)
 Can now use route parameters in the API's URL configuration value.
 - New test builder class allows tests to fluently construct a test JSON API request.
+- [#427](https://github.com/cloudcreativity/laravel-json-api/issues/427)
+Test requests will now ensure that query parameter values are strings, integers or
+floats. This is to ensure that the developer is correctly testing boolean filters.
 
 ### Changed
 - Minimum PHP version is now `7.2`.
