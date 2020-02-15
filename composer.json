@@ -32,9 +32,9 @@
         "illuminate/pagination": "^6.0",
         "illuminate/support": "^6.0",
         "neomerx/json-api": "^1.0.3",
+        "nyholm/psr7": "^1.2",
         "ramsey/uuid": "^3.0",
-        "symfony/psr-http-message-bridge": "^1.0",
-        "zendframework/zend-diactoros": "^2.0"
+        "symfony/psr-http-message-bridge": "^2.0"
     },
     "require-dev": {
         "ext-sqlite3": "*",
