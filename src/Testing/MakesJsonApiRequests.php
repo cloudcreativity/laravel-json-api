@@ -18,7 +18,6 @@
 namespace CloudCreativity\LaravelJsonApi\Testing;
 
 use Illuminate\Contracts\Routing\UrlRoutable;
-use Neomerx\JsonApi\Contracts\Http\Headers\MediaTypeInterface;
 use PHPUnit\Framework\Assert;
 
 /**
@@ -33,6 +32,7 @@ trait MakesJsonApiRequests
      * The base URL of the API to test.
      *
      * @var string
+     * @deprecated 3.0
      */
     protected $baseApiUrl = '';
 
@@ -40,6 +40,7 @@ trait MakesJsonApiRequests
      * The resource type to test.
      *
      * @var string
+     * @deprecated 3.0
      */
     protected $resourceType = '';
 
@@ -47,6 +48,7 @@ trait MakesJsonApiRequests
      * The resource type expected in the response.
      *
      * @var string
+     * @deprecated 3.0
      */
     protected $expectedResourceType = '';
 
@@ -54,42 +56,40 @@ trait MakesJsonApiRequests
      * The test request Accept header media type.
      *
      * @var string
+     * @deprecated 3.0
      */
-    protected $acceptMediaType = MediaTypeInterface::JSON_API_MEDIA_TYPE;
+    protected $acceptMediaType = '';
 
     /**
      * The test request content type.
      *
      * @var string
+     * @deprecated 3.0
      */
-    protected $contentMediaType = MediaTypeInterface::JSON_API_MEDIA_TYPE;
+    protected $contentMediaType = '';
 
     /**
-     * Visit the given URI with a JSON API request.
+     * Test a JSON API URI.
      *
-     * @param string $method
-     * @param string $uri
-     * @param iterable $queryParams
-     * @param iterable $data
-     * @param iterable $headers
-     * @return TestResponse
+     * @return TestBuilder
      */
-    protected function jsonApi(
-        string $method,
-        string $uri,
-        iterable $queryParams = [],
-        iterable $data = [],
-        iterable $headers = []
-    ): TestResponse
+    protected function jsonApi(): TestBuilder
     {
-        $data = collect($data)->jsonSerialize();
-        $queryParams = collect($queryParams);
+        $builder = new TestBuilder($this);
 
-        if ($queryParams->isNotEmpty()) {
-            $uri .= '?' . http_build_query($queryParams->toArray());
+        if ($expects = $this->expectedResourceType()) {
+            $builder->expects($expects);
         }
 
-        return $this->json($method, $uri, $data, $this->jsonApiHeaders($headers));
+        if ($accept = $this->acceptMediaType()) {
+            $builder->accept($accept);
+        }
+
+        if ($contentType = $this->contentMediaType()) {
+            $builder->content($this->contentMediaType());
+        }
+
+        return $builder;
     }
 
     /**
@@ -97,14 +97,14 @@ trait MakesJsonApiRequests
      * @param iterable $queryParams
      * @param iterable $headers
      * @return TestResponse
+     * @deprecated 3.0 use method chaining from `jsonApi()`.
      */
-    protected function getJsonApi(
-        string $uri,
-        iterable $queryParams = [],
-        iterable $headers = []
-    ): TestResponse
+    protected function getJsonApi(string $uri, iterable $queryParams = [], iterable $headers = []): TestResponse
     {
-        return $this->jsonApi('GET', $uri, $queryParams, [], $headers);
+        return $this
+            ->jsonApi()
+            ->query($queryParams)
+            ->get($uri, $headers);
     }
 
     /**
@@ -113,6 +113,7 @@ trait MakesJsonApiRequests
      * @param iterable $data
      * @param iterable $headers
      * @return TestResponse
+     * @deprecated 3.0 use method chaining from `jsonApi()`.
      */
     protected function postJsonApi(
         string $uri,
@@ -121,7 +122,11 @@ trait MakesJsonApiRequests
         iterable $headers = []
     ): TestResponse
     {
-        return $this->jsonApi('POST', $uri, $queryParams, $data, $headers);
+        return $this
+            ->jsonApi()
+            ->query($queryParams)
+            ->content($data)
+            ->post($uri, $headers);
     }
 
     /**
@@ -130,6 +135,7 @@ trait MakesJsonApiRequests
      * @param iterable $data
      * @param iterable $headers
      * @return TestResponse
+     * @deprecated 3.0 use method chaining from `jsonApi()`.
      */
     protected function patchJsonApi(
         string $uri,
@@ -138,7 +144,11 @@ trait MakesJsonApiRequests
         iterable $headers = []
     ): TestResponse
     {
-        return $this->jsonApi('PATCH', $uri, $queryParams, $data, $headers);
+        return $this
+            ->jsonApi()
+            ->query($queryParams)
+            ->content($data)
+            ->patch($uri, $headers);
     }
 
     /**
@@ -147,6 +157,7 @@ trait MakesJsonApiRequests
      * @param iterable $data
      * @param iterable $headers
      * @return TestResponse
+     * @deprecated 3.0 use method chaining from `jsonApi()`.
      */
     protected function deleteJsonApi(
         string $uri,
@@ -155,22 +166,18 @@ trait MakesJsonApiRequests
         iterable $headers = []
     ): TestResponse
     {
-        return $this->jsonApi('DELETE', $uri, $queryParams, $data, $headers);
-    }
-
-    /**
-     * @param $response
-     * @return TestResponse
-     */
-    protected function createTestResponse($response)
-    {
-        return new TestResponse($response, $this->expectedResourceType());
+        return $this
+            ->jsonApi()
+            ->query($queryParams)
+            ->content($data)
+            ->delete($uri, $headers);
     }
 
     /**
      * @param iterable $queryParams
      * @param iterable $headers
      * @return TestResponse
+     * @deprecated 3.0 use method chaining from `jsonApi()`.
      */
     protected function doSearch(iterable $queryParams = [], iterable $headers = []): TestResponse
     {
@@ -184,6 +191,7 @@ trait MakesJsonApiRequests
      * @param iterable $queryParams
      * @param iterable $headers
      * @return TestResponse
+     * @deprecated 3.0 use method chaining from `jsonApi()`.
      */
     protected function doSearchById($ids, iterable $queryParams = [], iterable $headers = []): TestResponse
     {
@@ -206,6 +214,7 @@ trait MakesJsonApiRequests
      * @param iterable $queryParams
      * @param iterable $headers
      * @return TestResponse
+     * @deprecated 3.0 use method chaining from `jsonApi()`.
      */
     protected function doCreate($data, iterable $queryParams = [], iterable $headers = []): TestResponse
     {
@@ -220,6 +229,7 @@ trait MakesJsonApiRequests
      * @param iterable $queryParams
      * @param iterable $headers
      * @return TestResponse
+     * @deprecated 3.0 use method chaining from `jsonApi()`.
      */
     protected function doRead($resourceId, iterable $queryParams = [], iterable $headers = []): TestResponse
     {
@@ -233,6 +243,7 @@ trait MakesJsonApiRequests
      * @param iterable $queryParams
      * @param iterable $headers
      * @return TestResponse
+     * @deprecated 3.0 use method chaining from `jsonApi()`.
      */
     protected function doUpdate($data, iterable $queryParams = [], iterable $headers = []): TestResponse
     {
@@ -252,6 +263,7 @@ trait MakesJsonApiRequests
      * @param iterable $queryParams
      * @param iterable $headers
      * @return TestResponse
+     * @deprecated 3.0 use method chaining from `jsonApi()`.
      */
     protected function doDelete($resourceId, iterable $queryParams = [], iterable $headers = []): TestResponse
     {
@@ -267,6 +279,7 @@ trait MakesJsonApiRequests
      * @param iterable $queryParams
      * @param iterable $headers
      * @return TestResponse
+     * @deprecated 3.0 use method chaining from `jsonApi()`.
      */
     protected function doReadRelated(
         $resourceId,
@@ -287,6 +300,7 @@ trait MakesJsonApiRequests
      * @param array $queryParams
      * @param array $headers
      * @return TestResponse
+     * @deprecated 3.0 use method chaining from `jsonApi()`.
      */
     protected function doReadRelationship(
         $resourceId,
@@ -308,6 +322,7 @@ trait MakesJsonApiRequests
      * @param array $queryParams
      * @param array $headers
      * @return TestResponse
+     * @deprecated 3.0 use method chaining from `jsonApi()`.
      */
     protected function doReplaceRelationship(
         $resourceId,
@@ -334,6 +349,7 @@ trait MakesJsonApiRequests
      * @param iterable $queryParams
      * @param iterable $headers
      * @return TestResponse
+     * @deprecated 3.0 use method chaining from `jsonApi()`.
      */
     protected function doAddToRelationship(
         $resourceId,
@@ -357,6 +373,7 @@ trait MakesJsonApiRequests
      * @param array $queryParams
      * @param array $headers
      * @return TestResponse
+     * @deprecated 3.0 use method chaining from `jsonApi()`.
      */
     protected function doRemoveFromRelationship(
         $resourceId,
@@ -377,6 +394,7 @@ trait MakesJsonApiRequests
      *
      * @param string $resourceType
      * @return $this
+     * @deprecated 3.0
      */
     protected function withResourceType(string $resourceType): self
     {
@@ -389,6 +407,7 @@ trait MakesJsonApiRequests
      * Get the resource type that is being tested.
      *
      * @return string
+     * @deprecated 3.0
      */
     protected function resourceType(): string
     {
@@ -404,6 +423,7 @@ trait MakesJsonApiRequests
      *
      * @param string $mediaType
      * @return $this
+     * @deprecated 3.0
      */
     protected function withAcceptMediaType(string $mediaType): self
     {
@@ -416,6 +436,7 @@ trait MakesJsonApiRequests
      * Get the media type to use for the Accept header.
      *
      * @return string
+     * @deprecated 3.0
      */
     protected function acceptMediaType(): string
     {
@@ -427,6 +448,7 @@ trait MakesJsonApiRequests
      *
      * @param string $mediaType
      * @return $this
+     * @deprecated 3.0
      */
     protected function withContentMediaType(string $mediaType): self
     {
@@ -439,6 +461,7 @@ trait MakesJsonApiRequests
      * Get the media type to use for the Content-Type header.
      *
      * @return string
+     * @deprecated 3.0
      */
     protected function contentMediaType(): string
     {
@@ -450,6 +473,7 @@ trait MakesJsonApiRequests
      *
      * @param string $type
      * @return $this
+     * @deprecated 3.0
      */
     protected function willSeeResourceType(string $type): self
     {
@@ -462,6 +486,7 @@ trait MakesJsonApiRequests
      * Get the resource type that is expected in the response.
      *
      * @return string|null
+     * @deprecated 3.0
      */
     protected function expectedResourceType(): ?string
     {
@@ -473,6 +498,7 @@ trait MakesJsonApiRequests
     /**
      * @param string $url
      * @return $this
+     * @deprecated 3.0
      */
     protected function withBaseApiUrl(string $url): self
     {
@@ -483,6 +509,7 @@ trait MakesJsonApiRequests
 
     /**
      * @return string
+     * @deprecated 3.0
      */
     protected function baseApiUrl(): string
     {
@@ -498,6 +525,7 @@ trait MakesJsonApiRequests
      *
      * @param mixed ...$extra
      * @return string
+     * @deprecated 3.0
      */
     protected function jsonApiUrl(...$extra): string
     {
@@ -511,24 +539,13 @@ trait MakesJsonApiRequests
      *
      * @param mixed ...$extra
      * @return string
+     * @deprecated 3.0
      */
     protected function resourceUrl(...$extra): string
     {
         array_unshift($extra, $this->resourceType());
 
         return $this->jsonApiUrl(...$extra);
-    }
-
-    /**
-     * @param iterable|null $headers
-     * @return array
-     */
-    protected function jsonApiHeaders(?iterable $headers): array
-    {
-        return collect([
-            'Accept' => $this->acceptMediaType(),
-            'CONTENT_TYPE' => $this->contentMediaType(),
-        ])->merge($headers)->all();
     }
 
 }

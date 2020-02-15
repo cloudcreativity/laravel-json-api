@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file. This projec
 ### Added
 - [#348](https://github.com/cloudcreativity/laravel-json-api/issues/348)
 Can now use route parameters in the API's URL configuration value.
+- New test builder class allows tests to fluently construct a test JSON API request.
 
 ### Changed
 - Minimum PHP version is now `7.2`.
@@ -14,6 +15,9 @@ Can now use route parameters in the API's URL configuration value.
 - Amended the store interface so that it always takes a string resource type and string id,
 instead of the deprecated resource identifier object.
 - Moved the `Validation\ErrorTranslator` class to `Error\Translator`.
+- The `Testing\MakesJsonApiRequests::jsonApi()` method no longer accepts any function arguments,
+and returns an instance of `Testing\TestBuilder`. This allows the developer to fluently execute
+test JSON API requests.
 
 ### Removed
 - The deprecated `0.x` validation implementation was removed. This deletes all interfaces

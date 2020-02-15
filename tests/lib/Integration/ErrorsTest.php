@@ -237,8 +237,8 @@ class ErrorsTest extends TestCase
             ],
         ];
 
-        $this->get('/api/v1/posts?include=foo', ['Accept' => '*/*'])
-            ->assertErrorStatus($expected);
+        $response = $this->jsonApi()->accept('*/*')->includePaths('foo')->get('/api/v1/posts');
+        $response->assertErrorStatus($expected);
     }
 
     /**

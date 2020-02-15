@@ -69,11 +69,11 @@ class DefaultTest extends TestCase
     public function testUnsupportedMediaType()
     {
         $data = $this->willPatch();
+        $uri = "/api/v1/posts/{$data['id']}";
 
-        $this->patchJson("/api/v1/posts/{$data['id']}", ['data' => $data], [
-            'Accept' => 'application/vnd.api+json',
-            'Content-Type' => 'text/plain',
-        ])->assertErrorStatus([
+        $response = $this->jsonApi()->contentType('text/plain')->data($data)->patch($uri);
+
+        $response->assertErrorStatus([
             'title' => 'Unsupported Media Type',
             'status' => '415',
             'detail' => 'The request entity has a media type which the server or resource does not support.',

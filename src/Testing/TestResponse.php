@@ -33,6 +33,23 @@ class TestResponse extends BaseTestResponse
     use HasHttpAssertions;
 
     /**
+     * @param mixed $response
+     * @return TestResponse
+     */
+    public static function cast($response): self
+    {
+        if ($response instanceof self) {
+            return $response;
+        }
+
+        if ($response instanceof BaseTestResponse) {
+            return new self($response->baseResponse);
+        }
+
+        return new self($response);
+    }
+
+    /**
      * TestResponse constructor.
      *
      * @param Response $response
