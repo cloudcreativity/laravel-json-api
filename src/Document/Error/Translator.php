@@ -529,10 +529,7 @@ class Translator
      */
     protected function trans(string $key, string $member, array $replace = [], ?string $locale = null)
     {
-        // Laravel 6.0 changes the interface from `trans` to `get`.
-        $fn = method_exists($this->translator, 'trans') ? 'trans' : 'get';
-
-        return $this->translator->{$fn}(
+        return $this->translator->get(
             "jsonapi::errors.{$key}.{$member}",
             $replace,
             $locale
@@ -596,10 +593,7 @@ class Translator
      */
     protected function convertRuleName(string $rule): string
     {
-        // Laravel 6.0 changes interface from `trans` to `get`
-        $fn = method_exists($this->translator, 'trans') ? 'trans' : 'get';
-
-        return $this->translator->{$fn}(
+        return $this->translator->get(
             Str::dasherize(class_basename($rule))
         );
     }

@@ -222,20 +222,6 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
     }
 
     /**
-     * Validate the JSON API request.
-     *
-     * This method maintains compatibility with Laravel 5.5, as the `ValidatesWhenResolved`
-     * method was renamed to `validateResolved` in 5.6.
-     *
-     * @return void
-     * @todo remove when dropping support for Laravel 5.5.
-     */
-    public function validate()
-    {
-        $this->validateResolved();
-    }
-
-    /**
      * @inheritdoc
      */
     public function validateResolved()

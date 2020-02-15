@@ -9,6 +9,8 @@ All notable changes to this project will be documented in this file. This projec
 Can now use route parameters in the API's URL configuration value.
 
 ### Changed
+- Minimum PHP version is now `7.2`.
+- Minimum Laravel version is now `6.0`.
 - Amended the store interface so that it always takes a string resource type and string id,
 instead of the deprecated resource identifier object.
 - Moved the `Validation\ErrorTranslator` class to `Error\Translator`.
@@ -24,6 +26,8 @@ longer available via the facade):
   - `defaultApi()`: set the default API via `LaravelJsonApi::defaultApi()` instead.
 - All deprecated methods on the `Testing\MakesJsonApiRequests` trait and `Testing\TestResponse` class
 were removed.
+- Removed the `Http\Requests\ValidatedRequest::validate()` method, as Laravel replaced it with
+`validateResolved()`. This affects all JSON API request classes.
 - Additionally, the following deprecated interfaces, classes and traits were removed:
   - `Api\ResourceProvider` - extend `Api\AbstractProvider` instead.
   - `Contracts\Document\MutableErrorInterface`

@@ -671,16 +671,10 @@ class ResourceObject implements Arrayable, \IteratorAggregate, \JsonSerializable
      */
     private function fieldValues(): Collection
     {
-        $fields = collect($this->attributes)->merge($this->getRelations())->merge([
+        return collect($this->attributes)->merge($this->getRelations())->merge([
             'type' => $this->type,
             'id' => $this->id,
-        ]);
-
-        /** Can use `sortKeys()` on collection when Laravel >= 5.6 */
-        $all = $fields->all();
-        ksort($all);
-
-        return collect($all);
+        ])->sortKeys();
     }
 
     /**
