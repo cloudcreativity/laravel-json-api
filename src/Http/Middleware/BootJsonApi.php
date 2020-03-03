@@ -22,6 +22,7 @@ use CloudCreativity\LaravelJsonApi\Api\Api;
 use CloudCreativity\LaravelJsonApi\Api\Repository;
 use CloudCreativity\LaravelJsonApi\Exceptions\ResourceNotFoundException;
 use CloudCreativity\LaravelJsonApi\Routing\Route;
+use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\AbstractPaginator;
@@ -62,12 +63,17 @@ class BootJsonApi
      * @param Closure $next
      * @param string $namespace
      *      the API namespace, as per your JSON API configuration.
+     *
      * @return mixed
+     *
+     * @throws BindingResolutionException
      */
     public function handle($request, Closure $next, string $namespace)
     {
-        /** Build and register the API. */
-        $api = $this->bindApi($namespace, $request->getSchemeAndHttpHost() . $request->getBaseUrl());
+        /** Get existing API or build and register new. */
+        $api = $this->container->bound(Api::class)
+            ? $this->container->make(Api::class)
+            : $this->bindApi($namespace, $request->getSchemeAndHttpHost() . $request->getBaseUrl());
 
         /** Substitute route bindings. */
         $this->substituteBindings($api);
@@ -83,7 +89,9 @@ class BootJsonApi
      *
      * @param $namespace
      * @param $host
+     *
      * @return Api
+     * @throws BindingResolutionException
      */
     protected function bindApi(string $namespace, string $host): Api
     {
