@@ -30,7 +30,6 @@ class FilterTest extends TestCase
      */
     protected $resourceType;
 
-
     /**
      * The `id` filter must work with other filters. In this example, if
      * we filter for `id` plus `created-by` we are asking: *of these
@@ -52,7 +51,7 @@ class FilterTest extends TestCase
         $this->resourceType = 'comments';
         $this->actingAsUser()
             ->doSearchById([$comments[0], $comments[1], $other], $filter)
-            ->assertSearchedIds($comments);
+            ->assertFetchedMany($comments);
     }
 
     public function testIdWithPaging()
@@ -64,7 +63,7 @@ class FilterTest extends TestCase
         $this->resourceType = 'comments';
         $this->actingAsUser()
             ->doSearchById($comments, ['page' => ['limit' => 2]])
-            ->assertSearchedIds([$comments[0], $comments[1]])
+            ->assertFetchedMany([$comments[0], $comments[1]])
             ->assertJson([
                 'meta' => [
                     'page' => [
@@ -83,12 +82,17 @@ class FilterTest extends TestCase
             'commentable_id' => $post->getKey(),
         ]);
 
-        $ids = $this->normalizeIds([$comments[0], $comments[2], '999']);
+        $ids = [
+            $comments[0]->getRouteKey(),
+            $comments[2]->getRouteKey(),
+            '999',
+        ];
 
         $this->resourceType = 'posts';
         $this->actingAsUser()
             ->doReadRelated($post, 'comments', ['filter' => ['id' => $ids]])
-            ->assertReadHasMany('comments', [$comments[0], $comments[2]]);
+            ->willSeeType('comments')
+            ->assertFetchedMany([$comments[0], $comments[2]]);
     }
 
     /**
@@ -130,7 +134,7 @@ class FilterTest extends TestCase
         factory(Post::class)->states('published')->create(); // should not appear as the result
 
         $this->resourceType = 'posts';
-        $this->doRead($post, ['filter' => ['published' => 1]])->assertSearchedOne(null);
+        $this->doRead($post, ['filter' => ['published' => 1]])->assertFetchedNull();
     }
 
     /**
@@ -169,7 +173,7 @@ class FilterTest extends TestCase
 
         $this->actingAsUser()
             ->doReadRelated($comment, 'commentable', ['filter' => ['published' => 1]])
-            ->assertReadHasOne($expected);
+            ->assertFetchedOne($expected);
     }
 
     public function testFilterToOneDoesNotMatch()
@@ -186,6 +190,6 @@ class FilterTest extends TestCase
 
         $this->actingAsUser()
             ->doReadRelated($comment, 'commentable', ['filter' => ['published' => 1]])
-            ->assertReadHasOne(null);
+            ->assertFetchedNull();
     }
 }

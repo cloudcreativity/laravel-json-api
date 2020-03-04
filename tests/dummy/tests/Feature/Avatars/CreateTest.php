@@ -17,7 +17,6 @@
 
 namespace DummyApp\Tests\Feature\Avatars;
 
-use CloudCreativity\LaravelJsonApi\Testing\TestResponse;
 use DummyApp\Avatar;
 use DummyApp\User;
 use Illuminate\Http\UploadedFile;
@@ -44,12 +43,13 @@ class CreateTest extends TestCase
             'attributes' => ['media-type' => 'image/jpeg'],
         ];
 
-        /** @var TestResponse $response */
-        $response = $this->actingAs($user, 'api')->post(
-            '/api/v1/avatars?include=user',
-            ['avatar' => $file],
-            ['Content-Type' => $contentType, 'Content-Length' => '1']
-        );
+        $this->actingAs($user, 'api');
+
+        $response = $this
+            ->jsonApi()
+            ->contentType($contentType)
+            ->content(['avatar' => $file])
+            ->post('/api/v1/avatars?include=user');
 
         $id = $response
             ->assertCreatedWithServerId(url('/api/v1/avatars'), $expected)
@@ -71,12 +71,13 @@ class CreateTest extends TestCase
     {
         $user = factory(User::class)->create();
 
-        /** @var TestResponse $response */
-        $response = $this->actingAs($user, 'api')->post(
-            '/api/v1/avatars',
-            ['avatar' => null],
-            ['Content-Type' => 'multipart/form-data', 'Content-Length' => '1']
-        );
+        $this->actingAs($user, 'api');
+
+        $response = $this
+            ->jsonApi()
+            ->contentType('multipart/form-data')
+            ->content(['avatar' => null])
+            ->post('/api/v1/avatars');
 
         $response->assertExactErrorStatus([
             'title' => 'Unprocessable Entity',

@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Copyright 2020 Cloud Creativity Limited
  *
@@ -25,17 +24,14 @@ use CloudCreativity\LaravelJsonApi\Codec\EncodingList;
 use CloudCreativity\LaravelJsonApi\Contracts\Client\ClientInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Encoder\SerializerInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Repositories\ErrorRepositoryInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Exceptions\ExceptionParserInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use CloudCreativity\LaravelJsonApi\Http\Responses\Responses;
 use CloudCreativity\LaravelJsonApi\Resolver\AggregateResolver;
 use CloudCreativity\LaravelJsonApi\Resolver\NamespaceResolver;
 use GuzzleHttp\Client;
-use Neomerx\JsonApi\Contracts\Codec\CodecMatcherInterface;
-use Neomerx\JsonApi\Contracts\Encoder\EncoderInterface;
 use Neomerx\JsonApi\Contracts\Http\Headers\MediaTypeInterface;
 use Neomerx\JsonApi\Contracts\Http\Headers\SupportedExtensionsInterface;
 use Neomerx\JsonApi\Encoder\EncoderOptions;
@@ -74,12 +70,6 @@ class Api
     private $decodings;
 
     /**
-     * @var array
-     * @deprecated 2.0.0
-     */
-    private $errors;
-
-    /**
      * @var bool
      */
     private $useEloquent;
@@ -108,17 +98,6 @@ class Api
      * @var StoreInterface|null
      */
     private $store;
-
-    /**
-     * @var CodecMatcherInterface|null
-     */
-    private $codecMatcher;
-
-    /**
-     * @var ErrorRepositoryInterface|null
-     * @deprecated 2.0.0
-     */
-    private $errorRepository;
 
     /**
      * @var Responses|null
@@ -157,7 +136,6 @@ class Api
      * @param Jobs $jobs
      * @param bool $useEloquent
      * @param string|null $supportedExt
-     * @param array $errors
      * @param array $providers
      * @param string|null $connection
      * @param bool $transactions
@@ -173,7 +151,6 @@ class Api
         Jobs $jobs,
         $useEloquent = true,
         $supportedExt = null,
-        array $errors = [],
         array $providers = [],
         string $connection = null,
         bool $transactions = true,
@@ -188,7 +165,6 @@ class Api
         $this->jobs = $jobs;
         $this->useEloquent = $useEloquent;
         $this->supportedExt = $supportedExt;
-        $this->errors = $errors;
         $this->providers = $providers;
         $this->connection = $connection;
         $this->transactions = $transactions;
@@ -200,10 +176,8 @@ class Api
      */
     public function __clone()
     {
-        $this->schemas = null;
+        $this->container = null;
         $this->store = null;
-        $this->codecMatcher = null;
-        $this->errorRepository = null;
     }
 
     /**
@@ -293,19 +267,6 @@ class Api
     }
 
     /**
-     * @return ErrorRepositoryInterface
-     * @deprecated 2.0.0
-     */
-    public function getErrors()
-    {
-        if (!$this->errorRepository) {
-            $this->errorRepository = $this->factory->createErrorRepository($this->errors);
-        }
-
-        return $this->errorRepository;
-    }
-
-    /**
      * @return SupportedExtensionsInterface|null
      */
     public function getSupportedExtensions()
@@ -362,17 +323,6 @@ class Api
     }
 
     /**
-     * Get the matched encoder, or a default encoder.
-     *
-     * @return EncoderInterface
-     * @deprecated 2.0.0 use `encoder` to create an encoder.
-     */
-    public function getEncoder()
-    {
-        return $this->encoder();
-    }
-
-    /**
      * Get the default database connection for the API.
      *
      * @return string|null
@@ -393,14 +343,21 @@ class Api
     }
 
     /**
+     * @return ExceptionParserInterface
+     * @todo add this to config.
+     */
+    public function exceptions(): ExceptionParserInterface
+    {
+        return app(ExceptionParserInterface::class);
+    }
+
+    /**
      * @return string|null
      */
     public function getModelNamespace(): ?string
     {
         return $this->modelNamespace;
     }
-
-
 
     /**
      * Create an encoder for the API.
@@ -486,18 +443,6 @@ class Api
     }
 
     /**
-     * @return ValidatorFactoryInterface
-     * @deprecated 2.0.0
-     */
-    public function validators()
-    {
-        return $this->factory->createValidatorFactory(
-            $this->getErrors(),
-            $this->getStore()
-        );
-    }
-
-    /**
      * Register a resource provider with this API.
      *
      * @param AbstractProvider $provider
@@ -506,7 +451,6 @@ class Api
     public function register(AbstractProvider $provider)
     {
         $this->resolver->attach($provider->getResolver());
-        $this->errors = array_replace($provider->getErrors(), $this->errors);
     }
 
 }

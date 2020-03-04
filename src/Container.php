@@ -23,7 +23,6 @@ use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\ContentNegotiatorInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorFactoryInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorProviderInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use Illuminate\Contracts\Container\Container as IlluminateContainer;
 use Neomerx\JsonApi\Contracts\Schema\SchemaProviderInterface;
@@ -392,7 +391,7 @@ class Container implements ContainerInterface
 
     /**
      * @param string $resourceType
-     * @return ValidatorProviderInterface|ValidatorFactoryInterface|null
+     * @return ValidatorFactoryInterface|null
      */
     protected function getCreatedValidators($resourceType)
     {
@@ -401,7 +400,7 @@ class Container implements ContainerInterface
 
     /**
      * @param string $resourceType
-     * @param ValidatorProviderInterface|ValidatorFactoryInterface|null $validators
+     * @param ValidatorFactoryInterface|null $validators
      * @return void
      */
     protected function setCreatedValidators($resourceType, $validators = null)
@@ -411,7 +410,7 @@ class Container implements ContainerInterface
 
     /**
      * @param $className
-     * @return ValidatorProviderInterface|ValidatorFactoryInterface|null
+     * @return ValidatorFactoryInterface|null
      */
     protected function createValidatorsFromClassName($className)
     {
@@ -419,7 +418,7 @@ class Container implements ContainerInterface
             return null;
         }
 
-        if (!$validators instanceof ValidatorProviderInterface && !$validators instanceof ValidatorFactoryInterface) {
+        if (!$validators instanceof ValidatorFactoryInterface) {
             throw new RuntimeException("Class [$className] is not a resource validator factory.");
         }
 
@@ -437,7 +436,7 @@ class Container implements ContainerInterface
 
     /**
      * @param string $resourceType
-     * @return ValidatorProviderInterface|null
+     * @return AuthorizerInterface|null
      */
     protected function getCreatedAuthorizer($resourceType)
     {

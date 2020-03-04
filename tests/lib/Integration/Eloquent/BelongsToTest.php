@@ -63,7 +63,8 @@ class BelongsToTest extends TestCase
 
         $id = $this
             ->doCreate($data, ['include' => 'author'])
-            ->assertCreatedWithId($data);
+            ->assertCreatedWithServerId(url('/api/v1/posts'), $data)
+            ->id();
 
         $this->assertDatabaseHas('posts', [
             'id' => $id,
@@ -95,7 +96,8 @@ class BelongsToTest extends TestCase
 
         $id = $this
             ->doCreate($data, ['include' => 'author'])
-            ->assertCreatedWithId($data);
+            ->assertCreatedWithServerId(url('/api/v1/posts'), $data)
+            ->id();
 
         $this->assertDatabaseHas('posts', [
             'id' => $id,
@@ -218,7 +220,7 @@ class BelongsToTest extends TestCase
         ];
 
         $this->doReadRelated($post, 'author')
-            ->assertReadHasOne($expected);
+            ->assertFetchedOne($expected);
     }
 
     public function testReadRelatedNull()
@@ -229,7 +231,7 @@ class BelongsToTest extends TestCase
         ]);
 
         $this->doReadRelated($post, 'author')
-            ->assertReadHasOne(null);
+            ->assertFetchedNull();
     }
 
     public function testReadRelationship()
@@ -237,7 +239,8 @@ class BelongsToTest extends TestCase
         $post = factory(Post::class)->create();
 
         $this->doReadRelationship($post, 'author')
-            ->assertReadHasOneIdentifier('users', (string) $post->author_id);
+            ->willSeeType('users')
+            ->assertFetchedToOne($post->author);
     }
 
     public function testReadEmptyRelationship()
@@ -247,7 +250,7 @@ class BelongsToTest extends TestCase
         ]);
 
         $this->doReadRelationship($post, 'author')
-            ->assertReadHasOneIdentifier(null);
+            ->assertFetchedNull();
     }
 
     public function testReplaceNullRelationshipWithRelatedResource()

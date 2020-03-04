@@ -17,7 +17,6 @@
 
 namespace DummyApp\Providers;
 
-use CloudCreativity\LaravelJsonApi\Facades\JsonApi;
 use CloudCreativity\LaravelJsonApi\LaravelJsonApi;
 use DummyApp\Entities\SiteRepository;
 use DummyApp\Policies\PostPolicy;
@@ -53,7 +52,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Post::class, PostPolicy::class);
         Gate::policy(User::class, UserPolicy::class);
 
-        JsonApi::defaultApi('v1');
+        LaravelJsonApi::defaultApi('v1');
     }
 
     /**

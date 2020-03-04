@@ -18,6 +18,7 @@
 namespace CloudCreativity\LaravelJsonApi\Api;
 
 use Illuminate\Contracts\Routing\UrlRoutable;
+use Illuminate\Support\Str;
 
 /**
  * Class Url
@@ -85,6 +86,27 @@ class Url
     public function toString(): string
     {
         return rtrim($this->host . $this->namespace, '/');
+    }
+
+    /**
+     * Replace route parameters in the URL namespace.
+     *
+     * @param iterable $parameters
+     * @return Url
+     */
+    public function replace(iterable $parameters): self
+    {
+        if (!Str::contains($this->namespace, '{')) {
+            return $this;
+        }
+
+        $copy = clone $this;
+
+        foreach ($parameters as $key => $value) {
+            $copy->namespace = \str_replace('{' . $key . '}', $value, $copy->namespace);
+        }
+
+        return $copy;
     }
 
     /**

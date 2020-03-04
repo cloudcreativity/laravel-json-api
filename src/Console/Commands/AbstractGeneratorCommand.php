@@ -20,6 +20,7 @@ namespace CloudCreativity\LaravelJsonApi\Console\Commands;
 
 use CloudCreativity\LaravelJsonApi\Api\Api;
 use CloudCreativity\LaravelJsonApi\Api\Repository;
+use CloudCreativity\LaravelJsonApi\LaravelJsonApi;
 use CloudCreativity\LaravelJsonApi\Utils\Str;
 use Illuminate\Console\GeneratorCommand;
 use Illuminate\Filesystem\Filesystem;
@@ -343,6 +344,6 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
      */
     protected function getApiName()
     {
-        return $this->argument('api') ?: $this->laravel->make('json-api')->defaultApi();
+        return $this->argument('api') ?: LaravelJsonApi::$defaultApi;
     }
 }

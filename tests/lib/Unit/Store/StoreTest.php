@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Copyright 2020 Cloud Creativity Limited
  *
@@ -22,15 +21,10 @@ use CloudCreativity\LaravelJsonApi\Contracts\Adapter\RelationshipAdapterInterfac
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\ResourceAdapterInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
-use CloudCreativity\LaravelJsonApi\Exceptions\RecordNotFoundException;
+use CloudCreativity\LaravelJsonApi\Exceptions\ResourceNotFoundException;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
-use CloudCreativity\LaravelJsonApi\Object\ResourceIdentifier;
-use CloudCreativity\LaravelJsonApi\Object\ResourceIdentifierCollection;
-use CloudCreativity\LaravelJsonApi\Object\ResourceObject;
-use CloudCreativity\LaravelJsonApi\Pagination\Page;
 use CloudCreativity\LaravelJsonApi\Store\Store;
 use CloudCreativity\LaravelJsonApi\Tests\Unit\TestCase;
-use CloudCreativity\Utils\Object\StandardObject;
 use Neomerx\JsonApi\Encoder\Parameters\EncodingParameters;
 use PHPUnit\Framework\MockObject\MockObject;
 
@@ -63,7 +57,7 @@ class StoreTest extends TestCase
     public function testQuery()
     {
         $params = new EncodingParameters();
-        $expected = new Page([]);
+        $expected = new \DateTime();
 
         $store = $this->store([
             'posts' => $this->willNotQuery(),
@@ -142,13 +136,13 @@ class StoreTest extends TestCase
     public function testDeleteRecord()
     {
         $params = new EncodingParameters();
-        $record = new StandardObject();
+        $record = new \DateTime();
 
         $adapter = $this->willDeleteRecord($record, $params);
 
         $store = $this->storeByTypes([
-            ResourceObject::class => $this->willNotQuery(),
-            StandardObject::class => $adapter,
+            \DateTimeZone::class => $this->willNotQuery(),
+            \DateTime::class => $adapter,
         ]);
 
         $this->assertNull($store->deleteRecord($record, $params));
@@ -157,13 +151,13 @@ class StoreTest extends TestCase
     public function testDeleteRecordFails()
     {
         $params = new EncodingParameters();
-        $record = new StandardObject();
+        $record = new \DateTime();
 
         $adapter = $this->willDeleteRecord($record, $params, false);
 
         $store = $this->storeByTypes([
-            ResourceObject::class => $this->willNotQuery(),
-            StandardObject::class => $adapter,
+            \DateTimeZone::class => $this->willNotQuery(),
+            \DateTime::class => $adapter,
         ]);
 
         $this->expectException(RuntimeException::class);
@@ -177,12 +171,12 @@ class StoreTest extends TestCase
     public function testQueryRelated()
     {
         $parameters = new EncodingParameters();
-        $record = new StandardObject();
-        $expected = new Page([]);
+        $record = new \DateTime();
+        $expected = new \DateInterval('P1W');
 
         $store = $this->storeByTypes([
-            ResourceObject::class => $this->willNotQuery(),
-            StandardObject::class => $this->willQueryRelated($record, 'user', $parameters, $expected),
+            \DateTimeZone::class => $this->willNotQuery(),
+            \DateTime::class => $this->willQueryRelated($record, 'user', $parameters, $expected),
         ]);
 
         $this->assertSame($expected, $store->queryRelated($record, 'user', $parameters));
@@ -195,12 +189,12 @@ class StoreTest extends TestCase
     public function testQueryRelationship()
     {
         $parameters = new EncodingParameters();
-        $record = new StandardObject();
-        $expected = new Page([]);
+        $record = new \DateTime();
+        $expected = new \DateInterval('P1W');
 
         $store = $this->storeByTypes([
-            ResourceObject::class => $this->willNotQuery(),
-            StandardObject::class => $this->willQueryRelationship($record, 'user', $parameters, $expected),
+            \DateTimeZone::class => $this->willNotQuery(),
+            \DateTime::class => $this->willQueryRelationship($record, 'user', $parameters, $expected),
         ]);
 
         $this->assertSame($expected, $store->queryRelationship($record, 'user', $parameters));
@@ -219,38 +213,33 @@ class StoreTest extends TestCase
 
     public function testExistsWithIdentifier()
     {
-        $identifier = ResourceIdentifier::create('users', '99');
-
         $store = $this->store([
             'posts' => $this->adapter(),
             'users' => $this->willExist('99')
         ]);
 
         $this->assertTrue($store->isType('users'));
-        $this->assertTrue($store->exists($identifier));
+        $this->assertTrue($store->exists('users', '99'));
     }
 
     public function testDoesNotExist()
     {
-        $identifier = ResourceIdentifier::create('users', '99');
-
         $store = $this->store([
             'posts' => $this->adapter(),
             'users' => $this->willNotExist('99')
         ]);
 
         $this->assertTrue($store->isType('users'));
-        $this->assertFalse($store->exists($identifier));
+        $this->assertFalse($store->exists('users', '99'));
     }
 
     public function testCannotDetermineExistence()
     {
-        $identifier = ResourceIdentifier::create('users', '99');
         $store = $this->store(['posts' => $this->adapter()]);
 
         $this->assertFalse($store->isType('users'));
         $this->expectException(RuntimeException::class);
-        $store->exists($identifier);
+        $store->exists('users', '99');
     }
 
     public function testFind()
@@ -267,31 +256,28 @@ class StoreTest extends TestCase
 
     public function testFindWithIdentifier()
     {
-        $identifier = ResourceIdentifier::create('users', '99');
-        $expected = new StandardObject();
+        $expected = new \DateTime();
 
         $store = $this->store([
             'posts' => $this->adapter(),
             'users' => $this->willFind('99', $expected)
         ]);
 
-        $this->assertSame($expected, $store->find($identifier));
-        $this->assertSame($expected, $store->findOrFail($identifier));
+        $this->assertSame($expected, $store->find('users', '99'));
+        $this->assertSame($expected, $store->findOrFail('users', '99'));
     }
 
     public function testCannotFind()
     {
-        $identifier = ResourceIdentifier::create('users', '99');
-
         $store = $this->store([
             'posts' => $this->adapter(),
             'users' => $this->willNotFind('99')
         ]);
 
-        $this->assertNull($store->find($identifier));
-        $this->expectException(RecordNotFoundException::class);
-        $this->expectExceptionMessage('users:99');
-        $store->findOrFail($identifier);
+        $this->assertNull($store->find('users', '99'));
+        $this->expectException(ResourceNotFoundException::class);
+        $this->expectExceptionMessage("Resource users with id 99 does not exist.");
+        $store->findOrFail('users', '99');
     }
 
     /**
@@ -299,15 +285,13 @@ class StoreTest extends TestCase
      */
     public function testExistsCalledOnce()
     {
-        $identifier = ResourceIdentifier::create('users', '99');
-
         $store = $this->store([
             'posts' => $this->adapter(),
             'users' => $this->willExist('99', true, $this->once())
         ]);
 
-        $this->assertTrue($store->exists($identifier));
-        $this->assertTrue($store->exists($identifier));
+        $this->assertTrue($store->exists('users', '99'));
+        $this->assertTrue($store->exists('users', '99'));
     }
 
     /**
@@ -315,16 +299,15 @@ class StoreTest extends TestCase
      */
     public function testFindCalledOnce()
     {
-        $identifier = ResourceIdentifier::create('users', '99');
-        $expected = new StandardObject();
+        $expected = new \DateTime();
 
         $store = $this->store([
             'posts' => $this->adapter(),
             'users' => $this->willFind('99', $expected, $this->once()),
         ]);
 
-        $this->assertSame($expected, $store->find($identifier));
-        $this->assertSame($expected, $store->find($identifier));
+        $this->assertSame($expected, $store->find('users', '99'));
+        $this->assertSame($expected, $store->find('users', '99'));
     }
 
     /**
@@ -333,16 +316,15 @@ class StoreTest extends TestCase
      */
     public function testFindBeforeExists()
     {
-        $identifier = ResourceIdentifier::create('users', '99');
-        $expected = new StandardObject();
+        $expected = new \DateTime();
 
         $mock = $this->adapter();
         $mock->expects($this->never())->method('exists');
         $mock->method('find')->with('99')->willReturn($expected);
 
         $store = $this->store(['users' => $mock]);
-        $this->assertSame($expected, $store->find($identifier));
-        $this->assertTrue($store->exists($identifier));
+        $this->assertSame($expected, $store->find('users', '99'));
+        $this->assertTrue($store->exists('users', '99'));
     }
 
     /**
@@ -351,14 +333,12 @@ class StoreTest extends TestCase
      */
     public function testFindNoneBeforeExists()
     {
-        $identifier = ResourceIdentifier::create('users', '99');
-
         $mock = $this->adapter();
         $mock->expects($this->never())->method('exists');
 
         $store = $this->store(['users' => $mock]);
-        $this->assertNull($store->find($identifier));
-        $this->assertFalse($store->exists($identifier));
+        $this->assertNull($store->find('users', '99'));
+        $this->assertFalse($store->exists('users', '99'));
     }
 
     /**
@@ -367,15 +347,13 @@ class StoreTest extends TestCase
      */
     public function testDoesNotExistBeforeFind()
     {
-        $identifier = ResourceIdentifier::create('users', '99');
-
         $mock = $this->adapter();
         $mock->expects($this->once())->method('exists')->with('99')->willReturn(false);
         $mock->expects($this->never())->method('find');
 
         $store = $this->store(['users' => $mock]);
-        $this->assertFalse($store->exists($identifier));
-        $this->assertNull($store->find($identifier));
+        $this->assertFalse($store->exists('users', '99'));
+        $this->assertNull($store->find('users', '99'));
     }
 
     /**
@@ -384,11 +362,11 @@ class StoreTest extends TestCase
      */
     public function testFindManyReturnsEmpty()
     {
-        $identifiers = ResourceIdentifierCollection::create([
-            (object) ['type' => 'posts', 'id' => '1'],
-            (object) ['type' => 'users', 'id' => '99'],
-            (object) ['type' => 'posts', 'id' => '3'],
-        ]);
+        $identifiers = [
+            ['type' => 'posts', 'id' => '1'],
+            ['type' => 'users', 'id' => '99'],
+            ['type' => 'posts', 'id' => '3'],
+        ];
 
         $store = $this->store([
             'posts' => $this->willFindMany(['1', '3']),
@@ -429,11 +407,14 @@ class StoreTest extends TestCase
      */
     public function testFindManyWithIdentifiers()
     {
-        $identifiers = ResourceIdentifierCollection::create([
-            $post = (object) ['type' => 'posts', 'id' => '1'],
-            (object) ['type' => 'posts', 'id' => '3'],
-            $user = (object) ['type' => 'users', 'id' => '99'],
-        ]);
+        $post = (object) ['type' => 'posts', 'id' => '1'];
+        $user = (object) ['type' => 'users', 'id' => '99'];
+
+        $identifiers = [
+            ['type' => 'posts', 'id' => '1'],
+            ['type' => 'posts', 'id' => '3'],
+            ['type' => 'users', 'id' => '99'],
+        ];
 
         $store = $this->store([
             'posts' => $this->willFindMany(['1', '3'], [$post]),
@@ -450,11 +431,11 @@ class StoreTest extends TestCase
      */
     public function testCannotFindMany()
     {
-        $identifiers = ResourceIdentifierCollection::create([
-            $post = (object) ['type' => 'posts', 'id' => '1'],
-            (object) ['type' => 'posts', 'id' => '3'],
-            $user = (object) ['type' => 'users', 'id' => '99'],
-        ]);
+        $identifiers = [
+            ['type' => 'posts', 'id' => '1'],
+            ['type' => 'posts', 'id' => '3'],
+            ['type' => 'users', 'id' => '99'],
+        ];
 
         $store = $this->store([
             'posts' => $this->willFindMany(['1', '3']),
@@ -567,7 +548,7 @@ class StoreTest extends TestCase
         $mock = $this->adapter();
         $mock->expects($this->atLeastOnce())
             ->method('findMany')
-            ->with($resourceIds)
+            ->with(collect($resourceIds))
             ->willReturn($results);
 
         return $mock;

@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Copyright 2020 Cloud Creativity Limited
  *
@@ -18,19 +17,18 @@
 
 namespace CloudCreativity\LaravelJsonApi\Exceptions;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Document\MutableErrorInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Exceptions\ErrorIdAllocatorInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Document\DocumentInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Exceptions\ExceptionParserInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Repositories\ErrorRepositoryInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Utils\ErrorReporterInterface;
-use CloudCreativity\LaravelJsonApi\Exceptions\MutableErrorCollection as Errors;
-use CloudCreativity\LaravelJsonApi\Http\Responses\ErrorResponse;
+use CloudCreativity\LaravelJsonApi\Document\Error\Translator;
+use CloudCreativity\LaravelJsonApi\Encoder\Neomerx\Document\Errors as NeomerxErrors;
 use Exception;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Response;
+use Illuminate\Session\TokenMismatchException;
 use Illuminate\Validation\ValidationException as IlluminateValidationException;
 use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
 use Neomerx\JsonApi\Document\Error;
-use Neomerx\JsonApi\Exceptions\ErrorCollection;
 use Neomerx\JsonApi\Exceptions\JsonApiException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
@@ -44,141 +42,80 @@ class ExceptionParser implements ExceptionParserInterface
 {
 
     /**
-     * @var ErrorRepositoryInterface
+     * @var Translator
      */
-    private $errors;
-
-    /**
-     * @var ErrorIdAllocatorInterface|null
-     */
-    private $idAllocator;
-
-    /**
-     * @var ErrorReporterInterface|null
-     */
-    private $reporter;
+    private $translator;
 
     /**
      * ExceptionParser constructor.
      *
-     * @param ErrorRepositoryInterface $errors
-     * @param ErrorIdAllocatorInterface|null $idAllocator
-     * @param ErrorReporterInterface|null $reporter
+     * @param Translator $translator
      */
-    public function __construct(
-        ErrorRepositoryInterface $errors,
-        ErrorIdAllocatorInterface $idAllocator = null,
-        ErrorReporterInterface $reporter = null
-    ) {
-        $this->errors = $errors;
-        $this->idAllocator = $idAllocator;
-        $this->reporter = $reporter;
+    public function __construct(Translator $translator)
+    {
+        $this->translator = $translator;
     }
 
     /**
      * @inheritdoc
      */
-    public function parse(Exception $e)
+    public function parse(Exception $e): DocumentInterface
     {
-        if ($e instanceof JsonApiException && !$this->errors->exists($this->getErrorKey($e))) {
-            $errors = $e->getErrors();
-            $httpCode = $e->getHttpCode();
-        } else {
-            $errors = $this->getErrors($e);
-            $httpCode = $this->getDefaultHttpCode($e);
+        if ($e instanceof JsonApiException) {
+            return NeomerxErrors::cast($e);
         }
 
-        $errors = Errors::cast($errors);
+        $errors = $this->getErrors($e);
 
-        /** @var MutableErrorInterface $error */
-        foreach ($errors as $error) {
-            $this->assignId($error, $e);
-        }
+        $document = new NeomerxErrors(...$errors);
+        $document->setDefaultStatus($this->getDefaultHttpCode($e));
 
-        $response = new ErrorResponse($errors, $httpCode, $this->getHeaders($e));
-
-        if ($this->reporter) {
-            $this->reporter->report($response);
-        }
-
-        return $response;
+        return $document;
     }
 
     /**
      * @param Exception $e
-     * @return ErrorInterface|ErrorInterface[]|ErrorCollection
+     * @return ErrorInterface[]
      */
-    protected function getErrors(Exception $e)
+    protected function getErrors(Exception $e): array
     {
         if ($e instanceof IlluminateValidationException) {
             return $this->getValidationError($e);
         }
 
-        if ($error = $this->getError($e)) {
-            return $error;
+        if ($e instanceof AuthenticationException) {
+            return [$this->translator->authentication()];
+        }
+
+        if ($e instanceof AuthorizationException) {
+            return [$this->translator->authorization()];
+        }
+
+        if ($e instanceof TokenMismatchException) {
+            return [$this->translator->tokenMismatch()];
         }
 
         if ($e instanceof HttpException) {
-            return $this->getHttpError($e);
+            return [$this->getHttpError($e)];
         }
 
-        return $this->getDefaultError();
-    }
-
-    /**
-     * @param Exception $e
-     * @return string
-     */
-    protected function getErrorKey(Exception $e)
-    {
-        return get_class($e);
-    }
-
-    /**
-     * @param Exception $e
-     * @return MutableErrorInterface|null
-     */
-    protected function getError(Exception $e)
-    {
-        $key = $this->getErrorKey($e);
-
-        if (!$this->errors->exists($key)) {
-            return null;
-        }
-
-        $error = $this->errors->error($key);
-
-        if (!$error->getTitle()) {
-            $error->setTitle($this->getDefaultTitle($error->getStatus()));
-        }
-
-        return $error;
+        return [$this->getDefaultError()];
     }
 
     /**
      * @param IlluminateValidationException $e
-     * @return MutableErrorInterface[]
+     * @return ErrorInterface[]
      */
-    protected function getValidationError(IlluminateValidationException $e)
+    protected function getValidationError(IlluminateValidationException $e): array
     {
-        $errors = [];
-        $prototype = $this->getError($e) ?: $this->getDefaultError();
-
-        foreach ($e->validator->getMessageBag()->toArray() as $key => $messages) {
-            foreach ($messages as $message) {
-                $error = clone $prototype;
-                $errors[] = $error->setDetail($message)->setMeta(compact('key'));
-            }
-        }
-
-        return $errors;
+        return $this->translator->failedValidator($e->validator)->getArrayCopy();
     }
 
     /**
      * @param HttpException $e
      * @return ErrorInterface
      */
-    protected function getHttpError(HttpException $e)
+    protected function getHttpError(HttpException $e): ErrorInterface
     {
         $status = $e->getStatusCode();
         $title = $this->getDefaultTitle($status);
@@ -187,23 +124,25 @@ class ExceptionParser implements ExceptionParserInterface
     }
 
     /**
-     * @return MutableErrorInterface
+     * @return ErrorInterface
      */
-    protected function getDefaultError()
+    protected function getDefaultError(): ErrorInterface
     {
-        return $this->errors->error(Exception::class);
+        return new Error(
+            null,
+            null,
+            $status = Response::HTTP_INTERNAL_SERVER_ERROR,
+            null,
+            $this->getDefaultTitle($status)
+        );
     }
 
     /**
      * @param Exception $e
-     * @return int
+     * @return int|null
      */
-    protected function getDefaultHttpCode(Exception $e)
+    protected function getDefaultHttpCode(Exception $e): ?int
     {
-        if ($e instanceof JsonApiException) {
-            return $e->getHttpCode();
-        }
-
         return ($e instanceof HttpExceptionInterface) ?
             $e->getStatusCode() :
             Response::HTTP_INTERNAL_SERVER_ERROR;
@@ -213,37 +152,13 @@ class ExceptionParser implements ExceptionParserInterface
      * @param string|null $status
      * @return string|null
      */
-    protected function getDefaultTitle($status)
+    protected function getDefaultTitle($status): ?string
     {
         if ($status && isset(Response::$statusTexts[$status])) {
             return Response::$statusTexts[$status];
         }
 
         return null;
-    }
-
-    /**
-     * @param Exception $e
-     * @return array
-     */
-    protected function getHeaders(Exception $e)
-    {
-        return $e instanceof HttpException ? $e->getHeaders() : [];
-    }
-
-    /**
-     * @param MutableErrorInterface $error
-     * @param Exception $e
-     */
-    protected function assignId(MutableErrorInterface $error, Exception $e)
-    {
-        if (!$error->hasId() && $e instanceof ErrorIdAllocatorInterface) {
-            $e->assignId($error);
-        }
-
-        if (!$error->hasId() && $this->idAllocator) {
-            $this->idAllocator->assignId($error);
-        }
     }
 
 }

@@ -45,7 +45,8 @@ class QueriesManyTest extends TestCase
         factory(Post::class, 3)->create();
 
         $this->doReadRelated($post, 'related')
-            ->assertReadHasMany('posts', $expected);
+            ->willSeeType('posts')
+            ->assertFetchedMany($expected);
     }
 
     public function testRelationship()
@@ -65,6 +66,7 @@ class QueriesManyTest extends TestCase
         factory(Post::class, 3)->create();
 
         $this->doReadRelationship($post, 'related')
-            ->assertReadHasManyIdentifiers('posts', $expected);
+            ->willSeeType('posts')
+            ->assertFetchedToMany($expected);
     }
 }

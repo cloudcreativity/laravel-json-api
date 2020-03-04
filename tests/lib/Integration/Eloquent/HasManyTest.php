@@ -61,7 +61,10 @@ class HasManyTest extends TestCase
         $expected = $data;
         unset($expected['relationships']);
 
-        $id = $this->doCreate($data)->assertCreatedWithId($expected);
+        $id = $this
+            ->doCreate($data)
+            ->assertCreatedWithServerId(url('/api/v1/countries'), $expected)
+            ->id();
 
         $this->assertDatabaseMissing('users', [
             'country_id' => $id,
@@ -97,7 +100,8 @@ class HasManyTest extends TestCase
 
         $id = $this
             ->doCreate($data)
-            ->assertCreatedWithId($expected);
+            ->assertCreatedWithServerId(url('/api/v1/countries'), $expected)
+            ->id();
 
         $this->assertUserIs(Country::find($id), $user);
     }
@@ -130,9 +134,12 @@ class HasManyTest extends TestCase
             ],
         ];
 
-        $id = $this->doCreate($data)->assertCreatedWithId(
-            collect($data)->forget('relationships')->all()
-        );
+        $expected = collect($data)->forget('relationships')->all();
+
+        $id = $this
+            ->doCreate($data)
+            ->assertCreatedWithServerId(url('/api/v1/countries'), $expected)
+            ->id();
 
         $this->assertUsersAre(Country::find($id), $users);
     }
@@ -232,7 +239,8 @@ class HasManyTest extends TestCase
         $country->users()->saveMany($users);
 
         $this->doReadRelated($country, 'users')
-            ->assertReadHasMany('users', $users);
+            ->willSeeType('users')
+            ->assertFetchedMany($users);
     }
 
     public function testReadRelatedEmpty()
@@ -241,7 +249,7 @@ class HasManyTest extends TestCase
         $country = factory(Country::class)->create();
 
         $this->doReadRelated($country, 'users')
-            ->assertReadHasMany(null);
+            ->assertFetchedNone();
     }
 
     public function testReadRelatedWithFilter()
@@ -264,7 +272,8 @@ class HasManyTest extends TestCase
         ]);
 
         $this->doReadRelated($country, 'users', ['filter' => ['name' => 'Doe']])
-            ->assertReadHasMany('users', [$a, $b]);
+            ->willSeeType('users')
+            ->assertFetchedMany([$a, $b]);
     }
 
     public function testReadRelatedWithInvalidFilter()
@@ -293,7 +302,8 @@ class HasManyTest extends TestCase
         ]);
 
         $this->doReadRelated($country, 'users', ['sort' => 'name'])
-            ->assertReadHasMany('users', [$b, $a]);
+            ->willSeeType('users')
+            ->assertFetchedMany([$b, $a]);
     }
 
     public function testReadRelatedWithInvalidSort()
@@ -315,7 +325,8 @@ class HasManyTest extends TestCase
         $phone = factory(Phone::class)->create(['user_id' => $users[0]->getKey()]);
 
         $this->doReadRelated($country, 'users', ['include' => 'phone'])
-            ->assertReadHasMany('users', $users)
+            ->willSeeType('users')
+            ->assertFetchedMany($users)
             ->assertIsIncluded('phones', $phone);
     }
 
@@ -355,7 +366,8 @@ class HasManyTest extends TestCase
         $country->users()->saveMany($users);
 
         $this->doReadRelationship($country, 'users')
-            ->assertReadHasManyIdentifiers('users', $users);
+            ->willSeeType('users')
+            ->assertFetchedToMany($users);
     }
 
     public function testReadEmptyRelationship()
@@ -363,7 +375,8 @@ class HasManyTest extends TestCase
         $country = factory(Country::class)->create();
 
         $this->doReadRelationship($country, 'users')
-            ->assertReadHasManyIdentifiers(null);
+            ->willSeeType('users')
+            ->assertFetchedNone();
     }
 
     public function testReplaceEmptyRelationshipWithRelatedResource()

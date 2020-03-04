@@ -52,7 +52,7 @@ class QueriesOneTest extends TestCase
         ];
 
         $this->doReadRelated($post, 'related-video')
-            ->assertReadHasOne($expected);
+            ->assertFetchedOne($expected);
     }
 
     public function testRelationship()
@@ -69,6 +69,7 @@ class QueriesOneTest extends TestCase
         factory(Video::class, 2)->create();
 
         $this->doReadRelationship($post, 'related-video')
-            ->assertReadHasOneIdentifier('videos', $video);
+            ->willSeeType('videos')
+            ->assertFetchedToOne($video);
     }
 }

@@ -30,6 +30,7 @@ use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Foundation\Application;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Route;
+use Laravel\Ui\UiServiceProvider;
 use Orchestra\Testbench\TestCase as BaseTestCase;
 
 /**
@@ -70,6 +71,7 @@ abstract class TestCase extends BaseTestCase
     {
         return [
             ServiceProvider::class,
+            UiServiceProvider::class,
             DummyPackage\ServiceProvider::class,
             DummyApp\Providers\AppServiceProvider::class,
         ];
@@ -92,18 +94,6 @@ abstract class TestCase extends BaseTestCase
     protected function resolveApplicationExceptionHandler($app)
     {
         $app->singleton(ExceptionHandler::class, TestExceptionHandler::class);
-    }
-
-    /**
-     * Set the test exception handler to not re-throw exceptions.
-     *
-     * @return void
-     */
-    protected function doNotRethrowExceptions()
-    {
-        /** @var TestExceptionHandler $handler */
-        $handler = $this->app->make(ExceptionHandler::class);
-        $handler->rethrow = false;
     }
 
     /**

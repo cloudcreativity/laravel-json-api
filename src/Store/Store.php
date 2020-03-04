@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Copyright 2020 Cloud Creativity Limited
  *
@@ -19,15 +18,12 @@
 namespace CloudCreativity\LaravelJsonApi\Store;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\HasManyAdapterInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Adapter\ResourceAdapterInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceIdentifierInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreAwareInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
-use CloudCreativity\LaravelJsonApi\Exceptions\RecordNotFoundException;
 use CloudCreativity\LaravelJsonApi\Exceptions\ResourceNotFoundException;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
-use CloudCreativity\LaravelJsonApi\Object\ResourceIdentifier;
-use CloudCreativity\LaravelJsonApi\Object\ResourceIdentifierCollection;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 /**
@@ -62,7 +58,7 @@ class Store implements StoreInterface
     /**
      * @inheritdoc
      */
-    public function isType($resourceType)
+    public function isType(string $resourceType): bool
     {
         return !!$this->container->getAdapterByResourceType($resourceType);
     }
@@ -87,8 +83,7 @@ class Store implements StoreInterface
             ->create($document, $params);
 
         if ($schema = $this->container->getSchemaByResourceType($resourceType)) {
-            $identifier = ResourceIdentifier::create($resourceType, $schema->getId($record));
-            $this->identityMap->add($identifier, $record);
+            $this->identityMap->add($resourceType, $schema->getId($record), $record);
         }
 
         return $record;
@@ -203,25 +198,16 @@ class Store implements StoreInterface
     /**
      * @inheritdoc
      */
-    public function exists($type, $id = null)
+    public function exists(string $type, string $id): bool
     {
-        if ($type instanceof ResourceIdentifierInterface) {
-            $identifier = $type;
-        } else {
-            $identifier = ResourceIdentifier::create($type, $id);
-        }
-
-        $check = $this->identityMap->exists($identifier);
+        $check = $this->identityMap->exists($type, $id);
 
         if (is_bool($check)) {
             return $check;
         }
 
-        $exists = $this
-            ->adapterFor($identifier->getType())
-            ->exists($identifier->getId());
-
-        $this->identityMap->add($identifier, $exists);
+        $exists = $this->adapterFor($type)->exists($id);
+        $this->identityMap->add($type, $id, $exists);
 
         return $exists;
     }
@@ -229,10 +215,9 @@ class Store implements StoreInterface
     /**
      * @inheritdoc
      */
-    public function find($type, $id = null)
+    public function find(string $type, string $id)
     {
-        $identifier = ResourceIdentifier::cast($type, $id);
-        $record = $this->identityMap->find($identifier);
+        $record = $this->identityMap->find($type, $id);
 
         if (is_object($record)) {
             return $record;
@@ -240,11 +225,13 @@ class Store implements StoreInterface
             return null;
         }
 
-        $record = $this
-            ->adapterFor($identifier->getType())
-            ->find($identifier->getId());
+        $record = $this->adapterFor($type)->find($id);
 
-        $this->identityMap->add($identifier, is_object($record) ? $record : false);
+        $this->identityMap->add(
+            $type,
+            $id,
+            is_object($record) ? $record : false
+        );
 
         return $record;
     }
@@ -252,28 +239,13 @@ class Store implements StoreInterface
     /**
      * @inheritdoc
      */
-    public function findOrFail($type, $id = null)
+    public function findOrFail(string $type, string $id)
     {
-        $record = $this->find($type, $id);
-
-        if (!$record && $type instanceof ResourceIdentifierInterface) {
-            throw new RecordNotFoundException($type);
-        }
-
-        if (!$record) {
+        if (!$record = $this->find($type, $id)) {
             throw new ResourceNotFoundException($type, $id);
         }
 
         return $record;
-    }
-
-    /**
-     * @inheritDoc
-     * @deprecated
-     */
-    public function findRecord(ResourceIdentifierInterface $identifier)
-    {
-        return $this->findOrFail($identifier);
     }
 
     /**
@@ -293,13 +265,15 @@ class Store implements StoreInterface
             throw new RuntimeException('Expecting data to be an array with a type and id member.');
         }
 
-        return $this->find($relationship['data']);
+        $data = $relationship['data'];
+
+        return $this->find($data['type'] ?? '', $data['id'] ?? '');
     }
 
     /**
      * @inheritDoc
      */
-    public function findToMany(array $relationship)
+    public function findToMany(array $relationship): iterable
     {
         $data = $relationship['data'] ?? null;
 
@@ -313,15 +287,15 @@ class Store implements StoreInterface
     /**
      * @inheritDoc
      */
-    public function findMany($identifiers)
+    public function findMany(iterable $identifiers): iterable
     {
-        if (is_array($identifiers)) {
-            $identifiers = ResourceIdentifierCollection::fromArray($identifiers);
-        }
-
         $results = [];
 
-        foreach ($identifiers->map() as $resourceType => $ids) {
+        $identifiers = collect($identifiers)->groupBy('type')->map(function ($ids) {
+            return collect($ids)->pluck('id');
+        });
+
+        foreach ($identifiers as $resourceType => $ids) {
             $results = array_merge($results, $this->adapterFor($resourceType)->findMany($ids));
         }
 
@@ -331,7 +305,7 @@ class Store implements StoreInterface
     /**
      * @inheritdoc
      */
-    public function adapterFor($resourceType)
+    public function adapterFor($resourceType): ResourceAdapterInterface
     {
         if (is_object($resourceType)) {
             return $this->container->getAdapter($resourceType);
@@ -353,7 +327,7 @@ class Store implements StoreInterface
      * @param $relationshipName
      * @return HasManyAdapterInterface
      */
-    private function adapterForHasMany($resourceType, $relationshipName)
+    private function adapterForHasMany($resourceType, $relationshipName): HasManyAdapterInterface
     {
         $adapter = $this->adapterFor($resourceType)->getRelated($relationshipName);
 

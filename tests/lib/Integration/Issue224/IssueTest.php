@@ -66,7 +66,7 @@ class IssueTest extends TestCase
     {
         $user = factory(User::class)->create();
 
-        $this->getJsonApi("/api/v1/endUsers/{$user->getRouteKey()}")->assertRead([
+        $this->getJsonApi("/api/v1/endUsers/{$user->getRouteKey()}")->assertFetchedOne([
             'type' => 'endUsers',
             'id' => (string) $user->getRouteKey(),
             'attributes' => [

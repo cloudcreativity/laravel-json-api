@@ -66,15 +66,19 @@ class Repository
     }
 
     /**
-     * @param $apiName
+     * Create an API instance.
+     *
+     * @param string $apiName
      * @param string|null $host
+     * @param array $parameters
+     *      route parameters, if needed.
      * @return Api
      */
-    public function createApi($apiName, $host = null)
+    public function createApi($apiName, $host = null, array $parameters = [])
     {
         $config = $this->configFor($apiName);
         $config = $this->normalize($config, $host);
-        $url = Url::fromArray($config['url']);
+        $url = Url::fromArray($config['url'])->replace($parameters);
         $resolver = new AggregateResolver($this->factory->createResolver($apiName, $config));
 
         $api = new Api(
@@ -87,7 +91,6 @@ class Repository
             Jobs::fromArray($config['jobs'] ?? []),
             $config['use-eloquent'],
             $config['supported-ext'],
-            $config['errors'],
             $config['providers'] ?? [],
             $config['controllers']['connection'] ?? null,
             $config['controllers']['transactions'] ?? true,
@@ -135,7 +138,6 @@ class Repository
 
         $config['resources'] = $this->normalizeResources($config['resources'] ?? [], $config);
         $config['url'] = $this->normalizeUrl($config['url'] ?? [], $host);
-        $config['errors'] = array_replace($this->defaultErrors(), $config['errors'] ?? []);
         $config['controllers'] = $config['controllers'] ?? [];
 
         return $config;
@@ -151,14 +153,6 @@ class Repository
         $key = "json-api-$apiName";
 
         return $path ? "$key.$path" : $key;
-    }
-
-    /**
-     * @return array
-     */
-    private function defaultErrors()
-    {
-        return (array) $this->config->get('json-api-errors');
     }
 
     /**
