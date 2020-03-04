@@ -18,12 +18,10 @@
 
 namespace CloudCreativity\LaravelJsonApi\Api;
 
-use CloudCreativity\LaravelJsonApi\Codec\DecodingList;
-use CloudCreativity\LaravelJsonApi\Codec\EncodingList;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use CloudCreativity\LaravelJsonApi\Resolver\AggregateResolver;
-use Illuminate\Contracts\Config\Repository as Config;
+use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Support\Arr;
 
 /**
@@ -35,7 +33,7 @@ class Repository
 {
 
     /**
-     * @var Config
+     * @var ConfigRepository
      */
     private $config;
 
@@ -48,9 +46,9 @@ class Repository
      * Repository constructor.
      *
      * @param Factory $factory
-     * @param Config $config
+     * @param ConfigRepository $config
      */
-    public function __construct(Factory $factory, Config $config)
+    public function __construct(Factory $factory, ConfigRepository $config)
     {
         $this->factory = $factory;
         $this->config = $config;
@@ -74,27 +72,19 @@ class Repository
      *      route parameters, if needed.
      * @return Api
      */
-    public function createApi($apiName, $host = null, array $parameters = [])
+    public function createApi(string $apiName, string $host = null, array $parameters = [])
     {
         $config = $this->configFor($apiName);
         $config = $this->normalize($config, $host);
-        $url = Url::fromArray($config['url'])->replace($parameters);
-        $resolver = new AggregateResolver($this->factory->createResolver($apiName, $config));
+        $url = Url::fromArray($config->url())->replace($parameters);
+        $resolver = new AggregateResolver($this->factory->createResolver($apiName, $config->all()));
 
         $api = new Api(
             $this->factory,
             $resolver,
             $apiName,
-            EncodingList::fromArray($config['encoding'] ?? [], $url->toString()),
-            DecodingList::fromArray($config['decoding'] ?? []),
             $url,
-            Jobs::fromArray($config['jobs'] ?? []),
-            $config['use-eloquent'],
-            $config['supported-ext'],
-            $config['providers'] ?? [],
-            $config['controllers']['connection'] ?? null,
-            $config['controllers']['transactions'] ?? true,
-            $config['model-namespace'] ?? null
+            $config
         );
 
         /** Attach resource providers to the API. */
@@ -121,15 +111,13 @@ class Repository
     /**
      * @param array $config
      * @param string|null $host
-     * @return array
+     * @return Config
      */
-    private function normalize(array $config, $host = null)
+    private function normalize(array $config, $host = null): Config
     {
         $config = array_replace([
             'namespace' => null,
             'by-resource' => true,
-            'use-eloquent' => true,
-            'supported-ext' => null,
         ], $config);
 
         if (!$config['namespace']) {
@@ -138,9 +126,8 @@ class Repository
 
         $config['resources'] = $this->normalizeResources($config['resources'] ?? [], $config);
         $config['url'] = $this->normalizeUrl($config['url'] ?? [], $host);
-        $config['controllers'] = $config['controllers'] ?? [];
 
-        return $config;
+        return new Config($config);
     }
 
     /**

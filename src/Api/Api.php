@@ -60,34 +60,24 @@ class Api
     private $name;
 
     /**
-     * @var EncodingList
-     */
-    private $encodings;
-
-    /**
-     * @var DecodingList
-     */
-    private $decodings;
-
-    /**
-     * @var bool
-     */
-    private $useEloquent;
-
-    /**
      * @var Url
      */
     private $url;
 
     /**
-     * @var Jobs
+     * @var Config
      */
-    private $jobs;
+    private $config;
 
     /**
-     * @var string|null
+     * @var EncodingList|null
      */
-    private $supportedExt;
+    private $encodings;
+
+    /**
+     * @var DecodingList|null
+     */
+    private $decodings;
 
     /**
      * @var ContainerInterface|null
@@ -105,70 +95,26 @@ class Api
     private $responses;
 
     /**
-     * @var array
-     */
-    private $providers;
-
-    /**
-     * @var string|null
-     */
-    private $connection;
-
-    /**
-     * @var bool
-     */
-    private $transactions;
-
-    /**
-     * @var string|null
-     */
-    private $modelNamespace;
-
-    /**
      * Api constructor.
      *
      * @param Factory $factory
      * @param AggregateResolver $resolver
-     * @param $apiName
-     * @param EncodingList $encodings
-     * @param DecodingList $decodings
+     * @param string $name
      * @param Url $url
-     * @param Jobs $jobs
-     * @param bool $useEloquent
-     * @param string|null $supportedExt
-     * @param array $providers
-     * @param string|null $connection
-     * @param bool $transactions
-     * @param string|null $modelNamespace
+     * @param Config $config
      */
     public function __construct(
         Factory $factory,
         AggregateResolver $resolver,
-        $apiName,
-        EncodingList $encodings,
-        DecodingList $decodings,
+        string $name,
         Url $url,
-        Jobs $jobs,
-        $useEloquent = true,
-        $supportedExt = null,
-        array $providers = [],
-        string $connection = null,
-        bool $transactions = true,
-        string $modelNamespace = null
+        Config $config
     ) {
         $this->factory = $factory;
         $this->resolver = $resolver;
-        $this->name = $apiName;
-        $this->encodings = $encodings;
-        $this->decodings = $decodings;
+        $this->name = $name;
         $this->url = $url;
-        $this->jobs = $jobs;
-        $this->useEloquent = $useEloquent;
-        $this->supportedExt = $supportedExt;
-        $this->providers = $providers;
-        $this->connection = $connection;
-        $this->transactions = $transactions;
-        $this->modelNamespace = $modelNamespace;
+        $this->config = $config;
     }
 
     /**
@@ -223,7 +169,7 @@ class Api
      */
     public function isEloquent()
     {
-        return $this->useEloquent;
+        return $this->config->useEloquent();
     }
 
     /**
@@ -239,7 +185,7 @@ class Api
      */
     public function getJobs()
     {
-        return $this->jobs;
+        return Jobs::fromArray($this->config->jobs());
     }
 
     /**
@@ -271,11 +217,11 @@ class Api
      */
     public function getSupportedExtensions()
     {
-        if (!$this->supportedExt) {
-            return null;
+        if ($ext = $this->config->supportedExt()) {
+            return $this->factory->createSupportedExtensions($ext);
         }
 
-        return $this->factory->createSupportedExtensions($this->supportedExt);
+        return null;
     }
 
     /**
@@ -283,7 +229,14 @@ class Api
      */
     public function getEncodings(): EncodingList
     {
-        return $this->encodings;
+        if ($this->encodings) {
+            return $this->encodings;
+        }
+
+        return $this->encodings = EncodingList::fromArray(
+            $this->config->encoding(),
+            $this->url->toString()
+        );
     }
 
     /**
@@ -291,7 +244,11 @@ class Api
      */
     public function getDecodings(): DecodingList
     {
-        return $this->decodings;
+        if ($this->decodings) {
+            return $this->decodings;
+        }
+
+        return $this->decodings = DecodingList::fromArray($this->config->decoding());
     }
 
     /**
@@ -303,8 +260,8 @@ class Api
     {
         return $this->factory->createCodec(
             $this->getContainer(),
-            $this->encodings->find(MediaTypeInterface::JSON_API_MEDIA_TYPE) ?: Encoding::jsonApi(),
-            $this->decodings->find(MediaTypeInterface::JSON_API_MEDIA_TYPE)
+            $this->getEncodings()->find(MediaTypeInterface::JSON_API_MEDIA_TYPE) ?: Encoding::jsonApi(),
+            $this->getDecodings()->find(MediaTypeInterface::JSON_API_MEDIA_TYPE)
         );
     }
 
@@ -329,7 +286,7 @@ class Api
      */
     public function getConnection(): ?string
     {
-        return $this->connection;
+        return $this->config->dbConnection();
     }
 
     /**
@@ -339,7 +296,7 @@ class Api
      */
     public function hasTransactions(): bool
     {
-        return $this->transactions;
+        return $this->config->dbTransactions();
     }
 
     /**
@@ -356,7 +313,7 @@ class Api
      */
     public function getModelNamespace(): ?string
     {
-        return $this->modelNamespace;
+        return $this->config->modelNamespace();
     }
 
     /**
@@ -438,7 +395,7 @@ class Api
     {
         return new ResourceProviders(
             $this->factory,
-            $this->providers
+            $this->config->providers()
         );
     }
 
