@@ -2,6 +2,11 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## [Unreleased](https://github.com/cloudcreativity/laravel-json-api/compare/v1.6.1...master)
+
+### Added
+- Add Laravel 7.x compatibility
+
 ## [1.6.0] - 2020-01-13
 
 ### Added
