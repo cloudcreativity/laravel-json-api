@@ -243,7 +243,7 @@ class Api
     }
 
     /**
-     * @return ContainerInterface|null
+     * @return ContainerInterface
      */
     public function getContainer()
     {

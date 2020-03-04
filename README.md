@@ -62,7 +62,7 @@ A demo application is available at [here](https://github.com/cloudcreativity/dem
 
 | Laravel | This Package |
 | --- | --- |
-| `^7.0` | `^2.0` |
+| `^7.0` | `2.0.0-beta.1` |
 | `^6.0` | `^1.0` |
 | `5.8.*` | `^1.0` |
 | `5.7.*` | `^1.0` |
