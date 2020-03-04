@@ -17,7 +17,7 @@ floats. This is to ensure that the developer is correctly testing boolean filter
 - Minimum Laravel version is now `7.0`.
 - Amended the store interface so that it always takes a string resource type and string id,
 instead of the deprecated resource identifier object.
-- Moved the `Validation\ErrorTranslator` class to `Error\Translator`.
+- Moved the `Validation\ErrorTranslator` class to `Document\Error\Translator`.
 - The `Testing\MakesJsonApiRequests::jsonApi()` method no longer accepts any function arguments,
 and returns an instance of `Testing\TestBuilder`. This allows the developer to fluently execute
 test JSON API requests.

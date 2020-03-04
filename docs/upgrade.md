@@ -1,222 +1,55 @@
 # Upgrade Guide
 
-## 1.0.0-rc.* to ^1.0
+## 1.x to 2.0
 
-No changes are required to upgrade.
+Version 2 drops support for all 5.x and 6.x versions of Laravel, and sets the minimum PHP version to 7.2.
+This is because Laravel 7 introduced a few changes (primarily to the exception handler and the namespace
+of the test response class) that meant it was not possible to support Laravel 6 and 7.
 
-## 1.0.0-beta.6 to 1.0.0-rc.1
+This release is primarily a tidy-up release: we have removed all functionality that has been marked
+as deprecated since the 1.0 pre-releases. Upgrading should be simple if you are not using any of the
+deprecated pre-release features.
 
-### Config
+The following are some notes on additional upgrade steps.
 
-We have re-implemented content-negotiation so that you can support non-JSON API media types at
-runtime. As part of this change we've made a slight change to the API config to make it clearer
-what the config sets.
+### Errors
 
-Currently your API's content negotiation config looks like this:
+If you were type-hinting our error class, it has been moved from `Document\Error` to `Document\Error\Error`.
+In addition, the `Validation\ErrorTranslator` class has been moved to `Document\Error\Translator`.
 
-```php
-return [
-    // ...
-    
-    /*
-    |--------------------------------------------------------------------------
-    | Content Negotiation
-    |--------------------------------------------------------------------------
-    |
-    | This is where you register how different media types are mapped to
-    | encoders and decoders. Encoders do the work of converting your records
-    | into JSON API resources. Decoders are used to convert incoming request
-    | body content into objects.
-    |
-    | If there is not an encoder/decoder registered for a specific media-type,
-    | then an error will be sent to the client as per the JSON-API spec.
-    |
-    */
-    'codecs' => [
-        'encoders' => [
-            'application/vnd.api+json',
-        ],
-        'decoders' => [
-            'application/vnd.api+json',
-        ],
-    ],
-];
-```
+This will only affect applications that have customised error responses.
 
-You will need to change it to this:
+### Testing
+
+The method signature of the test `jsonApi()` helper method on the `MakesJsonApiRequests` trait has been changed.
+This now accepts no function arguments and returns a test builder instance that allows you to fluidly construct test
+requests.
+
+For example this on your test case:
 
 ```php
-return [
-    // ...
-    
-
-    /*
-    |--------------------------------------------------------------------------
-    | Encoding Media Types
-    |--------------------------------------------------------------------------
-    |
-    | This defines the JSON API encoding used for particular media
-    | types supported by your API. This array can contain either
-    | media types as values, or can be keyed by a media type with the value
-    | being the options that are passed to the `json_encode` method.
-    |
-    | These values are also used for Content Negotiation. If a client requests
-    | via the HTTP Accept header a media type that is not listed here,
-    | a 406 Not Acceptable response will be sent.
-    |
-    | If you want to support media types that do not return responses with JSON
-    | API encoded data, you can do this at runtime. Refer to the
-    | Content Negotiation chapter in the docs for details.
-    |
-    */
-    'encoding' => [
-        'application/vnd.api+json',
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Decoding Media Types
-    |--------------------------------------------------------------------------
-    |
-    | This defines the media types that your API can receive from clients.
-    | This array is keyed by expected media types, with the value being the
-    | service binding that decodes the media type.
-    |
-    | These values are also used for Content Negotiation. If a client sends
-    | a content type not listed here, it will receive a
-    | 415 Unsupported Media Type response.
-    |
-    | Decoders can also be calculated at runtime, and/or you can add support
-    | for media types for specific resources or requests. Refer to the
-    | Content Negotiation chapter in the docs for details.
-    |
-    */
-    'decoding' => [
-        'application/vnd.api+json',
-    ],
-];
+$response = $this->jsonApi('GET', '/api/v1/posts', ['include' => 'author']);
 ```
 
-### Routing
-
-We have made changes to the routing to introduce a fluent syntax for defining routes. This will
-not affect your application unless you type-hinted the `Routing\ApiGroup` class in any of your
-route definitions. You will now need to type-hint `Routing\RouteRegistrar` instead.
-
-Change this:
+Is now:
 
 ```php
-use CloudCreativity\LaravelJsonApi\Routing\ApiGroup;
-
-JsonApi::register('v1', [], function (ApiGroup $api) {
-    // ...
-});
+$response = $this
+    ->jsonApi()
+    ->includePaths('author')
+    ->get('/api/v1/posts');
 ```
 
-to this:
+> Have a look at the `Testing/TestBuilder` class for the full list of methods you can use when building
+> a test request.
 
-```php
-use CloudCreativity\LaravelJsonApi\Routing\RouteRegistrar;
+All other test methods have been left on the `MakesJsonApiRequests` have been left, but we have marked a number
+as deprecated. These deprecated methods will be removed in 3.0 in preference of using method chaining from the
+`jsonApi()` method.
 
-JsonApi::register('v1', [], function (RouteRegistrar $api) {
-    // ...
-});
-```
+#### Test Query Parameters
 
-### Controllers
-
-#### Eloquent
-
-The `Http\Controllers\EloquentController` class has been removed. This has been deprecated for
-some time, and had no code in it. You can extend `Http\Controllers\JsonApiController` directly.
-
-#### Searching Hook
-
-As before the `searching` hook now occurs *before* records are queried with the resource's adapter.
-We have added a `searched` hook that is invoked *after* records are returned by the adapter. This
-hook receives the search results as its first argument.
-
-You probably do not need to make any changes, unless the new `searched` hook is more useful to you
-than the `searching` hook.
-
-#### Reading Hook
-
-The `reading` hook is now executed *before* the resource's adapter is called. Previously it was
-invoked *after* the adapter. The first argument of this hook remains the record that is being read.
-
-We have added a `didRead` hook that is executed *after* the resource's adapter is called. Its first
-argument is the result returned by the adapter. This will usually be the record being read, but may
-be `null` if the client provided any filter parameters and the record does not match those filters.
-
-If you have implemented the `reading` hook on any of your controllers, and you intend it to always
-receive the record that the request relates to, you do **not** need to make any changes. If you intend
-the hook to receive the record that will be in the response, you should change the hook to `didRead`
-and ensure the code handles the record being `null`.
-
-#### Type-Hinting
-
-We have changed the type-hinting of some protected methods so that they now type-hint the concrete
-instance of `ValidatedRequest`. This will only affect your application if you have overloaded any
-of the protected methods.
-
-### Adapters
-
-If any of your adapters were extending `Store\EloquentAdapter`, you now need to extend
-`Eloquent\AbstractAdapter` instead.
-
-We have removed deprecated properties and methods from the Eloquent adapter. A lot of these have
-been deprecated for some time, so are unlikely to affect your application unless you have Eloquent
-adapters that have not been changed for some time. If in doubt, check the changelog that lists
-the removals.
-
-### Validators
-
-> The changes listed here are unlikely to affect most applications.
-
-If you have implemented the `Contracts\Validation\ValidatorFactoryInterface` interface rather than 
-extending our `Validation\AbstractValidators` class, you will need to add the `delete()` method
-to your implementation.
-
-In our `Validation\AbstractValidators` class we have renamed the following two protected methods:
-- `createData` is now `dataForCreate`.
-- `updateData` is now `dataForUpdate`.
-- `relationshipData` is now `dataForRelationship`.
-- `createResourceValidator` is now `validatorForResource`.
-- `createQueryValidator` is now `validatorForQuery`.
-  
-We have also simplified our validator classes into a single class. The following classes have
-been removed:
-- `Validation\AbstractValidator`: use `Factories\Factory::createValidator()` or extend `Validation\Validator`.
-- `Validation\ResourceValidator`: use `Factories\Factory::createResourceValidator()`.
-- `Validation\QueryValidator`: use `Factories\Factory::createQueryValidator()`.
-
-### Packages (Resource Providers)
-
-The method signature for the `mount` method on the `AbstractProvider` class has changed to this:
-
-```php
-/**
- * Mount routes onto the provided API.
- *
- * @param \CloudCreativity\LaravelJsonApi\Routing\RouteRegistrar $api
- * @return void
- */
-public function mount(RouteRegistrar $api): void
-{
-    //
-}
-```
-
-> If you were previously using the second argument, check out the new documentation for adding
-custom routes to the API in the [Routing chapter.](./basics/routing.md)
-
-We have also added PHP 7 type-hinting to all other methods on the provider. (There were not many of them,
-so as we were changing the signature of one method, it made sense to change all.)
-
-## 1.0.0-alpha.4 to 1.0.0-beta.6
-
-View [beta upgrade notes here.](https://github.com/cloudcreativity/laravel-json-api/blob/v1.0.0-beta.6/docs/upgrade.md)
-
-## 1.0.0-alpha.* to 1.0.0-alpha.4
-
-View [alpha upgrade notes here.](https://github.com/cloudcreativity/laravel-json-api/blob/v1.0.0-alpha.4/docs/upgrade.md)
+As per [this issue](https://github.com/cloudcreativity/laravel-json-api/issues/427), we now fail a test if
+any query parameters values are not strings, integers or floats. This is because query parameters are received
+over HTTP as strings, so for example testing a `true` boolean is invalid and can lead to tests incorrectly
+passing.
