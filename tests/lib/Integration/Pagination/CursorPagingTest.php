@@ -221,16 +221,14 @@ class CursorPagingTest extends TestCase
 
     /**
      * If the before key does not exist, we expect the cursor builder
-     * to throw an exception. Applications should validate the id
-     * before passing it to the cursor.
+     * to throw an exception which would constitute an internal server error.
+     * Applications should validate the id before passing it to the cursor.
      */
     public function testBeforeDoesNotExist()
     {
-        $this->expectException(\OutOfRangeException::class);
-        $this->expectExceptionMessage('999');
-
         $this->actingAsUser()
-            ->doSearch(['page' => ['before' => '999']]);
+            ->doSearch(['page' => ['before' => '999']])
+            ->assertStatus(500);
     }
 
     public function testAfter()
@@ -456,16 +454,14 @@ class CursorPagingTest extends TestCase
 
     /**
      * If the after key does not exist, we expect the cursor builder
-     * to throw an exception. Applications should validate the id
-     * before passing it to the cursor.
+     * to throw an exception which would constitute an internal server error.
+     * Applications should validate the id before passing it to the cursor.
      */
     public function testAfterDoesNotExist()
     {
-        $this->expectException(\OutOfRangeException::class);
-        $this->expectExceptionMessage('999');
-
         $this->actingAsUser()
-            ->doSearch(['page' => ['after' => '999']]);
+            ->doSearch(['page' => ['after' => '999']])
+            ->assertStatus(500);
     }
 
     /**

@@ -95,18 +95,6 @@ abstract class TestCase extends BaseTestCase
     }
 
     /**
-     * Set the test exception handler to not re-throw exceptions.
-     *
-     * @return void
-     */
-    protected function doNotRethrowExceptions()
-    {
-        /** @var TestExceptionHandler $handler */
-        $handler = $this->app->make(ExceptionHandler::class);
-        $handler->rethrow = false;
-    }
-
-    /**
      * Use the default dummy app routes.
      *
      * @return $this

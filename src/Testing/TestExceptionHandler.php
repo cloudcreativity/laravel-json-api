@@ -50,13 +50,6 @@ class TestExceptionHandler extends ExceptionHandler
     use HandlesErrors;
 
     /**
-     * Whether Exceptions should be thrown to PHPUnit to handle.
-     *
-     * @var bool
-     */
-    public $rethrow = true;
-
-    /**
      * @var array
      */
     protected $dontReport = [
@@ -69,9 +62,7 @@ class TestExceptionHandler extends ExceptionHandler
      */
     public function report(Exception $e)
     {
-        if ($this->shouldReport($e) && $this->rethrow) {
-            throw $e;
-        }
+        // no-op
     }
 
     /**

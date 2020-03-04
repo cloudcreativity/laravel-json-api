@@ -41,15 +41,6 @@ class ErrorsTest extends TestCase
     protected $resourceType = 'posts';
 
     /**
-     * @return void
-     */
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->doNotRethrowExceptions();
-    }
-
-    /**
      * Returns a JSON API error for 404.
      */
     public function test404()
