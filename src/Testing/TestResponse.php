@@ -19,7 +19,7 @@ namespace CloudCreativity\LaravelJsonApi\Testing;
 
 use CloudCreativity\JsonApi\Testing\Concerns\HasHttpAssertions;
 use CloudCreativity\JsonApi\Testing\Document;
-use Illuminate\Foundation\Testing\TestResponse as BaseTestResponse;
+use Illuminate\Testing\TestResponse as BaseTestResponse;
 use Illuminate\Http\Response;
 
 /**

@@ -30,6 +30,7 @@ use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Foundation\Application;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Route;
+use Laravel\Ui\UiServiceProvider;
 use Orchestra\Testbench\TestCase as BaseTestCase;
 
 /**
@@ -70,6 +71,7 @@ abstract class TestCase extends BaseTestCase
     {
         return [
             ServiceProvider::class,
+            UiServiceProvider::class,
             DummyPackage\ServiceProvider::class,
             DummyApp\Providers\AppServiceProvider::class,
         ];

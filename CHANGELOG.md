@@ -14,7 +14,7 @@ floats. This is to ensure that the developer is correctly testing boolean filter
 
 ### Changed
 - Minimum PHP version is now `7.2`.
-- Minimum Laravel version is now `6.0`.
+- Minimum Laravel version is now `7.0`.
 - Amended the store interface so that it always takes a string resource type and string id,
 instead of the deprecated resource identifier object.
 - Moved the `Validation\ErrorTranslator` class to `Error\Translator`.
