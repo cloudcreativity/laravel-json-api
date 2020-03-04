@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Copyright 2020 Cloud Creativity Limited
  *
@@ -18,7 +17,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Contracts\Exceptions;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Http\Responses\ErrorResponseInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Document\DocumentInterface;
 use Exception;
 
 /**
@@ -30,11 +29,11 @@ interface ExceptionParserInterface
 {
 
     /**
-     * Convert the exception to a JSON API error response.
+     * Convert the exception to a JSON API document.
      *
      * @param Exception $e
-     * @return ErrorResponseInterface
+     * @return DocumentInterface
      */
-    public function parse(Exception $e);
+    public function parse(Exception $e): DocumentInterface;
 
 }

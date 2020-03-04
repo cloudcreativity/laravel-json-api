@@ -66,7 +66,8 @@ class HasManyThroughTest extends TestCase
         ]);
 
         $this->doReadRelated($country, 'posts')
-            ->assertReadHasMany('posts', [$post1, $post2]);
+            ->willSeeType('posts')
+            ->assertFetchedMany([$post1, $post2]);
     }
 
     public function testReadRelatedEmpty()
@@ -75,7 +76,7 @@ class HasManyThroughTest extends TestCase
         $country = factory(Country::class)->create();
 
         $this->doReadRelated($country, 'posts')
-            ->assertReadHasMany(null);
+            ->assertFetchedNone();
     }
 
     public function testReadRelationship()
@@ -90,7 +91,8 @@ class HasManyThroughTest extends TestCase
         ]);
 
         $this->doReadRelationship($country, 'posts')
-            ->assertReadHasManyIdentifiers('posts', $posts);
+            ->willSeeType('posts')
+            ->assertFetchedToMany($posts);
     }
 
     public function testReadEmptyRelationship()
@@ -98,7 +100,7 @@ class HasManyThroughTest extends TestCase
         $country = factory(Country::class)->create();
 
         $this->doReadRelationship($country, 'users')
-            ->assertReadHasManyIdentifiers(null);
+            ->assertFetchedNone();
     }
 
 }

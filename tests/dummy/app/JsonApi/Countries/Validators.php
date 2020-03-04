@@ -17,16 +17,11 @@
 
 namespace DummyApp\JsonApi\Countries;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Validators\RelationshipsValidatorInterface;
-use CloudCreativity\LaravelJsonApi\Validators\AbstractValidatorProvider;
+use CloudCreativity\LaravelJsonApi\Rules\HasMany;
+use CloudCreativity\LaravelJsonApi\Validation\AbstractValidators;
 
-class Validators extends AbstractValidatorProvider
+class Validators extends AbstractValidators
 {
-
-    /**
-     * @var string
-     */
-    protected $resourceType = 'countries';
 
     /**
      * @var array
@@ -46,22 +41,22 @@ class Validators extends AbstractValidatorProvider
     /**
      * @inheritDoc
      */
-    protected function attributeRules($record = null)
+    protected function rules($record = null): array
     {
-        $required = $record ? 'sometimes|required'  : 'required';
-
         return [
-            'name' => "$required|string",
-            'code' => "$required|string",
+            'name' => "required|string",
+            'code' => "required|string",
+            'users' => new HasMany(),
         ];
     }
 
     /**
      * @inheritDoc
      */
-    protected function relationshipRules(RelationshipsValidatorInterface $relationships, $record = null)
+    protected function queryRules(): array
     {
-        $relationships->hasMany('users', 'users', false, true);
+        return [];
     }
+
 
 }

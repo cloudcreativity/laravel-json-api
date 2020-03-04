@@ -31,6 +31,7 @@ class BroadcastingTest extends TestCase
         $data = $event->broadcastWith();
 
         $this->assertSame('posts', Arr::get($data, 'data.type'));
-        $this->assertEquals($id = $post->getKey(), Arr::get($data, 'data.id'));
+        $this->assertEquals($post->getRouteKey(), Arr::get($data, 'data.id'));
+        $this->assertSame(url('/api/v1/posts', $post), Arr::get($data, 'data.links.self'));
     }
 }

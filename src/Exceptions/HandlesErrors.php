@@ -21,12 +21,12 @@ namespace CloudCreativity\LaravelJsonApi\Exceptions;
 use CloudCreativity\LaravelJsonApi\Routing\Route;
 use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
 use CloudCreativity\LaravelJsonApi\Utils\Helpers;
-use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
 use Neomerx\JsonApi\Exceptions\JsonApiException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use Throwable;
 
 /**
  * Trait HandlesErrors
@@ -44,10 +44,10 @@ trait HandlesErrors
      * API via its Accept header.
      *
      * @param Request $request
-     * @param Exception $e
+     * @param Throwable $e
      * @return bool
      */
-    public function isJsonApi($request, Exception $e)
+    public function isJsonApi($request, Throwable $e)
     {
         if (Helpers::wantsJsonApi($request)) {
             return true;
@@ -63,12 +63,14 @@ trait HandlesErrors
      * Render an exception as a JSON API error response.
      *
      * @param Request $request
-     * @param Exception $e
+     * @param Throwable $e
      * @return Response
      */
-    public function renderJsonApi($request, Exception $e)
+    public function renderJsonApi($request, Throwable $e)
     {
-        return json_api()->response()->exception($e);
+        $headers = ($e instanceof HttpException) ? $e->getHeaders() : [];
+
+        return json_api()->exceptions()->parse($e)->toResponse($request)->withHeaders($headers);
     }
 
     /**

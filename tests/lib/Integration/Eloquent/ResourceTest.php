@@ -19,7 +19,6 @@ namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Eloquent;
 
 use Carbon\Carbon;
 use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
-use Composer\Semver\Semver;
 use DummyApp\Comment;
 use DummyApp\Post;
 use DummyApp\Tag;
@@ -104,7 +103,7 @@ class ResourceTest extends TestCase
         $expected = $this->serialize($post);
 
         $this->doSearch(['filter' => ['slug' => 'my-first-post']])
-            ->assertReadHasOne($expected);
+            ->assertFetchedOne($expected);
     }
 
     public function testSearchOneIsNull()
@@ -112,7 +111,7 @@ class ResourceTest extends TestCase
         factory(Post::class)->create(['slug' => 'my-first-post']);
 
         $this->doSearch(['filter' => ['slug' => 'my-second-post']])
-            ->assertReadHasOne(null);
+            ->assertFetchedNull();
     }
 
     /**
@@ -130,10 +129,10 @@ class ResourceTest extends TestCase
      */
     public function testSearchWithIncluded()
     {
-        factory(Comment::class, 5)->states('post')->create();
+        $expected = factory(Comment::class, 5)->states('post')->create();
 
         $this->doSearch(['include' => 'comments.created-by'])
-            ->assertSearchedMany();
+            ->assertFetchedMany($expected);
     }
 
     /**
@@ -175,7 +174,10 @@ class ResourceTest extends TestCase
         $expected = $data;
         unset($expected['relationships']);
 
-        $id = $this->doCreate($data)->assertCreatedWithId($expected);
+        $id = $this
+            ->doCreate($data)
+            ->assertCreatedWithServerId(url('/api/v1/posts'), $expected)
+            ->id();
 
         $this->assertDatabaseHas('posts', [
             'id' => $id,
@@ -709,14 +711,9 @@ class ResourceTest extends TestCase
             return $post->is($actual);
         });
 
-        /**
-         * Force deleted event was added in Laravel 5.6.
-         */
-        if (Semver::satisfies($this->app->version(), '>=5.6')) {
-            Event::assertDispatched("eloquent.forceDeleted: " . Post::class, function ($name, $actual) use ($post) {
-                return $post->is($actual);
-            });
-        }
+        Event::assertDispatched("eloquent.forceDeleted: " . Post::class, function ($name, $actual) use ($post) {
+            return $post->is($actual);
+        });
     }
 
     /**

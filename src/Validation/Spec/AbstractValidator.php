@@ -19,9 +19,8 @@ namespace CloudCreativity\LaravelJsonApi\Validation\Spec;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validation\DocumentValidatorInterface;
+use CloudCreativity\LaravelJsonApi\Document\Error\Translator as ErrorTranslator;
 use CloudCreativity\LaravelJsonApi\Exceptions\InvalidArgumentException;
-use CloudCreativity\LaravelJsonApi\Object\ResourceIdentifier;
-use CloudCreativity\LaravelJsonApi\Validation\ErrorTranslator;
 use Neomerx\JsonApi\Exceptions\ErrorCollection;
 
 /**
@@ -266,7 +265,7 @@ abstract class AbstractValidator implements DocumentValidatorInterface
             return false;
         }
 
-        if (!$this->store->exists(new ResourceIdentifier($value))) {
+        if (!$this->store->exists($value->type, $value->id)) {
             $this->resourceDoesNotExist($identifierPath);
             return false;
         }
@@ -342,7 +341,7 @@ abstract class AbstractValidator implements DocumentValidatorInterface
      */
     protected function isNotFound(string $type, string $id): bool
     {
-        return !$this->store->exists(ResourceIdentifier::create($type, $id));
+        return !$this->store->exists($type, $id);
     }
 
     /**

@@ -205,7 +205,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     /**
      * @inheritDoc
      */
-    public function exists($resourceId)
+    public function exists(string $resourceId): bool
     {
         return $this->findQuery($resourceId)->exists();
     }
@@ -213,7 +213,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     /**
      * @inheritDoc
      */
-    public function find($resourceId)
+    public function find(string $resourceId)
     {
         return $this->findQuery($resourceId)->first();
     }
@@ -221,7 +221,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     /**
      * @inheritDoc
      */
-    public function findMany(array $resourceIds)
+    public function findMany(iterable $resourceIds): iterable
     {
         return $this->findManyQuery($resourceIds)->get()->all();
     }
@@ -299,10 +299,10 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     }
 
     /**
-     * @param array $resourceIds
+     * @param iterable $resourceIds
      * @return Builder
      */
-    protected function findManyQuery(array $resourceIds)
+    protected function findManyQuery(iterable $resourceIds)
     {
         return $this->newQuery()->whereIn(
             $this->getQualifiedKeyName(),

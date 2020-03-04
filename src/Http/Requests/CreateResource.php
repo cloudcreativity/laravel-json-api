@@ -18,9 +18,6 @@
 namespace CloudCreativity\LaravelJsonApi\Http\Requests;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorFactoryInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Validators\ValidatorProviderInterface;
-use CloudCreativity\LaravelJsonApi\Exceptions\ValidationException;
-use CloudCreativity\LaravelJsonApi\Object\Document;
 
 /**
  * Class CreateResource
@@ -47,20 +44,11 @@ class CreateResource extends ValidatedRequest
      */
     protected function validateQuery()
     {
-        if (!$validators = $this->getValidators()) {
-            return;
+        if ($validators = $this->getValidators()) {
+            $this->passes(
+                $validators->modifyQuery($this->query())
+            );
         }
-
-        /** Pre-1.0 validators */
-        if ($validators instanceof ValidatorProviderInterface) {
-            $validators->resourceQueryChecker()->checkQuery($this->getEncodingParameters());
-            return;
-        }
-
-        /** 1.0 validators */
-        $this->passes(
-            $validators->modifyQuery($this->query())
-        );
     }
 
     /**
@@ -70,12 +58,6 @@ class CreateResource extends ValidatedRequest
     {
         $document = $this->decode();
         $validators = $this->getValidators();
-
-        /** Pre-1.0 validators */
-        if ($validators instanceof ValidatorProviderInterface) {
-            $this->validateDocumentWithProvider($validators, $document);
-            return;
-        }
 
         /** If there is a decoded JSON API document, check it complies with the spec. */
         if ($document) {
@@ -103,20 +85,6 @@ class CreateResource extends ValidatedRequest
                 $validators && $validators->supportsClientIds()
             )
         );
-    }
-
-    /**
-     * @param ValidatorProviderInterface $validators
-     * @param $document
-     * @deprecated 2.0.0
-     */
-    protected function validateDocumentWithProvider(ValidatorProviderInterface $validators, $document)
-    {
-        $validator = $validators->createResource();
-
-        if (!$validator->isValid(new Document($document))) {
-            throw new ValidationException($validator->getErrors());
-        }
     }
 
 }

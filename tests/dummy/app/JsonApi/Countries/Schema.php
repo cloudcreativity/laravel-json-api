@@ -17,14 +17,38 @@
 
 namespace DummyApp\JsonApi\Countries;
 
-use CloudCreativity\LaravelJsonApi\Eloquent\AbstractSchema;
+use DummyApp\Country;
+use Neomerx\JsonApi\Schema\SchemaProvider;
 
-class Schema extends AbstractSchema
+class Schema extends SchemaProvider
 {
 
     /**
      * @var string
      */
     protected $resourceType = 'countries';
+
+    /**
+     * @inheritDoc
+     */
+    public function getId($resource)
+    {
+        return (string) $resource->getRouteKey();
+    }
+
+    /**
+     * @param Country $resource
+     * @return array
+     */
+    public function getAttributes($resource)
+    {
+        return [
+            'created-at' => $resource->created_at->toAtomString(),
+            'code' => $resource->code,
+            'name' => $resource->name,
+            'updated-at' => $resource->updated_at->toAtomString(),
+        ];
+    }
+
 
 }

@@ -18,13 +18,11 @@
 namespace CloudCreativity\LaravelJsonApi\Routing;
 
 use CloudCreativity\LaravelJsonApi\Codec\Codec;
-use CloudCreativity\LaravelJsonApi\Contracts\Object\ResourceIdentifierInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Queue\AsynchronousProcess;
 use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\ResourceNotFoundException;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
-use CloudCreativity\LaravelJsonApi\Object\ResourceIdentifier;
 use Illuminate\Routing\Route as IlluminateRoute;
 
 /**
@@ -209,21 +207,6 @@ class Route
     }
 
     /**
-     * Get the resource identifier for the route.
-     *
-     * @return ResourceIdentifierInterface|null
-     * @deprecated 2.0.0
-     */
-    public function getResourceIdentifier(): ?ResourceIdentifierInterface
-    {
-        if (!$resourceId = $this->getResourceId()) {
-            return null;
-        }
-
-        return ResourceIdentifier::create($this->getResourceType(), $resourceId);
-    }
-
-    /**
      * Get the domain object binding for the route.
      *
      * @return mixed|null
@@ -292,21 +275,6 @@ class Route
         $process = $this->parameter(ResourceRegistrar::PARAM_PROCESS_ID);
 
         return ($process instanceof AsynchronousProcess) ? $process : null;
-    }
-
-    /**
-     * Get the process identifier for the route.
-     *
-     * @return ResourceIdentifierInterface|null
-     * @deprecated 2.0.0
-     */
-    public function getProcessIdentifier(): ?ResourceIdentifierInterface
-    {
-        if (!$id = $this->getProcessId()) {
-            return null;
-        }
-
-        return ResourceIdentifier::create($this->getProcessType(), $id);
     }
 
     /**

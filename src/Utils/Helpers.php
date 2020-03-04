@@ -160,6 +160,7 @@ class Helpers
      * @param int $default
      * @return int
      * @see https://jsonapi.org/format/#errors
+     * @deprecated 3.0.0 use `Document\Error\Errors::getStatus()`
      */
     public static function httpErrorStatus($errors, int $default = SymfonyResponse::HTTP_BAD_REQUEST): int
     {

@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Copyright 2020 Cloud Creativity Limited
  *
@@ -20,7 +19,6 @@ namespace CloudCreativity\LaravelJsonApi\Pagination;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PageInterface;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
-use CloudCreativity\LaravelJsonApi\Schema\CreatesLinks;
 use CloudCreativity\LaravelJsonApi\Utils\Str;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Contracts\Pagination\Paginator;
@@ -36,8 +34,6 @@ use Neomerx\JsonApi\Contracts\Http\Query\QueryParametersParserInterface;
  */
 trait CreatesPages
 {
-
-    use CreatesLinks;
 
     /**
      * @return string
@@ -144,12 +140,7 @@ trait CreatesPages
             return null;
         }
 
-        /** In older versions of Laravel, last page can return zero for an empty collection. */
-        if (1 > $last = $paginator->lastPage()) {
-            $last = 1;
-        }
-
-        return $this->createLink($last, $paginator->perPage(), $params);
+        return $this->createLink($paginator->lastPage(), $paginator->perPage(), $params);
     }
 
     /**
@@ -177,7 +168,7 @@ trait CreatesPages
      */
     protected function createLink($page, $perPage, array $parameters = [], $meta = null)
     {
-        return $this->links()->current($meta, array_merge($parameters, [
+        return json_api()->links()->current($meta, array_merge($parameters, [
             QueryParametersParserInterface::PARAM_PAGE => [
                 $this->getPageKey() => $page,
                 $this->getPerPageKey() => $perPage,
@@ -199,13 +190,8 @@ trait CreatesPages
         ];
 
         if ($paginator instanceof LengthAwarePaginator) {
-            /** In older versions of Laravel, last page can return zero for an empty collection. */
-            if (1 > $last = $paginator->lastPage()) {
-                $last = 1;
-            }
-
             $meta[$this->normalizeMetaKey('total')] = $paginator->total();
-            $meta[$this->normalizeMetaKey('last-page')] = $last;
+            $meta[$this->normalizeMetaKey('last-page')] = $paginator->lastPage();
         }
 
         return $meta;

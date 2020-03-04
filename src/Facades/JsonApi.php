@@ -27,7 +27,6 @@ use Illuminate\Support\Facades\Facade;
  *
  * @package CloudCreativity\LaravelJsonApi
  * @method static ApiRegistration register(string $apiName, array|\Closure $options = [], \Closure|null $callback = null)
- * @method static string defaultApi(string|null $apiName)
  * @method static Route currentRoute()
  */
 class JsonApi extends Facade

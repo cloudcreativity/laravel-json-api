@@ -69,7 +69,7 @@ class ResolverTest extends TestCase
 
         $post = factory(Post::class)->create();
 
-        $this->doRead($post)->assertRead([
+        $this->doRead($post)->assertFetchedOne([
             'type' => 'foobars',
             'id' => $post,
             'attributes' => [
@@ -90,7 +90,7 @@ class ResolverTest extends TestCase
 
         $post = factory(Post::class)->create();
 
-        $this->doRead($post)->assertRead([
+        $this->doRead($post)->assertFetchedOne([
             'type' => 'foobars',
             'id' => $post,
             'attributes' => [

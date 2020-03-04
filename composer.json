@@ -22,29 +22,28 @@
         }
     ],
     "require": {
-        "php": "^7.1",
+        "php": "^7.2",
         "ext-json": "*",
-        "cloudcreativity/utils-object": "^1.0",
-        "illuminate/console": "^5.5|^6.0",
-        "illuminate/contracts": "^5.5|^6.0",
-        "illuminate/database": "^5.5|^6.0",
-        "illuminate/filesystem": "^5.5|^6.0",
-        "illuminate/http": "^5.5|^6.0",
-        "illuminate/pagination": "^5.5|^6.0",
-        "illuminate/support": "^5.5|^6.0",
+        "illuminate/console": "^7.0",
+        "illuminate/contracts": "^7.0",
+        "illuminate/database": "^7.0",
+        "illuminate/filesystem": "^7.0",
+        "illuminate/http": "^7.0",
+        "illuminate/pagination": "^7.0",
+        "illuminate/support": "^7.0",
         "neomerx/json-api": "^1.0.3",
+        "nyholm/psr7": "^1.2",
         "ramsey/uuid": "^3.0",
-        "symfony/psr-http-message-bridge": "^1.0",
-        "zendframework/zend-diactoros": "^1.0|^2.0"
+        "symfony/psr-http-message-bridge": "^2.0"
     },
     "require-dev": {
         "ext-sqlite3": "*",
-        "cloudcreativity/json-api-testing": "^1.2|^2.0",
-        "composer/semver": "^1.5",
+        "cloudcreativity/json-api-testing": "^2.1",
         "guzzlehttp/guzzle": "^6.3",
+        "laravel/ui": "^2.0",
         "mockery/mockery": "^1.1",
-        "orchestra/testbench": "^3.5|^4.0",
-        "phpunit/phpunit": "^6.0|^7.0|^8.0"
+        "orchestra/testbench": "^5.0",
+        "phpunit/phpunit": "^8.0"
     },
     "suggest": {
         "cloudcreativity/json-api-testing": "Required to use the test helpers."
@@ -67,7 +66,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-develop": "1.x-dev"
+            "dev-develop": "2.x-dev"
         },
         "laravel": {
             "providers": [

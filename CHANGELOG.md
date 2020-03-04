@@ -2,6 +2,72 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## [2.0.0-beta.1] - 2020-03-04
+
+### Added
+- [#348](https://github.com/cloudcreativity/laravel-json-api/issues/348)
+Can now use route parameters in the API's URL configuration value.
+- New test builder class allows tests to fluently construct a test JSON API request.
+- [#427](https://github.com/cloudcreativity/laravel-json-api/issues/427)
+Test requests will now ensure that query parameter values are strings, integers or
+floats. This is to ensure that the developer is correctly testing boolean filters.
+
+### Changed
+- Minimum PHP version is now `7.2`.
+- Minimum Laravel version is now `7.0`.
+- Amended the store interface so that it always takes a string resource type and string id,
+instead of the deprecated resource identifier object.
+- Moved the `Validation\ErrorTranslator` class to `Document\Error\Translator`.
+- The `Testing\MakesJsonApiRequests::jsonApi()` method no longer accepts any function arguments,
+and returns an instance of `Testing\TestBuilder`. This allows the developer to fluently execute
+test JSON API requests.
+
+### Removed
+- The deprecated `0.x` validation implementation was removed. This deletes all interfaces
+in the `Contracts\Validators` namespace, and classes in the `Validators` namespace. You should
+use the [documented validation implementation](./docs/basics/validators.md) instead.
+- The deprecated `json_api_request()` helper was removed.
+- The following methods were removed from the JSON API service (and are therefore no
+longer available via the facade):
+  - `request()`: use `currentRoute()` instead.
+  - `defaultApi()`: set the default API via `LaravelJsonApi::defaultApi()` instead.
+- All deprecated methods on the `Testing\MakesJsonApiRequests` trait and `Testing\TestResponse` class
+were removed.
+- Removed the `Http\Requests\ValidatedRequest::validate()` method, as Laravel replaced it with
+`validateResolved()`. This affects all JSON API request classes.
+- Additionally, the following deprecated interfaces, classes and traits were removed:
+  - `Api\ResourceProvider` - extend `Api\AbstractProvider` instead.
+  - `Contracts\Document\MutableErrorInterface`
+  - `Contracts\Exceptions\ErrorIdAllocatorInterface`
+  - `Contracts\Factories\FactoryInterface`
+  - `Contracts\Http\Responses\ErrorResponseInterface`
+  - `Contracts\Object\*` - all interfaces in this namespace.
+  - `Contracts\Repositories\ErrorRepositoryInterface`
+  - `Contracts\Utils\ErrorReporterInterface`
+  - `Contracts\Utils\ErrorsAwareInterface`
+  - `Contracts\Utils\ReplacerInterface`
+  - `Document\Error` - use `Document\Error\Error` instead.
+  - `Eloquent\AbstractSchema` - extend the `neomerx/json-api` schema instead.
+  - `Eloquent\Concerns\SerializesModels` trait.
+  - `Exceptions\MutableErrorCollection`
+  - `Exceptions\NotFoundException`
+  - `Exceptions\RecordNotFoundException` - use `Exceptions\ResourceNotFoundException` instead.
+  - `Http\Query\ChecksQueryParameters` trait.
+  - `Http\Requests\JsonApiRequest`
+  - `Http\Responses\ErrorResponse`
+  - `Object\*` - all classes in this namespace.
+  - `Repositories\ErrorRepository`
+  - `Schema\AbstractSchema` - extend the `neomerx/json-api` schema instead.
+  - `Schema\CreatesEloquentIdentities` trait.
+  - `Schema\CreatesLinks` trait.
+  - `Schema\EloquentSchema` - extend the `neomerx/json-api` schema instead.
+  - `Utils\AbstractErrorBag`
+  - `Utils\ErrorBag`
+  - `Utils\ErrorCreatorTrait`
+  - `Utils\ErrorsAwareTrait`
+  - `Utils\Pointer`
+  - `Utils\Replacer`
+
 ## [1.6.0] - 2020-01-13
 
 ### Added
