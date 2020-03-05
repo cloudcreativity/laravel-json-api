@@ -31,7 +31,7 @@ class DummyClass extends AbstractAdapter
      */
     public function __construct(StandardStrategy $paging)
     {
-        parent::__construct(new \DummyApplicationNamespace\DummyRecord(), $paging);
+        parent::__construct(new \DummyModelNamespace\DummyRecord(), $paging);
     }
 
     /**

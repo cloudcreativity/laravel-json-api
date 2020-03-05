@@ -17,10 +17,10 @@
 
 namespace DummyPackage;
 
-use CloudCreativity\LaravelJsonApi\Api\ResourceProvider as BaseResourceProvider;
+use CloudCreativity\LaravelJsonApi\Api\AbstractProvider;
 use CloudCreativity\LaravelJsonApi\Routing\RouteRegistrar;
 
-class ResourceProvider extends BaseResourceProvider
+class ResourceProvider extends AbstractProvider
 {
 
     /**

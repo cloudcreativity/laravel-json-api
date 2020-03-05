@@ -17,7 +17,6 @@
 
 namespace DummyApp\Tests\Feature\Avatars;
 
-use CloudCreativity\LaravelJsonApi\Testing\TestResponse;
 use DummyApp\Avatar;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -57,12 +56,13 @@ class UpdateTest extends TestCase
             'attributes' => ['media-type' => 'image/jpeg'],
         ];
 
-        /** @var TestResponse $response */
-        $response = $this->withoutExceptionHandling()->actingAs($this->avatar->user, 'api')->patch(
-            "/api/v1/avatars/{$this->avatar->getRouteKey()}?include=user",
-            ['avatar' => $file],
-            ['Content-Type' => $contentType, 'Content-Length' => '1']
-        );
+        $this->actingAs($this->avatar->user, 'api');
+
+        $response = $this
+            ->jsonApi()
+            ->includePaths('user')
+            ->content(['avatar' => $file], $contentType)
+            ->patch(url('/api/v1/avatars', $this->avatar));
 
         $response
             ->assertUpdated($expected)

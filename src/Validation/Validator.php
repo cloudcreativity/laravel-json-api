@@ -18,7 +18,7 @@
 namespace CloudCreativity\LaravelJsonApi\Validation;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorInterface;
-use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
+use CloudCreativity\LaravelJsonApi\Document\Error\Translator as ErrorTranslator;
 use Illuminate\Contracts\Validation\Validator as ValidatorContract;
 use Neomerx\JsonApi\Exceptions\ErrorCollection;
 
@@ -76,11 +76,6 @@ class Validator implements ValidatorInterface
      */
     public function validated()
     {
-        // @TODO remove when only supporting Laravel >=5.8
-        if (!method_exists($this->validator, 'validated')) {
-            throw new RuntimeException('Not supported until Laravel 5.8');
-        }
-
         return $this->validator->validated();
     }
 

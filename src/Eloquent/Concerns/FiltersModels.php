@@ -94,7 +94,7 @@ trait FiltersModels
         }
 
         /** If it matches our default `id` filter, we ignore it. */
-        if ($name === $this->getFindManyKey()) {
+        if ($name === $this->filterKeyForIds()) {
             return null;
         }
 

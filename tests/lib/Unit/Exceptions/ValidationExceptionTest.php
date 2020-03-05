@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Copyright 2020 Cloud Creativity Limited
  *
@@ -18,7 +17,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Unit\Exceptions;
 
-use CloudCreativity\LaravelJsonApi\Document\Error;
+use Neomerx\JsonApi\Document\Error;
 use CloudCreativity\LaravelJsonApi\Exceptions\ValidationException;
 use CloudCreativity\LaravelJsonApi\Tests\Unit\TestCase;
 

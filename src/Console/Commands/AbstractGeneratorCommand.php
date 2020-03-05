@@ -20,6 +20,7 @@ namespace CloudCreativity\LaravelJsonApi\Console\Commands;
 
 use CloudCreativity\LaravelJsonApi\Api\Api;
 use CloudCreativity\LaravelJsonApi\Api\Repository;
+use CloudCreativity\LaravelJsonApi\LaravelJsonApi;
 use CloudCreativity\LaravelJsonApi\Utils\Str;
 use Illuminate\Console\GeneratorCommand;
 use Illuminate\Filesystem\Filesystem;
@@ -141,7 +142,8 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
             ->replaceClassName($stub, $name)
             ->replaceResourceType($stub)
             ->replaceApplicationNamespace($stub)
-            ->replaceRecord($stub);
+            ->replaceRecord($stub)
+            ->replaceModelNamespace($stub);
 
         return $stub;
     }
@@ -274,6 +276,20 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
     }
 
     /**
+     * Replace the model namespace name.
+     *
+     * @param $stub
+     * @return $this
+     */
+    private function replaceModelNamespace(&$stub) {
+
+        $modelNamespace = $this->getApi()->getModelNamespace() ?? rtrim($this->laravel->getNamespace(), "\\");
+        $stub = str_replace('DummyModelNamespace', $modelNamespace, $stub);
+
+        return $this;
+    }
+
+    /**
      * Get the stub for specific generator type
      *
      * @param string $implementationType
@@ -328,6 +344,6 @@ abstract class AbstractGeneratorCommand extends GeneratorCommand
      */
     protected function getApiName()
     {
-        return $this->argument('api') ?: $this->laravel->make('json-api')->defaultApi();
+        return $this->argument('api') ?: LaravelJsonApi::$defaultApi;
     }
 }

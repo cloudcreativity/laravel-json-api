@@ -17,10 +17,9 @@
 
 namespace DummyApp\JsonApi\Tags;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Validators\RelationshipsValidatorInterface;
-use CloudCreativity\LaravelJsonApi\Validators\AbstractValidatorProvider;
+use CloudCreativity\LaravelJsonApi\Validation\AbstractValidators;
 
-class Validators extends AbstractValidatorProvider
+class Validators extends AbstractValidators
 {
 
     /**
@@ -31,21 +30,19 @@ class Validators extends AbstractValidatorProvider
     /**
      * @inheritDoc
      */
-    protected function attributeRules($record = null)
+    protected function rules($record = null): array
     {
-        $required = $record ? 'sometimes|required' : 'required';
-
         return [
-            'name' => "$required|string|between:1,250",
+            'name' => "required|string|between:1,250",
         ];
     }
 
     /**
      * @inheritDoc
      */
-    protected function relationshipRules(RelationshipsValidatorInterface $relationships, $record = null)
+    protected function queryRules(): array
     {
-        $relationships->hasMany('taggables', ['posts', 'videos'], false, true);
+        return [];
     }
 
 }

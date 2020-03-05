@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Copyright 2020 Cloud Creativity Limited
  *
@@ -21,8 +20,6 @@ namespace CloudCreativity\LaravelJsonApi;
 use CloudCreativity\LaravelJsonApi\Api\Repository;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Exceptions\ExceptionParserInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Factories\FactoryInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Repositories\ErrorRepositoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\ExceptionParser;
@@ -30,7 +27,6 @@ use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use CloudCreativity\LaravelJsonApi\Http\Middleware\Authorize;
 use CloudCreativity\LaravelJsonApi\Http\Middleware\BootJsonApi;
 use CloudCreativity\LaravelJsonApi\Http\Middleware\NegotiateContent;
-use CloudCreativity\LaravelJsonApi\Http\Requests\JsonApiRequest;
 use CloudCreativity\LaravelJsonApi\Queue\UpdateClientProcess;
 use CloudCreativity\LaravelJsonApi\Routing\JsonApiRegistrar;
 use CloudCreativity\LaravelJsonApi\Routing\Route;
@@ -47,7 +43,7 @@ use Neomerx\JsonApi\Contracts\Encoder\Handlers\HandlerFactoryInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Parser\ParserFactoryInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Stack\StackFactoryInterface;
-use Neomerx\JsonApi\Contracts\Factories\FactoryInterface as NeomerxFactoryInterface;
+use Neomerx\JsonApi\Contracts\Factories\FactoryInterface;
 use Neomerx\JsonApi\Contracts\Http\Headers\HeaderParametersInterface;
 use Neomerx\JsonApi\Contracts\Http\Headers\HeaderParametersParserInterface;
 use Neomerx\JsonApi\Contracts\Http\HttpFactoryInterface;
@@ -112,7 +108,6 @@ class ServiceProvider extends BaseServiceProvider
         $this->bindApiRepository();
         $this->bindExceptionParser();
         $this->bindRenderer();
-        $this->mergePackageConfig();
     }
 
     /**
@@ -199,7 +194,6 @@ class ServiceProvider extends BaseServiceProvider
         });
 
         $this->app->alias(Factory::class, FactoryInterface::class);
-        $this->app->alias(Factory::class, NeomerxFactoryInterface::class);
         $this->app->alias(Factory::class, DocumentFactoryInterface::class);
         $this->app->alias(Factory::class, HandlerFactoryInterface::class);
         $this->app->alias(Factory::class, HttpFactoryInterface::class);
@@ -233,9 +227,6 @@ class ServiceProvider extends BaseServiceProvider
      */
     protected function bindInboundRequest()
     {
-        $this->app->singleton(JsonApiRequest::class);
-        $this->app->alias(JsonApiRequest::class, 'json-api.request');
-
         $this->app->singleton(Route::class, function (Application $app) {
             return new Route(
                 $app->make(ResolverInterface::class),
@@ -249,10 +240,6 @@ class ServiceProvider extends BaseServiceProvider
 
         $this->app->bind(ResolverInterface::class, function () {
             return json_api()->getResolver();
-        });
-
-        $this->app->bind(ErrorRepositoryInterface::class, function () {
-            return json_api()->getErrors();
         });
 
         $this->app->bind(ContainerInterface::class, function () {
@@ -302,14 +289,6 @@ class ServiceProvider extends BaseServiceProvider
     {
         $this->app->singleton(Renderer::class);
         $this->app->alias(Renderer::class, 'json-api.renderer');
-    }
-
-    /**
-     * Merge default package config.
-     */
-    protected function mergePackageConfig()
-    {
-        $this->mergeConfigFrom(__DIR__ . '/../config/json-api-errors.php', 'json-api-errors');
     }
 
     /**

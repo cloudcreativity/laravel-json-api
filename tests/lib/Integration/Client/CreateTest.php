@@ -32,12 +32,12 @@ class CreateTest extends TestCase
             'type' => 'posts',
             'attributes' => [
                 'created-at' => null,
-                'updated-at' => null,
-                'deleted-at' => null,
-                'title' => $post->title,
-                'slug' => $post->slug,
                 'content' => $post->content,
+                'deleted-at' => null,
                 'published' => $post->published_at,
+                'slug' => $post->slug,
+                'title' => $post->title,
+                'updated-at' => null,
             ],
             'relationships' => [
                 'author' => [

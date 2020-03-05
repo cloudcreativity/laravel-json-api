@@ -21,7 +21,6 @@ namespace CloudCreativity\LaravelJsonApi\Factories;
 use CloudCreativity\LaravelJsonApi\Api\AbstractProvider;
 use CloudCreativity\LaravelJsonApi\Api\Api;
 use CloudCreativity\LaravelJsonApi\Api\LinkGenerator;
-use CloudCreativity\LaravelJsonApi\Api\ResourceProvider;
 use CloudCreativity\LaravelJsonApi\Api\Url;
 use CloudCreativity\LaravelJsonApi\Api\UrlGenerator;
 use CloudCreativity\LaravelJsonApi\Client\ClientSerializer;
@@ -32,55 +31,40 @@ use CloudCreativity\LaravelJsonApi\Codec\Encoding;
 use CloudCreativity\LaravelJsonApi\Container;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Encoder\SerializerInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Factories\FactoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\ContentNegotiatorInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Repositories\ErrorRepositoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validation\DocumentValidatorInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Validators\QueryValidatorInterface;
+use CloudCreativity\LaravelJsonApi\Document\Error\Translator as ErrorTranslator;
 use CloudCreativity\LaravelJsonApi\Document\ResourceObject;
 use CloudCreativity\LaravelJsonApi\Encoder\Encoder;
+use CloudCreativity\LaravelJsonApi\Encoder\Neomerx\Factory as EncoderFactory;
 use CloudCreativity\LaravelJsonApi\Encoder\Parameters\EncodingParameters;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Http\ContentNegotiator;
-use CloudCreativity\LaravelJsonApi\Http\Headers\RestrictiveHeadersChecker;
-use CloudCreativity\LaravelJsonApi\Http\Query\ValidationQueryChecker;
-use CloudCreativity\LaravelJsonApi\Http\Responses\ErrorResponse;
 use CloudCreativity\LaravelJsonApi\Http\Responses\Responses;
-use CloudCreativity\LaravelJsonApi\Object\Document;
 use CloudCreativity\LaravelJsonApi\Pagination\Page;
-use CloudCreativity\LaravelJsonApi\Repositories\ErrorRepository;
 use CloudCreativity\LaravelJsonApi\Resolver\ResolverFactory;
 use CloudCreativity\LaravelJsonApi\Routing\Route;
 use CloudCreativity\LaravelJsonApi\Store\Store;
-use CloudCreativity\LaravelJsonApi\Utils\Replacer;
 use CloudCreativity\LaravelJsonApi\Validation;
-use CloudCreativity\LaravelJsonApi\Validation\ErrorTranslator;
-use CloudCreativity\LaravelJsonApi\Validators\ValidatorErrorFactory;
-use CloudCreativity\LaravelJsonApi\Validators\ValidatorFactory;
 use Illuminate\Contracts\Container\Container as IlluminateContainer;
 use Illuminate\Contracts\Routing\UrlGenerator as IlluminateUrlGenerator;
 use Illuminate\Contracts\Translation\Translator;
 use Illuminate\Contracts\Validation\Factory as ValidatorFactoryContract;
 use Illuminate\Contracts\Validation\Validator;
-use Neomerx\JsonApi\Contracts\Codec\CodecMatcherInterface;
 use Neomerx\JsonApi\Contracts\Document\LinkInterface;
 use Neomerx\JsonApi\Contracts\Schema\ContainerInterface as SchemaContainerInterface;
 use Neomerx\JsonApi\Encoder\EncoderOptions;
 use Neomerx\JsonApi\Factories\Factory as BaseFactory;
-use Psr\Http\Message\RequestInterface as PsrRequest;
-use Psr\Http\Message\ResponseInterface as PsrResponse;
-use function CloudCreativity\LaravelJsonApi\http_contains_body;
-use function CloudCreativity\LaravelJsonApi\json_decode;
 
 /**
  * Class Factory
  *
  * @package CloudCreativity\LaravelJsonApi
  */
-class Factory extends BaseFactory implements FactoryInterface
+class Factory extends BaseFactory
 {
 
     /**
@@ -131,14 +115,6 @@ class Factory extends BaseFactory implements FactoryInterface
     /**
      * @inheritdoc
      */
-    public function createHeadersChecker(CodecMatcherInterface $codecMatcher)
-    {
-        return new RestrictiveHeadersChecker($codecMatcher, json_api()->getErrors());
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function createExtendedContainer(ResolverInterface $resolver)
     {
         return new Container($this->container, $resolver);
@@ -166,26 +142,6 @@ class Factory extends BaseFactory implements FactoryInterface
     /**
      * @inheritDoc
      */
-    public function createErrorResponse($errors, $defaultHttpCode, array $headers = [])
-    {
-        return new ErrorResponse($errors, $defaultHttpCode, $headers);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function createDocumentObject(PsrRequest $request, PsrResponse $response = null)
-    {
-        if (!http_contains_body($request, $response)) {
-            return null;
-        }
-
-        return new Document(json_decode($response ? $response->getBody() : $request->getBody()));
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function createClient($httpClient, SchemaContainerInterface $container, SerializerInterface $encoder)
     {
         return new GuzzleClient(
@@ -206,49 +162,6 @@ class Factory extends BaseFactory implements FactoryInterface
     /**
      * @inheritDoc
      */
-    public function createErrorRepository(array $errors)
-    {
-        $repository = new ErrorRepository($this->createReplacer());
-        $repository->configure($errors);
-
-        return $repository;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function createReplacer()
-    {
-        return new Replacer();
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function createExtendedQueryChecker(
-        $allowUnrecognized = false,
-        array $includePaths = null,
-        array $fieldSetTypes = null,
-        array $sortParameters = null,
-        array $pagingParameters = null,
-        array $filteringParameters = null,
-        QueryValidatorInterface $validator = null
-    ) {
-        $checker = $this->createQueryChecker(
-            $allowUnrecognized,
-            $includePaths,
-            $fieldSetTypes,
-            $sortParameters,
-            $pagingParameters,
-            $filteringParameters
-        );
-
-        return new ValidationQueryChecker($checker, $validator);
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function createPage(
         $data,
         LinkInterface $first = null,
@@ -262,29 +175,12 @@ class Factory extends BaseFactory implements FactoryInterface
     }
 
     /**
-     * @inheritdoc
-     */
-    public function createValidatorFactory(ErrorRepositoryInterface $errors, StoreInterface $store)
-    {
-        /** @var ValidatorFactoryContract $laravelFactory */
-        $laravelFactory = $this->container->make(ValidatorFactoryContract::class);
-
-        return new ValidatorFactory($this->createValidatorErrorFactory($errors), $store, $laravelFactory);
-    }
-
-    /**
      * @param $fqn
-     * @return ResourceProvider
+     * @return AbstractProvider
      */
-    public function createResourceProvider($fqn)
+    public function createResourceProvider($fqn): AbstractProvider
     {
-        $provider = $this->container->make($fqn);
-
-        if (!$provider instanceof AbstractProvider) {
-            throw new RuntimeException("Expecting $fqn to resolve to a resource provider instance.");
-        }
-
-        return $provider;
+        return $this->container->make($fqn);
     }
 
     /**
@@ -296,7 +192,7 @@ class Factory extends BaseFactory implements FactoryInterface
     public function createResponseFactory(Api $api)
     {
         return new Responses(
-            $this,
+            $this->container->make(EncoderFactory::class),
             $api,
             $this->container->make(Route::class),
             $this->container->make('json-api.exceptions')
@@ -433,6 +329,7 @@ class Factory extends BaseFactory implements FactoryInterface
      * @param Encoding $encoding
      * @param Decoding|null $decoding
      * @return Codec
+     * @deprecated 2.0.0 use `Encoder\Neomerx\Factory::createCodec()`
      */
     public function createCodec(ContainerInterface $container, Encoding $encoding, ?Decoding $decoding)
     {
@@ -576,16 +473,6 @@ class Factory extends BaseFactory implements FactoryInterface
                 return $this->invalidQueryParameter($key, $detail, $failed);
             }
         );
-    }
-
-    /**
-     * @param ErrorRepositoryInterface $errors
-     * @return ValidatorErrorFactory
-     * @deprecated 2.0.0
-     */
-    protected function createValidatorErrorFactory(ErrorRepositoryInterface $errors)
-    {
-        return new ValidatorErrorFactory($errors);
     }
 
     /**

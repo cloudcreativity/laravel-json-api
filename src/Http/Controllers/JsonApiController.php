@@ -196,7 +196,7 @@ class JsonApiController extends Controller
         $related = $store->queryRelated(
             $record,
             $request->getRelationshipName(),
-            $request->getParameters()
+            $request->getEncodingParameters()
         );
 
         $records = ($related instanceof PageInterface) ? $related->getData() : $related;
@@ -228,7 +228,7 @@ class JsonApiController extends Controller
         $related = $store->queryRelationship(
             $record,
             $request->getRelationshipName(),
-            $request->getParameters()
+            $request->getEncodingParameters()
         );
 
         $records = ($related instanceof PageInterface) ? $related->getData() : $related;
@@ -382,7 +382,7 @@ class JsonApiController extends Controller
             return $result;
         }
 
-        $found = $store->queryRecords($request->getResourceType(), $request->getParameters());
+        $found = $store->queryRecords($request->getResourceType(), $request->getEncodingParameters());
         $records = ($found instanceof PageInterface) ? $found->getData() : $found;
 
         if ($result = $this->invoke('searched', $records, $request)) {
@@ -408,7 +408,7 @@ class JsonApiController extends Controller
         }
 
         /** We pass to the store for filtering, eager loading etc. */
-        $record = $store->readRecord($record, $request->getParameters());
+        $record = $store->readRecord($record, $request->getEncodingParameters());
 
         if ($result = $this->invoke('didRead', $record, $request)) {
             return $result;
@@ -434,7 +434,7 @@ class JsonApiController extends Controller
         $record = $store->createRecord(
             $request->getResourceType(),
             $request->all(),
-            $request->getParameters()
+            $request->getEncodingParameters()
         );
 
         return $this->afterCommit($request, $record, false) ?: $record;
@@ -457,7 +457,7 @@ class JsonApiController extends Controller
         $record = $store->updateRecord(
             $request->getRecord(),
             $request->all(),
-            $request->getParameters()
+            $request->getEncodingParameters()
         );
 
         return $this->afterCommit($request, $record, true) ?: $record;
@@ -479,7 +479,7 @@ class JsonApiController extends Controller
             return $response;
         }
 
-        $result = $store->deleteRecord($record, $request->getParameters());
+        $result = $store->deleteRecord($record, $request->getEncodingParameters());
 
         return $this->invoke('deleted', $record, $request) ?: $result;
     }
@@ -504,7 +504,7 @@ class JsonApiController extends Controller
             $record,
             $field,
             $request->all(),
-            $request->getParameters()
+            $request->getEncodingParameters()
         );
 
         return $this->invokeMany(["replaced{$name}", "replaced"], $record, $request) ?: $record;
@@ -530,7 +530,7 @@ class JsonApiController extends Controller
             $record,
             $field,
             $request->all(),
-            $request->getParameters()
+            $request->getEncodingParameters()
         );
 
         return $this->invokeMany(["added{$name}", "added"], $record, $request) ?: $record;
@@ -556,7 +556,7 @@ class JsonApiController extends Controller
             $record,
             $field,
             $request->all(),
-            $request->getParameters()
+            $request->getEncodingParameters()
         );
 
         return $this->invokeMany(["removed{$name}", "removed"], $record, $request) ?: $record;

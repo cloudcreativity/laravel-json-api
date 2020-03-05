@@ -73,7 +73,7 @@ class BootJsonApi
         /** Get existing API or build and register new. */
         $api = $this->container->bound(Api::class)
             ? $this->container->make(Api::class)
-            : $this->bindApi($namespace, $request->getSchemeAndHttpHost() . $request->getBaseUrl());
+            : $this->bindApi($namespace, $request->getSchemeAndHttpHost() . $request->getBaseUrl(), $request->route()->parameters);
 
         /** Substitute route bindings. */
         $this->substituteBindings($api);
@@ -87,18 +87,19 @@ class BootJsonApi
     /**
      * Build the API instance and bind it into the container.
      *
-     * @param $namespace
-     * @param $host
+     * @param string $namespace
+     * @param string $host
+     * @param array $parameters
      *
      * @return Api
      * @throws BindingResolutionException
      */
-    protected function bindApi(string $namespace, string $host): Api
+    protected function bindApi(string $namespace, string $host, array $parameters = []): Api
     {
         /** @var Repository $repository */
         $repository = $this->container->make(Repository::class);
 
-        $api = $repository->createApi($namespace, $host);
+        $api = $repository->createApi($namespace, $host, $parameters);
         $this->container->instance(Api::class, $api);
         $this->container->alias(Api::class, 'json-api.inbound');
 

@@ -18,8 +18,8 @@
 namespace CloudCreativity\LaravelJsonApi\Validation\Spec;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
+use CloudCreativity\LaravelJsonApi\Document\Error\Translator as ErrorTranslator;
 use CloudCreativity\LaravelJsonApi\Exceptions\InvalidArgumentException;
-use CloudCreativity\LaravelJsonApi\Validation\ErrorTranslator;
 
 /**
  * Class UpdateResourceValidator

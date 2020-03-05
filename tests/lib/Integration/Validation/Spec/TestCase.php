@@ -29,7 +29,7 @@ abstract class TestCase extends BaseTestCase
      * @param $method
      * @return TestResponse
      */
-    protected function doInvalidRequest($uri, $content, $method = 'POST')
+    protected function doInvalidRequest($uri, $content, $method = 'POST'): TestResponse
     {
         if (!is_string($content)) {
             $content = json_encode($content);
@@ -41,6 +41,8 @@ abstract class TestCase extends BaseTestCase
             'Accept' => 'application/vnd.api+json',
         ]);
 
-        return $this->call($method, $uri, [], [], [], $headers, $content);
+        return TestResponse::cast(
+            $this->call($method, $uri, [], [], [], $headers, $content)
+        );
     }
 }

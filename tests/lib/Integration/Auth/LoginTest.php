@@ -60,7 +60,6 @@ class LoginTest extends TestCase
                     [
                         'title' => 'Unprocessable Entity',
                         'status' => '422',
-                        'meta' => ['key' => 'email'],
                     ],
                 ],
             ]);
