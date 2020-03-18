@@ -10,6 +10,9 @@ $ composer require --dev "cloudcreativity/json-api-testing:^1.2|^2.0"
 This package's service provider and facade will be automatically added using package discovery. You will
 then need to check your API route prefix and update your Exception handler as follows...
 
+Please find a compatibility matrix between Laravel and Laravel JSON API version in
+[project's readme on GitHub](https://github.com/cloudcreativity/laravel-json-api#laravel-versions).
+
 ## Route Prefixes
 
 The default Laravel installation has an `api` prefix for API routes. If you want to register your JSON API
