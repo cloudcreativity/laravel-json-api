@@ -2,6 +2,17 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## [2.0.0-beta.2] - 2020-04-12
+
+### Changed
+- Refactored API configuration to reduce constructor arguments in the API class.
+- Updated UUID dependency so that version 3 and 4 are allowed.
+
+### Fixed
+- [#498](https://github.com/cloudcreativity/laravel-json-api/issues/498)
+Update exception parser interface to type-hint a `Throwable` instance instead of an
+`Exception`.
+
 ## [2.0.0-beta.1] - 2020-03-04
 
 ### Added
