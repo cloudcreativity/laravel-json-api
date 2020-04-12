@@ -33,17 +33,17 @@
         "illuminate/support": "^7.0",
         "neomerx/json-api": "^1.0.3",
         "nyholm/psr7": "^1.2",
-        "ramsey/uuid": "^3.0",
+        "ramsey/uuid": "^3.0|^4.0",
         "symfony/psr-http-message-bridge": "^2.0"
     },
     "require-dev": {
         "ext-sqlite3": "*",
-        "cloudcreativity/json-api-testing": "^2.1",
+        "cloudcreativity/json-api-testing": "^3.0",
         "guzzlehttp/guzzle": "^6.3",
         "laravel/ui": "^2.0",
         "mockery/mockery": "^1.1",
         "orchestra/testbench": "^5.0",
-        "phpunit/phpunit": "^8.0"
+        "phpunit/phpunit": "^9.0"
     },
     "suggest": {
         "cloudcreativity/json-api-testing": "Required to use the test helpers."

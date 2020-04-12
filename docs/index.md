@@ -1,6 +1,6 @@
 # Introduction
 
-Add [jsonapi.org](http://jsonapi.org) compliant APIs to your Laravel 5 application.
+Add [jsonapi.org](http://jsonapi.org) compliant APIs to your Laravel application.
 Based on the framework agnostic packages [neomerx/json-api](https://github.com/neomerx/json-api) and
 [cloudcreativity/json-api](https://github.com/cloudcreativity/json-api).
 

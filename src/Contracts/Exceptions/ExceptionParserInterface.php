@@ -18,7 +18,7 @@
 namespace CloudCreativity\LaravelJsonApi\Contracts\Exceptions;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Document\DocumentInterface;
-use Exception;
+use Throwable;
 
 /**
  * Interface ExceptionParserInterface
@@ -31,9 +31,9 @@ interface ExceptionParserInterface
     /**
      * Convert the exception to a JSON API document.
      *
-     * @param Exception $e
+     * @param Throwable $e
      * @return DocumentInterface
      */
-    public function parse(Exception $e): DocumentInterface;
+    public function parse(Throwable $e): DocumentInterface;
 
 }

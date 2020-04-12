@@ -45,9 +45,9 @@ return [
     |--------------------------------------------------------------------------
     |
     | Here you can decide where your api models live.
-    | By default (i.e. set to null), the package assumes they will live on
-    | your root namespace
-    |   - e.g. namespace: 'App', Models: 'App\Foo', 'App\Bar'
+    | By default (i.e. set to null), the package assumes they will live in
+    | your application's root namespace, but you could set it to something
+    | different here. E.g. `App\Models`.
     |
     */
     'model-namespace' => null,
@@ -139,16 +139,6 @@ return [
         'resource' => 'queue-jobs',
         'model' => \CloudCreativity\LaravelJsonApi\Queue\ClientJob::class,
     ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Supported JSON API Extensions
-    |--------------------------------------------------------------------------
-    |
-    | Refer to the JSON API spec for information on supported extensions.
-    |
-    */
-    'supported-ext' => null,
 
     /*
     |--------------------------------------------------------------------------

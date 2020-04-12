@@ -59,7 +59,7 @@ class ExceptionParser implements ExceptionParserInterface
     /**
      * @inheritdoc
      */
-    public function parse(Exception $e): DocumentInterface
+    public function parse(\Throwable $e): DocumentInterface
     {
         if ($e instanceof JsonApiException) {
             return NeomerxErrors::cast($e);
@@ -74,10 +74,10 @@ class ExceptionParser implements ExceptionParserInterface
     }
 
     /**
-     * @param Exception $e
+     * @param \Throwable $e
      * @return ErrorInterface[]
      */
-    protected function getErrors(Exception $e): array
+    protected function getErrors(\Throwable $e): array
     {
         if ($e instanceof IlluminateValidationException) {
             return $this->getValidationError($e);
@@ -138,10 +138,10 @@ class ExceptionParser implements ExceptionParserInterface
     }
 
     /**
-     * @param Exception $e
+     * @param \Throwable $e
      * @return int|null
      */
-    protected function getDefaultHttpCode(Exception $e): ?int
+    protected function getDefaultHttpCode(\Throwable $e): ?int
     {
         return ($e instanceof HttpExceptionInterface) ?
             $e->getStatusCode() :
