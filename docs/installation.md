@@ -4,7 +4,7 @@ Install using [Composer](http://getcomposer.org):
 
 ```bash
 $ composer require cloudcreativity/laravel-json-api
-$ composer require --dev "cloudcreativity/json-api-testing:^1.2|^2.0"
+$ composer require --dev "cloudcreativity/json-api-testing"
 ```
 
 This package's service provider and facade will be automatically added using package discovery. You will
@@ -16,7 +16,7 @@ Please find a compatibility matrix between Laravel and Laravel JSON API version 
 ## Route Prefixes
 
 The default Laravel installation has an `api` prefix for API routes. If you want to register your JSON API
-routes in your `routes/api.php` file, you will need to remove the prefix from the `mapApiRoutes()` method in your 
+routes in your `routes/api.php` file, you will need to remove the prefix from the `mapApiRoutes()` method in your
 `RouteServiceProvider`.
 
 For example, change this:
@@ -102,7 +102,7 @@ class Handler extends ExceptionHandler
 
     // do standard exception rendering here...
   }
-  
+
   protected function prepareException(Exception $e)
   {
       if ($e instanceof JsonApiException) {
