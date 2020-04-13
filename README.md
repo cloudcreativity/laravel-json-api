@@ -2,7 +2,7 @@
 
 # cloudcreativity/laravel-json-api
 
-Build feature-rich and standards-compliant APIs in Laravel. 
+Build feature-rich and standards-compliant APIs in Laravel.
 
 This package provides all the capabilities you need to add [JSON API](http://jsonapi.org)
 compliant APIs to your application. Extensive support for the specification, including:
@@ -21,7 +21,7 @@ compliant APIs to your application. Extensive support for the specification, inc
 - Validation of:
   - JSON API documents; and
   - Query parameters.
- 
+
 The following additional features are also supported:
 
 - Full support for Eloquent resources, with features such as:
@@ -37,11 +37,11 @@ The following additional features are also supported:
 
 From [jsonapi.org](http://jsonapi.org)
 
-> If you've ever argued with your team about the way your JSON responses should be formatted, JSON API is your 
+> If you've ever argued with your team about the way your JSON responses should be formatted, JSON API is your
 anti-bikeshedding weapon.
 >
-> By following shared conventions, you can increase productivity, take advantage of generalized tooling, and focus 
-on what matters: your application. Clients built around JSON API are able to take advantage of its features around 
+> By following shared conventions, you can increase productivity, take advantage of generalized tooling, and focus
+on what matters: your application. Clients built around JSON API are able to take advantage of its features around
 efficiently caching responses, sometimes eliminating network requests entirely.
 
 For full information on the spec, plus examples, see [http://jsonapi.org](http://jsonapi.org).
@@ -62,13 +62,13 @@ A demo application is available at [here](https://github.com/cloudcreativity/dem
 
 | Laravel | This Package |
 | --- | --- |
-| `^6.0` | `^1.4` |
-| `5.8.*` | `^1.0` |
+| `^6.0` | `^1.7` |
+| `5.8.*` | `^1.7` |
 | `5.7.*` | `^1.0` |
 | `5.6.*` | `^1.0` |
 | `5.5.*` | `^1.0` |
 
-Make sure you consult the [Upgrade Guide](http://laravel-json-api.readthedocs.io/en/latest/upgrade/) 
+Make sure you consult the [Upgrade Guide](http://laravel-json-api.readthedocs.io/en/latest/upgrade/)
 when upgrading between major or pre-release versions.
 
 > You may notice that there are `2.0.0-alpha` tags. We **do not** recommend using these versions
@@ -90,7 +90,7 @@ Installation is via `composer`. See the documentation for complete instructions.
 
 ## Contributing
 
-Contributions are absolutely welcome. Ideally submit a pull request, even more ideally with unit tests. 
+Contributions are absolutely welcome. Ideally submit a pull request, even more ideally with unit tests.
 Please note the following:
 
 - **Bug Fixes** - submit a pull request against the `master` branch.

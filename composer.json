@@ -25,13 +25,13 @@
         "php": "^7.1",
         "ext-json": "*",
         "cloudcreativity/utils-object": "^1.0",
-        "illuminate/console": "^5.5|^6.0",
-        "illuminate/contracts": "^5.5|^6.0",
-        "illuminate/database": "^5.5|^6.0",
-        "illuminate/filesystem": "^5.5|^6.0",
-        "illuminate/http": "^5.5|^6.0",
-        "illuminate/pagination": "^5.5|^6.0",
-        "illuminate/support": "^5.5|^6.0",
+        "illuminate/console": "5.8.*|^6.0",
+        "illuminate/contracts": "5.8.*|^6.0",
+        "illuminate/database": "5.8.*|^6.0",
+        "illuminate/filesystem": "5.8.*|^6.0",
+        "illuminate/http": "5.8.*|^6.0",
+        "illuminate/pagination": "5.8.*|^6.0",
+        "illuminate/support": "5.8.*|^6.0",
         "neomerx/json-api": "^1.0.3",
         "ramsey/uuid": "^3.0",
         "symfony/psr-http-message-bridge": "^1.0",
@@ -67,7 +67,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-develop": "1.x-dev"
+            "dev-1.x": "1.x-dev"
         },
         "laravel": {
             "providers": [
