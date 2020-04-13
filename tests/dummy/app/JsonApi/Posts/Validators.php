@@ -54,6 +54,7 @@ class Validators extends AbstractValidators
         'author',
         'comments',
         'comments.created-by',
+        'image',
         'tags',
     ];
 

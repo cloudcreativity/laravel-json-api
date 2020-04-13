@@ -48,6 +48,13 @@ class CreateTables extends Migration
             $table->unsignedInteger('user_id')->nullable();
         });
 
+        Schema::create('images', function (Blueprint $table) {
+            $table->increments('id');
+            $table->timestamps();
+            $table->string('url');
+            $table->nullableMorphs('imageable');
+        });
+
         Schema::create('posts', function (Blueprint $table) {
             $table->increments('id');
             $table->timestamps();

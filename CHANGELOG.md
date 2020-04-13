@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## Unreleased
+
+### Added
+- [#503](https://github.com/cloudcreativity/laravel-json-api/issues/503)
+The JSON API `hasOne` relation now also supports an Eloquent `morphOne` relation.
+
 ## [2.0.0-beta.2] - 2020-04-12
 
 ### Changed
@@ -78,6 +84,15 @@ were removed.
   - `Utils\ErrorsAwareTrait`
   - `Utils\Pointer`
   - `Utils\Replacer`
+
+## [1.7.0] - 2020-04-13
+
+### Added
+- [#503](https://github.com/cloudcreativity/laravel-json-api/issues/503)
+The JSON API `hasOne` relation now also supports an Eloquent `morphOne` relation.
+
+### Changed
+- Minimum Laravel version is now `5.8` (previously `5.5`).
 
 ## [1.6.0] - 2020-01-13
 

@@ -41,7 +41,7 @@ class HasOne extends BelongsTo
 
         /** If there is a current related model, we need to clear it. */
         if ($current) {
-            $current->setAttribute($relation->getForeignKeyName(), null)->save();
+            $this->clear($current, $relation);
         }
 
         /** If there is a related model, save it. */
@@ -68,6 +68,25 @@ class HasOne extends BelongsTo
      */
     protected function acceptRelation($relation)
     {
-        return $relation instanceof Relations\HasOne;
+        if ($relation instanceof Relations\HasOne) {
+            return true;
+        }
+
+        return $relation instanceof Relations\MorphOne;
+    }
+
+    /**
+     * Clear the relation.
+     *
+     * @param Model $current
+     * @param $relation
+     */
+    private function clear(Model $current, $relation)
+    {
+        if ($relation instanceof Relations\MorphOne) {
+            $current->setAttribute($relation->getMorphType(), null);
+        }
+
+        $current->setAttribute($relation->getForeignKeyName(), null)->save();
     }
 }
