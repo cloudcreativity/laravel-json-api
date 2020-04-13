@@ -71,6 +71,7 @@ return [
         'countries' => \DummyApp\Country::class,
         'downloads' => \DummyApp\Download::class,
         'histories' => \DummyApp\History::class,
+        'images' => \DummyApp\Image::class,
         'phones' => \DummyApp\Phone::class,
         'posts' => \DummyApp\Post::class,
         'sites' => \DummyApp\Entities\Site::class,

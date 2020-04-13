@@ -83,6 +83,14 @@ class Schema extends SchemaProvider
                     return $isPrimary ? ['count' => $record->comments()->count()] : null;
                 },
             ],
+            'image' => [
+                self::SHOW_SELF => true,
+                self::SHOW_RELATED => true,
+                self::SHOW_DATA => isset($includedRelationships['image']),
+                self::DATA => function () use ($record) {
+                    return $record->image;
+                },
+            ],
             'tags' => [
                 self::SHOW_SELF => true,
                 self::SHOW_RELATED => true,

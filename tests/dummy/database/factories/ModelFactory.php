@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+use DummyApp\User;
 use Faker\Generator as Faker;
 use Illuminate\Database\Eloquent\Factory as EloquentFactory;
 use Illuminate\Support\Str;
@@ -72,6 +73,13 @@ $factory->define(DummyApp\Country::class, function (Faker $faker) {
 $factory->define(DummyApp\Download::class, function (Faker $faker) {
     return [
         'category' => $faker->randomElement(['my-posts', 'my-comments', 'my-videos']),
+    ];
+});
+
+/** Image */
+$factory->define(DummyApp\Image::class, function (Faker $faker) {
+    return [
+        'url' => $faker->imageUrl(),
     ];
 });
 

@@ -230,6 +230,7 @@ for Eloquent models. The relationship types available are `belongsTo`, `hasOne`,
 | `belongsToMany` | `hasMany` |
 | `hasManyThrough` | `hasManyThrough` |
 | `morphTo` | `belongsTo` |
+| `morphOne` | `hasOne` |
 | `morphMany` | `hasMany` |
 | `morphToMany` | `hasMany` |
 | `morphedByMany` | `morphMany` |
@@ -512,7 +513,7 @@ in user. In this case, you would only ever want resources owned by that user to 
 from the client's perspective, any resources belonging to other users do not exist. In this case, a global
 scope would ensure that a `404 Not Found` is returned for resources that belong to other users.
 
-> In contrast, if your API serves a mixture of resources belonging to different users, then 
+> In contrast, if your API serves a mixture of resources belonging to different users, then
 `401 Unauthorized` or `403 Forbidden` responses might be more appropriate when attempting to access other
 users' resources. In this scenario, [Authorizers](./security.md) would be a better approach than global
 scopes.
@@ -610,10 +611,10 @@ class DummyClass extends AbstractResourceAdapter
     {
         // TODO: Implement persist() method.
     }
-  
+
     /**
      * @inheritDoc
-     */  
+     */
     protected function destroy($record)
     {
         // TODO: Implement destroy() method.
@@ -704,7 +705,7 @@ on our adapter:
 class Adapter extends AbstractAdapter
 {
     // ...
-    
+
     protected function creating(Comment $comment): void
     {
         $comment->createdBy()->associate(Auth::user());
@@ -712,7 +713,7 @@ class Adapter extends AbstractAdapter
 }
 ```
 
-> If your resource uses a [client-generated ID](../crud/creating.md#client-generated-ids), you 
+> If your resource uses a [client-generated ID](../crud/creating.md#client-generated-ids), you
 will need to use the `creating` hook to assign the id to the model.
 
 There are two additional hooks that are invoked when an adapter is deleting a resource: `deleting` and `deleted`.

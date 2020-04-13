@@ -19,6 +19,7 @@ namespace DummyApp;
 
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -66,19 +67,27 @@ class User extends Authenticatable
     ];
 
     /**
-     * @return HasOne
-     */
-    public function phone()
-    {
-        return $this->hasOne(Phone::class);
-    }
-
-    /**
      * @return BelongsTo
      */
     public function country()
     {
         return $this->belongsTo(Country::class);
+    }
+
+    /**
+     * @return MorphOne
+     */
+    public function image()
+    {
+        return $this->morphOne(Image::class, 'imageable');
+    }
+
+    /**
+     * @return HasOne
+     */
+    public function phone()
+    {
+        return $this->hasOne(Phone::class);
     }
 
     /**
