@@ -21,6 +21,7 @@ use CloudCreativity\LaravelJsonApi\Eloquent\AbstractAdapter;
 use CloudCreativity\LaravelJsonApi\Eloquent\BelongsTo;
 use CloudCreativity\LaravelJsonApi\Eloquent\Concerns\SoftDeletesModels;
 use CloudCreativity\LaravelJsonApi\Eloquent\HasMany;
+use CloudCreativity\LaravelJsonApi\Eloquent\HasOne;
 use CloudCreativity\LaravelJsonApi\Eloquent\QueriesMany;
 use CloudCreativity\LaravelJsonApi\Eloquent\QueriesOne;
 use CloudCreativity\LaravelJsonApi\Pagination\StandardStrategy;
@@ -86,6 +87,14 @@ class Adapter extends AbstractAdapter
     protected function comments()
     {
         return $this->hasMany();
+    }
+
+    /**
+     * @return HasOne
+     */
+    protected function image()
+    {
+        return $this->hasOne();
     }
 
     /**

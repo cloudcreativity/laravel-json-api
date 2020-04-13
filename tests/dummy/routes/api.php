@@ -39,7 +39,8 @@ JsonApi::register('v1', [], function (RouteRegistrar $api) {
 
     $api->resource('posts', [
         'has-one' => [
-            'author' => ['inverse' => 'users']
+            'author' => ['inverse' => 'users'],
+            'image',
         ],
         'has-many' => [
             'comments',

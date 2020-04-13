@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. This projec
 
 ## Unreleased
 
+### Added
+- [#503](https://github.com/cloudcreativity/laravel-json-api/issues/503)
+The JSON API `hasOne` relation now also supports an Eloquent `morphOne` relation.
+
 ### Changed
 - Minimum Laravel version is now `5.8` (previously `5.5`).
 

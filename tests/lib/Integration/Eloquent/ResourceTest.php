@@ -786,6 +786,12 @@ class ResourceTest extends TestCase
                         'count' => $post->comments()->count(),
                     ],
                 ],
+                'image' => [
+                    'links' => [
+                        'self' => "$self/relationships/image",
+                        'related' => "$self/image",
+                    ],
+                ],
                 'tags' => [
                     'links' => [
                         'self' => "$self/relationships/tags",

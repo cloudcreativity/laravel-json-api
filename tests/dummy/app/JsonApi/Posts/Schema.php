@@ -44,6 +44,7 @@ class Schema extends EloquentSchema
     protected $relationships = [
         'author',
         'comments',
+        'image',
         'tags',
     ];
 
