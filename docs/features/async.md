@@ -1,9 +1,9 @@
 # Asynchronous Processing
 
-The JSON API specification 
+The JSON API specification
 [provides a recommendation](https://jsonapi.org/recommendations/#asynchronous-processing)
-for how APIs can implement long running processes. For example, if the operation to create a 
-resource takes a long time, it is more appropriate to process the creation using 
+for how APIs can implement long running processes. For example, if the operation to create a
+resource takes a long time, it is more appropriate to process the creation using
 [Laravel's queue system](https://laravel.com/docs/queues)
 and return a `202 Accepted` response to the client.
 
@@ -29,14 +29,14 @@ use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
-    
+
     // ...
-    
+
     public function register()
     {
         LaravelJsonApi::runMigrations();
     }
-    
+
 }
 ```
 
@@ -45,7 +45,7 @@ class AppServiceProvider extends ServiceProvider
 If you want to customise the migrations, you can publish them as follows:
 
 ```bash
-$ php artisan vendor:publish --tag="json-api-migrations"
+$ php artisan vendor:publish --tag="json-api:migrations"
 ```
 
 If you do this, you **must not** call `LaravelJsonApi::runMigrations()` in your service provider.
@@ -76,7 +76,7 @@ use Neomerx\JsonApi\Schema\SchemaProvider;
 class Schema extends SchemaProvider
 {
     use AsyncSchema;
-    
+
     // ...
 }
 ```
@@ -112,7 +112,7 @@ class ProcessPodcast implements ShouldQueue
 {
 
     use ClientDispatchable;
-    
+
     // ...
 }
 
@@ -130,7 +130,7 @@ means you can use any of the normal Laravel methods. The only difference is you 
 `dispatch` method at the end of the chain so that you have access to the process that was stored
 and can be serialized into JSON by your API.
 
-You can use this method of dispatching jobs in either 
+You can use this method of dispatching jobs in either
 [Controller Hooks](../basics/controllers.md) or within
 [Resource Adapters](../basics/adapters.md), depending on your preference.
 
@@ -190,9 +190,9 @@ class Adapter extends AbstractAdapter
 If a dispatched job creates a new resource (e.g. a new model), there is one additional step you will
 need to follow in the job's `handle` method. This is to link the stored process to the resource that was
 created as a result of the job completing successfully. The link must exist otherwise your API
-will not be able to inform a client of the location of the created resource once the job is complete. 
+will not be able to inform a client of the location of the created resource once the job is complete.
 
-You can easily create this link by calling the `didCreate` method that the `ClientDispatchable` 
+You can easily create this link by calling the `didCreate` method that the `ClientDispatchable`
 trait adds to your job. For example:
 
 ```php
@@ -205,13 +205,13 @@ class ProcessPodcast implements ShouldQueue
 {
 
     use ClientDispatchable;
-    
+
     // ...
-    
+
     public function handle()
     {
         // ...logic to process a podcast
-        
+
         $this->didCreate($podcast);
     }
 }
@@ -272,11 +272,11 @@ This enables the following routes:
 
 - `GET /podcasts/queue-jobs`: this lists all `queue-jobs` resources for the `podcasts`
 resource type.
-- `GET /podcasts/queue-jobs/<UUID>`: this retrieves a specific `queue-jobs` resource 
+- `GET /podcasts/queue-jobs/<UUID>`: this retrieves a specific `queue-jobs` resource
 for the `podcasts` resource type.
 
 The resource type `queue-jobs` is the name used in the JSON API's recommendation for
-asynchronous processing. If you want to use a resource type, then you can change this 
+asynchronous processing. If you want to use a resource type, then you can change this
 by editing the `jobs.resource` config setting in your API's configuration file.
 
 Note that we assume the resource id of a process is a valid UUID. If you use something
@@ -291,7 +291,7 @@ JsonApi::register('default')->withNamespace('Api')->routes(function ($api) {
 ## HTTP Requests and Responses
 
 Once you have followed the above instructions, you can now make HTTP requests and receive
-asynchronous process responses that following the 
+asynchronous process responses that following the
 [JSON API recommendation.](https://jsonapi.org/recommendations/#asynchronous-processing)
 
 For example, a request to create a podcast would receive the following response:

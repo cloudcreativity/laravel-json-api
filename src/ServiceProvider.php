@@ -80,7 +80,11 @@ class ServiceProvider extends BaseServiceProvider
 
             $this->publishes([
                 __DIR__ . '/../database/migrations' => database_path('migrations'),
-            ], 'json-api-migrations');
+            ], 'json-api:migrations');
+
+            $this->publishes([
+                __DIR__ . '/../resources/lang' => resource_path('lang/vendor/jsonapi'),
+            ], 'json-api:translations');
 
             $this->commands([
                 Console\Commands\MakeAdapter::class,
