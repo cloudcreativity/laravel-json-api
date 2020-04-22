@@ -7,6 +7,10 @@ All notable changes to this project will be documented in this file. This projec
 ### Added
 - Translation files can now be published using the `vendor:publish` Artisan command.
 
+### Fixed
+- [#506](https://github.com/cloudcreativity/laravel-json-api/pull/506)
+Resolve model bindings correctly when substituting URL parameters.
+
 ## [2.0.0-beta.3] - 2020-04-13
 
 ### Added
