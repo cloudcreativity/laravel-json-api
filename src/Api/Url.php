@@ -105,7 +105,7 @@ class Url
         foreach ($parameters as $key => $value) {
             $routeParamValue = $value;
 
-            if (method_exists($value, 'getRouteKey')) {
+            if ($value instanceof UrlRoutable) {
               $routeParamValue = $value->getRouteKey();
             }
 
