@@ -20,6 +20,7 @@ namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Routing;
 use CloudCreativity\LaravelJsonApi\Routing\RouteRegistrar;
 use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
 use DummyApp\Post;
+use DummyApp\User;
 use Illuminate\Support\Arr;
 
 /**
@@ -74,6 +75,18 @@ class RouteParameterTest extends TestCase
 
         $this->assertSame(
             url('/foo/bar/api/posts', $post),
+            Arr::get($data, 'data.links.self')
+        );
+    }
+
+    public function testModelBinding(): void
+    {
+        $post = factory(Post::class)->create();
+        $user = factory(User::class)->create();
+        $data = json_api(null, null, ['tenant' => $user])->encoder()->serializeData($post);
+
+        $this->assertSame(
+            url('/foo/2/api/posts', $post),
             Arr::get($data, 'data.links.self')
         );
     }
