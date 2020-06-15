@@ -10,6 +10,8 @@ All notable changes to this project will be documented in this file. This projec
 ### Fixed
 - [#506](https://github.com/cloudcreativity/laravel-json-api/pull/506)
 Resolve model bindings correctly when substituting URL parameters.
+- Updated type-hinting for `Responses::errros()` method and allowed a `null` default
+status code to be passed to `Helpers::httpErrorStatus()` method.
 
 ## [2.0.0-beta.3] - 2020-04-13
 
