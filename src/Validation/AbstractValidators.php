@@ -655,6 +655,7 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
             ],
             'include' => [
                 'bail',
+                'nullable',
                 'string',
                 $this->allowedIncludePaths(),
             ],
@@ -665,6 +666,7 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
             ],
             'sort' => [
                 'bail',
+                'nullable',
                 'string',
                 $this->allowedSortParameters(),
             ],
