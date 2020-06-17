@@ -157,13 +157,17 @@ class Helpers
      * 4xx errors or 500 Internal Server Error might be appropriate for multiple 5xx errors.
      *
      * @param iterable|ErrorInterface $errors
-     * @param int $default
+     * @param int|null $default
      * @return int
      * @see https://jsonapi.org/format/#errors
      * @deprecated 3.0.0 use `Document\Error\Errors::getStatus()`
      */
-    public static function httpErrorStatus($errors, int $default = SymfonyResponse::HTTP_BAD_REQUEST): int
+    public static function httpErrorStatus($errors, int $default = null): int
     {
+        if (\is_null($default)) {
+            $default = SymfonyResponse::HTTP_BAD_REQUEST;
+        }
+
         if ($errors instanceof ErrorInterface) {
             $errors = [$errors];
         }

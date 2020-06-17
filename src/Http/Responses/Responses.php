@@ -413,7 +413,7 @@ class Responses extends BaseResponses
      * @param array $headers
      * @return mixed
      */
-    public function errors(iterable $errors, $defaultStatusCode = null, array $headers = [])
+    public function errors(iterable $errors, int $defaultStatusCode = null, array $headers = [])
     {
         $errors = $this->factory->createErrors($errors);
         $statusCode = Helpers::httpErrorStatus($errors, $defaultStatusCode);

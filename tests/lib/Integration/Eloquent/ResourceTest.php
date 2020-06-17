@@ -67,6 +67,15 @@ class ResourceTest extends TestCase
             ->assertFetchedManyInOrder([$b, $a]);
     }
 
+    public function testEmptySort(): void
+    {
+        $posts = factory(Post::class, 2)->create();
+
+        $this->jsonApi()
+            ->get('api/v1/posts?sort=')
+            ->assertFetchedMany($posts);
+    }
+
     public function testFilteredSearch()
     {
         $a = factory(Post::class)->create([
@@ -327,6 +336,18 @@ class ResourceTest extends TestCase
             ->assertFetchedOne($expected)
             ->assertIsIncluded('users', $model->author)
             ->assertIsIncluded('tags', $tag);
+    }
+
+    /**
+     * @see https://github.com/cloudcreativity/laravel-json-api/issues/518
+     */
+    public function testReadWithEmptyInclude(): void
+    {
+        $post = factory(Post::class)->create();
+
+        $this->jsonApi()
+            ->get("api/v1/posts/{$post->getRouteKey()}?include=")
+            ->assertFetchedOne($this->serialize($post));
     }
 
     /**

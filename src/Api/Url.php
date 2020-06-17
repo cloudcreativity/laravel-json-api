@@ -103,7 +103,13 @@ class Url
         $copy = clone $this;
 
         foreach ($parameters as $key => $value) {
-            $copy->namespace = \str_replace('{' . $key . '}', $value, $copy->namespace);
+            $routeParamValue = $value;
+
+            if ($value instanceof UrlRoutable) {
+              $routeParamValue = $value->getRouteKey();
+            }
+
+            $copy->namespace = \str_replace('{' . $key . '}', $routeParamValue, $copy->namespace);
         }
 
         return $copy;
