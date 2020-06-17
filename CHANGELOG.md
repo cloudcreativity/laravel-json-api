@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
-## Unreleased
+## [2.0.0] - 2020-06-17
 
 ### Added
 - Translation files can now be published using the `vendor:publish` Artisan command.
@@ -10,7 +10,7 @@ All notable changes to this project will be documented in this file. This projec
 ### Fixed
 - [#506](https://github.com/cloudcreativity/laravel-json-api/pull/506)
 Resolve model bindings correctly when substituting URL parameters.
-- Updated type-hinting for `Responses::errros()` method and allowed a `null` default
+- Updated type-hinting for `Responses::errors()` method and allowed a `null` default
 status code to be passed to `Helpers::httpErrorStatus()` method.
 - [#518](https://github.com/cloudcreativity/laravel-json-api/issues/518)
 Ensure empty `sort` and `include` query parameters pass validation.
