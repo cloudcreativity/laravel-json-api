@@ -176,9 +176,11 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
      *
      * @param mixed|null $record
      *      the record being updated, or null if creating a resource.
+     * @param array $document
+     *      document holding new attributes
      * @return mixed
      */
-    abstract protected function rules($record = null): array;
+    abstract protected function rules($record = null, array $document = []): array;
 
     /**
      * Get query parameter validation rules.
@@ -218,7 +220,7 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
     {
         return $this->validatorForResource(
             $this->dataForCreate($document),
-            $this->rules(),
+            $this->rules(null, $document),
             $this->messages(),
             $this->attributes()
         );
@@ -231,7 +233,7 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
     {
         return $this->validatorForResource(
             $this->dataForUpdate($record, $document),
-            $this->rules($record),
+            $this->rules($record, $document),
             $this->messages($record),
             $this->attributes($record)
         );
