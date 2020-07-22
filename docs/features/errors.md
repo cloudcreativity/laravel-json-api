@@ -18,9 +18,9 @@ the package's error class. All the keys described in the specification's
 For example:
 
 ```php
-use CloudCreativity\LaravelJsonApi\Document\Error;
+use CloudCreativity\LaravelJsonApi\Document\Error\Error;
 
-$error = Error::create([
+$error = Error::fromArray([
     'id' => '91053382-7c00-45eb-bdcc-8359d03debbb',
     'status' => '500',
     'code' => 'unexpected',
@@ -40,7 +40,8 @@ The `JsonApiController` has a responses factory that can create error responses.
 to return an error response in a controller hook, as demonstrated in the following example:
 
 ```php
-use CloudCreativity\LaravelJsonApi\Document\Error;
+use CloudCreativity\LaravelJsonApi\Document\Error\Error;
+use CloudCreativity\LaravelJsonApi\Http\Controllers\JsonApiController;
 
 class PaymentController extends JsonApiController
 {
@@ -48,7 +49,7 @@ class PaymentController extends JsonApiController
     protected function creating()
     {
         if (/** some condition */) {
-            return $this->reply()->errors(Error::create([
+            return $this->reply()->errors(Error::fromArray([
                 'title' => 'Payment Required',
                 'detail' => 'Your card has expired.',
                 'status' => '402',
@@ -85,12 +86,12 @@ to a JSON API response. For example:
 
 ```php
 use Neomerx\JsonApi\Exceptions\JsonApiException;
-use CloudCreativity\LaravelJsonApi\Document\Error;
+use CloudCreativity\LaravelJsonApi\Document\Error\Error;
 
 try {
     dispatchNow(new ChargeCard($token));
 } catch (\App\PaymentException $ex) {
-    $error = Error::create([
+    $error = Error::fromArray([
         'title' => 'Payment Required',
         'detail' => $ex->getMessage(),
         'status' => '402',
