@@ -103,21 +103,21 @@ If your resource supports client-generated ids, refer to the client-generated id
 
 When filling a model with attributes received in a JSON API request, the adapter will convert the JSON API
 field name to either the snake case or camel case equivalent. For example, if your JSON API resource had
-an attribute field called `published-at`, this is mapped to `published_at` if your model uses snake case keys,
+an attribute field called `publishedAt`, this is mapped to `published_at` if your model uses snake case keys,
 or `publishedAt` if not.
 
 > We work out whether your model uses snake case or camel case keys based on your model's `$snakeAttributes`
 static property.
 
 If you have a JSON API field name that needs to map to a different model attribute, this can be defined in your
-adapter's `$attributes` property. For example, if the `published-at` field needed to be mapped to the
+adapter's `$attributes` property. For example, if the `publishedAt` field needed to be mapped to the
 `published_date` attribute on your model, it must be defined as follows:
 
 ```php
 class Adapter extends AbstractAdapter
 {
     protected $attributes = [
-        'published-at' => 'published_date',
+        'publishedAt' => 'published_date',
     ];
 
     // ...
@@ -132,25 +132,25 @@ you will protect any attributes that are not fillable using Eloquent's
 
 There may be cases where an attribute is fillable on your model, but you do not want to allow your JSON API to
 fill it. You can set your adapter to skip attributes received from a client by listing the JSON API
-field name in the `$guarded` property on your adapter. For example, if we did not want the `published-at` field
+field name in the `$guarded` property on your adapter. For example, if we did not want the `publishedAt` field
 to be filled into our model, we would define it as follows:
 
 ```php
 class Adapter extends AbstractAdapter
 {
-    protected $guarded = ['published-at'];
+    protected $guarded = ['publishedAt'];
 
     // ...
 }
 ```
 
 Alternatively, you can white-list JSON API fields that can be filled by adding them to the `$fillable` property
-on your adapter. For example, if we only wanted the `title`, `content` and `published-at` fields to be filled:
+on your adapter. For example, if we only wanted the `title`, `content` and `publishedAt` fields to be filled:
 
 ```php
 class Adapter extends AbstractAdapter
 {
-    protected $fillable = ['title', 'content', 'published-at'];
+    protected $fillable = ['title', 'content', 'publishedAt'];
 
     // ...
 }
@@ -170,7 +170,7 @@ your adapter. For example:
 ```php
 class Adapter extends AbstractAdapter
 {
-    protected $dates = ['created-at', 'updated-at', 'published-at'];
+    protected $dates = ['createdAt', 'updatedAt', 'publishedAt'];
 
     // ...
 }

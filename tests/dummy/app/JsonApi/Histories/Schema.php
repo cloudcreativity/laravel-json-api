@@ -43,7 +43,11 @@ class Schema extends SchemaProvider
      */
     public function getAttributes($resource)
     {
-        return ['detail' => $resource->detail];
+        return [
+            'createdAt' => $resource->created_at,
+            'detail' => $resource->detail,
+            'updatedAt' => $resource->updated_at,
+        ];
     }
 
     /**

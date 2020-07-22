@@ -46,7 +46,7 @@ class FilterTest extends TestCase
 
         $other = factory(Comment::class)->create();
 
-        $filter = ['filter' => ['created-by' => $user->getRouteKey()]];
+        $filter = ['filter' => ['createdBy' => $user->getRouteKey()]];
 
         $this->resourceType = 'comments';
         $this->actingAsUser()

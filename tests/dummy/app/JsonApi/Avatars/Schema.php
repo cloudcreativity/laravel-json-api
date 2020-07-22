@@ -44,9 +44,9 @@ class Schema extends SchemaProvider
     public function getAttributes($resource)
     {
         return [
-            'created-at' => $resource->created_at->toAtomString(),
-            'media-type' => $resource->media_type,
-            'updated-at' => $resource->updated_at->toAtomString(),
+            'createdAt' => $resource->created_at,
+            'mediaType' => $resource->media_type,
+            'updatedAt' => $resource->updated_at,
         ];
     }
 

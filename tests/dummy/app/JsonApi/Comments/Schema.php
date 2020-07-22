@@ -51,9 +51,9 @@ class Schema extends SchemaProvider
     public function getAttributes($resource)
     {
         return [
-            'created-at' => $resource->created_at->toAtomString(),
+            'createdAt' => $resource->created_at,
             'content' => $resource->content,
-            'updated-at' => $resource->updated_at->toAtomString(),
+            'updatedAt' => $resource->updated_at,
         ];
     }
 
@@ -74,10 +74,10 @@ class Schema extends SchemaProvider
                     return $resource->commentable;
                 },
             ],
-            'created-by' => [
+            'createdBy' => [
                 self::SHOW_SELF => true,
                 self::SHOW_RELATED => true,
-                self::SHOW_DATA => isset($includeRelationships['created-by']),
+                self::SHOW_DATA => isset($includeRelationships['createdBy']),
                 self::DATA => function () use ($resource) {
                     return $resource->user;
                 },

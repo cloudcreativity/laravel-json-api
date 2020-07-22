@@ -55,10 +55,10 @@ class Schema extends SchemaProvider
     public function getRelationships($resource, $isPrimary, array $includeRelationships)
     {
         return [
-            'user-history' => [
+            'userHistory' => [
                 self::SHOW_SELF => true,
                 self::SHOW_RELATED => true,
-                self::SHOW_DATA => isset($includeRelationships['user-history']),
+                self::SHOW_DATA => isset($includeRelationships['userHistory']),
                 self::DATA => static function () use ($resource) {
                     return $resource->userHistory;
                 },

@@ -77,9 +77,9 @@ abstract class TestCase extends BaseTestCase
             'type' => 'avatars',
             'id' => (string) $avatar->getRouteKey(),
             'attributes' => [
-                'created-at' => $avatar->created_at->toAtomString(),
-                'media-type' => $avatar->media_type,
-                'updated-at' => $avatar->updated_at->toAtomString(),
+                'createdAt' => $avatar->created_at->toJSON(),
+                'mediaType' => $avatar->media_type,
+                'updatedAt' => $avatar->updated_at->toJSON(),
             ],
             'relationships' => [
                 'user' => [

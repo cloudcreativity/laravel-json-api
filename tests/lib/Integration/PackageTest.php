@@ -39,7 +39,7 @@ class PackageTest extends TestCase
             'attributes' => [
                 'title' => $blog->title,
                 'article' => $blog->article,
-                'published-at' => $blog->published_at->toW3cString(),
+                'publishedAt' => $blog->published_at->toJSON(),
             ],
         ];
 

@@ -11,7 +11,7 @@ a client delete request will result in the model being soft-deleted in the datab
 `GET` the resource will result in a `404 Not Found` as by default the Eloquent resource adapter does not
 find soft-deleted models.
 
-This behaviour can be modified by applying the `SoftDeletesModels` trait to your Eloquent adapter, as follows: 
+This behaviour can be modified by applying the `SoftDeletesModels` trait to your Eloquent adapter, as follows:
 
 ```php
 namespace App\JsonApi\Posts;
@@ -35,8 +35,8 @@ the resource, while using a `DELETE` request to force-delete a resource. These r
 In addition, a request to `GET` a soft-deleted resource will result in that resource being returned to the client,
 rather than a `404 Not Found` response.
 
-> Tip: By default the trait uses the `deleted-at` field to toggle the soft-delete status of a resource, as shown
-in the example below. You would also need to add the `deleted-at` field to the `getAttributes` method on your
+> Tip: By default the trait uses the `deletedAt` field to toggle the soft-delete status of a resource, as shown
+in the example below. You would also need to add the `deletedAt` field to the `getAttributes` method on your
 resource schema. The field is customisable - see below for how to change the field name.
 
 ## Soft-Deleting and Restoring Resources
@@ -54,7 +54,7 @@ Accept: application/vnd.api+json
     "type": "posts",
     "id": "1",
     "attributes": {
-      "deleted-at": "2018-12-25T12:00:00Z"
+      "deletedAt": "2018-12-25T12:00:00Z"
     }
   }
 }
@@ -75,7 +75,7 @@ Accept: application/vnd.api+json
     "type": "posts",
     "id": "1",
     "attributes": {
-      "deleted-at": null
+      "deletedAt": null
     }
   }
 }
@@ -84,7 +84,7 @@ Accept: application/vnd.api+json
 > See below for how to customise the soft-delete attribute name. In addition, you can use a boolean to toggle
 the soft-delete status.
 
-> Tip: Make sure you add a validation rule for the `deleted-at` attribute on your resource's validators class.
+> Tip: Make sure you add a validation rule for the `deletedAt` attribute on your resource's validators class.
 
 ## Force-Deleting Resources
 
@@ -131,12 +131,12 @@ class Adapter extends AbstractAdapter
      */
     protected function filter($query, Collection $filters)
     {
-        if (true == $filters->get('with-trashed')) {
+        if (true == $filters->get('withTrashed')) {
             $query->withTrashed();
-        } else if (true == $filters->get('only-trashed')) {
+        } else if (true == $filters->get('onlyTrashed')) {
             $query->onlyTrashed();
         }
-        
+
         // ...other filter logic
     }
 }
@@ -164,7 +164,7 @@ class Adapter extends AbstractAdapter
 {
 
     use SoftDeletesModels;
-    
+
     protected $softDeleteField = 'archived';
 
     // ...

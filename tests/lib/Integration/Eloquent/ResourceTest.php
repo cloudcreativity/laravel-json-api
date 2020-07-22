@@ -140,7 +140,7 @@ class ResourceTest extends TestCase
     {
         $expected = factory(Comment::class, 5)->states('post')->create();
 
-        $this->doSearch(['include' => 'comments.created-by'])
+        $this->doSearch(['include' => 'comments.createdBy'])
             ->assertFetchedMany($expected);
     }
 
@@ -387,7 +387,7 @@ class ResourceTest extends TestCase
                 'slug' => 'posts-test',
                 'title' => 'Foo Bar Baz Bat',
                 'foo' => 'bar', // attribute that does not exist.
-                'published' => $published->toW3cString(),
+                'published' => $published->toJSON(),
             ],
         ];
 
@@ -565,7 +565,7 @@ class ResourceTest extends TestCase
             'type' => 'posts',
             'id' => (string) $post->getRouteKey(),
             'attributes' => [
-                'deleted-at' => (new Carbon('2018-01-01 12:00:00'))->toAtomString(),
+                'deletedAt' => (new Carbon('2018-01-01 12:00:00'))->toJSON(),
             ],
         ];
 
@@ -591,12 +591,12 @@ class ResourceTest extends TestCase
             'type' => 'posts',
             'id' => (string) $post->getRouteKey(),
             'attributes' => [
-                'deleted-at' => true,
+                'deletedAt' => true,
             ],
         ];
 
         $expected = $data;
-        $expected['attributes']['deleted-at'] = Carbon::now()->toAtomString();
+        $expected['attributes']['deletedAt'] = Carbon::now()->toJSON();
 
         $this->doUpdate($data)->assertUpdated($expected);
         $this->assertSoftDeleted('posts', [$post->getKeyName() => $post->getKey()]);
@@ -613,7 +613,7 @@ class ResourceTest extends TestCase
             'type' => 'posts',
             'id' => (string) $post->getRouteKey(),
             'attributes' => [
-                'deleted-at' => (new Carbon('2018-01-01 12:00:00'))->toAtomString(),
+                'deletedAt' => (new Carbon('2018-01-01 12:00:00'))->toJSON(),
                 'title' => 'My Post Is Soft Deleted',
             ],
         ];
@@ -636,7 +636,7 @@ class ResourceTest extends TestCase
             'type' => 'posts',
             'id' => (string) $post->getRouteKey(),
             'attributes' => [
-                'deleted-at' => null,
+                'deletedAt' => null,
             ],
         ];
 
@@ -662,12 +662,12 @@ class ResourceTest extends TestCase
             'type' => 'posts',
             'id' => (string) $post->getRouteKey(),
             'attributes' => [
-                'deleted-at' => false,
+                'deletedAt' => false,
             ],
         ];
 
         $expected = $data;
-        $expected['attributes']['deleted-at'] = null;
+        $expected['attributes']['deletedAt'] = null;
 
         $this->doUpdate($data)->assertUpdated($expected);
 
@@ -694,7 +694,7 @@ class ResourceTest extends TestCase
             'type' => 'posts',
             'id' => (string) $post->getRouteKey(),
             'attributes' => [
-                'deleted-at' => null,
+                'deletedAt' => null,
                 'title' => 'My Post Is Restored',
             ],
         ];
@@ -781,12 +781,12 @@ class ResourceTest extends TestCase
             'id' => (string) $post->getRouteKey(),
             'attributes' => [
                 'content' => $post->content,
-                'created-at' => $post->created_at->toAtomString(),
-                'deleted-at' => $post->deleted_at ? $post->deleted_at->toAtomString() : null,
-                'published' => $post->published_at ? $post->published_at->toAtomString() : null,
+                'createdAt' => $post->created_at->toJSON(),
+                'deletedAt' => optional($post->deleted_at)->toJSON(),
+                'published' => optional($post->published_at)->toJSON(),
                 'slug' => $post->slug,
                 'title' => $post->title,
-                'updated-at' => $post->updated_at->toAtomString(),
+                'updatedAt' => $post->updated_at->toJSON(),
             ],
             'relationships' => [
                 'author' => [

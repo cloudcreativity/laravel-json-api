@@ -2,11 +2,11 @@
 
 ## Introduction
 
-This package provides comprehensive support for the 
+This package provides comprehensive support for the
 [JSON API paging feature](http://jsonapi.org/format/#fetching-pagination).
 
 JSON API designates that the `page` query parameter is reserved for paging parameters. However, the spec is agnostic
-as to how the server will implement paging. In this package, the server implementation for paging is known as a 
+as to how the server will implement paging. In this package, the server implementation for paging is known as a
 *paging strategy*.
 
 This package provides two paging strategies:
@@ -32,7 +32,7 @@ class as follows:
 class Validators extends AbstractValidators
 {
     // ...
-    
+
     protected $allowedPagingParameters = [];
 
 }
@@ -342,7 +342,7 @@ column to, this will mean the client needs to provide the value of that column f
 
 ### Validation
 
-You should always validate page parameters that are sent from a client, and this is supported on your resource's 
+You should always validate page parameters that are sent from a client, and this is supported on your resource's
 [Validators](../basics/validators.md) class. You **must** validate that the identifier provided by the client
 for the `after` and `before` parameters are valid identifiers, because invalid identifiers cause an error
 in the cursor. It is also recommended that you validate the `limit` so that it is within an acceptable range.
@@ -356,7 +356,7 @@ class Validators extends AbstractValidators
 
     // disable all sort parameters.
     protected $allowedSortParameters = [];
-    
+
     protected $allowedPagingParameters = ['limit', 'after', 'before'];
 
     protected $queryRules = [
@@ -486,7 +486,7 @@ protected $defaultPagination = ['limit' => 10];
 > For the page-based strategy, there is no need to provide a default page `size`. If none is provided,
 Eloquent will use the default as set on your model's class.
 
-If you need to programmatically work out the default paging parameters, overload the `defaultPagination` method. 
+If you need to programmatically work out the default paging parameters, overload the `defaultPagination` method.
 For example, if you had written a custom date-based pagination strategy:
 
 ```php
@@ -494,12 +494,12 @@ class Adapter extends EloquentAdapter
 {
 
     // ...
-    
+
     protected function defaultPagination()
     {
         return [
-            'from' => Carbon::now()->subMonth()->toAtomString(),
-            'to' => Carbon::now()->toAtomString()
+            'from' => Carbon::now()->subMonth(),
+            'to' => Carbon::now(),
         ];
     }
 
@@ -510,7 +510,7 @@ The default pagination property is an array so that you can use it with any pagi
 
 ## Custom Paging Strategies
 
-If you need to write your own strategies, create a class that implements the `PagingStrategyInterface`. 
+If you need to write your own strategies, create a class that implements the `PagingStrategyInterface`.
 For example:
 
 ```php

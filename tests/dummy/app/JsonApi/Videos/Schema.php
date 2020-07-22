@@ -42,10 +42,10 @@ class Schema extends SchemaProvider
     public function getAttributes($resource)
     {
         return [
-            'created-at' => $resource->created_at->toAtomString(),
+            'createdAt' => $resource->created_at,
             'description' => $resource->description,
             'title' => $resource->title,
-            'updated-at' => $resource->updated_at->toAtomString(),
+            'updatedAt' => $resource->updated_at,
             'url' => $resource->url,
         ];
     }
@@ -59,10 +59,10 @@ class Schema extends SchemaProvider
     public function getRelationships($resource, $isPrimary, array $includeRelationships)
     {
         return [
-            'uploaded-by' => [
+            'uploadedBy' => [
                 self::SHOW_SELF => true,
                 self::SHOW_RELATED => true,
-                self::SHOW_DATA => isset($includeRelationships['uploaded-by']),
+                self::SHOW_DATA => isset($includeRelationships['uploadedBy']),
                 self::DATA => function () use ($resource) {
                     return $resource->user;
                 },

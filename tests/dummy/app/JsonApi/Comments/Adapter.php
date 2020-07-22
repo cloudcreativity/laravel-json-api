@@ -38,7 +38,7 @@ class Adapter extends AbstractAdapter
      * @var array
      */
     protected $includePaths = [
-        'created-by' => 'user',
+        'createdBy' => 'user',
     ];
 
     /**
@@ -72,7 +72,7 @@ class Adapter extends AbstractAdapter
      */
     protected function filter($query, Collection $filters)
     {
-        if ($createdBy = $filters->get('created-by')) {
+        if ($createdBy = $filters->get('createdBy')) {
             $query->where('comments.user_id', $createdBy);
         }
     }

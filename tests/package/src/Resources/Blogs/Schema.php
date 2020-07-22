@@ -42,10 +42,10 @@ class Schema extends SchemaProvider
     {
         return [
             'article' => $resource->article,
-            'created-at' => $resource->created_at->toAtomString(),
-            'published-at' => $resource->published_at ? $resource->published_at->toAtomString() : null,
+            'createdAt' => $resource->created_at->toJSON(),
+            'publishedAt' => $resource->published_at ? $resource->published_at->toJSON() : null,
             'title' => $resource->title,
-            'updated-at' => $resource->updated_at->toAtomString(),
+            'updatedAt' => $resource->updated_at->toJSON(),
         ];
     }
 

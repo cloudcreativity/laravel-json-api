@@ -306,8 +306,8 @@ Content-Location: http://homestead.local/podcasts/queue-jobs/1680e9a0-6643-42ab-
     "type": "queue-jobs",
     "id": "1680e9a0-6643-42ab-8314-1f60f0b6a6b2",
     "attributes": {
-      "created-at": "2018-12-25T12:00:00",
-      "updated-at": "2018-12-25T12:00:00"
+      "createdAt": "2018-12-25T12:00:00",
+      "updatedAt": "2018-12-25T12:00:00"
     },
     "links": {
       "self": "/podcasts/queue-jobs/1680e9a0-6643-42ab-8314-1f60f0b6a6b2"
