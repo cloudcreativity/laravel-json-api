@@ -31,8 +31,8 @@ class Validators extends AbstractValidators
      */
     protected $allowedSortParameters = [
         'id',
-        'created-at',
-        'updated-at',
+        'createdAt',
+        'updatedAt',
         'title',
         'slug',
     ];
@@ -53,7 +53,7 @@ class Validators extends AbstractValidators
     protected $allowedIncludePaths = [
         'author',
         'comments',
-        'comments.created-by',
+        'comments.createdBy',
         'image',
         'tags',
     ];

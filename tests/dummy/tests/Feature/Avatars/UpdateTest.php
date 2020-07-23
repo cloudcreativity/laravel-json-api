@@ -53,7 +53,7 @@ class UpdateTest extends TestCase
         $expected = [
             'type' => 'avatars',
             'id' => (string) $this->avatar->getRouteKey(),
-            'attributes' => ['media-type' => 'image/jpeg'],
+            'attributes' => ['mediaType' => 'image/jpeg'],
         ];
 
         $this->actingAs($this->avatar->user, 'api');

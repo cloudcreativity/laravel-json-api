@@ -27,8 +27,8 @@ class Validators extends AbstractValidators
      * @var array
      */
     protected $allowedSortParameters = [
-        'created-at',
-        'updated-at',
+        'createdAt',
+        'updatedAt',
         'content',
     ];
 
@@ -37,7 +37,7 @@ class Validators extends AbstractValidators
      */
     protected $allowedFilteringParameters = [
         'id',
-        'created-by',
+        'createdBy',
     ];
 
     /**
@@ -45,7 +45,7 @@ class Validators extends AbstractValidators
      */
     protected $allowedIncludePaths = [
         'commentable',
-        'created-by',
+        'createdBy',
     ];
 
     /**
@@ -70,7 +70,7 @@ class Validators extends AbstractValidators
             'page.after' => 'filled|integer|min:1',
             'page.before' => 'filled|integer|min:1',
             'page.limit' => 'filled|integer|between:1,50',
-            'filter.created-by' => 'filled|numeric',
+            'filter.createdBy' => 'filled|numeric',
         ];
     }
 

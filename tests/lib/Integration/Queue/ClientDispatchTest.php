@@ -56,14 +56,14 @@ class ClientDispatchTest extends TestCase
             'type' => 'queue-jobs',
             'attributes' => [
                 'attempts' => 0,
-                'created-at' => Carbon::now()->toAtomString(),
-                'completed-at' => null,
+                'createdAt' => Carbon::now()->toJSON(),
+                'completedAt' => null,
                 'failed' => false,
-                'resource-type' => 'downloads',
+                'resourceType' => 'downloads',
                 'timeout' => 60,
-                'timeout-at' => null,
+                'timeoutAt' => null,
                 'tries' => null,
-                'updated-at' => Carbon::now()->toAtomString(),
+                'updatedAt' => Carbon::now()->toJSON(),
             ],
         ];
 
@@ -112,9 +112,9 @@ class ClientDispatchTest extends TestCase
         $this->doCreate($data)->assertAcceptedWithId('http://localhost/api/v1/downloads/queue-jobs', [
             'type' => 'queue-jobs',
             'attributes' => [
-                'resource-type' => 'downloads',
+                'resourceType' => 'downloads',
                 'timeout' => 60,
-                'timeout-at' => null,
+                'timeoutAt' => null,
                 'tries' => null,
             ],
         ]);
@@ -152,9 +152,9 @@ class ClientDispatchTest extends TestCase
         $expected = [
             'type' => 'queue-jobs',
             'attributes' => [
-                'resource-type' => 'downloads',
+                'resourceType' => 'downloads',
                 'timeout' => null,
-                'timeout-at' => Carbon::now()->addSeconds(25)->toAtomString(),
+                'timeoutAt' => Carbon::now()->addSeconds(25)->toJSON(),
                 'tries' => null,
             ],
         ];
@@ -186,9 +186,9 @@ class ClientDispatchTest extends TestCase
         $this->doDelete($download)->assertAcceptedWithId('http://localhost/api/v1/downloads/queue-jobs', [
             'type' => 'queue-jobs',
             'attributes' => [
-                'resource-type' => 'downloads',
+                'resourceType' => 'downloads',
                 'timeout' => null,
-                'timeout-at' => null,
+                'timeoutAt' => null,
                 'tries' => 5,
             ],
         ]);

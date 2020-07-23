@@ -53,7 +53,7 @@ class Adapter extends AbstractAdapter
      * @var array
      */
     protected $includePaths = [
-        'comments.created-by' => 'comments.user',
+        'comments.createdBy' => 'comments.user',
     ];
 
     /**

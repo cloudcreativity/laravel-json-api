@@ -6,13 +6,13 @@ This package automatically checks both request query parameters and content for 
 API specification. Any non-compliant requests will receive a `4xx` HTTP response containing JSON API
 [error objects](http://jsonapi.org/format/#errors) describing how the request is not compliant.
 
-In addition, each resource can have a validators class that defines your application-specific 
+In addition, each resource can have a validators class that defines your application-specific
 validation rules for requests.
 
 ## Compliance Validation
 
 JSON API requests to the controller actions provided by this package are automatically checked for compliance
-with the JSON API specification. 
+with the JSON API specification.
 
 As an example, this request:
 
@@ -74,7 +74,7 @@ To generate validators for a resource type, use the following command:
 
 ```bash
 $ php artisan make:json-api:validators <resource-type> [<api>]
-``` 
+```
 
 > The same validators class is used for both Eloquent and generic resources.
 
@@ -139,7 +139,7 @@ class Validators extends AbstractValidators
 
 Resource objects are validated using [Laravel validations](https://laravel.com/docs/validation). If any field
 fails the validation rules, a `422 Unprocessable Entity` response will be sent. JSON API errors will be included
-containing the Laravel validation messages in the `detail` member of the error object. Each error will also 
+containing the Laravel validation messages in the `detail` member of the error object. Each error will also
 have a JSON source point set identifying the location in the request content of the validation failure.
 
 ### Creating Resources
@@ -373,9 +373,9 @@ class Validators extends AbstractValidators
 }
 ```
 
-### Defining Rules 
+### Defining Rules
 
-Define resource object validation rules in your validators `rules` method. 
+Define resource object validation rules in your validators `rules` method.
 This method receives either the record being updated, or `null` for a create request. For example:
 
 ```php
@@ -454,7 +454,7 @@ do this by overloading either the `create` or `update` methods. For example:
 class Validators extends AbstractValidators
 {
     // ...
-    
+
     /**
      * @param array $document
      * @return \CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorInterface
@@ -462,11 +462,11 @@ class Validators extends AbstractValidators
     public function create(array $document): ValidatorInterface
     {
         $validator = parent::create($document);
-    
+
         $validator->sometimes('reason', "required|max:500", function ($input) {
             return $input->games >= 100;
         });
-        
+
         return $validator;
     }
 
@@ -536,8 +536,8 @@ will be allowed.
 
 ### Validation Data
 
-By default we pass the resource's current field values to the delete validator, using the 
-`existingRelationships` method to work out the values of any relationships. 
+By default we pass the resource's current field values to the delete validator, using the
+`existingRelationships` method to work out the values of any relationships.
 (The `existingRelationships` method is discussed above in the update resource validation section.)
 
 If a `posts` resource had a `title` and `content` attributes, given the following validators class:
@@ -587,7 +587,7 @@ stop a `posts` resource from being deleted if it has any comments:
 class Validators extends AbstractValidators
 {
     // ...
-    
+
     /**
      * @var array
      */
@@ -647,7 +647,7 @@ do this by overloading the `delete` method. For example:
 class Validators extends AbstractValidators
 {
     // ...
-    
+
     /**
      * @param \App\Post $record
      * @return array
@@ -659,7 +659,7 @@ class Validators extends AbstractValidators
             'no_comments' => $record->comments()->doesntExist(),
         ];
     }
-    
+
     /**
      * @param \App\Post $record
      * @return \CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorInterface
@@ -667,11 +667,11 @@ class Validators extends AbstractValidators
     public function delete($record): ValidatorInterface
     {
         $validator = parent::create($document);
-    
+
         $validator->sometimes('no_comments', 'accepted', function ($input) use ($record) {
             return !$input->is_author;
         });
-        
+
         return $validator;
     }
 
@@ -725,8 +725,8 @@ Expected parameters can be defined using any of the following properties on your
 - `$allowedSortParameters`
 - `$allowedFieldSets`
 
-The default values for each of these and how to customise them is discussed in the 
-[Filtering](../fetching/filtering.md), [Inclusion](../fetching/inclusion.md), 
+The default values for each of these and how to customise them is discussed in the
+[Filtering](../fetching/filtering.md), [Inclusion](../fetching/inclusion.md),
 [Pagination](../fetching/pagination.md), [Sorting](../fetching/sorting.md) and
 [Sparse Fieldsets](../fetching/sparse-fieldsets.md) chapters.
 
@@ -791,7 +791,7 @@ Alternatively you can overload the `queryAttributes` method.
 
 ## Validating Dates
 
-JSON API 
+JSON API
 [recommends using the ISO 8601 format for date and time strings in JSON](https://jsonapi.org/recommendations/#date-and-time-fields).
 This is not possible to validate using Laravel's `date_format` validation rule, because W3C state that a number of
 date and time formats are valid. For example, all of the following are valid:
@@ -805,14 +805,14 @@ date and time formats are valid. For example, all of the following are valid:
 - `2018-01-01T12:00:00.123+01:00`
 - `2018-01-01T12:00:00.123456+01:00`
 
-To accept any of the valid formats for a date field, this package provides a rule object: `DateTimeIso8601`. 
+To accept any of the valid formats for a date field, this package provides a rule object: `DateTimeIso8601`.
 This can be used as follows:
 
 ```php
 use CloudCreativity\LaravelJsonApi\Rules\DateTimeIso8601;
 
 return [
-    'published-at' => ['nullable', new DateTimeIso8601()]
+    'publishedAt' => ['nullable', new DateTimeIso8601()]
 ];
 ```
 
@@ -1055,8 +1055,8 @@ class AppServiceProvider extends ServiceProvider
     {
         LaravelJsonApi::showValidatorFailures();
     }
-    
+
     // ...
-    
+
 }
 ```

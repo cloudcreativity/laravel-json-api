@@ -44,14 +44,13 @@ class Schema extends SchemaProvider
     public function getAttributes($resource)
     {
         return [
-            /** There are some client tests that use an unsaved post. */
-            'created-at' => $resource->created_at ? $resource->created_at->toAtomString() : null,
+            'createdAt' => $resource->created_at,
             'content' => $resource->content,
-            'deleted-at' => $resource->deleted_at ? $resource->deleted_at->toAtomString() : null,
-            'published' => $resource->published_at ? $resource->published_at->toAtomString() : null,
+            'deletedAt' => $resource->deleted_at,
+            'published' => $resource->published_at,
             'slug' => $resource->slug,
             'title' => $resource->title,
-            'updated-at' => $resource->updated_at ? $resource->updated_at->toAtomString() : null,
+            'updatedAt' => $resource->updated_at,
         ];
     }
 

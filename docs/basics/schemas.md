@@ -16,7 +16,7 @@ for this deprecated class can be found
 
 ## Defining Resources
 
-Your API's configuration contains a list of resources that appear in its JSON API documents in its `resources` array. 
+Your API's configuration contains a list of resources that appear in its JSON API documents in its `resources` array.
 This array maps the JSON API resource object `type` to the PHP class that it relates to. For example:
 
 ```php
@@ -29,7 +29,7 @@ This array maps the JSON API resource object `type` to the PHP class that it rel
 ```
 
 > You need to list **every** resource that can appear in a JSON API document in the `resources` configuration,
-even resources that do not have API routes defined for them. This is so that the JSON API encoder 
+even resources that do not have API routes defined for them. This is so that the JSON API encoder
 can locate a schema for each PHP class it encounters.
 
 ## Creating Schemas
@@ -56,9 +56,9 @@ method implemented if it is for an Eloquent resource. For example:
 ```php
 class Schema extends SchemaProvider
 {
-    
+
     protected $resourceType = 'posts';
-    
+
     /**
      * @param App\Post $resource
      * @return string
@@ -89,14 +89,14 @@ A resource object can contain an `attributes` object containing additional prope
 Attributes are returned by the `getAttributes()` method on your schema. If you have generated your schema,
 this method will already be implemented.
 
-As an example, a schema for a `posts` resource could look like this: 
+As an example, a schema for a `posts` resource could look like this:
 
 ```php
 class Schema extends SchemaProvider
 {
 
     // ...
-    
+
     /**
      * @param App\Post $post
      * @return array
@@ -104,12 +104,12 @@ class Schema extends SchemaProvider
     public function getAttributes($post)
     {
         return [
-            'created-at' => $post->created_at->toW3cString(),
-            'updated-at' => $post->updated_at->toW3cString(),
-            'title' => $post->title,
+            'createdAt' => $post->created_at,
             'content' => $post->content,
+            'publishedAt' => $post->published_at,
             'slug' => $post->slug,
-            'published-at' => $post->published_at ? $post->published_at->toW3cString() : null,
+            'title' => $post->title,
+            'updatedAt' => $post->updated_at,
         ];
     }
 }
@@ -122,12 +122,12 @@ The above schema would result in the following resource object:
     "type": "posts",
     "id": "1",
     "attributes": {
-        "created-at": "2018-01-01T11:00:00+00:00",
-        "updated-at": "2018-01-01T12:10:00+00:00",
-        "title": "My First Post",
+        "createdAt": "2018-01-01T11:12:13.356234Z",
         "content": "...",
+        "publishedAt": "2018-01-01T12:30:10.258250Z",
         "slug": "my-first-post",
-        "published-at": "2018-01-01T12:00:00+00:00"
+        "title": "My First Post",
+        "updatedAt": "2018-01-01T12:30:10.258250Z"
     }
 }
 ```
@@ -135,8 +135,8 @@ The above schema would result in the following resource object:
 ## Relationships
 
 A resource object may have a `relationships` key that holds a relationships object. This object describes linkages
-to other resource objects. Relationships can either be to-one or to-many. The JSON API spec allows these linkages 
-to be described in resource relationships in multiple ways - either through a `links`, `data` or `meta` value, 
+to other resource objects. Relationships can either be to-one or to-many. The JSON API spec allows these linkages
+to be described in resource relationships in multiple ways - either through a `links`, `data` or `meta` value,
 or a combination of all three.
 
 > It's worth mentioning again that every PHP class that could be returned as a related object must have a schema
@@ -157,9 +157,9 @@ For example, if our `App\Post` model has a `comments` relationship, its relation
 class Schema extends SchemaProvider
 {
     $resourceType = 'posts';
-    
+
     // ...
-    
+
     public function getRelationships($post, $isPrimary, array $includeRelationships)
     {
         return [
@@ -189,7 +189,7 @@ This would generate the following resource object:
 }
 ```
 
-> These links will only work if you register them when define your API's routing. For `related` links, see 
+> These links will only work if you register them when define your API's routing. For `related` links, see
 [Fetching Resources](../fetching/resources.md) and for the `self` link, see
 [Fetching Relationships](../fetching/relationships.md).
 
@@ -246,7 +246,7 @@ include the author data if the related resource was to be included in a compound
 ```php
 class Schema extends SchemaProvider
 {
-    $resourceType = 'posts';
+    protected $resourceType = 'posts';
 
     // ...
 
@@ -277,10 +277,10 @@ To return meta for a relationship on a resource object:
 ```php
 class Schema extends SchemaProvider
 {
-    $resourceType = 'posts';
-    
+    protected $resourceType = 'posts';
+
     // ...
-    
+
     public function getRelationships($post, $isPrimary, array $includeRelationships)
     {
         return [
@@ -312,7 +312,7 @@ This would generate the following resource object:
 }
 ```
 
-As with `data`, we wrap the meta in a closure so that the cost of generating it is only incurred if the 
+As with `data`, we wrap the meta in a closure so that the cost of generating it is only incurred if the
 relationship is definitely appearing in the encoded response. This however is optional - i.e. you would not need
 to wrap the meta in a closure if there is no cost involved in generating it.
 
@@ -325,10 +325,10 @@ included:
 ```php
 class Schema extends SchemaProvider
 {
-    $resourceType = 'posts';
-    
+    protected $resourceType = 'posts';
+
     // ...
-    
+
     public function getRelationships($post, $isPrimary, array $includeRelationships)
     {
         return [

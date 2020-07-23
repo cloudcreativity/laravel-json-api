@@ -40,7 +40,7 @@ class CreateTest extends TestCase
 
         $expected = [
             'type' => 'avatars',
-            'attributes' => ['media-type' => 'image/jpeg'],
+            'attributes' => ['mediaType' => 'image/jpeg'],
         ];
 
         $this->actingAs($user, 'api');

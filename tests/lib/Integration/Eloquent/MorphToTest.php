@@ -60,7 +60,7 @@ class MorphToTest extends TestCase
                 'content' => $comment->content,
             ],
             'relationships' => [
-                'created-by' => [
+                'createdBy' => [
                     'data' => [
                         'type' => 'users',
                         'id' => (string) $comment->user_id,
@@ -74,7 +74,7 @@ class MorphToTest extends TestCase
 
         $id = $this
             ->actingAs($comment->user)
-            ->doCreate($data, ['include' => 'created-by,commentable'])
+            ->doCreate($data, ['include' => 'createdBy,commentable'])
             ->assertCreatedWithServerId(url('/api/v1/comments'), $data)
             ->id();
 

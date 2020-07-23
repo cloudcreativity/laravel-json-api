@@ -27,8 +27,8 @@ class Validators extends AbstractValidators
      * @var array
      */
     protected $allowedSortParameters = [
-        'created-at',
-        'updated-at',
+        'createdAt',
+        'updatedAt',
         'name',
         'email',
     ];
@@ -68,7 +68,7 @@ class Validators extends AbstractValidators
         ];
 
         if (!$record) {
-            $rules['password-confirmation'] = 'required_with:password|same:password';
+            $rules['passwordConfirmation'] = 'required_with:password|same:password';
         }
 
         return $rules;

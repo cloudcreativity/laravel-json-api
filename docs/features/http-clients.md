@@ -3,7 +3,7 @@
 ## Introduction
 
 This package is primarily concerned with your application acting as a JSON API server. However,
-it includes a client implementation that allows you to re-use your 
+it includes a client implementation that allows you to re-use your
 [resource schemas](../basics/schemas.md) to serialize records and send them as outbound HTTP requests.
 
 The implementation uses
@@ -37,8 +37,8 @@ in this file (particularly the `namespace` option), then create a schema for thi
 $ php artisan make:json-api:schema posts external
 ```
 
-When using configuration files for remote APIs, note that the `url` configuration option still relates to 
-the URLs in your own application. This means that URLs in encoded requests specify where the resource exists 
+When using configuration files for remote APIs, note that the `url` configuration option still relates to
+the URLs in your own application. This means that URLs in encoded requests specify where the resource exists
 within your own application. You can fully control where requests are sent using Guzzle configuration options.
 
 ## Creating Clients
@@ -50,7 +50,7 @@ You can create a JSON API client using via the `json_api()` helper method as fol
 $client = json_api()->client('http://external.com/webhooks');
 ```
 
-> This will create a client using the schemas from your default API. If you need a client for a 
+> This will create a client using the schemas from your default API. If you need a client for a
 different API, pass the API name to the `json_api()` method, e.g. `json_api('v1')->client(...)`.
 
 The first argument to the `client` method can be any of the following:
@@ -84,14 +84,14 @@ You can also send parameters with the request:
 ```php
 $response = $client->query('posts', [
   'filter' => ['author' => '123'],
-  'sort' => 'title,-created-at',
+  'sort' => 'title,-createdAt',
 ]);
 ```
 
 For example, this will send:
 
 ```http
-GET http://external.com/webhooks/posts?filter['author']=123&sort=title,-created-at HTTP/1.1
+GET http://external.com/webhooks/posts?filter['author']=123&sort=title,-createdAt HTTP/1.1
 Accept: application/vnd.api+json
 ```
 
@@ -340,7 +340,7 @@ can also pass query parameters as the third argument if needed.
 
 ### Replace Relationship
 
-To send a request to replace a relationship with provided resource(s), use the 
+To send a request to replace a relationship with provided resource(s), use the
 `replaceRecordRelationship` method. You must provide the record that the relationship is on,
 and the records that should be set as the related resources.
 
@@ -381,7 +381,7 @@ $response = $client->replaceRelationship('posts', '123', 'tags', [
 ]);
 ```
 
-Both the `replaceRecordRelationship` and `replaceRelationship` methods take request query parameters as 
+Both the `replaceRecordRelationship` and `replaceRelationship` methods take request query parameters as
 their final argument, e.g.:
 
 ```php
@@ -391,8 +391,8 @@ $client->replaceRelationship('posts', '123', 'tags', $payload, ['foo' => 'bar'])
 
 ### Add-To Relationship
 
-To send a request to add to a relationship, use the `addToRecordRelationship` method. 
-You must provide the record that the relationship is on, and the records that should be 
+To send a request to add to a relationship, use the `addToRecordRelationship` method.
+You must provide the record that the relationship is on, and the records that should be
 added as the related resources.
 
 For example, to add tags to a post:
@@ -433,7 +433,7 @@ $response = $client->addToRelationship('posts', '123', 'tags', [
 ]);
 ```
 
-Both the `addToRecordRelationship` and `addToRelationship` methods take request query parameters as 
+Both the `addToRecordRelationship` and `addToRelationship` methods take request query parameters as
 their final argument, e.g.:
 
 ```php
@@ -443,8 +443,8 @@ $client->addToRelationship('posts', '123', 'tags', $payload, ['foo' => 'bar']);
 
 ### Remove From Relationship
 
-To send a request remove records from a relationship, use the `removeFromRecordRelationship` method. 
-You must provide the record that the relationship is on, and the records that should be 
+To send a request remove records from a relationship, use the `removeFromRecordRelationship` method.
+You must provide the record that the relationship is on, and the records that should be
 remove from the related resources.
 
 For example, to remove tags from a post:
@@ -643,7 +643,7 @@ $response = $client->read('tags', '123');
 ## Errors
 
 If you are using a Guzzle client with `http_errors` enabled (which they are by default), then the JSON
-API client will throw a exceptions if a HTTP 400 or 500 response is received. If you disable HTTP errors 
+API client will throw a exceptions if a HTTP 400 or 500 response is received. If you disable HTTP errors
 in your Guzzle client, the JSON API client will not throw exceptions.
 
 Type hint `CloudCreativity\LaravelJsonApi\Exceptions\ClientException` to catch errors. This provides
@@ -666,7 +666,7 @@ try {
     if ($ex->getErrors()->contains('code', 'payment-failed')) {
         throw new \App\Exceptions\PaymentFailed();
     }
-    
+
     throw $ex;
 }
 ```
