@@ -365,6 +365,51 @@ class ResourceTest extends TestCase
     }
 
     /**
+     * When using camel-case JSON API fields, we may want the relationship URLs
+     * to use dash-case for the field name.
+     */
+    public function testReadWithDashCaseRelationLinks(): void
+    {
+        $comment = factory(Comment::class)->create();
+        $self = 'http://localhost/api/v1/comments/' . $comment->getRouteKey();
+
+        $expected = [
+            'type' => 'comments',
+            'id' => (string) $comment->getRouteKey(),
+            'attributes' => [
+                'content' => $comment->content,
+                'createdAt' => $comment->created_at->toJSON(),
+                'updatedAt' => $comment->updated_at->toJSON(),
+            ],
+            'relationships' => [
+                'commentable' => [
+                    'links' => [
+                        'self' => "{$self}/relationships/commentable",
+                        'related' => "{$self}/commentable",
+                    ],
+                ],
+                'createdBy' => [
+                    'links' => [
+                        'self' => "{$self}/relationships/created-by",
+                        'related' => "{$self}/created-by",
+                    ],
+                ],
+            ],
+            'links' => [
+                'self' => $self,
+            ],
+        ];
+
+        $response = $this
+            ->actingAs($comment->user)
+            ->jsonApi()
+            ->expects('comments')
+            ->get($self);
+
+        $response->assertFetchedOneExact($expected);
+    }
+
+    /**
      * Test that the resource can not be found.
      */
     public function testResourceNotFound()

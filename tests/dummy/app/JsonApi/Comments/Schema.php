@@ -17,11 +17,14 @@
 
 namespace DummyApp\JsonApi\Comments;
 
+use CloudCreativity\LaravelJsonApi\Schema\DashCaseRelationUrls;
 use DummyApp\Comment;
 use Neomerx\JsonApi\Schema\SchemaProvider;
 
 class Schema extends SchemaProvider
 {
+
+    use DashCaseRelationUrls;
 
     /**
      * @var string

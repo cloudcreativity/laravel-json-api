@@ -17,11 +17,14 @@
 
 namespace DummyApp\JsonApi\Videos;
 
+use CloudCreativity\LaravelJsonApi\Schema\DashCaseRelationUrls;
 use DummyApp\Video;
 use Neomerx\JsonApi\Schema\SchemaProvider;
 
 class Schema extends SchemaProvider
 {
+
+    use DashCaseRelationUrls;
 
     /**
      * @var string
