@@ -1,5 +1,34 @@
 # Upgrade Guide
 
+## 2.x to 3.0
+
+### Soft Deletes
+
+Previously if no soft deletes field was set on an adapter, the JSON API field would default to the dash-case
+version of the soft deletes column on the model. For example, if the model used the column `deleted_at`,
+the JSON API field would default to `deleted-at`.
+
+In `v3`, the default is now the camel-case version of the column: i.e. `deleted_at` on the model would default
+to `deletedAt` for the JSON API field. This change has been made because the JSON API spec has changed its
+recommendation from using dash-case to camel-case.
+
+If you have existing resources that use dash-case, simply set the `softDeleteField` property on your adapter,
+for example:
+
+```php
+use CloudCreativity\LaravelJsonApi\Eloquent\AbstractAdapter;
+use CloudCreativity\LaravelJsonApi\Eloquent\Concerns\SoftDeletesModels;
+
+class Adapter extends AbstractAdapter
+{
+
+    use SoftDeletesModels;
+
+    protected $softDeleteField = 'deleted-at';
+
+}
+```
+
 ## 1.x to 2.0
 
 Version 2 drops support for all 5.x and 6.x versions of Laravel, and sets the minimum PHP version to 7.2.

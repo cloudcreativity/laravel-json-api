@@ -2,6 +2,15 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## Unreleased
+
+### Changed
+- [#393](https://github.com/cloudcreativity/laravel-json-api/issues/393)
+**BREAKING:** when using the `SoftDeletesModel` trait on an adapter, the expected JSON API field
+for the soft delete attribute now defaults to the camel-case version of the model column. For example,
+column `deleted_at` previously defaulted to the JSON API field `deleted-at`, whereas now it will
+default to `deletedAt`. To continue to use dash-case, set the `softDeleteField` property on your adapter.
+
 ## [2.0.0] - 2020-06-17
 
 ### Added

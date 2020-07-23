@@ -105,11 +105,11 @@ class Schema extends SchemaProvider
     {
         return [
             'createdAt' => $post->created_at,
-            'updatedAt' => $post->updated_at,
-            'title' => $post->title,
             'content' => $post->content,
-            'slug' => $post->slug,
             'publishedAt' => $post->published_at,
+            'slug' => $post->slug,
+            'title' => $post->title,
+            'updatedAt' => $post->updated_at,
         ];
     }
 }
@@ -122,12 +122,12 @@ The above schema would result in the following resource object:
     "type": "posts",
     "id": "1",
     "attributes": {
-        "createdAt": "2018-01-01T11:00:00+00:00",
-        "updatedAt": "2018-01-01T12:10:00+00:00",
-        "title": "My First Post",
+        "createdAt": "2018-01-01T11:12:13.356234Z",
         "content": "...",
+        "publishedAt": "2018-01-01T12:30:10.258250Z",
         "slug": "my-first-post",
-        "publishedAt": "2018-01-01T12:00:00+00:00"
+        "title": "My First Post",
+        "updatedAt": "2018-01-01T12:30:10.258250Z"
     }
 }
 ```
@@ -246,7 +246,7 @@ include the author data if the related resource was to be included in a compound
 ```php
 class Schema extends SchemaProvider
 {
-    $resourceType = 'posts';
+    protected $resourceType = 'posts';
 
     // ...
 
@@ -277,7 +277,7 @@ To return meta for a relationship on a resource object:
 ```php
 class Schema extends SchemaProvider
 {
-    $resourceType = 'posts';
+    protected $resourceType = 'posts';
 
     // ...
 
@@ -325,7 +325,7 @@ included:
 ```php
 class Schema extends SchemaProvider
 {
-    $resourceType = 'posts';
+    protected $resourceType = 'posts';
 
     // ...
 
