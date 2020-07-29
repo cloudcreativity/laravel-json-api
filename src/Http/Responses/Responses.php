@@ -28,7 +28,10 @@ use CloudCreativity\LaravelJsonApi\Document\Error\Error;
 use CloudCreativity\LaravelJsonApi\Encoder\Neomerx\Factory;
 use CloudCreativity\LaravelJsonApi\Routing\Route;
 use CloudCreativity\LaravelJsonApi\Utils\Helpers;
+use Illuminate\Contracts\Routing\ResponseFactory;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Response;
+use InvalidArgumentException;
 use Neomerx\JsonApi\Contracts\Document\DocumentInterface;
 use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
@@ -115,7 +118,7 @@ class Responses extends BaseResponses
     public function withMediaType(string $mediaType): self
     {
         if (!$encoding = $this->api->getEncodings()->find($mediaType)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 "Media type {$mediaType} is not valid for API {$this->api->getName()}."
             );
         }
@@ -135,7 +138,7 @@ class Responses extends BaseResponses
      * @param int $options
      * @param int $depth
      * @param string|null $mediaType
-     * @return Responses
+     * @return $this
      */
     public function withEncoding(
         int $options = 0,
@@ -174,7 +177,7 @@ class Responses extends BaseResponses
     /**
      * @param $statusCode
      * @param array $headers
-     * @return mixed
+     * @return Response|ResponseFactory
      */
     public function statusCode($statusCode, array $headers = [])
     {
@@ -183,7 +186,7 @@ class Responses extends BaseResponses
 
     /**
      * @param array $headers
-     * @return mixed
+     * @return Response|ResponseFactory
      */
     public function noContent(array $headers = [])
     {
@@ -194,7 +197,7 @@ class Responses extends BaseResponses
      * @param $meta
      * @param int $statusCode
      * @param array $headers
-     * @return mixed
+     * @return Response|ResponseFactory
      */
     public function meta($meta, $statusCode = self::HTTP_OK, array $headers = [])
     {
@@ -206,7 +209,7 @@ class Responses extends BaseResponses
      * @param $meta
      * @param int $statusCode
      * @param array $headers
-     * @return mixed
+     * @return Response|ResponseFactory
      */
     public function noData(array $links = [], $meta = null, $statusCode = self::HTTP_OK, array $headers = [])
     {
@@ -222,7 +225,7 @@ class Responses extends BaseResponses
      * @param mixed $meta
      * @param int $statusCode
      * @param array $headers
-     * @return mixed
+     * @return Response|ResponseFactory
      */
     public function content(
         $data,
@@ -234,8 +237,16 @@ class Responses extends BaseResponses
         return $this->getContentResponse($data, $statusCode, $links, $meta, $headers);
     }
 
+
     /**
-     * @inheritdoc
+     * Get response with regular JSON API Document in body.
+     *
+     * @param array|object $data
+     * @param int $statusCode
+     * @param null $links
+     * @param null $meta
+     * @param array $headers
+     * @return Response|ResponseFactory
      */
     public function getContentResponse(
         $data,
@@ -245,7 +256,7 @@ class Responses extends BaseResponses
         array $headers = []
     ) {
         if ($data instanceof PageInterface) {
-            list ($data, $meta, $links) = $this->extractPage($data, $meta, $links);
+            [$data, $meta, $links] = $this->extractPage($data, $meta, $links);
         }
 
         return parent::getContentResponse($data, $statusCode, $links, $meta, $headers);
@@ -256,7 +267,7 @@ class Responses extends BaseResponses
      * @param array $links
      * @param mixed $meta
      * @param array $headers
-     * @return mixed
+     * @return Response|ResponseFactory
      */
     public function created($resource = null, array $links = [], $meta = null, array $headers = [])
     {
@@ -282,7 +293,7 @@ class Responses extends BaseResponses
      * @param array $links
      * @param mixed $meta
      * @param array $headers
-     * @return mixed
+     * @return Response|ResponseFactory
      */
     public function updated(
         $resource = null,
@@ -300,7 +311,7 @@ class Responses extends BaseResponses
      * @param array $links
      * @param mixed|null $meta
      * @param array $headers
-     * @return mixed
+     * @return Response|ResponseFactory
      */
     public function deleted(
         $resource = null,
@@ -316,7 +327,7 @@ class Responses extends BaseResponses
      * @param array $links
      * @param null $meta
      * @param array $headers
-     * @return mixed
+     * @return Response|ResponseFactory
      */
     public function accepted(AsynchronousProcess $job, array $links = [], $meta = null, array $headers = [])
     {
@@ -330,7 +341,7 @@ class Responses extends BaseResponses
      * @param array $links
      * @param null $meta
      * @param array $headers
-     * @return \Illuminate\Http\RedirectResponse|mixed
+     * @return RedirectResponse|mixed
      */
     public function process(AsynchronousProcess $job, array $links = [], $meta = null, array $headers = [])
     {
@@ -348,7 +359,7 @@ class Responses extends BaseResponses
      * @param mixed $meta
      * @param int $statusCode
      * @param array $headers
-     * @return mixed
+     * @return Response|ResponseFactory
      */
     public function relationship(
         $data,
@@ -366,7 +377,7 @@ class Responses extends BaseResponses
      * @param $links
      * @param $meta
      * @param array $headers
-     * @return mixed
+     * @return Response|ResponseFactory
      */
     public function getIdentifiersResponse(
         $data,
@@ -376,7 +387,7 @@ class Responses extends BaseResponses
         array $headers = []
     ) {
         if ($data instanceof PageInterface) {
-            list ($data, $meta, $links) = $this->extractPage($data, $meta, $links);
+            [$data, $meta, $links] = $this->extractPage($data, $meta, $links);
         }
 
         return parent::getIdentifiersResponse($data, $statusCode, $links, $meta, $headers);
@@ -388,7 +399,7 @@ class Responses extends BaseResponses
      * @param Error|ErrorInterface|array $error
      * @param int|null $defaultStatusCode
      * @param array $headers
-     * @return mixed
+     * @return Response|ResponseFactory
      */
     public function error($error, int $defaultStatusCode = null, array $headers = [])
     {
@@ -411,7 +422,8 @@ class Responses extends BaseResponses
      * @param iterable $errors
      * @param int|null $defaultStatusCode
      * @param array $headers
-     * @return mixed
+     *
+     * @return Response|ResponseFactory
      */
     public function errors(iterable $errors, int $defaultStatusCode = null, array $headers = [])
     {
@@ -426,7 +438,7 @@ class Responses extends BaseResponses
      * @param array $links
      * @param null $meta
      * @param array $headers
-     * @return mixed
+     * @return Response|ResponseFactory
      */
     protected function getResourceResponse($resource, array $links = [], $meta = null, array $headers = [])
     {
@@ -518,7 +530,13 @@ class Responses extends BaseResponses
     }
 
     /**
-     * @inheritdoc
+     * Create HTTP response.
+     *
+     * @param string|null $content
+     * @param int $statusCode
+     * @param array $headers
+     *
+     * @return Response|ResponseFactory
      */
     protected function createResponse($content, $statusCode, array $headers)
     {
