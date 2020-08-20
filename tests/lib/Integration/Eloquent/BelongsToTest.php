@@ -263,7 +263,8 @@ class BelongsToTest extends TestCase
 
         $data = ['type' => 'users', 'id' => (string) $user->getKey()];
 
-        $this->doReplaceRelationship($post, 'author', $data)
+        $this->withoutExceptionHandling()
+            ->doReplaceRelationship($post, 'author', $data)
             ->assertStatus(204);
 
         $this->assertDatabaseHas('posts', [

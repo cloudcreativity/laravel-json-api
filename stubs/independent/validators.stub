@@ -36,11 +36,11 @@ class DummyClass extends AbstractValidators
      *
      * @param mixed|null $record
      *      the record being updated, or null if creating a resource.
-     * @param mixed|null $document
-     *      document holding updated or new attributes
+     * @param array $data
+     *      the data being validated
      * @return mixed
      */
-    protected function rules($record = null, array $document = []): array
+    protected function rules($record, array $data): array
     {
         return [
             //

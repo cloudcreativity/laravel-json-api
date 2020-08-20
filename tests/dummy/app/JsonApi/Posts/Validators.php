@@ -99,9 +99,10 @@ class Validators extends AbstractValidators
 
     /**
      * @param Post|null $record
+     * @param array $data
      * @return array|mixed
      */
-    protected function rules($record = null): array
+    protected function rules($record, array $data): array
     {
         $slugUnique = 'unique:posts,slug';
 

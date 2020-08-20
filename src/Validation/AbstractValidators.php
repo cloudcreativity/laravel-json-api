@@ -176,11 +176,11 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
      *
      * @param mixed|null $record
      *      the record being updated, or null if creating a resource.
-     * @param array $document
-     *      document holding new attributes
+     * @param array $data
+     *      the data that is being validated.
      * @return mixed
      */
-    abstract protected function rules($record = null, array $document = []): array;
+    abstract protected function rules($record, array $data): array;
 
     /**
      * Get query parameter validation rules.
@@ -210,7 +210,8 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
             return $this->clientIds;
         }
 
-        return $this->clientIds = collect($this->rules())->has('id');
+        return $this->clientIds = collect($this->rules(null, []))
+            ->has('id');
     }
 
     /**
@@ -219,8 +220,8 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
     public function create(array $document): ValidatorInterface
     {
         return $this->validatorForResource(
-            $this->dataForCreate($document),
-            $this->rules(null, $document),
+            $data = $this->dataForCreate($document),
+            $this->rules(null, $data),
             $this->messages(),
             $this->attributes()
         );
@@ -232,8 +233,8 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
     public function update($record, array $document): ValidatorInterface
     {
         return $this->validatorForResource(
-            $this->dataForUpdate($record, $document),
-            $this->rules($record, $document),
+            $data = $this->dataForUpdate($record, $document),
+            $this->rules($record, $data),
             $this->messages($record),
             $this->attributes($record)
         );
@@ -261,11 +262,11 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
      */
     public function modifyRelationship($record, string $field, array $document): ValidatorInterface
     {
-        $data = $this->dataForRelationship($record, $field, $document);
+        $resource = ResourceObject::create($this->dataForRelationship($record, $field, $document));
 
         return $this->factory->createRelationshipValidator(
-            ResourceObject::create($data),
-            $this->relationshipRules($record, $field),
+            $resource,
+            $this->relationshipRules($record, $field, $resource->all()),
             $this->messages(),
             $this->attributes()
         );
@@ -554,11 +555,12 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
      *
      * @param mixed $record
      * @param string $field
+     * @param array $data
      * @return array
      */
-    protected function relationshipRules($record, string $field): array
+    protected function relationshipRules($record, string $field, array $data): array
     {
-        return collect($this->rules($record))->filter(function ($v, $key) use ($field) {
+        return collect($this->rules($record, $data))->filter(function ($v, $key) use ($field) {
             return Str::startsWith($key, $field);
         })->all();
     }
