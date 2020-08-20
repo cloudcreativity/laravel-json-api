@@ -111,9 +111,11 @@ class Validators extends AbstractValidators
      *
      * @param mixed|null $record
      *      the record being updated, or null if creating a resource.
+     * @param array $data
+     *      the data being validated.
      * @return mixed
      */
-    protected function rules($record = null): array
+    protected function rules($record, array $data): array
     {
         return [
             //
@@ -218,7 +220,7 @@ class Validators extends AbstractValidators
 {
     // ...
 
-    protected function rules($record = null): array
+    protected function rules($record, array $data): array
     {
         return [
             'title' => 'required|string|min:1|max:255',
@@ -239,7 +241,7 @@ This is because the package complies with the JSON API spec and validates all re
 check that they exist. Therefore the following **does not** need to be used:
 
 ```php
-protected function rules($record = null): array
+protected function rules($record, array $data): array
 {
     return [
         'author.id' => 'exists:users,id',
@@ -253,7 +255,7 @@ type is provided to the constructor, then the plural form of the attribute name 
 example:
 
 ```php
-protected function rules($record = null): array
+protected function rules($record, array $data): array
 {
     return [
         'author' => [
@@ -386,7 +388,7 @@ class Validators extends AbstractValidators
 {
     // ...
 
-    protected function rules($record = null): array
+    protected function rules($record, array $data): array
     {
         return [
             'title' => "required|string|min:3",
@@ -925,7 +927,7 @@ class Validators extends AbstractValidators
 {
     // ...
 
-    protected function rules($record = null): array
+    protected function rules($record, array $data): array
     {
         return [
             'name' => 'required|string',
@@ -962,7 +964,7 @@ class Validators extends AbstractValidators
         return $validator;
     }
 
-    protected function rules($record = null): array
+    protected function rules($record, array $data): array
     {
         $rules = [
             'name' => 'required|string',

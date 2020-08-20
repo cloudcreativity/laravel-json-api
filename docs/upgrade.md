@@ -2,6 +2,30 @@
 
 ## 2.x to 3.0
 
+### Validators
+
+The method signature of the `rules()` method has changed so that the method has access to the data
+that is going to be validated. You will need to amend the method signature on all of your validator
+classes.
+
+The method signature was previously:
+
+```
+protected function rules($record = null): array
+{
+    // ...
+}
+```
+
+It is now:
+
+```
+protected function rules($record, array $data): array
+{
+    // ...
+}
+```
+
 ### Soft Deletes
 
 Previously if no soft deletes field was set on an adapter, the JSON API field would default to the dash-case

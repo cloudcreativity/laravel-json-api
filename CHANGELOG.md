@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file. This projec
 ## Unreleased
 
 ### Changed
+- [#497](https://github.com/cloudcreativity/laravel-json-api/issues/497) and
+[#529](https://github.com/cloudcreativity/laravel-json-api/pull/529)
+**BREAKING:** The method signature of the `AbstractValidators::rules()` method has changed,
+so that the method has access to the data that will be validated.
 - [#393](https://github.com/cloudcreativity/laravel-json-api/issues/393)
 **BREAKING:** when using the `SoftDeletesModel` trait on an adapter, the expected JSON API field
 for the soft delete attribute now defaults to the camel-case version of the model column. For example,
