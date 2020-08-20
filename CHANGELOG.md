@@ -2,6 +2,16 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## Unreleased
+
+### Added
+- [#538](https://github.com/cloudcreativity/laravel-json-api/issues/538)
+New JSON API exception class that accepts the new error objects from this package.
+It is recommended that you use `CloudCreativity\LaravelJsonApi\Exceptions\JsonApiException`
+combined with the `CloudCreativity\LaravelJsonApi\Document\Error\Error`. It is not
+recommended to use the `Neomerx\JsonApi\Exceptions\JsonApiException` class as support
+for this exception class will be removed in a future version.
+
 ## [2.0.0] - 2020-06-17
 
 ### Added
