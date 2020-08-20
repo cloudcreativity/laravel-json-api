@@ -39,7 +39,7 @@ class Validators extends AbstractValidators
     /**
      * @inheritDoc
      */
-    protected function rules($record = null): array
+    protected function rules($record, array $data): array
     {
         return [
             'id' => 'required|regex:/' . Uuid::VALID_PATTERN . '/',

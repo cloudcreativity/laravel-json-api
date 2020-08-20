@@ -51,7 +51,7 @@ class Validators extends AbstractValidators
     /**
      * @inheritdoc
      */
-    protected function rules($record = null): array
+    protected function rules($record, array $data): array
     {
         return [
             'content' => "required|string|min:1",
