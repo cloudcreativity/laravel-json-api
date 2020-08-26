@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file. This projec
 
 ## Unreleased
 
+### Added
+- [#545](https://github.com/cloudcreativity/laravel-json-api/issues/545)
+The request test builder now supports testing requests that do not have JSON API request content,
+but expect a JSON API response. For example, a file upload that results in a JSON API resource
+in the response body can be tested using:
+`$this->jsonApi()->asMultiPartFormData()->withPayload($data)->post('/api/v1/avatars');`.
+
 ### Changed
 - [#497](https://github.com/cloudcreativity/laravel-json-api/issues/497) and
 [#529](https://github.com/cloudcreativity/laravel-json-api/pull/529)
