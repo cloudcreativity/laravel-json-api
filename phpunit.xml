@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit backupGlobals="false"
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         backupGlobals="false"
          backupStaticAttributes="false"
-         beStrictAboutTestsThatDoNotTestAnything="false"
+         beStrictAboutTestsThatDoNotTestAnything="true"
          bootstrap="vendor/autoload.php"
          colors="true"
          convertErrorsToExceptions="true"
@@ -11,24 +12,25 @@
          stopOnError="false"
          stopOnFailure="false"
          verbose="true"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd"
 >
-    <testsuites>
-        <testsuite name="Unit">
-            <directory suffix="Test.php">./tests/lib/Unit/</directory>
-        </testsuite>
-        <testsuite name="Integration">
-            <directory suffix="Test.php">./tests/lib/Integration/</directory>
-        </testsuite>
-        <testsuite name="Acceptance">
-            <directory suffix="Test.php">./tests/dummy/tests/</directory>
-        </testsuite>
-    </testsuites>
-    <filter>
-        <whitelist>
-            <directory suffix=".php">src/</directory>
-        </whitelist>
-    </filter>
-    <php>
-        <env name="APP_KEY" value="base64:BMfTqJC1cFk6A/jTPsjQgC+cROx7TDaEeGIAat6CuqY="/>
-    </php>
+  <coverage>
+    <include>
+      <directory suffix=".php">src/</directory>
+    </include>
+  </coverage>
+  <testsuites>
+    <testsuite name="Unit">
+      <directory suffix="Test.php">./tests/lib/Unit/</directory>
+    </testsuite>
+    <testsuite name="Integration">
+      <directory suffix="Test.php">./tests/lib/Integration/</directory>
+    </testsuite>
+    <testsuite name="Acceptance">
+      <directory suffix="Test.php">./tests/dummy/tests/</directory>
+    </testsuite>
+  </testsuites>
+  <php>
+    <env name="APP_KEY" value="base64:BMfTqJC1cFk6A/jTPsjQgC+cROx7TDaEeGIAat6CuqY="/>
+  </php>
 </phpunit>

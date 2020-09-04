@@ -11,7 +11,7 @@ how to return your own error responses.
 
 ## Creating Error Objects
 
-Error objects can be constructed from array key/value pairs using the static `create` method on
+Error objects can be constructed from array key/value pairs using the static `fromArray` method on
 the package's error class. All the keys described in the specification's
 [error objects](http://jsonapi.org/format/#error-objects) chapter are supported.
 
@@ -85,8 +85,8 @@ It is also possible to throw a `JsonApiException` from anywhere in your code. Th
 to a JSON API response. For example:
 
 ```php
-use Neomerx\JsonApi\Exceptions\JsonApiException;
 use CloudCreativity\LaravelJsonApi\Document\Error\Error;
+use CloudCreativity\LaravelJsonApi\Exceptions\JsonApiException;
 
 try {
     dispatchNow(new ChargeCard($token));
@@ -97,12 +97,24 @@ try {
         'status' => '402',
     ]);
 
-    throw new JsonApiException($error, 402, $ex);
+    throw new JsonApiException($error, $ex);
 }
 ```
 
 The JSON API exception takes three arguments:
 
 - An error object or an array of error objects.
-- The HTTP status code.
-- The previous exception.
+- The previous exception (optional)
+- Additional headers for the response (optional).
+
+You can also fluently construct a JSON API exception with headers:
+
+```php
+use CloudCreativity\LaravelJsonApi\Document\Error\Error;
+use CloudCreativity\LaravelJsonApi\Exceptions\JsonApiException;
+
+throw JsonApiException::make(Error::fromArray([
+    'status' => '418',
+    'title' => "I'm a Teapot"
+]))->withHeaders(['X-Foo' => 'Bar']);
+```

@@ -31,6 +31,28 @@ class Errors implements DocumentInterface, IteratorAggregate
     private $errors;
 
     /**
+     * @var array
+     */
+    private $headers = [];
+
+    /**
+     * @param Errors|Error $value
+     * @return static
+     */
+    public static function cast($value): self
+    {
+        if ($value instanceof self) {
+            return $value;
+        }
+
+        if ($value instanceof Error) {
+            return new self($value);
+        }
+
+        throw new \UnexpectedValueException('Expecting an errors collection or an error object.');
+    }
+
+    /**
      * Errors constructor.
      *
      * @param Error ...$errors
@@ -70,6 +92,17 @@ class Errors implements DocumentInterface, IteratorAggregate
     }
 
     /**
+     * @param array $headers
+     * @return $this
+     */
+    public function withHeaders(array $headers): self
+    {
+        $this->headers = $headers;
+
+        return $this;
+    }
+
+    /**
      * @inheritDoc
      */
     public function getIterator()
@@ -99,12 +132,13 @@ class Errors implements DocumentInterface, IteratorAggregate
 
     /**
      * @inheritDoc
-     * @todo pass through headers.
      */
     public function toResponse($request)
     {
         return json_api()->response()->errors(
-            $this->errors
+            $this->errors,
+            null,
+            $this->headers
         );
     }
 

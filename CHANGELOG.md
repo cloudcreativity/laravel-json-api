@@ -22,6 +22,16 @@ for the soft delete attribute now defaults to the camel-case version of the mode
 column `deleted_at` previously defaulted to the JSON API field `deleted-at`, whereas now it will
 default to `deletedAt`. To continue to use dash-case, set the `softDeleteField` property on your adapter.
 
+## [2.1.0] - 2020-09-04
+
+### Added
+- [#538](https://github.com/cloudcreativity/laravel-json-api/issues/538)
+New JSON API exception class that accepts the new error objects from this package.
+It is recommended that you use `CloudCreativity\LaravelJsonApi\Exceptions\JsonApiException`
+combined with the `CloudCreativity\LaravelJsonApi\Document\Error\Error`. It is not
+recommended to use the `Neomerx\JsonApi\Exceptions\JsonApiException` class as support
+for this exception class will be removed in a future version.
+
 ## [2.0.0] - 2020-06-17
 
 ### Added
