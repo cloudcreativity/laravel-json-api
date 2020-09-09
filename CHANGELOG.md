@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## Unreleased
+
+### Fixed
+- The error translator will now detect if the translated value is identical to the translation
+key path, and return `null` when it is. This fixes behaviour that changed in Laravel 7.28.
+
 ## [2.1.0] - 2020-09-04
 
 ### Added

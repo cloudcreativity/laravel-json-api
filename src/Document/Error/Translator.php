@@ -529,11 +529,13 @@ class Translator
      */
     protected function trans(string $key, string $member, array $replace = [], ?string $locale = null)
     {
-        return $this->translator->get(
-            "jsonapi::errors.{$key}.{$member}",
+        $value = $this->translator->get(
+            $key = "jsonapi::errors.{$key}.{$member}",
             $replace,
             $locale
         ) ?: null;
+
+        return ($key !== $value) ? $value : null;
     }
 
     /**
