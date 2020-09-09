@@ -12,6 +12,8 @@ in the response body can be tested using:
 `$this->jsonApi()->asMultiPartFormData()->withPayload($data)->post('/api/v1/avatars');`.
 
 ### Changed
+- Minimum PHP version is now `7.3`.
+- Minimum Laravel version is now `8.0`.
 - [#497](https://github.com/cloudcreativity/laravel-json-api/issues/497) and
 [#529](https://github.com/cloudcreativity/laravel-json-api/pull/529)
 **BREAKING:** The method signature of the `AbstractValidators::rules()` method has changed,

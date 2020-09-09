@@ -146,8 +146,7 @@ class QueryValidationTest extends TestCase
 
         $this->resourceType = 'posts';
         $this->doSearch(['filter' => ['foo' => 'bar']])
-            ->assertStatus(400)
-            ->assertExactJson(['errors' => [$expected]]);
+            ->assertExactErrorStatus($expected);
     }
 
     /**

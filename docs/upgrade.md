@@ -26,6 +26,8 @@ protected function rules($record, array $data): array
 }
 ```
 
+> Note that `$record` will still be `null` if the request will create a new resource.
+
 ### Soft Deletes
 
 Previously if no soft deletes field was set on an adapter, the JSON API field would default to the dash-case
