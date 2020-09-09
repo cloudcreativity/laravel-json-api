@@ -24,6 +24,17 @@ for the soft delete attribute now defaults to the camel-case version of the mode
 column `deleted_at` previously defaulted to the JSON API field `deleted-at`, whereas now it will
 default to `deletedAt`. To continue to use dash-case, set the `softDeleteField` property on your adapter.
 
+## [2.2.0] - 2020-09-09
+
+### Added
+- [#549](https://github.com/cloudcreativity/laravel-json-api/issues/549)
+Can now add sort methods to an Eloquent adapter if sorting is more complex than just sorting by
+a column value.
+
+### Fixed
+- The error translator will now detect if the translated value is identical to the translation
+key path, and return `null` when it is. This fixes behaviour that changed in Laravel 7.28.
+
 ## [2.1.0] - 2020-09-04
 
 ### Added
