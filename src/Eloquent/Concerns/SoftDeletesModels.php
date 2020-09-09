@@ -115,8 +115,8 @@ trait SoftDeletesModels
     /**
      * The JSON API field name that is used for the soft delete value.
      *
-     * If none is set, defaults to the dasherized version of the model's
-     * deleted_at column.
+     * If none is set, defaults to the camel-case version of the model's
+     * `deleted_at` column, e.g. `deletedAt`.
      *
      * @return string|null
      */
@@ -139,7 +139,7 @@ trait SoftDeletesModels
 
         $key = $this->getSoftDeleteKey($record);
 
-        return Str::dasherize($key);
+        return Str::camelize($key);
     }
 
     /**

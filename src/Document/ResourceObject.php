@@ -167,7 +167,7 @@ class ResourceObject implements Arrayable, \IteratorAggregate, \JsonSerializable
      */
     public function offsetExists($offset)
     {
-        return $this->fieldValues->offsetExists($offset);
+        return $this->fieldValues->has($offset);
     }
 
     /**

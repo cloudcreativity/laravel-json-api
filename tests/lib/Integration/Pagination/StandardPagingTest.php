@@ -193,7 +193,7 @@ class StandardPagingTest extends TestCase
 
         $this->withResourceType('videos')->doSearch([
             'page' => ['number' => '1', 'size' => '3'],
-            'sort' => 'created-at'
+            'sort' => 'createdAt'
         ])->assertFetchedManyInOrder([$first, $c, $d]);
     }
 

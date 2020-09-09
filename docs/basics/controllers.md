@@ -90,8 +90,8 @@ class PostsController extends JsonApiController
 
 ### Resource Hooks
 
-The controller allows you to hook into the resource lifecycle by invoking the following methods if they are 
-implemented. These methods allow you to easily implement application specific actions, such as firing events 
+The controller allows you to hook into the resource lifecycle by invoking the following methods if they are
+implemented. These methods allow you to easily implement application specific actions, such as firing events
 or dispatching jobs.
 
 | Hook | Arguments | Request Class |
@@ -106,12 +106,12 @@ or dispatching jobs.
 | `created` | record, request | `CreateResource` |
 | `saved` | record, request | `CreateResource` or `UpdateResource` |
 | `deleting` | record, request | `DeleteResource` |
-| `deleted` | record, request | `DeleteResource` | 
+| `deleted` | record, request | `DeleteResource` |
 
 > The request class is the validated request in the `CloudCreativity\LaravelJsonApi\Http\Requests` namespace.
 
 The `searching`, `searched`, `reading` and `didRead` hooks are invoked when resource(s) are being accessed,
-i.e. a `GET` request. The `searching` and `searched` hooks are invoked when reading any resources 
+i.e. a `GET` request. The `searching` and `searched` hooks are invoked when reading any resources
 (the *index* action), while `reading` and `didRead` are invoked when reading a specific record
 (the *read* action).
 
@@ -158,7 +158,7 @@ if reading the `author` relationship on a `posts` resource, the `readingRelation
 methods will be invoked if they exist.
 
 The `reading...` and `didRead...` methods are invoked when accessing the related resource or the relationship data,
-i.e. a `GET` relationship request. The `replacing...` and `replaced...` methods are invoked when changing the 
+i.e. a `GET` relationship request. The `replacing...` and `replaced...` methods are invoked when changing the
 entire relationship in a `PATCH` relationship request.
 
 For *to-many* relationships, the `adding...` and `added...` methods are invoked when adding resources to the
@@ -184,7 +184,7 @@ For example, if we wanted to send a `202 Accepted` response when a resource was 
 protected function deleted($record)
 {
     return $this->reply()->meta([
-        'accepted-at' => Carbon\Carbon::now()->toW3cString()
+        'acceptedAt' => Carbon\Carbon::now(),
     ], 202);
 }
 ```
@@ -197,7 +197,7 @@ Content-Type: application/vnd.api+json
 
 {
   "meta": {
-    "accepted-at": "2018-04-10T11:56:52+00:00"
+    "acceptedAt": "2018-04-10T11:56:52+00:00"
   }
 }
 ```
@@ -224,11 +224,11 @@ use CloudCreativity\LaravelJsonApi\Http\Controllers\JsonApiController;
 
 class PostsController extends JsonApiController
 {
-    
+
     public function share(\App\Post $post): \Illuminate\Http\Response
     {
         \App\Jobs\SharePost::dispatch($post);
-        
+
         return $this->reply()->content($post);
     }
 }
@@ -257,11 +257,11 @@ use CloudCreativity\LaravelJsonApi\Http\Requests\FetchResource;
 
 class PostsController extends JsonApiController
 {
-    
+
     public function share(FetchResource $request, \App\Post $post): \Illuminate\Http\Response
     {
         \App\Jobs\SharePost::dispatch($post);
-        
+
         return $this->reply()->content($post);
     }
 }

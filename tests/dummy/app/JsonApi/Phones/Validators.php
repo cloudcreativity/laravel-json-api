@@ -32,9 +32,11 @@ class Validators extends AbstractValidators
      *
      * @param object|null $record
      *      the record being updated, or null if it is a create request.
+     * @param array $data
+     *      the data being validated.
      * @return array
      */
-    protected function rules($record = null): array
+    protected function rules($record, array $data): array
     {
         return [
             //

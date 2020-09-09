@@ -17,7 +17,6 @@
 
 namespace DummyApp\JsonApi\QueueJobs;
 
-use Carbon\Carbon;
 use CloudCreativity\LaravelJsonApi\Queue\AsyncSchema;
 use CloudCreativity\LaravelJsonApi\Queue\ClientJob;
 use Neomerx\JsonApi\Schema\SchemaProvider;
@@ -42,21 +41,16 @@ class Schema extends SchemaProvider
      */
     public function getAttributes($resource)
     {
-        /** @var Carbon|null $completedAt */
-        $completedAt = $resource->completed_at;
-        /** @var Carbon|null $timeoutAt */
-        $timeoutAt = $resource->timeout_at;
-
         return [
             'attempts' => $resource->attempts,
-            'completed-at' => $completedAt ? $completedAt->toAtomString() : null,
-            'created-at' => $resource->created_at->toAtomString(),
+            'completedAt' => $resource->completed_at,
+            'createdAt' => $resource->created_at,
             'failed' => $resource->failed,
-            'resource-type' => $resource->resource_type,
+            'resourceType' => $resource->resource_type,
             'timeout' => $resource->timeout,
-            'timeout-at' => $timeoutAt ? $timeoutAt->toAtomString() : null,
+            'timeoutAt' => $resource->timeout_at,
             'tries' => $resource->tries,
-            'updated-at' => $resource->updated_at->toAtomString(),
+            'updatedAt' => $resource->updated_at,
         ];
     }
 

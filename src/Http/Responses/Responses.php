@@ -28,7 +28,9 @@ use CloudCreativity\LaravelJsonApi\Document\Error\Error;
 use CloudCreativity\LaravelJsonApi\Encoder\Neomerx\Factory;
 use CloudCreativity\LaravelJsonApi\Routing\Route;
 use CloudCreativity\LaravelJsonApi\Utils\Helpers;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Response;
+use InvalidArgumentException;
 use Neomerx\JsonApi\Contracts\Document\DocumentInterface;
 use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
 use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
@@ -115,7 +117,7 @@ class Responses extends BaseResponses
     public function withMediaType(string $mediaType): self
     {
         if (!$encoding = $this->api->getEncodings()->find($mediaType)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 "Media type {$mediaType} is not valid for API {$this->api->getName()}."
             );
         }
@@ -135,13 +137,13 @@ class Responses extends BaseResponses
      * @param int $options
      * @param int $depth
      * @param string|null $mediaType
-     * @return Responses
+     * @return $this
      */
     public function withEncoding(
         int $options = 0,
         int $depth = 512,
         string $mediaType = MediaTypeInterface::JSON_API_MEDIA_TYPE
-    ) {
+    ): self {
         $encoding = Encoding::create(
             $mediaType,
             $options,
@@ -174,18 +176,18 @@ class Responses extends BaseResponses
     /**
      * @param $statusCode
      * @param array $headers
-     * @return mixed
+     * @return Response
      */
-    public function statusCode($statusCode, array $headers = [])
+    public function statusCode($statusCode, array $headers = []): Response
     {
         return $this->getCodeResponse($statusCode, $headers);
     }
 
     /**
      * @param array $headers
-     * @return mixed
+     * @return Response
      */
-    public function noContent(array $headers = [])
+    public function noContent(array $headers = []): Response
     {
         return $this->getCodeResponse(204, $headers);
     }
@@ -194,9 +196,9 @@ class Responses extends BaseResponses
      * @param $meta
      * @param int $statusCode
      * @param array $headers
-     * @return mixed
+     * @return Response
      */
-    public function meta($meta, $statusCode = self::HTTP_OK, array $headers = [])
+    public function meta($meta, $statusCode = self::HTTP_OK, array $headers = []): Response
     {
         return $this->getMetaResponse($meta, $statusCode, $headers);
     }
@@ -206,9 +208,9 @@ class Responses extends BaseResponses
      * @param $meta
      * @param int $statusCode
      * @param array $headers
-     * @return mixed
+     * @return Response
      */
-    public function noData(array $links = [], $meta = null, $statusCode = self::HTTP_OK, array $headers = [])
+    public function noData(array $links = [], $meta = null, $statusCode = self::HTTP_OK, array $headers = []): Response
     {
         $encoder = $this->getEncoder();
         $content = $encoder->withLinks($links)->encodeMeta($meta ?: []);
@@ -222,7 +224,7 @@ class Responses extends BaseResponses
      * @param mixed $meta
      * @param int $statusCode
      * @param array $headers
-     * @return mixed
+     * @return Response
      */
     public function content(
         $data,
@@ -230,12 +232,20 @@ class Responses extends BaseResponses
         $meta = null,
         $statusCode = self::HTTP_OK,
         array $headers = []
-    ) {
+    ): Response {
         return $this->getContentResponse($data, $statusCode, $links, $meta, $headers);
     }
 
+
     /**
-     * @inheritdoc
+     * Get response with regular JSON API Document in body.
+     *
+     * @param array|object $data
+     * @param int $statusCode
+     * @param null $links
+     * @param null $meta
+     * @param array $headers
+     * @return Response
      */
     public function getContentResponse(
         $data,
@@ -243,9 +253,9 @@ class Responses extends BaseResponses
         $links = null,
         $meta = null,
         array $headers = []
-    ) {
+    ): Response {
         if ($data instanceof PageInterface) {
-            list ($data, $meta, $links) = $this->extractPage($data, $meta, $links);
+            [$data, $meta, $links] = $this->extractPage($data, $meta, $links);
         }
 
         return parent::getContentResponse($data, $statusCode, $links, $meta, $headers);
@@ -256,9 +266,9 @@ class Responses extends BaseResponses
      * @param array $links
      * @param mixed $meta
      * @param array $headers
-     * @return mixed
+     * @return Response
      */
-    public function created($resource = null, array $links = [], $meta = null, array $headers = [])
+    public function created($resource = null, array $links = [], $meta = null, array $headers = []): Response
     {
         if ($this->isNoContent($resource, $links, $meta)) {
             return $this->noContent();
@@ -282,14 +292,14 @@ class Responses extends BaseResponses
      * @param array $links
      * @param mixed $meta
      * @param array $headers
-     * @return mixed
+     * @return Response
      */
     public function updated(
         $resource = null,
         array $links = [],
         $meta = null,
         array $headers = []
-    ) {
+    ): Response {
         return $this->getResourceResponse($resource, $links, $meta, $headers);
     }
 
@@ -300,14 +310,14 @@ class Responses extends BaseResponses
      * @param array $links
      * @param mixed|null $meta
      * @param array $headers
-     * @return mixed
+     * @return Response
      */
     public function deleted(
         $resource = null,
         array $links = [],
         $meta = null,
         array $headers = []
-    ) {
+    ): Response {
         return $this->getResourceResponse($resource, $links, $meta, $headers);
     }
 
@@ -316,9 +326,9 @@ class Responses extends BaseResponses
      * @param array $links
      * @param null $meta
      * @param array $headers
-     * @return mixed
+     * @return Response
      */
-    public function accepted(AsynchronousProcess $job, array $links = [], $meta = null, array $headers = [])
+    public function accepted(AsynchronousProcess $job, array $links = [], $meta = null, array $headers = []): Response
     {
         $headers['Content-Location'] = $this->getResourceLocationUrl($job);
 
@@ -330,7 +340,7 @@ class Responses extends BaseResponses
      * @param array $links
      * @param null $meta
      * @param array $headers
-     * @return \Illuminate\Http\RedirectResponse|mixed
+     * @return RedirectResponse|mixed
      */
     public function process(AsynchronousProcess $job, array $links = [], $meta = null, array $headers = [])
     {
@@ -348,7 +358,7 @@ class Responses extends BaseResponses
      * @param mixed $meta
      * @param int $statusCode
      * @param array $headers
-     * @return mixed
+     * @return Response
      */
     public function relationship(
         $data,
@@ -356,7 +366,7 @@ class Responses extends BaseResponses
         $meta = null,
         $statusCode = 200,
         array $headers = []
-    ) {
+    ): Response {
         return $this->getIdentifiersResponse($data, $statusCode, $links, $meta, $headers);
     }
 
@@ -366,7 +376,7 @@ class Responses extends BaseResponses
      * @param $links
      * @param $meta
      * @param array $headers
-     * @return mixed
+     * @return Response
      */
     public function getIdentifiersResponse(
         $data,
@@ -374,9 +384,9 @@ class Responses extends BaseResponses
         $links = null,
         $meta = null,
         array $headers = []
-    ) {
+    ): Response {
         if ($data instanceof PageInterface) {
-            list ($data, $meta, $links) = $this->extractPage($data, $meta, $links);
+            [$data, $meta, $links] = $this->extractPage($data, $meta, $links);
         }
 
         return parent::getIdentifiersResponse($data, $statusCode, $links, $meta, $headers);
@@ -388,9 +398,9 @@ class Responses extends BaseResponses
      * @param Error|ErrorInterface|array $error
      * @param int|null $defaultStatusCode
      * @param array $headers
-     * @return mixed
+     * @return Response
      */
-    public function error($error, int $defaultStatusCode = null, array $headers = [])
+    public function error($error, int $defaultStatusCode = null, array $headers = []): Response
     {
         if (!$error instanceof ErrorInterface) {
             $error = $this->factory->createError(
@@ -411,9 +421,10 @@ class Responses extends BaseResponses
      * @param iterable $errors
      * @param int|null $defaultStatusCode
      * @param array $headers
-     * @return mixed
+     *
+     * @return Response
      */
-    public function errors(iterable $errors, int $defaultStatusCode = null, array $headers = [])
+    public function errors(iterable $errors, int $defaultStatusCode = null, array $headers = []): Response
     {
         $errors = $this->factory->createErrors($errors);
         $statusCode = Helpers::httpErrorStatus($errors, $defaultStatusCode);
@@ -426,9 +437,9 @@ class Responses extends BaseResponses
      * @param array $links
      * @param null $meta
      * @param array $headers
-     * @return mixed
+     * @return Response
      */
-    protected function getResourceResponse($resource, array $links = [], $meta = null, array $headers = [])
+    protected function getResourceResponse($resource, array $links = [], $meta = null, array $headers = []): Response
     {
         if ($this->isNoContent($resource, $links, $meta)) {
             return $this->noContent();
@@ -518,9 +529,15 @@ class Responses extends BaseResponses
     }
 
     /**
-     * @inheritdoc
+     * Create HTTP response.
+     *
+     * @param string|null $content
+     * @param int $statusCode
+     * @param array $headers
+     *
+     * @return Response
      */
-    protected function createResponse($content, $statusCode, array $headers)
+    protected function createResponse($content, $statusCode, array $headers): Response
     {
         return response($content, $statusCode, $headers);
     }

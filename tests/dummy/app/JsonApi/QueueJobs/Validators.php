@@ -31,7 +31,7 @@ class Validators extends AbstractValidators
     /**
      * @inheritDoc
      */
-    protected function rules($record = null): array
+    protected function rules($record, array $data): array
     {
         throw new RuntimeException('Not implemented.');
     }

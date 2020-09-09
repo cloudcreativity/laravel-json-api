@@ -54,7 +54,7 @@ class HasOneTest extends TestCase
                 'email' => $user->email,
                 'password' => 'secret',
                 // @see https://github.com/cloudcreativity/laravel-json-api/issues/262
-                'password-confirmation' => 'secret',
+                'passwordConfirmation' => 'secret',
             ],
             'relationships' => [
                 'phone' => [
@@ -64,7 +64,7 @@ class HasOneTest extends TestCase
         ];
 
         $expected = $data;
-        unset($expected['attributes']['password'], $expected['attributes']['password-confirmation']);
+        unset($expected['attributes']['password'], $expected['attributes']['passwordConfirmation']);
 
         $id = $this
             ->doCreate($data, ['include' => 'phone'])
@@ -81,8 +81,8 @@ class HasOneTest extends TestCase
     public function confirmationProvider(): array
     {
         return [
-            ['password-confirmation', 'foo'],
-            ['password-confirmation', null],
+            ['passwordConfirmation', 'foo'],
+            ['passwordConfirmation', null],
             ['password', 'foo'],
         ];
     }
@@ -104,7 +104,7 @@ class HasOneTest extends TestCase
                 'name' => $user->name,
                 'email' => $user->email,
                 'password' => 'secret',
-                'password-confirmation' => 'secret',
+                'passwordConfirmation' => 'secret',
             ],
             'relationships' => [
                 'phone' => [
@@ -116,7 +116,7 @@ class HasOneTest extends TestCase
         $expected = [
             'status' => '422',
             'source' => [
-                'pointer' => '/data/attributes/password-confirmation',
+                'pointer' => '/data/attributes/passwordConfirmation',
             ],
         ];
 
@@ -141,7 +141,7 @@ class HasOneTest extends TestCase
                 'name' => $user->name,
                 'email' => $user->email,
                 'password' => 'secret',
-                'password-confirmation' => 'secret',
+                'passwordConfirmation' => 'secret',
             ],
             'relationships' => [
                 'phone' => [
@@ -154,7 +154,7 @@ class HasOneTest extends TestCase
         ];
 
         $expected = $data;
-        unset($expected['attributes']['password'], $expected['attributes']['password-confirmation']);
+        unset($expected['attributes']['password'], $expected['attributes']['passwordConfirmation']);
 
         $id = $this
             ->doCreate($data, ['include' => 'phone'])

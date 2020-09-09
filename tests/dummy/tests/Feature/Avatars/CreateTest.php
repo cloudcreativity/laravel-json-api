@@ -40,16 +40,17 @@ class CreateTest extends TestCase
 
         $expected = [
             'type' => 'avatars',
-            'attributes' => ['media-type' => 'image/jpeg'],
+            'attributes' => ['mediaType' => 'image/jpeg'],
         ];
 
         $this->actingAs($user, 'api');
 
         $response = $this
             ->jsonApi()
+            ->includePaths('user')
             ->contentType($contentType)
-            ->content(['avatar' => $file])
-            ->post('/api/v1/avatars?include=user');
+            ->withPayload(['avatar' => $file])
+            ->post('/api/v1/avatars');
 
         $id = $response
             ->assertCreatedWithServerId(url('/api/v1/avatars'), $expected)

@@ -2,6 +2,49 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## [3.0.0] - 2020-09-09
+
+### Added
+- [#545](https://github.com/cloudcreativity/laravel-json-api/issues/545)
+The request test builder now supports testing requests that do not have JSON API request content,
+but expect a JSON API response. For example, a file upload that results in a JSON API resource
+in the response body can be tested using:
+`$this->jsonApi()->asMultiPartFormData()->withPayload($data)->post('/api/v1/avatars');`.
+
+### Changed
+- Minimum PHP version is now `7.3`.
+- Minimum Laravel version is now `8.0`.
+- [#497](https://github.com/cloudcreativity/laravel-json-api/issues/497) and
+[#529](https://github.com/cloudcreativity/laravel-json-api/pull/529)
+**BREAKING:** The method signature of the `AbstractValidators::rules()` method has changed,
+so that the method has access to the data that will be validated.
+- [#393](https://github.com/cloudcreativity/laravel-json-api/issues/393)
+**BREAKING:** when using the `SoftDeletesModel` trait on an adapter, the expected JSON API field
+for the soft delete attribute now defaults to the camel-case version of the model column. For example,
+column `deleted_at` previously defaulted to the JSON API field `deleted-at`, whereas now it will
+default to `deletedAt`. To continue to use dash-case, set the `softDeleteField` property on your adapter.
+
+## [2.2.0] - 2020-09-09
+
+### Added
+- [#549](https://github.com/cloudcreativity/laravel-json-api/issues/549)
+Can now add sort methods to an Eloquent adapter if sorting is more complex than just sorting by
+a column value.
+
+### Fixed
+- The error translator will now detect if the translated value is identical to the translation
+key path, and return `null` when it is. This fixes behaviour that changed in Laravel 7.28.
+
+## [2.1.0] - 2020-09-04
+
+### Added
+- [#538](https://github.com/cloudcreativity/laravel-json-api/issues/538)
+New JSON API exception class that accepts the new error objects from this package.
+It is recommended that you use `CloudCreativity\LaravelJsonApi\Exceptions\JsonApiException`
+combined with the `CloudCreativity\LaravelJsonApi\Document\Error\Error`. It is not
+recommended to use the `Neomerx\JsonApi\Exceptions\JsonApiException` class as support
+for this exception class will be removed in a future version.
+
 ## [2.0.0] - 2020-06-17
 
 ### Added

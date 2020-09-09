@@ -31,13 +31,13 @@ class CreateTest extends TestCase
         $resource = [
             'type' => 'posts',
             'attributes' => [
-                'created-at' => null,
+                'createdAt' => null,
                 'content' => $post->content,
-                'deleted-at' => null,
+                'deletedAt' => null,
                 'published' => $post->published_at,
                 'slug' => $post->slug,
                 'title' => $post->title,
-                'updated-at' => null,
+                'updatedAt' => null,
             ],
             'relationships' => [
                 'author' => [
@@ -66,9 +66,9 @@ class CreateTest extends TestCase
         $resource = [
             'type' => 'posts',
             'attributes' => [
-                'created-at' => null,
-                'updated-at' => null,
-                'deleted-at' => null,
+                'createdAt' => null,
+                'updatedAt' => null,
+                'deletedAt' => null,
                 'title' => $post->title,
                 'slug' => $post->slug,
                 'content' => $post->content,
@@ -147,9 +147,9 @@ class CreateTest extends TestCase
             'data' => [
                 'type' => 'posts',
                 'attributes' => [
-                    'created-at' => null,
-                    'updated-at' => null,
-                    'deleted-at' => null,
+                    'createdAt' => null,
+                    'updatedAt' => null,
+                    'deletedAt' => null,
                     'title' => $post->title,
                     'slug' => $post->slug,
                     'content' => $post->content,
@@ -193,9 +193,9 @@ class CreateTest extends TestCase
                 'type' => 'posts',
                 'id' => (string) $post->getRouteKey(),
                 'attributes' => [
-                    'created-at' => $post->created_at->toAtomString(),
-                    'updated-at' => $post->updated_at->toAtomString(),
-                    'deleted-at' => null,
+                    'createdAt' => $post->created_at->toJSON(),
+                    'updatedAt' => $post->updated_at->toJSON(),
+                    'deletedAt' => null,
                     'title' => $post->title,
                     'slug' => $post->slug,
                     'content' => $post->content,

@@ -26,20 +26,20 @@ class Validators extends AbstractValidators
     /**
      * @var array
      */
-    protected $allowedIncludePaths = ['uploaded-by'];
+    protected $allowedIncludePaths = ['uploadedBy'];
 
     /**
      * @var array
      */
     protected $allowedSortParameters = [
-        'created-at',
-        'updated-at',
+        'createdAt',
+        'updatedAt',
     ];
 
     /**
      * @inheritDoc
      */
-    protected function rules($record = null): array
+    protected function rules($record, array $data): array
     {
         return [
             'id' => 'required|regex:/' . Uuid::VALID_PATTERN . '/',

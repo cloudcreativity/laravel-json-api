@@ -17,11 +17,14 @@
 
 namespace DummyApp\JsonApi\Suppliers;
 
+use CloudCreativity\LaravelJsonApi\Schema\DashCaseRelationUrls;
 use DummyApp\Supplier;
 use Neomerx\JsonApi\Schema\SchemaProvider;
 
 class Schema extends SchemaProvider
 {
+
+    use DashCaseRelationUrls;
 
     /**
      * @var string
@@ -55,10 +58,10 @@ class Schema extends SchemaProvider
     public function getRelationships($resource, $isPrimary, array $includeRelationships)
     {
         return [
-            'user-history' => [
+            'userHistory' => [
                 self::SHOW_SELF => true,
                 self::SHOW_RELATED => true,
-                self::SHOW_DATA => isset($includeRelationships['user-history']),
+                self::SHOW_DATA => isset($includeRelationships['userHistory']),
                 self::DATA => static function () use ($resource) {
                     return $resource->userHistory;
                 },

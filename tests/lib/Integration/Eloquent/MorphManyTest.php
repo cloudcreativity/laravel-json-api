@@ -270,7 +270,7 @@ class MorphManyTest extends TestCase
             'commentable_id' => $post->getKey(),
         ]);
 
-        $this->doReadRelated($post, 'comments', ['filter' => ['created-by' => $user->getRouteKey()]])
+        $this->doReadRelated($post, 'comments', ['filter' => ['createdBy' => $user->getRouteKey()]])
             ->willSeeType('comments')
             ->assertFetchedMany($expected);
     }
@@ -279,8 +279,9 @@ class MorphManyTest extends TestCase
     {
         $post = factory(Post::class)->create();
 
-        $this->doReadRelated($post, 'comments', ['filter' => ['created-by' => 'foo']])->assertError(400, [
-            'source' => ['parameter' => 'filter.created-by'],
+        $this->doReadRelated($post, 'comments', ['filter' => ['createdBy' => 'foo']])->assertErrorStatus([
+            'status' => '400',
+            'source' => ['parameter' => 'filter.createdBy'],
         ]);
     }
 
@@ -327,7 +328,7 @@ class MorphManyTest extends TestCase
             return ['type' => 'users', 'id' => (string) $comment->user_id];
         })->all();
 
-        $this->doReadRelated($post, 'comments', ['include' => 'created-by'])
+        $this->doReadRelated($post, 'comments', ['include' => 'createdBy'])
             ->willSeeType('comments')
             ->assertFetchedMany($comments)
             ->assertIncluded($expected);

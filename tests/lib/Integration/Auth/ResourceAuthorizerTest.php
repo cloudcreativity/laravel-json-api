@@ -117,8 +117,8 @@ class ResourceAuthorizerTest extends TestCase
             'type' => 'tags',
             'id' => $tag->getRouteKey(),
             'attributes' => [
-                'created-at' => $tag->created_at->toAtomString(),
-                'updated-at' => $tag->updated_at->toAtomString(),
+                'createdAt' => $tag->created_at,
+                'updatedAt' => $tag->updated_at,
                 'name' => $tag->name,
             ],
             'links' => [

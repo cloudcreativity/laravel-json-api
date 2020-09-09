@@ -18,8 +18,10 @@
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration;
 
 use Carbon\Carbon;
+use CloudCreativity\LaravelJsonApi\Document\Error\Error;
 use CloudCreativity\LaravelJsonApi\Exceptions\DocumentRequiredException;
 use CloudCreativity\LaravelJsonApi\Exceptions\InvalidJsonException;
+use CloudCreativity\LaravelJsonApi\Exceptions\JsonApiException;
 use CloudCreativity\LaravelJsonApi\Exceptions\ResourceNotFoundException;
 use DummyApp\Post;
 use Illuminate\Contracts\Validation\Validator;
@@ -28,8 +30,8 @@ use Illuminate\Session\TokenMismatchException;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\MessageBag;
 use Illuminate\Validation\ValidationException;
-use Neomerx\JsonApi\Document\Error;
-use Neomerx\JsonApi\Exceptions\JsonApiException;
+use Neomerx\JsonApi\Document\Error as NeomerxError;
+use Neomerx\JsonApi\Exceptions\JsonApiException as NeomerxException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class ErrorsTest extends TestCase
@@ -239,17 +241,49 @@ class ErrorsTest extends TestCase
      *
      * @see https://github.com/cloudcreativity/laravel-json-api/issues/329
      */
-    public function testUnexpectedJsonApiException()
+    public function testNeomerxJsonApiException()
     {
         config()->set('app.debug', true);
 
         Route::get('/test', function () {
-            throw new JsonApiException(new Error(null, null, 422, null, null, 'My foobar error message.'), 418);
+            throw new NeomerxException(new NeomerxError(
+                null,
+                null,
+                422,
+                null,
+                null,
+                'My foobar error message.'
+            ), 418);
         });
 
         $this->get('/test', ['Accept' => '*/*'])
             ->assertStatus(418)
             ->assertSee('My foobar error message.');
+    }
+
+    public function testJsonApiException(): void
+    {
+        Route::get('/test', function () {
+            throw JsonApiException::make(Error::fromArray([
+                'status' => '418',
+                'detail' => "Hello, I'm a teapot.",
+            ]))->withHeaders(['X-Foo' => 'Bar']);
+        });
+
+        $expected = [
+            'errors' => [
+                [
+                    'status' => '418',
+                    'detail' => "Hello, I'm a teapot.",
+                ],
+            ],
+        ];
+
+        $this->get('/test')
+            ->assertStatus(418)
+            ->assertHeader('Content-Type', 'application/vnd.api+json')
+            ->assertHeader('X-Foo', 'Bar')
+            ->assertExactJson($expected);
     }
 
     public function testMaintenanceMode()

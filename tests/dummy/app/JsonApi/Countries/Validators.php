@@ -27,8 +27,8 @@ class Validators extends AbstractValidators
      * @var array
      */
     protected $allowedSortParameters = [
-        'created-at',
-        'updated-at',
+        'createdAt',
+        'updatedAt',
         'name',
         'code',
     ];
@@ -41,7 +41,7 @@ class Validators extends AbstractValidators
     /**
      * @inheritDoc
      */
-    protected function rules($record = null): array
+    protected function rules($record, array $data): array
     {
         return [
             'name' => "required|string",
