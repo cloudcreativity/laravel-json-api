@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file. This projec
 
 ## Unreleased
 
+### Added
+- [#549](https://github.com/cloudcreativity/laravel-json-api/issues/549)
+Can now add sort methods to an Eloquent adapter if sorting is more complex than just sorting by
+a column value.
+
 ### Fixed
 - The error translator will now detect if the translated value is identical to the translation
 key path, and return `null` when it is. This fixes behaviour that changed in Laravel 7.28.

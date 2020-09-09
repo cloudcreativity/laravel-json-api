@@ -101,13 +101,21 @@ trait SortsModels
     /**
      * @param Builder $query
      * @param SortParameterInterface $param
+     * @return void
      */
     protected function sortBy($query, SortParameterInterface $param)
     {
-        $column = $this->getQualifiedSortColumn($query, $param->getField());
-        $order = $param->isAscending() ? 'asc' : 'desc';
+        $direction = $param->isAscending() ? 'asc' : 'desc';
+        $method = 'sortBy' . Str::classify($param->getField());
 
-        $query->orderBy($column, $order);
+        if (method_exists($this, $method)) {
+            $this->{$method}($query, $direction);
+            return;
+        }
+
+        $column = $this->getQualifiedSortColumn($query, $param->getField());
+
+        $query->orderBy($column, $direction);
     }
 
     /**

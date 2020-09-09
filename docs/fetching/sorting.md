@@ -142,3 +142,25 @@ class Adapter extends AbstractAdapter
 
 }
 ```
+
+To implement more complex sorting where you need access to the Eloquent query builder instance,
+you can add methods to your adapter. The method name must follow the pattern `sortBy<Name>`,
+where `<Name>` is the camel cased name of the JSON API sort field.
+
+For example, if you had a JSON API sort field called `likes`, you could implement the
+`sortByLikes` method on your adapter. This will receive the query builder instance and
+the direction of the sort (either `asc` or `desc`).
+
+```php
+class Adapter extends AbstractAdapter
+{
+    // ...
+
+    protected function sortByLikes($query, $direction): void
+    {
+        $query->withCount('likes')
+            ->orderBy('likes_count', $direction);
+    }
+
+}
+```
