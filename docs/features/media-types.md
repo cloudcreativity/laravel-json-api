@@ -463,9 +463,9 @@ for the `posts` and `comments` resources, but not the `tags` resource:
 
 ```php
 JsonApi::register('default')->routes(function ($api, $router) {
-   $api->resource('posts')->contentNegotiator('json');
-   $api->resource('comments')->contentNegotiator('json');
-   $api->resource('tags'); // uses the default content negotiator
+    $api->resource('posts')->contentNegotiator('json');
+    $api->resource('comments')->contentNegotiator('json');
+    $api->resource('tags'); // uses the default content negotiator
 });
 ```
 
