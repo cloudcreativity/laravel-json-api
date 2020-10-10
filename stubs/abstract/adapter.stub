@@ -69,7 +69,7 @@ class DummyClass extends AbstractResourceAdapter
     /**
      * @inheritDoc
      */
-    public function findMany(array $resourceIds)
+    public function findMany(iterable $resourceIds): iterable
     {
         // TODO: Implement findMany() method.
     }
