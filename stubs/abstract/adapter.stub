@@ -53,7 +53,7 @@ class DummyClass extends AbstractResourceAdapter
     /**
      * @inheritDoc
      */
-    public function exists($resourceId)
+    public function exists($resourceId): bool
     {
         // TODO: Implement exists() method.
     }
