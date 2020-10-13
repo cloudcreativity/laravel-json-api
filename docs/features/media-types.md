@@ -461,13 +461,13 @@ To use a re-usable content negotiator on specific resource types, use the `conte
 when registering the resource. For example, if we wanted to use the `json` content negotiator only
 for the `posts` and `comments` resources, but not the `tags` resource:
 
- ```php
- JsonApi::register('default')->routes(function ($api, $router) {
-     $api->resource('posts')->contentNegotiator('json');
-     $api->resource('comments')->contentNegotiator('json');
-     $api->resource('tags'); // uses the default content negotiator
- });
- ```
+```php
+JsonApi::register('default')->routes(function ($api, $router) {
+    $api->resource('posts')->contentNegotiator('json');
+    $api->resource('comments')->contentNegotiator('json');
+    $api->resource('tags'); // uses the default content negotiator
+});
+```
 
 If you have generated a resource-specific content negotiator, it will be automatically detected so there
 is no need to configure it.
