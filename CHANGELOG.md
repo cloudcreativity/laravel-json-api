@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## [3.0.1] - 2020-10-14
+
+### Fixed
+- [#560](https://github.com/cloudcreativity/laravel-json-api/pull/560)
+Fixed type-hinting in abstract adapter stub.
+
 ## [3.0.0] - 2020-09-09
 
 ### Added
