@@ -93,12 +93,21 @@ class JsonApiException extends Exception implements HttpExceptionInterface, Resp
     }
 
     /**
+     * @return Errors
+     */
+    public function getErrors(): Errors
+    {
+        return $this->errors
+            ->withHeaders($this->headers);
+    }
+
+    /**
      * @inheritDoc
      */
     public function toResponse($request)
     {
-        return $this->errors
-            ->withHeaders($this->headers)
+        return $this
+            ->getErrors()
             ->toResponse($request);
     }
 

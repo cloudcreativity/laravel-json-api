@@ -26,6 +26,7 @@ use CloudCreativity\LaravelJsonApi\Exceptions\ResourceNotFoundException;
 use DummyApp\Post;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\Exceptions\MaintenanceModeException;
+use Illuminate\Http\Response;
 use Illuminate\Session\TokenMismatchException;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\MessageBag;
@@ -261,7 +262,7 @@ class ErrorsTest extends TestCase
             ->assertSee('My foobar error message.');
     }
 
-    public function testJsonApiException(): void
+    public function testJsonApiException1(): void
     {
         Route::get('/test', function () {
             throw JsonApiException::make(Error::fromArray([
@@ -283,6 +284,35 @@ class ErrorsTest extends TestCase
             ->assertStatus(418)
             ->assertHeader('Content-Type', 'application/vnd.api+json')
             ->assertHeader('X-Foo', 'Bar')
+            ->assertExactJson($expected);
+    }
+
+    /**
+     * @see https://github.com/cloudcreativity/laravel-json-api/issues/566
+     */
+    public function testJsonApiException2(): void
+    {
+        Route::get('/test', function () {
+            $error = Error::fromArray([
+                'title' => 'The language you want to use is not active',
+                'status' => Response::HTTP_UNPROCESSABLE_ENTITY,
+            ]);
+
+            throw new JsonApiException($error);
+        });
+
+        $expected = [
+            'errors' => [
+                [
+                    'status' => '422',
+                    'title' => 'The language you want to use is not active',
+                ],
+            ],
+        ];
+
+        $this->get('/test')
+            ->assertStatus(422)
+            ->assertHeader('Content-Type', 'application/vnd.api+json')
             ->assertExactJson($expected);
     }
 
