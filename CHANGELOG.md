@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
-## Unreleased
+## [3.1.0] - 2020-10-28
 
 ### Added
 - [#563](https://github.com/cloudcreativity/laravel-json-api/pull/563)
