@@ -2,6 +2,20 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## [3.1.0] - 2020-10-28
+
+### Added
+- [#563](https://github.com/cloudcreativity/laravel-json-api/pull/563)
+Added Dutch translation files for validation and errors.
+
+### Fixed
+- [#566](https://github.com/cloudcreativity/laravel-json-api/issues/566)
+Ensure the exception parser correctly parses an instance of this package's `JsonApiException`.
+- Exception parser now correctly uses the Symfony `HttpExceptionInterface` instead of the
+actual `HttpException` instance. Although this change would break consuming applications
+that have extended the `ExceptionParser` class, it is considered a bug fix as it should
+have been type-hinting the interface in `v3.0.0`.
+
 ## [3.0.1] - 2020-10-14
 
 ### Fixed

@@ -21,7 +21,6 @@ use CloudCreativity\LaravelJsonApi\Contracts\Document\DocumentInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Exceptions\ExceptionParserInterface;
 use CloudCreativity\LaravelJsonApi\Document\Error\Translator;
 use CloudCreativity\LaravelJsonApi\Encoder\Neomerx\Document\Errors as NeomerxErrors;
-use Exception;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Response;
@@ -29,8 +28,7 @@ use Illuminate\Session\TokenMismatchException;
 use Illuminate\Validation\ValidationException as IlluminateValidationException;
 use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
 use Neomerx\JsonApi\Document\Error;
-use Neomerx\JsonApi\Exceptions\JsonApiException;
-use Symfony\Component\HttpKernel\Exception\HttpException;
+use Neomerx\JsonApi\Exceptions\JsonApiException as NeomerxJsonApiException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 /**
@@ -62,6 +60,10 @@ class ExceptionParser implements ExceptionParserInterface
     public function parse(\Throwable $e): DocumentInterface
     {
         if ($e instanceof JsonApiException) {
+            return $e->getErrors();
+        }
+
+        if ($e instanceof NeomerxJsonApiException) {
             return NeomerxErrors::cast($e);
         }
 
@@ -95,7 +97,7 @@ class ExceptionParser implements ExceptionParserInterface
             return [$this->translator->tokenMismatch()];
         }
 
-        if ($e instanceof HttpException) {
+        if ($e instanceof HttpExceptionInterface) {
             return [$this->getHttpError($e)];
         }
 
@@ -112,10 +114,10 @@ class ExceptionParser implements ExceptionParserInterface
     }
 
     /**
-     * @param HttpException $e
+     * @param HttpExceptionInterface $e
      * @return ErrorInterface
      */
-    protected function getHttpError(HttpException $e): ErrorInterface
+    protected function getHttpError(HttpExceptionInterface $e): ErrorInterface
     {
         $status = $e->getStatusCode();
         $title = $this->getDefaultTitle($status);
