@@ -25,6 +25,7 @@ use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Str;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -111,6 +112,52 @@ class Test extends TestCase
         });
 
         $this->assertMatch($method, $url, '\\' . JsonApiController::class . $action);
+    }
+
+    /**
+     * @return array
+     */
+    public function uriProvider(): array
+    {
+        return [
+            'index' => ['GET', '/api/v1/blog_posts', '@index'],
+            'create' => ['POST', '/api/v1/blog_posts', '@create'],
+            'read' => ['GET', '/api/v1/blog_posts/1', '@read'],
+            'update' => ['PATCH', '/api/v1/blog_posts/1', '@update'],
+            'delete' => ['DELETE', '/api/v1/blog_posts/1', '@delete'],
+            'has-one related' => ['GET', '/api/v1/blog_posts/1/author', '@readRelatedResource'],
+            'has-one read' => ['GET', '/api/v1/blog_posts/1/relationships/author', '@readRelationship'],
+            'has-one replace' => ['PATCH', '/api/v1/blog_posts/1/relationships/author', '@replaceRelationship'],
+            'has-many related' => ['GET', '/api/v1/blog_posts/1/post_comments', '@readRelatedResource'],
+            'has-many read' => ['GET', '/api/v1/blog_posts/1/relationships/post_comments', '@readRelationship'],
+            'has-many replace' => ['PATCH', '/api/v1/blog_posts/1/relationships/post_comments', '@replaceRelationship'],
+            'has-many add' => ['POST', '/api/v1/blog_posts/1/relationships/post_comments', '@addToRelationship'],
+            'has-many remove' => ['DELETE', '/api/v1/blog_posts/1/relationships/post_comments', '@removeFromRelationship'],
+        ];
+    }
+
+    /**
+     * @param $method
+     * @param $url
+     * @param $action
+     * @dataProvider uriProvider
+     */
+    public function testUriIsDifferentFromResourceType(string $method, string $url, string $action): void
+    {
+        $this->withFluentRoutes()->routes(function (RouteRegistrar $api) {
+            $api->resource('posts')->uri('blog_posts')->relationships(function (RelationshipsRegistration $rel) {
+                $rel->hasOne('author');
+                $rel->hasMany('tags');
+                $rel->hasMany('comments')->uri('post_comments');
+            });
+        });
+
+        $route = $this->assertMatch($method, $url, '\\' . JsonApiController::class . $action);
+        $this->assertSame('posts', $route->parameter('resource_type'));
+
+        if (Str::contains($url, 'post_comments')) {
+            $this->assertSame('comments', $route->parameter('relationship_name'));
+        }
     }
 
     /**
@@ -991,7 +1038,7 @@ class Test extends TestCase
      */
     private function assertRoutes(array $routes)
     {
-        foreach ($routes as list($method, $url, $expected)) {
+        foreach ($routes as [$method, $url, $expected]) {
             $this->assertRoute($method, $url, $expected);
         }
     }
