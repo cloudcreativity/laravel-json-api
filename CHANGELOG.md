@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. This projec
 
 ## Unreleased
 
+### Added
+- [#570](https://github.com/cloudcreativity/laravel-json-api/issues/570)
+Exception parser now handles the Symfony request exception interface.
+
 ### Fixed
 - Fixed qualifying column for morph-to-many relations. This was caused by Laravel introducing
 a breaking change of adding a `qualifyColumn` method to the relation builder. Previously
