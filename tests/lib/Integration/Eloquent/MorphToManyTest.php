@@ -238,7 +238,8 @@ class MorphToManyTest extends TestCase
 
         $post->tags()->sync($tags);
 
-        $this->doReadRelated($post, 'tags')
+        $this->withoutExceptionHandling()
+            ->doReadRelated($post, 'tags')
             ->willSeeType('tags')
             ->assertFetchedMany($expected);
     }

@@ -127,7 +127,7 @@ trait SortsModels
     {
         $key = $this->getSortColumn($field, $query->getModel());
 
-        return $query->qualifyColumn($key);
+        return $query->getModel()->qualifyColumn($key);
     }
 
     /**

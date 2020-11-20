@@ -2,6 +2,13 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## Unreleased
+
+### Fixed
+- Fixed qualifying column for morph-to-many relations. This was caused by Laravel introducing
+a breaking change of adding a `qualifyColumn` method to the relation builder. Previously
+calling `qualifyColumn` on the relation forwarded the call to the model.
+
 ## [3.1.0] - 2020-10-28
 
 ### Added
