@@ -33,6 +33,7 @@ final class ResourceRegistrar
     const KEYWORD_RELATIONSHIPS = 'relationships';
     const KEYWORD_PROCESSES = 'queue-jobs';
     const PARAM_RESOURCE_TYPE = 'resource_type';
+	const PARAM_RESOURCE_URI = 'resource_uri';
     const PARAM_RESOURCE_ID = 'record';
     const PARAM_RELATIONSHIP_NAME = 'relationship_name';
     const PARAM_RELATIONSHIP_INVERSE_TYPE = 'relationship_inverse_type';

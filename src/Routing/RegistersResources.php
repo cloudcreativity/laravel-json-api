@@ -101,6 +101,7 @@ trait RegistersResources
         /** @var Route $route */
         $route = $this->router->{$method}($uri, $action);
         $route->defaults(ResourceRegistrar::PARAM_RESOURCE_TYPE, $this->resourceType);
+        $route->defaults(ResourceRegistrar::PARAM_RESOURCE_URI,$this->options['resource_uri']);
 
         if ($idConstraint = $this->idConstraint($uri)) {
             $route->where(ResourceRegistrar::PARAM_RESOURCE_ID, $idConstraint);
