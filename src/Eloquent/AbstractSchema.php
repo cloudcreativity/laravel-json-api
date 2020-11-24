@@ -18,6 +18,8 @@
 
 namespace CloudCreativity\LaravelJsonApi\Eloquent;
 
+use CloudCreativity\LaravelJsonApi\Routing\ResourceRegistrar;
+use Illuminate\Support\Facades\Route;
 use Neomerx\JsonApi\Contracts\Schema\SchemaFactoryInterface;
 use Neomerx\JsonApi\Schema\SchemaProvider;
 
@@ -39,7 +41,11 @@ abstract class AbstractSchema extends SchemaProvider
 
 	public function getUri()
 	{
-		return $this->resourceType;
+		$route = Route::getCurrentRoute();
+		if ($route === null) {
+			return $this->getResourceType();
+		}
+		return $route->parameter(ResourceRegistrar::PARAM_RESOURCE_URI,$this->getResourceType());
 	}
 
 }
