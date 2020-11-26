@@ -103,6 +103,19 @@ final class ResourceRegistration implements Arrayable
     }
 
     /**
+     * Set the URI fragment, if different from the resource type.
+     *
+     * @param string $uri
+     * @return $this
+     */
+    public function uri(string $uri): self
+    {
+        $this->options['resource_uri'] = $uri;
+
+        return $this;
+    }
+
+    /**
      * Add middleware.
      *
      * @param string ...$middleware

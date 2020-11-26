@@ -7,6 +7,9 @@ All notable changes to this project will be documented in this file. This projec
 ### Added
 - [#570](https://github.com/cloudcreativity/laravel-json-api/issues/570)
 Exception parser now handles the Symfony request exception interface.
+- [#507](https://github.com/cloudcreativity/laravel-json-api/issues/507)
+Can now specify the resource type and relationship URIs when registering routes. This allows
+the URI fragment to be different from the resource type or relationship name.
 
 ### Fixed
 - Fixed qualifying column for morph-to-many relations. This was caused by Laravel introducing
