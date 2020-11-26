@@ -168,10 +168,12 @@ final class ResourceRegistrar
      */
     private function attributes(): array
     {
+        $prefix = $this->options['resource_uri'] ?? $this->resourceType;
+
         return [
             'middleware' => $this->middleware(),
             'as' => "{$this->resourceType}.",
-            'prefix' => $this->resourceType,
+            'prefix' => $prefix,
         ];
     }
 

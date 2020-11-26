@@ -1,14 +1,18 @@
 language: php
-dist: trusty
+dist: xenial
 sudo: false
 
 matrix:
   include:
-    - php: "7.3"
+    - php: 7.3
       env:
         - LARAVEL_VERSION=^8.0
         - PHPUNIT_VERSION=^9.0
-    - php: "7.4"
+    - php: 7.4
+      env:
+        - LARAVEL_VERSION=^8.0
+        - PHPUNIT_VERSION=^9.0
+    - php: 8.0snapshot
       env:
         - LARAVEL_VERSION=^8.0
         - PHPUNIT_VERSION=^9.0

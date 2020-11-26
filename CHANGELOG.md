@@ -2,6 +2,21 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## [3.2.0] - 2020-11-26
+
+### Added
+- Package now supports PHP 8.
+- [#570](https://github.com/cloudcreativity/laravel-json-api/issues/570)
+Exception parser now handles the Symfony request exception interface.
+- [#507](https://github.com/cloudcreativity/laravel-json-api/issues/507)
+Can now specify the resource type and relationship URIs when registering routes. This allows
+the URI fragment to be different from the resource type or relationship name.
+
+### Fixed
+- Fixed qualifying column for morph-to-many relations. This was caused by Laravel introducing
+a breaking change of adding a `qualifyColumn` method to the relation builder. Previously
+calling `qualifyColumn` on the relation forwarded the call to the model.
+
 ## [3.1.0] - 2020-10-28
 
 ### Added

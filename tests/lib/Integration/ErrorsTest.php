@@ -33,6 +33,7 @@ use Illuminate\Support\MessageBag;
 use Illuminate\Validation\ValidationException;
 use Neomerx\JsonApi\Document\Error as NeomerxError;
 use Neomerx\JsonApi\Exceptions\JsonApiException as NeomerxException;
+use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class ErrorsTest extends TestCase
@@ -351,6 +352,25 @@ class ErrorsTest extends TestCase
 
         $this->request($ex)
             ->assertErrorStatus($expected)
+            ->assertHeader('Content-Type', 'application/vnd.api+json');
+    }
+
+    /**
+     * The Symfony bad request exception does not implement the HTTP exception
+     * interface, so we need to ensure we handle it.
+     */
+    public function testBadRequestException(): void
+    {
+        $ex = new BadRequestException('The request format is bad.');
+
+        $expected = [
+            'title' => 'Bad Request',
+            'detail' => 'The request format is bad.',
+            'status' => '400',
+        ];
+
+        $this->request($ex)
+            ->assertExactErrorStatus($expected)
             ->assertHeader('Content-Type', 'application/vnd.api+json');
     }
 

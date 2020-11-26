@@ -38,6 +38,17 @@ class RelationshipRegistration implements Arrayable
     }
 
     /**
+     * @param string $uri
+     * @return $this
+     */
+    public function uri(string $uri): self
+    {
+        $this->options['relationship_uri'] = $uri;
+
+        return $this;
+    }
+
+    /**
      * @param string $resourceType
      * @return $this
      */

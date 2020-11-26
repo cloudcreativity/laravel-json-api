@@ -29,6 +29,7 @@ use Illuminate\Validation\ValidationException as IlluminateValidationException;
 use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
 use Neomerx\JsonApi\Document\Error;
 use Neomerx\JsonApi\Exceptions\JsonApiException as NeomerxJsonApiException;
+use Symfony\Component\HttpFoundation\Exception\RequestExceptionInterface;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 /**
@@ -101,6 +102,10 @@ class ExceptionParser implements ExceptionParserInterface
             return [$this->getHttpError($e)];
         }
 
+        if ($e instanceof RequestExceptionInterface) {
+            return [$this->getRequestError($e)];
+        }
+
         return [$this->getDefaultError()];
     }
 
@@ -123,6 +128,22 @@ class ExceptionParser implements ExceptionParserInterface
         $title = $this->getDefaultTitle($status);
 
         return new Error(null, null, $status, null, $title, $e->getMessage() ?: null);
+    }
+
+    /**
+     * @param RequestExceptionInterface|\Throwable $e
+     * @return ErrorInterface
+     */
+    protected function getRequestError(RequestExceptionInterface $e): ErrorInterface
+    {
+        return new Error(
+            null,
+            null,
+            $status = Response::HTTP_BAD_REQUEST,
+            null,
+            $this->getDefaultTitle($status),
+            $e->getMessage() ?: null
+        );
     }
 
     /**
