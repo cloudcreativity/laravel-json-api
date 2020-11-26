@@ -2,9 +2,10 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
-## Unreleased
+## [3.2.0] - 2020-11-26
 
 ### Added
+- Package now supports PHP 8.
 - [#570](https://github.com/cloudcreativity/laravel-json-api/issues/570)
 Exception parser now handles the Symfony request exception interface.
 - [#507](https://github.com/cloudcreativity/laravel-json-api/issues/507)
