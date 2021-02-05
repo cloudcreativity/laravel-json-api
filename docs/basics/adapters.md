@@ -233,7 +233,8 @@ for Eloquent models. The relationship types available are `belongsTo`, `hasOne`,
 | `morphOne` | `hasOne` |
 | `morphMany` | `hasMany` |
 | `morphToMany` | `hasMany` |
-| `morphedByMany` | `morphMany` |
+| `morphedByMany` | `hasMany` |
+| n/a | `morphMany` |
 | n/a | `queriesOne` |
 | n/a | `queriesMany` |
 
@@ -380,8 +381,8 @@ class Adapter extends AbstractAdapter
 
 #### Morph-Many
 
-Use the JSON API `morphMany` relation for an Eloquent `morphedByMany` relation. The `morphMany` relation in effect
-*mixes* multiple different JSON API resource relationships in a single relationship.
+Use the JSON API `morphMany` relation to *mix* multiple different JSON API resource relationships in a single
+relationship.
 
 This is best demonstrated with an example. If our application has a `tags` resource that can be linked to either
 `videos` or `posts`, our `tags` adapter would define a `taggables` relation as follows:
