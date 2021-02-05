@@ -143,6 +143,12 @@ class UpdateTest extends TestCase
                         'related' => "{$self}/phone",
                     ],
                 ],
+                'roles' => [
+                    'links' => [
+                        'self' => "{$self}/relationships/roles",
+                        'related' => "{$self}/roles",
+                    ],
+                ],
             ],
         ];
 

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-namespace DummyApp\JsonApi\Users;
+namespace DummyApp\JsonApi\Roles;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorInterface;
 use CloudCreativity\LaravelJsonApi\Validation\AbstractValidators;
@@ -30,49 +30,20 @@ class Validators extends AbstractValidators
         'createdAt',
         'updatedAt',
         'name',
-        'email',
     ];
 
     /**
      * @var array
      */
-    protected $allowedIncludePaths = [
-        'phone',
-        'roles',
-    ];
-
-    /**
-     * @inheritdoc
-     */
-    public function update($record, array $document): ValidatorInterface
-    {
-        $validator = parent::update($record, $document);
-
-        $validator->sometimes('password-confirmation', 'required_with:password|same:password', function ($input) {
-            return isset($input['password']);
-        });
-
-        return $validator;
-    }
+    protected $allowedIncludePaths = [];
 
     /**
      * @inheritDoc
      */
     protected function rules($record, array $data): array
     {
-        $rules = [
-            'name' => 'required|string',
-            'password' => [
-                $record ? 'filled' : 'required',
-                'string',
-            ],
-        ];
-
-        if (!$record) {
-            $rules['passwordConfirmation'] = 'required_with:password|same:password';
-        }
-
-        return $rules;
+        // @TODO
+        return [];
     }
 
     /**

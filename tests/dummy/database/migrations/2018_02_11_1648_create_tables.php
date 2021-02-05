@@ -40,6 +40,18 @@ class CreateTables extends Migration
             $table->unsignedInteger('supplier_id')->nullable();
         });
 
+        Schema::create('roles', function (Blueprint $table) {
+            $table->increments('id');
+            $table->timestamps();
+            $table->string('name');
+        });
+
+        Schema::create('role_user', function (Blueprint $table) {
+            $table->unsignedInteger('user_id');
+            $table->unsignedInteger('role_id');
+            $table->primary(['user_id', 'role_id']);
+        });
+
         Schema::create('avatars', function (Blueprint $table) {
             $table->increments('id');
             $table->timestamps();
@@ -145,5 +157,8 @@ class CreateTables extends Migration
         Schema::dropIfExists('downloads');
         Schema::dropIfExists('suppliers');
         Schema::dropIfExists('histories');
+        Schema::dropIfExists('role_user');
+        Schema::dropIfExists('roles');
+        Schema::dropIfExists('users');
     }
 }

@@ -52,6 +52,7 @@ JsonApi::register('v1', [], function (RouteRegistrar $api) {
 
     $api->resource('users', [
         'has-one' => 'phone',
+        'has-many' => 'roles',
     ]);
 
     $api->resource('videos');

@@ -74,6 +74,7 @@ return [
         'images' => \DummyApp\Image::class,
         'phones' => \DummyApp\Phone::class,
         'posts' => \DummyApp\Post::class,
+        'roles' => \DummyApp\Role::class,
         'sites' => \DummyApp\Entities\Site::class,
         'suppliers' => \DummyApp\Supplier::class,
         'tags' => \DummyApp\Tag::class,

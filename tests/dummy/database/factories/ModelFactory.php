@@ -116,6 +116,11 @@ $factory->state(DummyApp\Post::class, 'published', function (Faker $faker) {
     ];
 });
 
+/** Role */
+$factory->define(DummyApp\Role::class, function (Faker $faker) {
+    return ['name' => $faker->colorName];
+});
+
 /** Tag */
 $factory->define(DummyApp\Tag::class, function (Faker $faker) {
     return [

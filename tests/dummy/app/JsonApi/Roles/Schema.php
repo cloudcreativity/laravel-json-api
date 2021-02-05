@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-namespace DummyApp\JsonApi\Users;
+namespace DummyApp\JsonApi\Roles;
 
-use DummyApp\User;
+use DummyApp\Role;
 use Neomerx\JsonApi\Schema\SchemaProvider;
 
 class Schema extends SchemaProvider
@@ -26,10 +26,10 @@ class Schema extends SchemaProvider
     /**
      * @var string
      */
-    protected $resourceType = 'users';
+    protected $resourceType = 'roles';
 
     /**
-     * @param User $resource
+     * @param Role $resource
      * @return string
      */
     public function getId($resource)
@@ -38,21 +38,20 @@ class Schema extends SchemaProvider
     }
 
     /**
-     * @param User $resource
+     * @param Role $resource
      * @return array
      */
     public function getAttributes($resource)
     {
         return [
             'createdAt' => $resource->created_at,
-            'email' => $resource->email,
             'name' => $resource->name,
             'updatedAt' => $resource->updated_at,
         ];
     }
 
     /**
-     * @param User $resource
+     * @param Role $resource
      * @param bool $isPrimary
      * @param array $includeRelationships
      * @return array
@@ -60,21 +59,10 @@ class Schema extends SchemaProvider
     public function getRelationships($resource, $isPrimary, array $includeRelationships)
     {
         return [
-            'phone' => [
+            'users' => [
                 self::SHOW_SELF => true,
                 self::SHOW_RELATED => true,
-                self::SHOW_DATA => isset($includeRelationships['phone']),
-                self::DATA => function () use ($resource) {
-                    return $resource->phone;
-                },
-            ],
-            'roles' => [
-                self::SHOW_SELF => true,
-                self::SHOW_RELATED => true,
-                self::SHOW_DATA => isset($includeRelationships['roles']),
-                self::DATA => function () use ($resource) {
-                    return $resource->roles;
-                },
+                self::SHOW_DATA => false,
             ],
         ];
     }

@@ -15,22 +15,16 @@
  * limitations under the License.
  */
 
-namespace DummyApp\JsonApi\Users;
+namespace DummyApp\JsonApi\Roles;
 
 use CloudCreativity\LaravelJsonApi\Eloquent\AbstractAdapter;
 use CloudCreativity\LaravelJsonApi\Eloquent\HasMany;
-use CloudCreativity\LaravelJsonApi\Eloquent\HasOne;
 use CloudCreativity\LaravelJsonApi\Pagination\StandardStrategy;
-use DummyApp\User;
+use DummyApp\Role;
 use Illuminate\Support\Collection;
 
 class Adapter extends AbstractAdapter
 {
-
-    /**
-     * @var array
-     */
-    protected $with = ['phone'];
 
     /**
      * Adapter constructor.
@@ -39,21 +33,13 @@ class Adapter extends AbstractAdapter
      */
     public function __construct(StandardStrategy $paging)
     {
-        parent::__construct(new User(), $paging);
-    }
-
-    /**
-     * @return HasOne
-     */
-    protected function phone(): HasOne
-    {
-        return $this->hasOne();
+        parent::__construct(new Role(), $paging);
     }
 
     /**
      * @return HasMany
      */
-    protected function roles(): HasMany
+    protected function users(): HasMany
     {
         return $this->hasMany();
     }
@@ -64,20 +50,8 @@ class Adapter extends AbstractAdapter
     protected function filter($query, Collection $filters)
     {
         if ($name = $filters->get('name')) {
-            $query->where('users.name', 'like', "%{$name}%");
+            $query->where('name', 'like', "{$name}%");
         }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function deserializeAttribute($value, $resourceKey, $record)
-    {
-        if ('password' === $resourceKey) {
-            return $value ? bcrypt($value) : null;
-        }
-
-        return parent::deserializeAttribute($value, $resourceKey, $record);
     }
 
 }
