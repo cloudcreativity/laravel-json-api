@@ -47,9 +47,9 @@ class CreateTables extends Migration
         });
 
         Schema::create('role_user', function (Blueprint $table) {
+            $table->increments('id');
             $table->unsignedInteger('user_id');
             $table->unsignedInteger('role_id');
-            $table->primary(['user_id', 'role_id']);
         });
 
         Schema::create('avatars', function (Blueprint $table) {

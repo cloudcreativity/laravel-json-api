@@ -279,6 +279,49 @@ class BelongsToManyTest extends TestCase
         }
     }
 
+    /**
+     * In this test we keep one existing role, and add two new ones.
+     */
+    public function testUpdateSyncsRelatedResources(): void
+    {
+        /** @var User $user */
+        $user = factory(User::class)->create();
+        $user->roles()->saveMany($existing = factory(Role::class, 2)->create());
+
+        $roles = factory(Role::class, 2)->create();
+
+        $expected = $roles->merge([$existing[0]]);
+
+        $data = [
+            'type' => 'users',
+            'id' => (string) $user->getRouteKey(),
+            'relationships' => [
+                'roles' => [
+                    'data' => $expected->map(function (Role $role) {
+                        return ['type' => 'roles', 'id' => (string) $role->getRouteKey()];
+                    })->sortBy('id')->values()->all(),
+                ],
+            ],
+        ];
+
+        $response = $this
+            ->jsonApi()
+            ->includePaths('roles')
+            ->withData($data)
+            ->patch(url('/api/v1/users', $user));
+
+        $response->assertFetchedOne($data);
+
+        $this->assertDatabaseCount('role_user', count($expected));
+
+        foreach ($expected as $role) {
+            $this->assertDatabaseHas('role_user', [
+                'user_id' => $user->getKey(),
+                'role_id' => $role->getKey(),
+            ]);
+        }
+    }
+
     public function testReadRelated(): void
     {
         /** @var User $user */
@@ -420,9 +463,12 @@ class BelongsToManyTest extends TestCase
         $user->roles()->saveMany(factory(Role::class, 2)->create());
         $roles = factory(Role::class, 3)->create();
 
-        $data = $roles->map(function (Role $user) {
-            return ['type' => 'roles', 'id' => (string) $user->getRouteKey()];
-        })->all();
+        $data = $roles->map(function (Role $role) {
+            return ['type' => 'roles', 'id' => (string) $role->getRouteKey()];
+        });
+
+        /** Add a duplicate - expecting that resource to only be added once. */
+        $data->push(['type' => 'roles', 'id' => (string) $roles[1]->getRouteKey()]);
 
         $response = $this
             ->jsonApi()
@@ -451,6 +497,12 @@ class BelongsToManyTest extends TestCase
         $data = $add->map(function (Role $role) {
             return ['type' => 'roles', 'id' => (string) $role->getRouteKey()];
         });
+
+        /** Add an existing role: this should not be added twice */
+        $data->push(['type' => 'roles', 'id' => (string) $existing[1]->getRouteKey()]);
+
+        /** Add a duplicate to add: this should only be added once. */
+        $data->push(['type' => 'roles', 'id' => (string) $add[0]->getRouteKey()]);
 
         $response = $this
             ->jsonApi()

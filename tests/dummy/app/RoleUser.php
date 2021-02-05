@@ -19,22 +19,15 @@ declare(strict_types=1);
 
 namespace DummyApp;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 
-class Role extends Model
+class RoleUser extends Pivot
 {
 
     /**
-     * @var string[]
+     * Indicates if the IDs are auto-incrementing.
+     *
+     * @var bool
      */
-    protected $fillable = ['name'];
-
-    /**
-     * @return BelongsToMany
-     */
-    public function users(): BelongsToMany
-    {
-        return $this->belongsToMany(User::class)->using(RoleUser::class);
-    }
+    public $incrementing = true;
 }
