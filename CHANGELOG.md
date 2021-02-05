@@ -9,6 +9,8 @@ All notable changes to this project will be documented in this file. This projec
 
 - [#586](https://github.com/cloudcreativity/laravel-json-api/pull/586) Added French translations for validation and
   specification compliance messages.
+- [#490](https://github.com/cloudcreativity/laravel-json-api/issues/490) Add `newRelationQuery()` method to Eloquent
+  adapter.
 
 ### Fixed
 - [#576](https://github.com/cloudcreativity/laravel-json-api/issues/576) Correctly pass existing resource values to
