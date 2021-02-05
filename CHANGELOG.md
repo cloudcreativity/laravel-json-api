@@ -10,6 +10,10 @@ All notable changes to this project will be documented in this file. This projec
 - [#586](https://github.com/cloudcreativity/laravel-json-api/pull/586) Added French translations for validation and
   specification compliance messages.
 
+### Fixed
+- [#576](https://github.com/cloudcreativity/laravel-json-api/issues/576) Correctly pass existing resource values to
+  JSON values, before merging client values for validation.
+
 ## [3.2.0] - 2020-11-26
 
 ### Added
