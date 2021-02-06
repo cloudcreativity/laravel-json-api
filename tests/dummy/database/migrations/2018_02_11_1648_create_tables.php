@@ -1,6 +1,6 @@
 <?php
-/**
- * Copyright 2020 Cloud Creativity Limited
+/*
+ * Copyright 2021 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,18 @@ class CreateTables extends Migration
             $table->timestamps();
             $table->unsignedInteger('country_id')->nullable();
             $table->unsignedInteger('supplier_id')->nullable();
+        });
+
+        Schema::create('roles', function (Blueprint $table) {
+            $table->increments('id');
+            $table->timestamps();
+            $table->string('name');
+        });
+
+        Schema::create('role_user', function (Blueprint $table) {
+            $table->increments('id');
+            $table->unsignedInteger('user_id');
+            $table->unsignedInteger('role_id');
         });
 
         Schema::create('avatars', function (Blueprint $table) {
@@ -145,5 +157,8 @@ class CreateTables extends Migration
         Schema::dropIfExists('downloads');
         Schema::dropIfExists('suppliers');
         Schema::dropIfExists('histories');
+        Schema::dropIfExists('role_user');
+        Schema::dropIfExists('roles');
+        Schema::dropIfExists('users');
     }
 }

@@ -1,0 +1,43 @@
+name: Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: true
+      matrix:
+        php: ['7.3', '7.4', '8.0']
+        laravel: ['^8.0']
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v2
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ matrix.php }}
+        extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, gd
+        tools: composer:v2
+        coverage: none
+
+    - name: Set Laravel Version
+      run: composer require "laravel/framework:${{ matrix.laravel }}" --no-update -n
+
+    - name: Install dependencies
+      uses: nick-invision/retry@v1
+      with:
+        timeout_minutes: 5
+        max_attempts: 5
+        command: composer install --no-suggest --prefer-dist -n -o
+
+    - name: Execute tests
+      run: vendor/bin/phpunit
