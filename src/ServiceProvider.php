@@ -229,7 +229,7 @@ class ServiceProvider extends BaseServiceProvider
      *
      * @return void
      */
-    protected function bindInboundRequest()
+    protected function bindInboundRequest(): void
     {
         $this->app->singleton(Route::class, function (Application $app) {
             return new Route(
@@ -238,15 +238,15 @@ class ServiceProvider extends BaseServiceProvider
             );
         });
 
-        $this->app->bind(StoreInterface::class, function () {
+        $this->app->singleton(StoreInterface::class, function () {
             return json_api()->getStore();
         });
 
-        $this->app->bind(ResolverInterface::class, function () {
+        $this->app->singleton(ResolverInterface::class, function () {
             return json_api()->getResolver();
         });
 
-        $this->app->bind(ContainerInterface::class, function () {
+        $this->app->singleton(ContainerInterface::class, function () {
             return json_api()->getContainer();
         });
 
