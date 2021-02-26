@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## Unreleased
+
+### Changed
+
+- [#589](https://github.com/cloudcreativity/laravel-json-api/issues/589) Bind request API classes into the service
+  container as singletons. This is considered non-breaking because HTTP requests are always handled by new instances of
+  the Laravel application. Binding these classes as singletons is no different from Laravel binding its HTTP request
+  class as a singleton.
+
 ## [3.3.0] - 2021-02-06
 
 ### Added
