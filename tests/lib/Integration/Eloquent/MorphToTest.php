@@ -174,7 +174,7 @@ class MorphToTest extends TestCase
     public function testUpdateChangesRelatedResource()
     {
         /** @var Comment $comment */
-        $comment = factory(Comment::class)->states('video')->create();
+        $comment = factory(Comment::class)->states('post')->create();
 
         /** @var Post $post */
         $post = factory(Post::class)->create();
@@ -280,17 +280,17 @@ class MorphToTest extends TestCase
     public function testReplaceRelationshipWithDifferentResource()
     {
         $comment = factory(Comment::class)->states('post')->create();
-        $video = factory(Video::class)->create();
+        $post = factory(Post::class)->create();
 
-        $data = ['type' => 'videos', 'id' => (string) $video->getKey()];
+        $data = ['type' => 'posts', 'id' => (string) $post->getKey()];
 
         $this->doReplaceRelationship($comment, 'commentable', $data)
             ->assertStatus(204);
 
         $this->assertDatabaseHas('comments', [
             'id' => $comment->getKey(),
-            'commentable_type' => Video::class,
-            'commentable_id' => $video->getKey(),
+            'commentable_type' => Post::class,
+            'commentable_id' => $post->getKey(),
         ]);
     }
 }
