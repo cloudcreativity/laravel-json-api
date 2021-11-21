@@ -4,7 +4,10 @@
 
 ## Status
 
-**This package has now been rewritten, substantially improved and released as the `laravel-json-api/laravel` package.**
+**DO NOT USE THIS PACKAGE FOR NEW PROJECTS - USE [laravel-json-api/laravel](https://github.com/laravel-json-api/laravel)
+INSTEAD.**
+
+This package has now been rewritten, substantially improved and released as the `laravel-json-api/laravel` package.
 Documentation for the new version is available on our new website [laraveljsonapi.io](https://laraveljsonapi.io) and the
 code is now developed under the
 [Laravel JSON:API Github organisation.](https://github.com/laravel-json-api)
@@ -13,8 +16,8 @@ The `cloudcreativity/laravel-json-api` package is now considered to be the *lega
 a lot of production applications, it will continue to receive bug fixes and updates for new Laravel versions. However,
 it is no longer supported for new features.
 
-**If you are starting a new project, please use the
-[new package `laravel-json-api/laravel` instead.](https://github.com/laravel-json-api/laravel)**
+If you are starting a new project, you MUST use the
+[new package `laravel-json-api/laravel`.](https://github.com/laravel-json-api/laravel)
 
 ## Introduction
 
@@ -62,10 +65,7 @@ From [jsonapi.org](http://jsonapi.org)
 
 For full information on the spec, plus examples, see [http://jsonapi.org](http://jsonapi.org).
 
-## Tutorial and Documentation
-
-Want a tutorial to get started? Read the
-[*How to JSON:API* Laravel tutorial.](https://howtojsonapi.com/laravel.html)
+## Documentation
 
 Full package documentation is available on
 [Read the Docs](http://laravel-json-api.readthedocs.io/en/latest/).
