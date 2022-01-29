@@ -22,8 +22,8 @@ to it.
 
 ### API Route Prefix
 
-When registering a JSON API, we automatically read the URL prefix and route name prefix from your 
-[API's URL configuration](./api#url) and apply this to the route group for your API. The URL prefix in your JSON API 
+When registering a JSON API, we automatically read the URL prefix and route name prefix from your
+[API's URL configuration](./api#url) and apply this to the route group for your API. The URL prefix in your JSON API
 config is **always** relative to the root URL on a host, i.e. from `/`.
 **This means when registering your routes, you need to ensure that no prefix has already been applied.**
 
@@ -42,7 +42,7 @@ JsonApi::register('default')->withNamespace('Api')->routes(function ($api) {
 ```
 
 > We use `withNamespace()` instead of Laravel's usual `namespace()` method because `namespace` is a
-[Reserved Keyword](http://php.net/manual/en/reserved.keywords.php). 
+[Reserved Keyword](http://php.net/manual/en/reserved.keywords.php).
 
 ## Resource Routes
 
@@ -67,6 +67,16 @@ JsonApi::register('default')->routes(function ($api) {
 });
 ```
 
+By default the resource type is used as the URI fragment: i.e. the `posts` resource will have a URI of
+`/posts`. If you want to use a different URI fragment, use the `uri()` method. In the following example,
+the resource type is `posts` but the URI will be `/blog_posts`:
+
+```php
+JsonApi::register('default')->routes(function ($api) {
+    $api->resource('posts')->uri('blog_posts');
+});
+```
+
 ## Relationship Routes
 
 The JSON API spec also defines routes for relationships on a resource type. There are two types of relationships:
@@ -83,6 +93,19 @@ JsonApi::register('default')->routes(function ($api) {
     $api->resource('posts')->relationships(function ($relations) {
         $relations->hasOne('author');
         $relations->hasMany('comments');
+    });
+});
+```
+
+By default the relationship name is used as the URI fragment: i.e. for the `comments` relationship on the
+`posts` resource, the related resource URI is `/posts/{record}/comments`. To customise the URI framgent,
+use the `uri()` method. In the following example, the relationship name is `comments` but the URI
+will be `/posts/{record}/blog_comments`:
+
+```php
+JsonApi::register('default')->routes(function ($api) {
+    $api->resource('posts')->relationships(function ($relations) {
+        $relations->hasMany('comments')->uri('blog_comments');
     });
 });
 ```
@@ -252,7 +275,7 @@ JsonApi::register('default')->withNamespace('Api')->routes(function ($api, $rout
 
 ### Controller Names
 
-If you call `controller()` without any arguments, we assume your controller is the camel case name version of 
+If you call `controller()` without any arguments, we assume your controller is the camel case name version of
 the resource type with `Controller` on the end. I.e. `posts` would expect `PostsController` and
 `blog-posts` would expect `BlogPostsController`. Or if your resource type was `post`,
 we would guess `PostController`.
@@ -332,7 +355,7 @@ If you are using these, you will also need to refer to the *Custom Actions* sect
 
 Also note that custom routes are registered *before* the routes defined by the JSON API specification,
 i.e. those that are added when you call `$api->resource('posts')`. You will need to ensure that your
-custom route definitions do not collide with these defined routes. 
+custom route definitions do not collide with these defined routes.
 
 > Generally we advise against registering custom routes. This is because the JSON API specification may
 have additional routes added to it in the future, which might collide with your custom routes.
@@ -396,7 +419,7 @@ does not contain an `@` symbol we add the controller name to it.
 
 Secondly, if you are defining a custom relationship route, you must use the `field` method. This takes
 the relationship name as its first argument. The inverse resource type can be specified as the second argument,
-for example: 
+for example:
 
 ```php
 JsonApi::register('default')->withNamespace('Api')->routes(function ($api) {

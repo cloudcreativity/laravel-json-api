@@ -1,6 +1,6 @@
 <?php
-/**
- * Copyright 2020 Cloud Creativity Limited
+/*
+ * Copyright 2021 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,17 @@ class DefaultTest extends TestCase
         $data = $this->willPatch();
 
         $headers = $this->transformHeadersToServerVars(['Accept' => 'application/vnd.api+json']);
-        $this->call('PATCH', "/api/v1/posts/{$data['id']}", [], [], [], $headers)->assertStatus(400);
+        $response = $this->call('PATCH', "/api/v1/posts/{$data['id']}", [], [], [], $headers);
+
+        $response->assertStatus(400)->assertExactJson([
+            'errors' => [
+                [
+                    "status" => "400",
+                    "title" => "Document Required",
+                    "detail" => "Expecting request to contain a JSON API document.",
+                ],
+            ],
+        ]);
     }
 
     /**
