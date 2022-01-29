@@ -43,7 +43,7 @@ class ReadTest extends TestCase
     {
         Storage::fake('local');
 
-        $path = UploadedFile::fake()->create('avatar.jpg')->store('avatars');
+        $path = UploadedFile::fake()->image('avatar.jpg')->store('avatars');
         $avatar = factory(Avatar::class)->create(compact('path'));
 
         $this->withAcceptMediaType('image/*')

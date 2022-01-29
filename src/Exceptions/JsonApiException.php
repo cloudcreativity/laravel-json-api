@@ -68,7 +68,7 @@ class JsonApiException extends Exception implements HttpExceptionInterface, Resp
     /**
      * @inheritDoc
      */
-    public function getStatusCode()
+    public function getStatusCode(): int
     {
         return $this->errors->getStatus();
     }
@@ -87,7 +87,7 @@ class JsonApiException extends Exception implements HttpExceptionInterface, Resp
     /**
      * @inheritDoc
      */
-    public function getHeaders()
+    public function getHeaders(): array
     {
         return $this->headers;
     }

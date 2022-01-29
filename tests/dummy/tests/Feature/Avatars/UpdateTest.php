@@ -48,7 +48,7 @@ class UpdateTest extends TestCase
      */
     public function test(string $contentType): void
     {
-        $file = UploadedFile::fake()->create('avatar.jpg');
+        $file = UploadedFile::fake()->image('avatar.jpg');
 
         $expected = [
             'type' => 'avatars',

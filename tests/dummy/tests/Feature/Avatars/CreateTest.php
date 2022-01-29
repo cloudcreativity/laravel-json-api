@@ -36,7 +36,7 @@ class CreateTest extends TestCase
     public function test(string $contentType): void
     {
         $user = factory(User::class)->create();
-        $file = UploadedFile::fake()->create('avatar.jpg');
+        $file = UploadedFile::fake()->image('avatar.jpg');
 
         $expected = [
             'type' => 'avatars',
