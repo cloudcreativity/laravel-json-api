@@ -1,5 +1,13 @@
 # Upgrade Guide
 
+## 3.x to 4.0
+
+### PHP 8.1
+
+To remove deprecation messages from PHP 8.1, we've added return types of `#[\ReturnTypeWillChange]` annotations to
+methods for internal interfaces. This is unlikely to break your application, unless you have extended one of our classes
+and overridden an internal method.
+
 ## 2.x to 3.0
 
 ### Validators
