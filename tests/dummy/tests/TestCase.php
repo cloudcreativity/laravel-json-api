@@ -25,6 +25,7 @@ use CloudCreativity\LaravelJsonApi\Testing\TestExceptionHandler;
 use DummyApp;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Foundation\Application;
+use Illuminate\Foundation\Testing\Concerns\InteractsWithDeprecationHandling;
 use Orchestra\Testbench\TestCase as BaseTestCase;
 
 /**
@@ -36,6 +37,7 @@ abstract class TestCase extends BaseTestCase
 {
 
     use MakesJsonApiRequests;
+    use InteractsWithDeprecationHandling;
 
     /**
      * @return void
@@ -43,6 +45,9 @@ abstract class TestCase extends BaseTestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->withoutDeprecationHandling();
+
         $this->artisan('migrate');
     }
 

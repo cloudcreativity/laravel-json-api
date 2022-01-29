@@ -495,8 +495,12 @@ class Container implements ContainerInterface
      * @param $className
      * @return bool
      */
-    protected function exists($className)
+    protected function exists($className): bool
     {
+        if (null === $className) {
+            return false;
+        }
+
         return class_exists($className) || $this->container->bound($className);
     }
 

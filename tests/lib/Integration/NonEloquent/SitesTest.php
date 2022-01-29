@@ -85,13 +85,13 @@ class SitesTest extends TestCase
         $expected = $data;
         $expected['attributes']['domain'] = $site->getDomain();
 
-        $this->doUpdate($data)->assertUpdated($expected);
+        $this->doUpdate($data)->assertFetchedOne($expected);
     }
 
     public function testDelete()
     {
         $this->createSite();
-        $this->doDelete('my-site')->assertDeleted();
+        $this->doDelete('my-site')->assertNoContent();
         $this->assertNull(app(SiteRepository::class)->find('my-site'));
     }
 

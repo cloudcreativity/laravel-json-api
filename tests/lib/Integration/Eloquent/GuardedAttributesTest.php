@@ -51,6 +51,6 @@ class GuardedAttributesTest extends TestCase
         $expected = $data;
         $expected['attributes']['url'] = $video->url;
 
-        $this->doUpdate($data)->assertUpdated($expected);
+        $this->doUpdate($data)->assertFetchedOne($expected);
     }
 }

@@ -150,7 +150,7 @@ class StandardPagingTest extends TestCase
         ];
 
         $this->doSearch(['page' => ['number' => 2, 'size' => 3]])
-            ->assertFetchedPage($posts->last(), $links, $meta);
+            ->assertFetchedPage([$posts->last()], $links, $meta);
     }
 
     public function testPageWithReverseKey()

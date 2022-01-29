@@ -33,6 +33,6 @@ class SortingTest extends TestCase
         $a = factory(Tag::class)->create(['name' => 'Tag A']);
 
         $this->resourceType = 'tags';
-        $this->actingAsUser()->doSearch()->assertFetchedMany([$a, $b]);
+        $this->actingAsUser()->doSearch()->assertFetchedManyInOrder([$a, $b]);
     }
 }

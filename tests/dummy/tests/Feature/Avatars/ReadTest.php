@@ -83,7 +83,7 @@ class ReadTest extends TestCase
 
         $this->doRead($avatar, ['include' => 'user'])
             ->assertFetchedOneExact($expected)
-            ->assertIncluded($userId);
+            ->assertIncluded([$userId]);
     }
 
     /**

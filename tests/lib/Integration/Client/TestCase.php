@@ -22,7 +22,6 @@ use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase as BaseTestCase;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;
-use function GuzzleHttp\Psr7\parse_query;
 
 abstract class TestCase extends BaseTestCase
 {
@@ -156,6 +155,6 @@ abstract class TestCase extends BaseTestCase
     protected function assertQueryParameters(array $expected)
     {
         $query = $this->mock->getLastRequest()->getUri()->getQuery();
-        $this->assertEquals($expected, parse_query($query));
+        $this->assertEquals($expected, \GuzzleHttp\Psr7\Query::parse($query));
     }
 }

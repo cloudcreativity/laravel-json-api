@@ -75,7 +75,7 @@ final class RelationshipsRegistrar implements \IteratorAggregate
     /**
      * @inheritDoc
      */
-    public function getIterator()
+    public function getIterator(): \Generator
     {
         foreach ($this->hasOne() as $hasOne => $options) {
             $options['actions'] = $this->hasOneActions($options);

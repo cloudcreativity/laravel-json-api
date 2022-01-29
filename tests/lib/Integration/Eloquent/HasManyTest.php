@@ -161,7 +161,7 @@ class HasManyTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data)->assertUpdated(
+        $this->doUpdate($data)->assertFetchedOne(
             collect($data)->forget('relationships')->all()
         );
 
@@ -191,7 +191,7 @@ class HasManyTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data)->assertUpdated(
+        $this->doUpdate($data)->assertFetchedOne(
             collect($data)->forget('relationships')->all()
         );
         $this->assertUserIs($country, $user);
@@ -224,7 +224,7 @@ class HasManyTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data)->assertUpdated(
+        $this->doUpdate($data)->assertFetchedOne(
             collect($data)->forget('relationships')->all()
         );
         $this->assertUsersAre($country, $users);

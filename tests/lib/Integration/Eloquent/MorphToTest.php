@@ -132,7 +132,7 @@ class MorphToTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data, ['include' => 'commentable'])->assertUpdated($data);
+        $this->doUpdate($data, ['include' => 'commentable'])->assertFetchedOne($data);
 
         $this->assertDatabaseHas('comments', [
             'id' => $comment->getKey(),
@@ -162,7 +162,7 @@ class MorphToTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data, ['include' => 'commentable'])->assertUpdated($data);
+        $this->doUpdate($data, ['include' => 'commentable'])->assertFetchedOne($data);
 
         $this->assertDatabaseHas('comments', [
             'id' => $comment->getKey(),
@@ -192,7 +192,7 @@ class MorphToTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data, ['include' => 'commentable'])->assertUpdated($data);
+        $this->doUpdate($data, ['include' => 'commentable'])->assertFetchedOne($data);
 
         $this->assertDatabaseHas('comments', [
             'id' => $comment->getKey(),

@@ -65,7 +65,7 @@ class UpdateTest extends TestCase
             ->patch(url('/api/v1/avatars', $this->avatar));
 
         $response
-            ->assertUpdated($expected)
+            ->assertFetchedOne($expected)
             ->assertIsIncluded('users', $this->avatar->user)
             ->id();
 

@@ -28,6 +28,7 @@ use DummyApp\User;
 use DummyPackage;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Foundation\Application;
+use Illuminate\Foundation\Testing\Concerns\InteractsWithDeprecationHandling;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Route;
 use Laravel\Ui\UiServiceProvider;
@@ -42,6 +43,7 @@ abstract class TestCase extends BaseTestCase
 {
 
     use MakesJsonApiRequests;
+    use InteractsWithDeprecationHandling;
 
     /**
      * Whether the dummy app routes should be used.
@@ -56,6 +58,15 @@ abstract class TestCase extends BaseTestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->withoutDeprecationHandling();
+
+        config()->set('auth.guards.api', [
+            'driver' => 'token',
+            'provider' => 'users',
+            'hash' => false,
+        ]);
+
         $this->artisan('migrate');
 
         if ($this->appRoutes) {

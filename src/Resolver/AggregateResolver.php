@@ -75,7 +75,7 @@ class AggregateResolver implements ResolverInterface, IteratorAggregate
     /**
      * @inheritDoc
      */
-    public function getIterator()
+    public function getIterator(): \Generator
     {
         yield $this->api;
 

@@ -157,7 +157,7 @@ class MorphManyTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data, ['include' => 'comments'])->assertUpdated($data);
+        $this->doUpdate($data, ['include' => 'comments'])->assertFetchedOne($data);
 
         $this->assertDatabaseMissing('comments', [
             'commentable_type' => Post::class,
@@ -191,7 +191,7 @@ class MorphManyTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data, ['include' => 'comments'])->assertUpdated($data);
+        $this->doUpdate($data, ['include' => 'comments'])->assertFetchedOne($data);
         $this->assertCommentIs($post, $comment);
     }
 
@@ -230,7 +230,7 @@ class MorphManyTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data, ['include' => 'comments'])->assertUpdated($data);
+        $this->doUpdate($data, ['include' => 'comments'])->assertFetchedOne($data);
         $this->assertCommentsAre($post, $comments);
     }
 

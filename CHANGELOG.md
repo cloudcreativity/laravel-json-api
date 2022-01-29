@@ -2,6 +2,19 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## Unreleased (4.0)
+
+### Added
+
+- Package now supports PHP 8.
+
+### Changed
+
+- Minimum PHP version is now 7.4 (previously was 7.3).
+- Minimum Laravel version is now 8.76. This is needed as we are dependent on all the Laravel PHP 8.1 changes.
+- Package now depends on our fork of the Neomerx JSON:API package - `laravel-json-api/neomerx-json-api`. This is a
+  non-breaking change.
+
 ## [3.1.0] - 2020-10-28
 
 ### Added

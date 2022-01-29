@@ -156,7 +156,7 @@ class MorphToManyTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data, ['include' => 'tags'])->assertUpdated($data);
+        $this->doUpdate($data, ['include' => 'tags'])->assertFetchedOne($data);
 
         $this->assertDatabaseMissing('taggables', [
             'taggable_type' => Post::class,
@@ -189,7 +189,7 @@ class MorphToManyTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data, ['include' => 'tags'])->assertUpdated($data);
+        $this->doUpdate($data, ['include' => 'tags'])->assertFetchedOne($data);
         $this->assertTagIs($post, $tag);
     }
 
@@ -225,7 +225,7 @@ class MorphToManyTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data, ['include' => 'tags'])->assertUpdated($data);
+        $this->doUpdate($data, ['include' => 'tags'])->assertFetchedOne($data);
         $this->assertTagsAre($post, $tags);
     }
 

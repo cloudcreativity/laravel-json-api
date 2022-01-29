@@ -439,7 +439,7 @@ class ResourceTest extends TestCase
         $expected = $data;
         unset($expected['attributes']['foo']);
 
-        $this->doUpdate($data)->assertUpdated($expected);
+        $this->doUpdate($data)->assertFetchedOne($expected);
 
         $this->assertDatabaseHas('posts', [
             'id' => $model->getKey(),
@@ -482,7 +482,7 @@ class ResourceTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data, ['include' => 'tags'])->assertUpdated($data);
+        $this->doUpdate($data, ['include' => 'tags'])->assertFetchedOne($data);
 
         $this->assertDatabaseHas('taggables', [
             'taggable_type' => Post::class,
@@ -569,7 +569,7 @@ class ResourceTest extends TestCase
         $expected = $data;
         $expected['attributes']['content'] = 'Hello world.';
 
-        $this->doUpdate($data)->assertUpdated($expected);
+        $this->doUpdate($data)->assertFetchedOne($expected);
 
         $this->assertDatabaseHas('posts', [
             'id' => $model->getKey(),
@@ -614,7 +614,7 @@ class ResourceTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data)->assertUpdated($data);
+        $this->doUpdate($data)->assertFetchedOne($data);
         $this->assertSoftDeleted('posts', [$post->getKeyName() => $post->getKey()]);
 
         Event::assertDispatched("eloquent.deleting: " . Post::class, function ($name, $actual) use ($post) {
@@ -643,7 +643,7 @@ class ResourceTest extends TestCase
         $expected = $data;
         $expected['attributes']['deletedAt'] = Carbon::now()->toJSON();
 
-        $this->doUpdate($data)->assertUpdated($expected);
+        $this->doUpdate($data)->assertFetchedOne($expected);
         $this->assertSoftDeleted('posts', [$post->getKeyName() => $post->getKey()]);
     }
 
@@ -663,7 +663,7 @@ class ResourceTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data)->assertUpdated($data);
+        $this->doUpdate($data)->assertFetchedOne($data);
 
         $this->assertDatabaseHas('posts', [
             $post->getKeyName() => $post->getKey(),
@@ -685,7 +685,7 @@ class ResourceTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data)->assertUpdated($data);
+        $this->doUpdate($data)->assertFetchedOne($data);
 
         $this->assertDatabaseHas('posts', [
             $post->getKeyName() => $post->getKey(),
@@ -714,7 +714,7 @@ class ResourceTest extends TestCase
         $expected = $data;
         $expected['attributes']['deletedAt'] = null;
 
-        $this->doUpdate($data)->assertUpdated($expected);
+        $this->doUpdate($data)->assertFetchedOne($expected);
 
         $this->assertDatabaseHas('posts', [
             $post->getKeyName() => $post->getKey(),
@@ -744,7 +744,7 @@ class ResourceTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data)->assertUpdated($data);
+        $this->doUpdate($data)->assertFetchedOne($data);
 
         $this->assertDatabaseHas('posts', [
             $post->getKeyName() => $post->getKey(),
@@ -766,7 +766,7 @@ class ResourceTest extends TestCase
 
         $post = $this->createPost();
 
-        $this->doDelete($post)->assertDeleted();
+        $this->doDelete($post)->assertNoContent();
         $this->assertDatabaseMissing('posts', [$post->getKeyName() => $post->getKey()]);
 
         Event::assertDispatched("eloquent.deleting: " . Post::class, function ($name, $actual) use ($post) {

@@ -80,7 +80,7 @@ class SiteRepository implements IteratorAggregate
     /**
      * @return Generator
      */
-    public function getIterator()
+    public function getIterator(): Generator
     {
         foreach ($this->sites as $slug => $values) {
             yield $slug => Site::create($slug, $values);

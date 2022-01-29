@@ -125,7 +125,7 @@ class BelongsToTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data, ['include' => 'author'])->assertUpdated($data);
+        $this->doUpdate($data, ['include' => 'author'])->assertFetchedOne($data);
 
         $this->assertDatabaseHas('posts', [
             'id' => $post->getKey(),
@@ -161,7 +161,7 @@ class BelongsToTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data, ['include' => 'author'])->assertUpdated($data);
+        $this->doUpdate($data, ['include' => 'author'])->assertFetchedOne($data);
 
         $this->assertDatabaseHas('posts', [
             'id' => $post->getKey(),
@@ -196,7 +196,7 @@ class BelongsToTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data, ['include' => 'author'])->assertUpdated($data);
+        $this->doUpdate($data, ['include' => 'author'])->assertFetchedOne($data);
 
         $this->assertDatabaseHas('posts', [
             'id' => $post->getKey(),

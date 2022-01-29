@@ -142,7 +142,7 @@ class PolymorphicHasManyTest extends TestCase
         $expected = $data;
         unset($expected['relationships']);
 
-        $this->doUpdate($data)->assertUpdated($expected);
+        $this->doUpdate($data)->assertFetchedOne($expected);
 
         $this->assertDatabaseMissing('taggables', [
             'tag_id' => $tag->getKey(),
@@ -172,7 +172,7 @@ class PolymorphicHasManyTest extends TestCase
         $expected = $data;
         unset($expected['relationships']);
 
-        $this->doUpdate($data)->assertUpdated($expected);
+        $this->doUpdate($data)->assertFetchedOne($expected);
 
         $this->assertTaggablesAre($tag, [], [$video]);
     }
@@ -205,7 +205,7 @@ class PolymorphicHasManyTest extends TestCase
         $expected = $data;
         unset($expected['relationships']);
 
-        $this->doUpdate($data)->assertUpdated($expected);
+        $this->doUpdate($data)->assertFetchedOne($expected);
 
         $this->assertTaggablesAre($tag, [$post], [$video]);
     }

@@ -161,7 +161,7 @@ class ClientGeneratedIdTest extends TestCase
 
         $this->actingAs($video->user);
 
-        $this->doUpdate($data)->assertUpdated($expected);
+        $this->doUpdate($data)->assertFetchedOne($expected);
 
         $this->assertDatabaseHas('videos', [
             'uuid' => $video->getKey(),

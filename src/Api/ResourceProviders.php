@@ -78,7 +78,7 @@ final class ResourceProviders implements IteratorAggregate
     /**
      * @inheritDoc
      */
-    public function getIterator()
+    public function getIterator(): \Generator
     {
         foreach ($this->providers as $provider) {
             yield $provider => $this->factory->createResourceProvider($provider);

@@ -135,7 +135,7 @@ class MorphOneTest extends TestCase
         ];
 
         $this->doUpdate($data, ['include' => 'image'])
-            ->assertUpdated($data);
+            ->assertFetchedOne($data);
 
         $this->assertDatabaseHas('images', [
             $image->getKeyName() => $image->getKey(),
@@ -165,7 +165,7 @@ class MorphOneTest extends TestCase
         ];
 
         $this->doUpdate($data, ['include' => 'image'])
-            ->assertUpdated($data);
+            ->assertFetchedOne($data);
 
         $this->assertDatabaseHas('images', [
             $image->getKeyName() => $image->getKey(),
@@ -199,7 +199,7 @@ class MorphOneTest extends TestCase
         ];
 
         $this->doUpdate($data, ['include' => 'image'])
-            ->assertUpdated($data);
+            ->assertFetchedOne($data);
 
         $this->assertDatabaseHas('images', [
             $expected->getKeyName() => $expected->getKey(),

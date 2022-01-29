@@ -185,7 +185,7 @@ class HasOneTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data, ['include' => 'phone'])->assertUpdated($data);
+        $this->doUpdate($data, ['include' => 'phone'])->assertFetchedOne($data);
 
         $this->assertDatabaseHas('phones', [
             'id' => $phone->getKey(),
@@ -216,7 +216,7 @@ class HasOneTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data, ['include' => 'phone'])->assertUpdated($data);
+        $this->doUpdate($data, ['include' => 'phone'])->assertFetchedOne($data);
 
         $this->assertDatabaseHas('phones', [
             'id' => $phone->getKey(),
@@ -247,7 +247,7 @@ class HasOneTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data, ['include' => 'phone'])->assertUpdated($data);
+        $this->doUpdate($data, ['include' => 'phone'])->assertFetchedOne($data);
 
         $this->assertDatabaseHas('phones', [
             'id' => $existing->getKey(),
