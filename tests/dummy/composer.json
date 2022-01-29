@@ -12,8 +12,7 @@
     },
     "autoload": {
         "classmap": [
-            "database",
-            "tests/TestCase.php"
+            "database"
         ],
         "psr-4": {
             "DummyApp\\": "app/"
