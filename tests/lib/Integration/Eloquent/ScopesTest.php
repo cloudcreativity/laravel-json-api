@@ -27,11 +27,6 @@ class ScopesTest extends TestCase
 {
 
     /**
-     * @var string
-     */
-    protected $resourceType = 'posts';
-
-    /**
      * @var User
      */
     private $user;
@@ -57,14 +52,22 @@ class ScopesTest extends TestCase
         $expected = factory(Post::class, 2)->create(['author_id' => $this->user->getKey()]);
         factory(Post::class, 3)->create();
 
-        $this->getJsonApi('/api/v1/posts')->assertFetchedMany($expected);
+        $response = $this
+            ->jsonApi('posts')
+            ->get('/api/v1/posts');
+
+        $response->assertFetchedMany($expected);
     }
 
     public function testRead(): void
     {
         $post = factory(Post::class)->create(['author_id' => $this->user->getKey()]);
 
-        $this->getJsonApi(url('/api/v1/posts', $post))->assertFetchedOne([
+        $response = $this
+            ->jsonApi()
+            ->get(url('/api/v1/posts', $post));
+
+        $response->assertFetchedOne([
             'type' => 'posts',
             'id' => (string) $post->getRouteKey(),
         ]);
@@ -74,7 +77,11 @@ class ScopesTest extends TestCase
     {
         $post = factory(Post::class)->create();
 
-        $this->getJsonApi(url('/api/v1/posts', $post))->assertStatus(404);
+        $response = $this
+            ->jsonApi()
+            ->get(url('/api/v1/posts', $post));
+
+        $response->assertStatus(404);
     }
 
     public function testReadToOne(): void
@@ -104,7 +111,11 @@ class ScopesTest extends TestCase
 
         $url = url('/api/v1/countries', [$country, 'posts']);
 
-        $this->getJsonApi($url)->assertFetchedMany($expected);
+        $response = $this
+            ->jsonApi('posts')
+            ->get($url);
+
+        $response->assertFetchedMany($expected);
     }
 
     public function testReadToManyRelationship(): void
@@ -124,6 +135,10 @@ class ScopesTest extends TestCase
 
         $url = url('/api/v1/countries', [$country, 'relationships', 'posts']);
 
-        $this->getJsonApi($url)->assertFetchedToMany($expected);
+        $response = $this
+            ->jsonApi('posts')
+            ->get($url);
+
+        $response->assertFetchedToMany($expected);
     }
 }

@@ -32,16 +32,16 @@ class AuthTest extends TestCase
     protected $appRoutes = false;
 
     /**
-     * @var string
-     */
-    protected $resourceType = 'posts';
-
-    /**
      * Test that we can use Laravel's auth middleware to protect the entire API.
      */
     public function testApiAuthDisallowed()
     {
-        $this->withApiMiddleware()->doSearch()->assertStatus(401)->assertJson([
+        $response = $this
+            ->withApiMiddleware()
+            ->jsonApi()
+            ->get('/api/v1/posts');
+
+        $response->assertStatus(401)->assertJson([
             'errors' => [
                 [
                     'title' => 'Unauthenticated',
@@ -56,10 +56,13 @@ class AuthTest extends TestCase
      */
     public function testApiAuthAllowed()
     {
-        $this->withApiMiddleware()
+        $response = $this
+            ->withApiMiddleware()
             ->actingAsUser()
-            ->doSearch()
-            ->assertSuccessful();
+            ->jsonApi()
+            ->get('/api/v1/posts');
+
+        $response->assertSuccessful();
     }
 
     /**
@@ -87,8 +90,12 @@ class AuthTest extends TestCase
             $this->actingAsUser();
         }
 
-        $this->resourceType = $resourceType;
-        $response = $this->withResourceMiddleware()->doSearch()->assertStatus($expected);
+        $response = $this
+            ->withResourceMiddleware()
+            ->jsonApi()
+            ->get('/api/v1/'. $resourceType);
+
+        $response->assertStatus($expected);
 
         if (200 !== $expected) {
             $response->assertJson([

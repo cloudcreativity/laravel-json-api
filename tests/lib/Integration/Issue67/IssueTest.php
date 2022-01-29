@@ -23,12 +23,6 @@ use DummyApp\Post;
 
 class IssueTest extends TestCase
 {
-
-    /**
-     * @var string
-     */
-    protected $resourceType = 'posts';
-
     /**
      * @return void
      */
@@ -49,7 +43,11 @@ class IssueTest extends TestCase
         factory(Post::class)->create();
 
         $response = $this
-            ->doSearch(['page' => ['number' => 1, 'size' => 5]])
+            ->jsonApi()
+            ->page(['number' => 1, 'size' => 5])
+            ->get('/api/v1/posts');
+
+        $response
             ->assertStatus(500);
 
         $response->assertExactJson([

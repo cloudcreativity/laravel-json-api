@@ -33,11 +33,6 @@ class IssueTest extends TestCase
     protected $appRoutes = false;
 
     /**
-     * @var string
-     */
-    protected $resourceType = 'endUsers';
-
-    /**
      * @return void
      */
     protected function setUp(): void
@@ -66,7 +61,11 @@ class IssueTest extends TestCase
     {
         $user = factory(User::class)->create();
 
-        $this->getJsonApi("/api/v1/endUsers/{$user->getRouteKey()}")->assertFetchedOne([
+        $response = $this
+            ->jsonApi()
+            ->get(url('/api/v1/endUsers', $user));
+
+        $response->assertFetchedOne([
             'type' => 'endUsers',
             'id' => (string) $user->getRouteKey(),
             'attributes' => [

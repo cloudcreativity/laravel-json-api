@@ -34,12 +34,6 @@ use DummyApp\Video;
  */
 class PolymorphicHasManyTest extends TestCase
 {
-
-    /**
-     * @var string
-     */
-    protected $resourceType = 'tags';
-
     /**
      * @return void
      */
@@ -68,8 +62,12 @@ class PolymorphicHasManyTest extends TestCase
         $expected = $data;
         unset($expected['relationships']);
 
-        $id = $this
-            ->doCreate($data)
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->post('/api/v1/tags');
+
+        $id = $response
             ->assertCreatedWithServerId(url('/api/v1/tags'), $expected)
             ->id();
 
@@ -94,7 +92,7 @@ class PolymorphicHasManyTest extends TestCase
                     'data' => [
                         [
                             'type' => 'videos',
-                            'id' => (string) $videos->first()->getKey(),
+                            'id' => (string) $videos->first()->getRouteKey(),
                         ],
                         [
                             'type' => 'posts',
@@ -102,7 +100,7 @@ class PolymorphicHasManyTest extends TestCase
                         ],
                         [
                             'type' => 'videos',
-                            'id' => (string) $videos->last()->getKey(),
+                            'id' => (string) $videos->last()->getRouteKey(),
                         ],
                     ],
                 ],
@@ -112,8 +110,12 @@ class PolymorphicHasManyTest extends TestCase
         $expected = $data;
         unset($expected['relationships']);
 
-        $id = $this
-            ->doCreate($data)
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->post('/api/v1/tags');
+
+        $id = $response
             ->assertCreatedWithServerId(url('/api/v1/tags'), $expected)
             ->id();
 
@@ -142,7 +144,12 @@ class PolymorphicHasManyTest extends TestCase
         $expected = $data;
         unset($expected['relationships']);
 
-        $this->doUpdate($data)->assertFetchedOne($expected);
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->patch(url('/api/v1/tags', $tag));
+
+        $response->assertFetchedOne($expected);
 
         $this->assertDatabaseMissing('taggables', [
             'tag_id' => $tag->getKey(),
@@ -172,7 +179,12 @@ class PolymorphicHasManyTest extends TestCase
         $expected = $data;
         unset($expected['relationships']);
 
-        $this->doUpdate($data)->assertFetchedOne($expected);
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->patch(url('/api/v1/tags', $tag));
+
+        $response->assertFetchedOne($expected);
 
         $this->assertTaggablesAre($tag, [], [$video]);
     }
@@ -205,7 +217,12 @@ class PolymorphicHasManyTest extends TestCase
         $expected = $data;
         unset($expected['relationships']);
 
-        $this->doUpdate($data)->assertFetchedOne($expected);
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->patch(url('/api/v1/tags', $tag));
+
+        $response->assertFetchedOne($expected);
 
         $this->assertTaggablesAre($tag, [$post], [$video]);
     }
@@ -217,7 +234,11 @@ class PolymorphicHasManyTest extends TestCase
         $tag->posts()->sync($post = factory(Post::class)->create());
         $tag->videos()->sync($videos = factory(Video::class, 2)->create());
 
-        $this->doReadRelated($tag->uuid, 'taggables')->assertFetchedMany([
+        $response = $this
+            ->jsonApi()
+            ->get(url('/api/v1/tags', [$tag, 'taggables']));
+
+        $response->assertFetchedMany([
             ['type' => 'posts', 'id' => $post],
             ['type' => 'videos', 'id' => $videos[0]],
             ['type' => 'videos', 'id' => $videos[1]],
@@ -228,7 +249,11 @@ class PolymorphicHasManyTest extends TestCase
     {
         $tag = factory(Tag::class)->create();
 
-        $this->doReadRelated($tag->uuid, 'taggables')->assertFetchedNone();
+        $response = $this
+            ->jsonApi()
+            ->get(url('/api/v1/tags', [$tag, 'taggables']));
+
+        $response->assertFetchedNone();
     }
 
     public function testReadRelationship()
@@ -238,7 +263,11 @@ class PolymorphicHasManyTest extends TestCase
         $tag->posts()->sync($post = factory(Post::class)->create());
         $tag->videos()->sync($videos = factory(Video::class, 2)->create());
 
-        $this->doReadRelationship($tag->uuid, 'taggables')->assertFetchedToMany([
+        $response = $this
+            ->jsonApi()
+            ->get(url('/api/v1/tags', [$tag, 'relationships', 'taggables']));
+
+        $response->assertFetchedToMany([
             ['type' => 'posts', 'id' => $post],
             ['type' => 'videos', 'id' => $videos[0]],
             ['type' => 'videos', 'id' => $videos[1]],
@@ -249,7 +278,11 @@ class PolymorphicHasManyTest extends TestCase
     {
         $tag = factory(Tag::class)->create();
 
-        $this->doReadRelationship($tag->uuid, 'taggables')->assertFetchedNone();
+        $response = $this
+            ->jsonApi()
+            ->get(url('/api/v1/tags', [$tag, 'relationships', 'taggables']));
+
+        $response->assertFetchedNone();
     }
 
     public function testReplaceEmptyRelationshipWithRelatedResources()
@@ -258,16 +291,23 @@ class PolymorphicHasManyTest extends TestCase
         $post = factory(Post::class)->create();
         $video = factory(Video::class)->create();
 
-        $this->doReplaceRelationship($tag->uuid, 'taggables', [
+        $data = [
             [
                 'type' => 'videos',
-                'id' => (string) $video->getKey(),
+                'id' => (string) $video->getRouteKey(),
             ],
             [
                 'type' => 'posts',
-                'id' => (string) $post->getKey(),
+                'id' => (string) $post->getRouteKey(),
             ],
-        ])->assertStatus(204);
+        ];
+
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->patch(url('/api/v1/tags', [$tag, 'relationships', 'taggables']));
+
+        $response->assertStatus(204);
 
         $this->assertTaggablesAre($tag, [$post], [$video]);
     }
@@ -278,7 +318,12 @@ class PolymorphicHasManyTest extends TestCase
         $tag = factory(Tag::class)->create();
         $tag->videos()->attach(factory(Video::class)->create());
 
-        $this->doReplaceRelationship($tag->uuid, 'taggables', [])
+        $response = $this
+            ->jsonApi()
+            ->withData([])
+            ->patch(url('/api/v1/tags', [$tag, 'relationships', 'taggables']));
+
+        $response
             ->assertStatus(204);
 
         $this->assertNoTaggables($tag);
@@ -294,20 +339,27 @@ class PolymorphicHasManyTest extends TestCase
         $posts = factory(Post::class, 2)->create();
         $video = factory(Video::class)->create();
 
-        $this->doReplaceRelationship($tag->uuid, 'taggables', [
+        $data = [
             [
                 'type' => 'posts',
-                'id' => (string) $posts->last()->getKey(),
+                'id' => (string) $posts->last()->getRouteKey(),
             ],
             [
                 'type' => 'posts',
-                'id' => (string) $posts->first()->getKey(),
+                'id' => (string) $posts->first()->getRouteKey(),
             ],
             [
                 'type' => 'videos',
                 'id' => (string) $video->getKey(),
             ],
-        ])->assertStatus(204);
+        ];
+
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->patch(url('/api/v1/tags', [$tag, 'relationships', 'taggables']));
+
+        $response->assertStatus(204);
 
         $this->assertTaggablesAre($tag, $posts, [$video]);
     }
@@ -322,20 +374,27 @@ class PolymorphicHasManyTest extends TestCase
         $posts = factory(Post::class, 2)->create();
         $video = factory(Video::class)->create();
 
-        $this->doAddToRelationship($tag->uuid, 'taggables', [
+        $data = [
             [
                 'type' => 'posts',
-                'id' => (string) $posts->last()->getKey(),
+                'id' => (string) $posts->last()->getRouteKey(),
             ],
             [
                 'type' => 'posts',
-                'id' => (string) $posts->first()->getKey(),
+                'id' => (string) $posts->first()->getRouteKey(),
             ],
             [
                 'type' => 'videos',
                 'id' => (string) $video->getKey(),
             ],
-        ])->assertStatus(204);
+        ];
+
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->post(url('/api/v1/tags', [$tag, 'relationships', 'taggables']));
+
+        $response->assertStatus(204);
 
         $this->assertTaggablesAre($tag, $posts->push($existingPost), [$existingVideo, $video]);
     }
@@ -354,25 +413,32 @@ class PolymorphicHasManyTest extends TestCase
         /** @var Video $video */
         $video = $allVideos->last();
 
-        $this->doRemoveFromRelationship($tag->uuid, 'taggables', [
+        $data = [
             [
                 'type' => 'posts',
-                'id' => (string) $post1->getKey(),
+                'id' => (string) $post1->getRouteKey(),
             ],
             [
                 'type' => 'posts',
-                'id' => (string) $post2->getKey(),
+                'id' => (string) $post2->getRouteKey(),
             ],
             [
                 'type' => 'videos',
-                'id' => (string) $video->getKey(),
+                'id' => (string) $video->getRouteKey(),
             ],
-        ])->assertStatus(204);
+        ];
+
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->delete(url('/api/v1/tags', [$tag, 'relationships', 'taggables']));
+
+        $response->assertStatus(204);
 
         $this->assertTaggablesAre(
             $tag,
-            [$allPosts->get(1)],
-            [$allVideos->first(), $allVideos->get(1)]
+            [$allPosts[1]],
+            [$allVideos->first(), $allVideos[1]]
         );
     }
 

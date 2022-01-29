@@ -532,7 +532,13 @@ class ResourceValidationTest extends TestCase
             ],
         ];
 
-        $this->actingAsUser()->doCreate($data)->assertStatus(400)->assertJson([
+        $response = $this
+            ->actingAsUser()
+            ->jsonApi()
+            ->withData($data)
+            ->post('/api/v1/comments');
+
+        $response->assertStatus(400)->assertJson([
             'errors' => [
                 [
                     'detail' => "Resource type post is not recognised.",

@@ -67,7 +67,7 @@ class LoginTest extends TestCase
 
     /**
      * @param $credentials
-     * @return \Illuminate\Foundation\Testing\TestResponse
+     * @return \Illuminate\Testing\TestResponse
      */
     private function doLogin($credentials)
     {

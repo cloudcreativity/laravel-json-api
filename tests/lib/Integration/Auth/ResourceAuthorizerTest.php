@@ -23,14 +23,13 @@ use DummyApp\Tag;
 class ResourceAuthorizerTest extends TestCase
 {
 
-    /**
-     * @var string
-     */
-    protected $resourceType = 'tags';
-
     public function testIndexUnauthenticated()
     {
-        $this->doSearch()->assertStatus(401)->assertJson([
+        $response = $this
+            ->jsonApi()
+            ->get('/api/v1/tags');
+
+        $response->assertStatus(401)->assertJson([
             'errors' => [
                 [
                     'title' => 'Unauthenticated',
@@ -42,9 +41,12 @@ class ResourceAuthorizerTest extends TestCase
 
     public function testIndexAllowed()
     {
-        $this->actingAsUser()
-            ->doSearch()
-            ->assertStatus(200);
+        $response = $this
+            ->actingAsUser()
+            ->jsonApi()
+            ->get('/api/v1/tags');
+
+        $response->assertStatus(200);
     }
 
     public function testCreateUnauthenticated()
@@ -56,7 +58,12 @@ class ResourceAuthorizerTest extends TestCase
             ],
         ];
 
-        $this->doCreate($data)->assertStatus(401)->assertJson([
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->post('/api/v1/tags');
+
+        $response->assertStatus(401)->assertJson([
             'errors' => [
                 [
                     'title' => 'Unauthenticated',
@@ -74,7 +81,13 @@ class ResourceAuthorizerTest extends TestCase
      */
     public function testCreateUnauthorized(array $data)
     {
-        $this->actingAsUser()->doCreate($data)->assertStatus(403)->assertJson([
+        $response = $this
+            ->actingAsUser()
+            ->jsonApi()
+            ->withData($data)
+            ->post('/api/v1/tags');
+
+        $response->assertStatus(403)->assertJson([
             'errors' => [
                 [
                     'title' => 'Unauthorized',
@@ -90,16 +103,24 @@ class ResourceAuthorizerTest extends TestCase
      */
     public function testCreateAllowed(array $data)
     {
-        $this->actingAsUser('author')
-            ->doCreate($data)
-            ->assertStatus(201);
+        $response = $this
+            ->actingAsUser('author')
+            ->jsonApi()
+            ->withData($data)
+            ->post('/api/v1/tags');
+
+        $response->assertStatus(201);
     }
 
     public function testReadUnauthenticated()
     {
         $tag = factory(Tag::class)->create();
 
-        $this->doRead($tag)->assertStatus(401)->assertJson([
+        $response = $this
+            ->jsonApi()
+            ->get(url('/api/v1/tags', $tag));
+
+        $response->assertStatus(401)->assertJson([
             'errors' => [
                 [
                     'title' => 'Unauthenticated',
@@ -126,8 +147,12 @@ class ResourceAuthorizerTest extends TestCase
             ],
         ];
 
-        $this->actingAsUser('admin')
-            ->doRead($tag)
+        $response = $this
+            ->actingAsUser('admin')
+            ->jsonApi()
+            ->get(url('/api/v1/tags', $tag));
+
+        $response
             ->assertStatus(200)
             ->assertExactJson(['data' => $expected]);
     }
@@ -143,7 +168,12 @@ class ResourceAuthorizerTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data)->assertStatus(401)->assertJson([
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->patch(url('/api/v1/tags', $tag));
+
+        $response->assertStatus(401)->assertJson([
             'errors' => [
                 [
                     'title' => 'Unauthenticated',
@@ -164,7 +194,13 @@ class ResourceAuthorizerTest extends TestCase
             ],
         ];
 
-        $this->actingAsUser()->doUpdate($data)->assertStatus(403)->assertJson([
+        $response = $this
+            ->actingAsUser()
+            ->jsonApi()
+            ->withData($data)
+            ->patch(url('/api/v1/tags', $tag));
+
+        $response->assertStatus(403)->assertJson([
             'errors' => [
                 [
                     'title' => 'Unauthorized',
@@ -185,9 +221,13 @@ class ResourceAuthorizerTest extends TestCase
             ],
         ];
 
-        $this->actingAsUser('admin')
-            ->doUpdate($data)
-            ->assertStatus(200);
+        $response = $this
+            ->actingAsUser('admin')
+            ->jsonApi()
+            ->withData($data)
+            ->patch(url('/api/v1/tags', $tag));
+
+        $response->assertStatus(200);
     }
 
 
@@ -195,7 +235,11 @@ class ResourceAuthorizerTest extends TestCase
     {
         $tag = factory(Tag::class)->create();
 
-        $this->doDelete($tag)->assertStatus(401)->assertJson([
+        $response = $this
+            ->jsonApi()
+            ->delete(url('/api/v1/tags', $tag));
+
+        $response->assertStatus(401)->assertJson([
             'errors' => [
                 [
                     'title' => 'Unauthenticated',
@@ -211,7 +255,12 @@ class ResourceAuthorizerTest extends TestCase
     {
         $tag = factory(Tag::class)->create();
 
-        $this->actingAsUser()->doDelete($tag)->assertStatus(403)->assertJson([
+        $response = $this
+            ->actingAsUser()
+            ->jsonApi()
+            ->delete(url('/api/v1/tags', $tag));
+
+        $response->assertStatus(403)->assertJson([
             'errors' => [
                 [
                     'title' => 'Unauthorized',
@@ -227,9 +276,12 @@ class ResourceAuthorizerTest extends TestCase
     {
         $tag = factory(Tag::class)->create();
 
-        $this->actingAsUser('admin')
-            ->doDelete($tag)
-            ->assertStatus(204);
+        $response = $this
+            ->actingAsUser('admin')
+            ->jsonApi()
+            ->delete(url('/api/v1/tags', $tag));
+
+        $response->assertStatus(204);
 
         $this->assertDatabaseMissing('tags', ['id' => $tag->getKey()]);
     }
