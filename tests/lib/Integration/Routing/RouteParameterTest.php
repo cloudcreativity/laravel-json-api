@@ -65,7 +65,9 @@ class RouteParameterTest extends TestCase
             ],
         ];
 
-        $this->getJsonApi($url)->assertFetchedOne($expected);
+        $response = $this->jsonApi()->get($url);
+
+        $response->assertFetchedOne($expected);
     }
 
     public function testManual(): void

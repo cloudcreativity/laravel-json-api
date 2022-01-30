@@ -31,11 +31,6 @@ class ControllerHooksTest extends TestCase
 {
 
     /**
-     * @var string
-     */
-    protected $resourceType = 'downloads';
-
-    /**
      * @return void
      */
     protected function setUp(): void
@@ -66,7 +61,12 @@ class ControllerHooksTest extends TestCase
             ],
         ];
 
-        $this->doCreate($data)->assertAcceptedWithId(
+        $response = $this
+            ->jsonApi('downloads')
+            ->withData($data)
+            ->post('/api/v1/downloads');
+
+        $response->assertAcceptedWithId(
             'http://localhost/api/v1/downloads/queue-jobs',
             ['type' => 'queue-jobs']
         );
@@ -88,7 +88,12 @@ class ControllerHooksTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data)->assertAcceptedWithId(
+        $response = $this
+            ->jsonApi('downloads')
+            ->withData($data)
+            ->patch(url('/api/v1/downloads', $download));
+
+        $response->assertAcceptedWithId(
             'http://localhost/api/v1/downloads/queue-jobs',
             ['type' => 'queue-jobs']
         );
@@ -102,7 +107,11 @@ class ControllerHooksTest extends TestCase
     {
         $download = factory(Download::class)->create();
 
-        $this->doDelete($download)->assertAcceptedWithId(
+        $response = $this
+            ->jsonApi('downloads')
+            ->delete(url('/api/v1/downloads', $download));
+
+        $response->assertAcceptedWithId(
             'http://localhost/api/v1/downloads/queue-jobs',
             ['type' => 'queue-jobs']
         );

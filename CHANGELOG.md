@@ -17,6 +17,16 @@ All notable changes to this project will be documented in this file. This projec
 - Package now depends on our fork of the Neomerx JSON:API package - `laravel-json-api/neomerx-json-api`. This is a
   non-breaking change.
 
+### Removed
+
+- **BREAKING** Removed the following classes from the `CloudCreativity\LaravelJsonApi\Testing` namespace. You must 
+  use classes (with the same names) from the `LaravelJsonApi\Testing` namespace, after installing the 
+  `laravel-json-api/testing` package as a dev dependency. Refer to the upgrade guide for details. Classes/traits removed
+  are:
+    - `MakesJsonApiRequests`
+    - `TestBuilder`
+    - `TestResponse`
+
 ## Unreleased
 
 ### Changed

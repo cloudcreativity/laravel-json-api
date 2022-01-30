@@ -60,8 +60,9 @@ class UpdateTest extends TestCase
 
         $response = $this
             ->jsonApi()
+            ->contentType($contentType)
             ->includePaths('user')
-            ->content(['avatar' => $file], $contentType)
+            ->withPayload(['avatar' => $file])
             ->patch(url('/api/v1/avatars', $this->avatar));
 
         $response

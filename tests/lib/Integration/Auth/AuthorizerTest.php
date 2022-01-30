@@ -30,11 +30,6 @@ class AuthorizerTest extends TestCase
     protected $appRoutes = false;
 
     /**
-     * @var string
-     */
-    protected $resourceType = 'posts';
-
-    /**
      * @return void
      */
     protected function setUp(): void
@@ -50,7 +45,9 @@ class AuthorizerTest extends TestCase
 
     public function testIndexUnauthenticated()
     {
-        $this->doSearch()->assertStatus(401)->assertJson([
+        $response = $this->jsonApi()->get('/api/v1/posts');
+
+        $response->assertStatus(401)->assertJson([
             'errors' => [
                 [
                     'title' => 'Unauthenticated',
@@ -62,9 +59,12 @@ class AuthorizerTest extends TestCase
 
     public function testIndexAllowed()
     {
-        $this->actingAsUser()
-            ->doSearch()
-            ->assertStatus(200);
+        $response = $this
+            ->actingAsUser()
+            ->jsonApi()
+            ->get('/api/v1/posts');
+
+        $response->assertStatus(200);
     }
 
     public function testCreateUnauthenticated()
@@ -78,7 +78,12 @@ class AuthorizerTest extends TestCase
             ],
         ];
 
-        $this->doCreate($data)->assertStatus(401)->assertJson([
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->post('/api/v1/posts');
+
+        $response->assertStatus(401)->assertJson([
             'errors' => [
                 [
                     'title' => 'Unauthenticated',
@@ -96,7 +101,13 @@ class AuthorizerTest extends TestCase
      */
     public function testCreateUnauthorized(array $data)
     {
-        $this->actingAsUser()->doCreate($data)->assertStatus(403)->assertJson([
+        $response = $this
+            ->actingAsUser()
+            ->jsonApi()
+            ->withData($data)
+            ->post('/api/v1/posts');
+
+        $response->assertStatus(403)->assertJson([
             'errors' => [
                 [
                     'title' => 'Unauthorized',
@@ -112,16 +123,24 @@ class AuthorizerTest extends TestCase
      */
     public function testCreateAllowed(array $data)
     {
-        $this->actingAsUser('author')
-            ->doCreate($data)
-            ->assertStatus(201);
+        $response = $this
+            ->actingAsUser('author')
+            ->jsonApi()
+            ->withData($data)
+            ->post('/api/v1/posts');
+
+        $response->assertStatus(201);
     }
 
     public function testReadUnauthenticated()
     {
         $post = factory(Post::class)->states('published')->create();
 
-        $this->doRead($post)->assertStatus(401)->assertJson([
+        $response = $this
+            ->jsonApi()
+            ->get(url('/api/v1/posts', $post));
+
+        $response->assertStatus(401)->assertJson([
             'errors' => [
                 [
                     'title' => 'Unauthenticated',
@@ -135,7 +154,12 @@ class AuthorizerTest extends TestCase
     {
         $post = factory(Post::class)->create();
 
-        $this->actingAsUser()->doRead($post)->assertStatus(403)->assertJson([
+        $response = $this
+            ->actingAsUser()
+            ->jsonApi()
+            ->get(url('/api/v1/posts', $post));
+
+        $response->assertStatus(403)->assertJson([
             'errors' => [
                 [
                     'title' => 'Unauthorized',
@@ -149,9 +173,12 @@ class AuthorizerTest extends TestCase
     {
         $post = factory(Post::class)->create();
 
-        $this->actingAs($post->author, 'api')
-            ->doRead($post)
-            ->assertStatus(200);
+        $response = $this
+            ->actingAs($post->author, 'api')
+            ->jsonApi()
+            ->get(url('/api/v1/posts', $post));
+
+        $response->assertStatus(200);
     }
 
     public function testUpdateUnauthenticated()
@@ -165,7 +192,12 @@ class AuthorizerTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data)->assertStatus(401)->assertJson([
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->patch(url('/api/v1/posts', $post));
+
+        $response->assertStatus(401)->assertJson([
             'errors' => [
                 [
                     'title' => 'Unauthenticated',
@@ -186,7 +218,13 @@ class AuthorizerTest extends TestCase
             ],
         ];
 
-        $this->actingAsUser()->doUpdate($data)->assertStatus(403)->assertJson([
+        $response = $this
+            ->actingAsUser()
+            ->jsonApi()
+            ->withData($data)
+            ->patch(url('/api/v1/posts', $post));
+
+        $response->assertStatus(403)->assertJson([
             'errors' => [
                 [
                     'title' => 'Unauthorized',
@@ -207,9 +245,13 @@ class AuthorizerTest extends TestCase
             ],
         ];
 
-        $this->actingAs($post->author, 'api')
-            ->doUpdate($data)
-            ->assertStatus(200);
+        $response = $this
+            ->actingAs($post->author, 'api')
+            ->jsonApi()
+            ->withData($data)
+            ->patch(url('/api/v1/posts', $post));
+
+        $response->assertStatus(200);
     }
 
 
@@ -217,7 +259,11 @@ class AuthorizerTest extends TestCase
     {
         $post = factory(Post::class)->states('published')->create();
 
-        $this->doDelete($post)->assertStatus(401)->assertJson([
+        $response = $this
+            ->jsonApi()
+            ->delete(url('/api/v1/posts', $post));
+
+        $response->assertStatus(401)->assertJson([
             'errors' => [
                 [
                     'title' => 'Unauthenticated',
@@ -233,7 +279,12 @@ class AuthorizerTest extends TestCase
     {
         $post = factory(Post::class)->create();
 
-        $this->actingAsUser()->doDelete($post)->assertStatus(403)->assertJson([
+        $response = $this
+            ->actingAsUser()
+            ->jsonApi()
+            ->delete(url('/api/v1/posts', $post));
+
+        $response->assertStatus(403)->assertJson([
             'errors' => [
                 [
                     'title' => 'Unauthorized',
@@ -249,9 +300,12 @@ class AuthorizerTest extends TestCase
     {
         $post = factory(Post::class)->create();
 
-        $this->actingAs($post->author, 'api')
-            ->doDelete($post)
-            ->assertStatus(204);
+        $response = $this
+            ->actingAs($post->author, 'api')
+            ->jsonApi()
+            ->delete(url('/api/v1/posts', $post));
+
+        $response->assertStatus(204);
 
         $this->assertDatabaseMissing('posts', ['id' => $post->getKey()]);
     }

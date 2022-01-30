@@ -35,11 +35,6 @@ use DummyApp\User;
 class HasManyTest extends TestCase
 {
 
-    /**
-     * @var string
-     */
-    protected $resourceType = 'countries';
-
     public function testCreateWithEmpty()
     {
         /** @var Country $country */
@@ -61,9 +56,13 @@ class HasManyTest extends TestCase
         $expected = $data;
         unset($expected['relationships']);
 
-        $id = $this
-            ->doCreate($data)
-            ->assertCreatedWithServerId(url('/api/v1/countries'), $expected)
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->post($uri = url('/api/v1/countries'));
+
+        $id = $response
+            ->assertCreatedWithServerId($uri, $expected)
             ->id();
 
         $this->assertDatabaseMissing('users', [
@@ -98,9 +97,13 @@ class HasManyTest extends TestCase
         $expected = $data;
         unset($expected['relationships']);
 
-        $id = $this
-            ->doCreate($data)
-            ->assertCreatedWithServerId(url('/api/v1/countries'), $expected)
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->post($uri = url('/api/v1/countries'));
+
+        $id = $response
+            ->assertCreatedWithServerId($uri, $expected)
             ->id();
 
         $this->assertUserIs(Country::find($id), $user);
@@ -136,9 +139,13 @@ class HasManyTest extends TestCase
 
         $expected = collect($data)->forget('relationships')->all();
 
-        $id = $this
-            ->doCreate($data)
-            ->assertCreatedWithServerId(url('/api/v1/countries'), $expected)
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->post($uri = url('/api/v1/countries'));
+
+        $id = $response
+            ->assertCreatedWithServerId($uri, $expected)
             ->id();
 
         $this->assertUsersAre(Country::find($id), $users);
@@ -161,7 +168,12 @@ class HasManyTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data)->assertFetchedOne(
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->patch($uri = url('/api/v1/countries', $country));
+
+        $response->assertFetchedOne(
             collect($data)->forget('relationships')->all()
         );
 
@@ -191,7 +203,12 @@ class HasManyTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data)->assertFetchedOne(
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->patch($uri = url('/api/v1/countries', $country));
+
+        $response->assertFetchedOne(
             collect($data)->forget('relationships')->all()
         );
         $this->assertUserIs($country, $user);
@@ -224,7 +241,12 @@ class HasManyTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data)->assertFetchedOne(
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->patch($uri = url('/api/v1/countries', $country));
+
+        $response->assertFetchedOne(
             collect($data)->forget('relationships')->all()
         );
         $this->assertUsersAre($country, $users);
@@ -238,9 +260,11 @@ class HasManyTest extends TestCase
 
         $country->users()->saveMany($users);
 
-        $this->doReadRelated($country, 'users')
-            ->willSeeType('users')
-            ->assertFetchedMany($users);
+        $response = $this
+            ->jsonApi('users')
+            ->get(url('/api/v1/countries', [$country, 'users']));
+
+        $response->assertFetchedMany($users);
     }
 
     public function testReadRelatedEmpty()
@@ -248,8 +272,11 @@ class HasManyTest extends TestCase
         /** @var Country $country */
         $country = factory(Country::class)->create();
 
-        $this->doReadRelated($country, 'users')
-            ->assertFetchedNone();
+        $response = $this
+            ->jsonApi()
+            ->get(url('/api/v1/countries', [$country, 'users']));
+
+        $response->assertFetchedNone();
     }
 
     public function testReadRelatedWithFilter()
@@ -271,16 +298,24 @@ class HasManyTest extends TestCase
             'country_id' => $country->getKey(),
         ]);
 
-        $this->doReadRelated($country, 'users', ['filter' => ['name' => 'Doe']])
-            ->willSeeType('users')
-            ->assertFetchedMany([$a, $b]);
+        $response = $this
+            ->jsonApi('users')
+            ->filter(['name' => 'Doe'])
+            ->get(url('/api/v1/countries', [$country, 'users']));
+
+        $response->assertFetchedMany([$a, $b]);
     }
 
     public function testReadRelatedWithInvalidFilter()
     {
         $country = factory(Country::class)->create();
 
-        $this->doReadRelated($country, 'users', ['filter' => ['name' => '']])->assertError(400, [
+        $response = $this
+            ->jsonApi('users')
+            ->filter(['name' => ''])
+            ->get(url('/api/v1/countries', [$country, 'users']));
+
+        $response->assertErrorStatus([
             'status' => '400',
             'detail' => 'The filter.name field must have a value.',
             'source' => ['parameter' => 'filter.name'],
@@ -301,18 +336,27 @@ class HasManyTest extends TestCase
             'country_id' => $country->getKey(),
         ]);
 
-        $this->doReadRelated($country, 'users', ['sort' => 'name'])
-            ->willSeeType('users')
-            ->assertFetchedMany([$b, $a]);
+        $response = $this
+            ->jsonApi('users')
+            ->sort('name')
+            ->get(url('/api/v1/countries', [$country, 'users']));
+
+        $response->assertFetchedMany([$b, $a]);
     }
 
     public function testReadRelatedWithInvalidSort()
     {
         $country = factory(Country::class)->create();
 
+        $response = $this
+            ->jsonApi('users')
+            ->sort('code')
+            ->get(url('/api/v1/countries', [$country, 'users']));
+
         // code is a valid sort on the countries resource, but not on the users resource.
-        $this->doReadRelated($country, 'users', ['sort' => 'code'])->assertError(400, [
+        $response->assertErrorStatus([
             'source' => ['parameter' => 'sort'],
+            'status' => '400',
             'detail' => 'Sort parameter code is not allowed.',
         ]);
     }
@@ -324,8 +368,12 @@ class HasManyTest extends TestCase
         $country->users()->saveMany($users);
         $phone = factory(Phone::class)->create(['user_id' => $users[0]->getKey()]);
 
-        $this->doReadRelated($country, 'users', ['include' => 'phone'])
-            ->willSeeType('users')
+        $response = $this
+            ->jsonApi('users')
+            ->includePaths('phone')
+            ->get(url('/api/v1/countries', [$country, 'users']));
+
+        $response
             ->assertFetchedMany($users)
             ->assertIsIncluded('phones', $phone);
     }
@@ -334,7 +382,12 @@ class HasManyTest extends TestCase
     {
         $country = factory(Country::class)->create();
 
-        $this->doReadRelated($country, 'users', ['include' => 'foo'])->assertError(400, [
+        $response = $this
+            ->jsonApi('users')
+            ->includePaths('foo')
+            ->get(url('/api/v1/countries', [$country, 'users']));
+
+        $response->assertError(400, [
             'source' => ['parameter' => 'include'],
         ]);
     }
@@ -345,8 +398,12 @@ class HasManyTest extends TestCase
         $users = factory(User::class, 3)->create();
         $country->users()->saveMany($users);
 
-        $this->doReadRelated($country, 'users', ['page' => ['number' => 1, 'size' => 2]])
-            ->willSeeType('users')
+        $response = $this
+            ->jsonApi('users')
+            ->page(['number' => 1, 'size' => 2])
+            ->get(url('/api/v1/countries', [$country, 'users']));
+
+        $response
             ->assertFetchedPage($users->take(2), null, ['current-page' => 1, 'per-page' => 2]);
     }
 
@@ -354,7 +411,12 @@ class HasManyTest extends TestCase
     {
         $country = factory(Country::class)->create();
 
-        $this->doReadRelated($country, 'users', ['page' => ['number' => 0, 'size' => 10]])->assertError(400, [
+        $response = $this
+            ->jsonApi('users')
+            ->page(['number' => 0, 'size' => 10])
+            ->get(url('/api/v1/countries', [$country, 'users']));
+
+        $response->assertError(400, [
             'source' => ['parameter' => 'page.number'],
         ]);
     }
@@ -365,8 +427,11 @@ class HasManyTest extends TestCase
         $users = factory(User::class, 2)->create();
         $country->users()->saveMany($users);
 
-        $this->doReadRelationship($country, 'users')
-            ->willSeeType('users')
+        $response = $this
+            ->jsonApi('users')
+            ->get(url('/api/v1/countries', [$country, 'relationships', 'users']));
+
+        $response
             ->assertFetchedToMany($users);
     }
 
@@ -374,8 +439,11 @@ class HasManyTest extends TestCase
     {
         $country = factory(Country::class)->create();
 
-        $this->doReadRelationship($country, 'users')
-            ->willSeeType('users')
+        $response = $this
+            ->jsonApi('users')
+            ->get(url('/api/v1/countries', [$country, 'relationships', 'users']));
+
+        $response
             ->assertFetchedNone();
     }
 
@@ -388,8 +456,12 @@ class HasManyTest extends TestCase
             return ['type' => 'users', 'id' => (string) $user->getRouteKey()];
         })->all();
 
-        $this->doReplaceRelationship($country, 'users', $data)
-            ->assertStatus(204);
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->patch(url('/api/v1/countries', [$country, 'relationships', 'users']));
+
+        $response->assertStatus(204);
 
         $this->assertUsersAre($country, $users);
     }
@@ -400,7 +472,12 @@ class HasManyTest extends TestCase
         $users = factory(User::class, 2)->create();
         $country->users()->saveMany($users);
 
-        $this->doReplaceRelationship($country, 'users', [])
+        $response = $this
+            ->jsonApi()
+            ->withData([])
+            ->patch(url('/api/v1/countries', [$country, 'relationships', 'users']));
+
+        $response
             ->assertStatus(204);
 
         $this->assertFalse($country->users()->exists());
@@ -417,7 +494,12 @@ class HasManyTest extends TestCase
             return ['type' => 'users', 'id' => (string) $user->getRouteKey()];
         })->all();
 
-        $this->doReplaceRelationship($country, 'users', $data)
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->patch(url('/api/v1/countries', [$country, 'relationships', 'users']));
+
+        $response
             ->assertStatus(204);
 
         $this->assertUsersAre($country, $users);
@@ -434,7 +516,12 @@ class HasManyTest extends TestCase
             return ['type' => 'users', 'id' => (string) $user->getRouteKey()];
         })->all();
 
-        $this->doAddToRelationship($country, 'users', $data)
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->post(url('/api/v1/countries', [$country, 'relationships', 'users']));
+
+        $response
             ->assertStatus(204);
 
         $this->assertUsersAre($country, $existing->merge($add));
@@ -451,8 +538,12 @@ class HasManyTest extends TestCase
             return ['type' => 'users', 'id' => (string) $user->getRouteKey()];
         })->all();
 
-        $this->doRemoveFromRelationship($country, 'users', $data)
-            ->assertStatus(204);
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->delete(url('/api/v1/countries', [$country, 'relationships', 'users']));
+
+        $response->assertStatus(204);
 
         $this->assertUsersAre($country, [$users->get(2), $users->get(3)]);
     }

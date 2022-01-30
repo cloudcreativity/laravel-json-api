@@ -35,11 +35,6 @@ class MorphOneTest extends TestCase
 {
 
     /**
-     * @var string
-     */
-    protected $resourceType = 'posts';
-
-    /**
      * @return void
      */
     public function setUp(): void
@@ -66,8 +61,13 @@ class MorphOneTest extends TestCase
             ],
         ];
 
-        $id = $this
-            ->doCreate($data, ['include' => 'image'])
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->includePaths('image')
+            ->post('/api/v1/posts');
+
+        $id = $response
             ->assertCreatedWithServerId(url('/api/v1/posts'), $data)
             ->id();
 
@@ -99,8 +99,13 @@ class MorphOneTest extends TestCase
             ],
         ];
 
-        $id = $this
-            ->doCreate($data, ['include' => 'image'])
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->includePaths('image')
+            ->post('/api/v1/posts');
+
+        $id = $response
             ->assertCreatedWithServerId(url('/api/v1/posts'), $data)
             ->id();
 
@@ -134,7 +139,13 @@ class MorphOneTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data, ['include' => 'image'])
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->includePaths('image')
+            ->patch(url('/api/v1/posts', $post));
+
+        $response
             ->assertFetchedOne($data);
 
         $this->assertDatabaseHas('images', [
@@ -164,7 +175,13 @@ class MorphOneTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data, ['include' => 'image'])
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->includePaths('image')
+            ->patch(url('/api/v1/posts', $post));
+
+        $response
             ->assertFetchedOne($data);
 
         $this->assertDatabaseHas('images', [
@@ -198,7 +215,13 @@ class MorphOneTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data, ['include' => 'image'])
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->includePaths('image')
+            ->patch(url('/api/v1/posts', $post));
+
+        $response
             ->assertFetchedOne($data);
 
         $this->assertDatabaseHas('images', [
@@ -230,7 +253,11 @@ class MorphOneTest extends TestCase
             ],
         ];
 
-        $this->doReadRelated($post, 'image')
+        $response = $this
+            ->jsonApi()
+            ->get(url('/api/v1/posts', [$post, 'image']));
+
+        $response
             ->assertFetchedOne($expected);
     }
 
@@ -238,7 +265,11 @@ class MorphOneTest extends TestCase
     {
         $post = factory(Post::class)->create();
 
-        $this->doReadRelated($post, 'image')
+        $response = $this
+            ->jsonApi()
+            ->get(url('/api/v1/posts', [$post, 'image']));
+
+        $response
             ->assertFetchedNull();
     }
 
@@ -250,8 +281,11 @@ class MorphOneTest extends TestCase
         $image = factory(Image::class)->make();
         $image->imageable()->associate($post)->save();
 
-        $this->doReadRelationship($post, 'image')
-            ->willSeeResourceType('images')
+        $response = $this
+            ->jsonApi('images')
+            ->get(url('/api/v1/posts', [$post, 'relationships', 'image']));
+
+        $response
             ->assertFetchedToOne($image);
     }
 
@@ -259,7 +293,11 @@ class MorphOneTest extends TestCase
     {
         $post = factory(Post::class)->create();
 
-        $this->doReadRelationship($post, 'image')
+        $response = $this
+            ->jsonApi('images')
+            ->get(url('/api/v1/posts', [$post, 'relationships', 'image']));
+
+        $response
             ->assertFetchedNull();
     }
 
@@ -272,7 +310,12 @@ class MorphOneTest extends TestCase
 
         $data = ['type' => 'images', 'id' => (string) $image->getRouteKey()];
 
-        $this->doReplaceRelationship($post, 'image', $data)
+        $response = $this
+            ->jsonApi('images')
+            ->withData($data)
+            ->patch(url('/api/v1/posts', [$post, 'relationships', 'image']));
+
+        $response
             ->assertStatus(204);
 
         $this->assertDatabaseHas('images', [
@@ -290,7 +333,12 @@ class MorphOneTest extends TestCase
         $image = factory(Image::class)->create();
         $image->imageable()->associate($post)->save();
 
-        $this->doReplaceRelationship($post, 'image', null)
+        $response = $this
+            ->jsonApi('images')
+            ->withData(null)
+            ->patch(url('/api/v1/posts', [$post, 'relationships', 'image']));
+
+        $response
             ->assertStatus(204);
 
         $this->assertDatabaseHas('images', [
@@ -313,7 +361,12 @@ class MorphOneTest extends TestCase
 
         $data = ['type' => 'images', 'id' => (string) $image->getRouteKey()];
 
-        $this->doReplaceRelationship($post, 'image', $data)
+        $response = $this
+            ->jsonApi('images')
+            ->withData($data)
+            ->patch(url('/api/v1/posts', [$post, 'relationships', 'image']));
+
+        $response
             ->assertStatus(204);
 
         $this->assertDatabaseHas('images', [

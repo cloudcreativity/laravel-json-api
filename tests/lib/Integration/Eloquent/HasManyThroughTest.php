@@ -44,11 +44,6 @@ use DummyApp\User;
 class HasManyThroughTest extends TestCase
 {
 
-    /**
-     * @var string
-     */
-    protected $resourceType = 'countries';
-
     public function testReadRelated()
     {
         /** @var Country $country */
@@ -65,8 +60,11 @@ class HasManyThroughTest extends TestCase
             'author_id' => $users->last()->getKey(),
         ]);
 
-        $this->doReadRelated($country, 'posts')
-            ->willSeeType('posts')
+        $response = $this
+            ->jsonApi('posts')
+            ->get(url('/api/v1/countries', [$country, 'posts']));
+
+        $response
             ->assertFetchedMany([$post1, $post2]);
     }
 
@@ -75,7 +73,11 @@ class HasManyThroughTest extends TestCase
         /** @var Country $country */
         $country = factory(Country::class)->create();
 
-        $this->doReadRelated($country, 'posts')
+        $response = $this
+            ->jsonApi('posts')
+            ->get(url('/api/v1/countries', [$country, 'posts']));
+
+        $response
             ->assertFetchedNone();
     }
 
@@ -90,8 +92,11 @@ class HasManyThroughTest extends TestCase
             'author_id' => $user->getKey(),
         ]);
 
-        $this->doReadRelationship($country, 'posts')
-            ->willSeeType('posts')
+        $response = $this
+            ->jsonApi('posts')
+            ->get(url('/api/v1/countries', [$country, 'relationships', 'posts']));
+
+        $response
             ->assertFetchedToMany($posts);
     }
 
@@ -99,7 +104,11 @@ class HasManyThroughTest extends TestCase
     {
         $country = factory(Country::class)->create();
 
-        $this->doReadRelationship($country, 'users')
+        $response = $this
+            ->jsonApi('posts')
+            ->get(url('/api/v1/countries', [$country, 'relationships', 'posts']));
+
+        $response
             ->assertFetchedNone();
     }
 

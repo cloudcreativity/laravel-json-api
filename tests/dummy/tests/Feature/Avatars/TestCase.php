@@ -26,11 +26,6 @@ abstract class TestCase extends BaseTestCase
 {
 
     /**
-     * @var string
-     */
-    protected $resourceType = 'avatars';
-
-    /**
      * @return void
      */
     protected function setUp(): void

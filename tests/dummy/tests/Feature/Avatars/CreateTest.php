@@ -72,12 +72,11 @@ class CreateTest extends TestCase
     {
         $user = factory(User::class)->create();
 
-        $this->actingAs($user, 'api');
-
         $response = $this
+            ->actingAs($user, 'api')
             ->jsonApi()
             ->contentType('multipart/form-data')
-            ->content(['avatar' => null])
+            ->withPayload(['avatar' => ''])
             ->post('/api/v1/avatars');
 
         $response->assertExactErrorStatus([

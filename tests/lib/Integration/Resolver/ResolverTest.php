@@ -28,11 +28,6 @@ class ResolverTest extends TestCase
 {
 
     /**
-     * @var string
-     */
-    protected $resourceType = 'foobars';
-
-    /**
      * @var bool
      */
     protected $appRoutes = false;
@@ -69,7 +64,11 @@ class ResolverTest extends TestCase
 
         $post = factory(Post::class)->create();
 
-        $this->doRead($post)->assertFetchedOne([
+        $response = $this
+            ->jsonApi('foobars')
+            ->get(url('/api/v1/foobars', $post));
+
+        $response->assertFetchedOne([
             'type' => 'foobars',
             'id' => $post,
             'attributes' => [
@@ -90,7 +89,12 @@ class ResolverTest extends TestCase
 
         $post = factory(Post::class)->create();
 
-        $this->doRead($post)->assertFetchedOne([
+
+        $response = $this
+            ->jsonApi('foobars')
+            ->get(url('/api/v1/foobars', $post));
+
+        $response->assertFetchedOne([
             'type' => 'foobars',
             'id' => $post,
             'attributes' => [

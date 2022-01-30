@@ -36,11 +36,6 @@ use DummyApp\User;
 class MorphManyTest extends TestCase
 {
 
-    /**
-     * @var string
-     */
-    protected $resourceType = 'posts';
-
     public function testCreateWithEmpty()
     {
         $post = factory(Post::class)->make();
@@ -59,7 +54,13 @@ class MorphManyTest extends TestCase
             ],
         ];
 
-        $this->doCreate($data, ['include' => 'comments'])
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->includePaths('comments')
+            ->post('/api/v1/posts');
+
+        $response
             ->assertCreatedWithServerId(url('/api/v1/posts'), $data);
 
         $this->assertDatabaseMissing('comments', [
@@ -93,8 +94,13 @@ class MorphManyTest extends TestCase
             ],
         ];
 
-        $id = $this
-            ->doCreate($data, ['include' => 'comments'])
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->includePaths('comments')
+            ->post('/api/v1/posts');
+
+        $id = $response
             ->assertCreatedWithServerId(url('/api/v1/posts'), $data)
             ->id();
 
@@ -130,8 +136,13 @@ class MorphManyTest extends TestCase
             ],
         ];
 
-        $id = $this
-            ->doCreate($data, ['include' => 'comments'])
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->includePaths('comments')
+            ->post('/api/v1/posts');
+
+        $id = $response
             ->assertCreatedWithServerId(url('/api/v1/posts'), $data)
             ->id();
 
@@ -157,7 +168,13 @@ class MorphManyTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data, ['include' => 'comments'])->assertFetchedOne($data);
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->includePaths('comments')
+            ->patch(url('/api/v1/posts', $post));
+
+        $response->assertFetchedOne($data);
 
         $this->assertDatabaseMissing('comments', [
             'commentable_type' => Post::class,
@@ -191,7 +208,13 @@ class MorphManyTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data, ['include' => 'comments'])->assertFetchedOne($data);
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->includePaths('comments')
+            ->patch(url('/api/v1/posts', $post));
+
+        $response->assertFetchedOne($data);
         $this->assertCommentIs($post, $comment);
     }
 
@@ -230,7 +253,13 @@ class MorphManyTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data, ['include' => 'comments'])->assertFetchedOne($data);
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->includePaths('comments')
+            ->patch(url('/api/v1/posts', $post));
+
+        $response->assertFetchedOne($data);
         $this->assertCommentsAre($post, $comments);
     }
 
@@ -248,8 +277,11 @@ class MorphManyTest extends TestCase
         /** This comment should not appear in the results... */
         factory(Comment::class)->states('post')->create();
 
-        $this->doReadRelated($model, 'comments')
-            ->willSeeType('comments')
+        $response = $this
+            ->jsonApi('comments')
+            ->get(url('/api/v1/posts', [$model, 'comments']));
+
+        $response
             ->assertFetchedMany($comments);
     }
 
@@ -270,8 +302,12 @@ class MorphManyTest extends TestCase
             'commentable_id' => $post->getKey(),
         ]);
 
-        $this->doReadRelated($post, 'comments', ['filter' => ['createdBy' => $user->getRouteKey()]])
-            ->willSeeType('comments')
+        $response = $this
+            ->jsonApi('comments')
+            ->filter(['createdBy' => $user->getRouteKey()])
+            ->get(url('/api/v1/posts', [$post, 'comments']));
+
+        $response
             ->assertFetchedMany($expected);
     }
 
@@ -279,7 +315,12 @@ class MorphManyTest extends TestCase
     {
         $post = factory(Post::class)->create();
 
-        $this->doReadRelated($post, 'comments', ['filter' => ['createdBy' => 'foo']])->assertErrorStatus([
+        $response = $this
+            ->jsonApi('comments')
+            ->filter(['createdBy' => 'foo'])
+            ->get(url('/api/v1/posts', [$post, 'comments']));
+
+        $response->assertErrorStatus([
             'status' => '400',
             'source' => ['parameter' => 'filter.createdBy'],
         ]);
@@ -300,17 +341,26 @@ class MorphManyTest extends TestCase
             'content' => 'A comment',
         ]);
 
-        $this->doReadRelated($post, 'comments', ['sort' => 'content'])
-            ->willSeeType('comments')
-            ->assertFetchedMany([$b, $a]);
+        $response = $this
+            ->jsonApi('comments')
+            ->sort('content')
+            ->get(url('/api/v1/posts', [$post, 'comments']));
+
+        $response
+            ->assertFetchedManyInOrder([$b, $a]);
     }
 
     public function testReadRelatedWithInvalidSort()
     {
         $post = factory(Post::class)->create();
 
+        $response = $this
+            ->jsonApi('comments')
+            ->sort('slug')
+            ->get(url('/api/v1/posts', [$post, 'comments']));
+
         /** `slug` is a valid sort parameter on the posts resource, but not the comments resource. */
-        $this->doReadRelated($post, 'comments', ['sort' => 'slug'])->assertError(400, [
+        $response->assertError(400, [
             'source' => ['parameter' => 'sort'],
         ]);
     }
@@ -323,13 +373,16 @@ class MorphManyTest extends TestCase
             'commentable_id' => $post->getKey(),
         ]);
 
-
         $expected = $comments->map(function (Comment $comment) {
-            return ['type' => 'users', 'id' => (string) $comment->user_id];
+            return ['type' => 'users', 'id' => $comment->user];
         })->all();
 
-        $this->doReadRelated($post, 'comments', ['include' => 'createdBy'])
-            ->willSeeType('comments')
+        $response = $this
+            ->jsonApi('comments')
+            ->includePaths('createdBy')
+            ->get(url('/api/v1/posts', [$post, 'comments']));
+
+        $response
             ->assertFetchedMany($comments)
             ->assertIncluded($expected);
     }
@@ -338,8 +391,13 @@ class MorphManyTest extends TestCase
     {
         $post = factory(Post::class)->create();
 
+        $response = $this
+            ->jsonApi('comments')
+            ->includePaths('author')
+            ->get(url('/api/v1/posts', [$post, 'comments']));
+
         /** `author` is valid on a post but not on a comment. */
-        $this->doReadRelated($post, 'comments', ['include' => 'author'])->assertError(400, [
+        $response->assertError(400, [
             'source' => ['parameter' => 'include'],
         ]);
     }
@@ -353,8 +411,12 @@ class MorphManyTest extends TestCase
             'commentable_id' => $post->getKey(),
         ])->sortByDesc('id')->values();
 
-        $this->doReadRelated($post, 'comments', ['page' => ['limit' => 2]])
-            ->willSeeType('comments')
+        $response = $this
+            ->jsonApi('comments')
+            ->page(['limit' => 2])
+            ->get(url('/api/v1/posts', [$post, 'comments']));
+
+        $response
             ->assertFetchedPage($comments->take(2), null, [
                 'per-page' => 2,
                 'from' => (string) $comments->first()->getRouteKey(),
@@ -367,7 +429,12 @@ class MorphManyTest extends TestCase
     {
         $post = factory(Post::class)->create();
 
-        $this->doReadRelated($post, 'comments', ['page' => ['limit' => 100]])->assertError(400, [
+        $response = $this
+            ->jsonApi('comments')
+            ->page(['limit' => 100])
+            ->get(url('/api/v1/posts', [$post, 'comments']));
+
+        $response->assertError(400, [
             'source' => ['parameter' => 'page.limit'],
         ]);
     }
@@ -386,16 +453,23 @@ class MorphManyTest extends TestCase
         /** This comment should not appear in the results... */
         factory(Comment::class)->states('post')->create();
 
-        $this->doReadRelated($model, 'comments')
-            ->willSeeType('comments')
-            ->assertFetchedMany($comments);
+        $response = $this
+            ->jsonApi('comments')
+            ->get(url('/api/v1/posts', [$model, 'relationships', 'comments']));
+
+        $response
+            ->assertFetchedToMany($comments);
     }
 
     public function testReadEmptyRelationship()
     {
         $post = factory(Post::class)->create();
 
-        $this->doReadRelationship($post, 'comments')
+        $response = $this
+            ->jsonApi('comments')
+            ->get(url('/api/v1/posts', [$post, 'relationships', 'comments']));
+
+        $response
             ->assertFetchedNone();
     }
 
@@ -408,7 +482,12 @@ class MorphManyTest extends TestCase
             return ['type' => 'comments', 'id' => (string) $comment->getRouteKey()];
         })->all();
 
-        $this->doReplaceRelationship($post, 'comments', $data)
+        $response = $this
+            ->jsonApi('comments')
+            ->withData($data)
+            ->patch(url('/api/v1/posts', [$post, 'relationships', 'comments']));
+
+        $response
             ->assertStatus(204);
 
         $this->assertCommentsAre($post, $comments);
@@ -422,7 +501,12 @@ class MorphManyTest extends TestCase
             'commentable_id' => $post->getKey(),
         ]);
 
-        $this->doReplaceRelationship($post, 'comments', [])
+        $response = $this
+            ->jsonApi('comments')
+            ->withData([])
+            ->patch(url('/api/v1/posts', [$post, 'relationships', 'comments']));
+
+        $response
             ->assertStatus(204);
 
         $this->assertFalse($post->comments()->exists());
@@ -442,7 +526,12 @@ class MorphManyTest extends TestCase
             return ['type' => 'comments', 'id' => (string) $comment->getRouteKey()];
         })->all();
 
-        $this->doReplaceRelationship($post, 'comments', $data)
+        $response = $this
+            ->jsonApi('comments')
+            ->withData($data)
+            ->patch(url('/api/v1/posts', [$post, 'relationships', 'comments']));
+
+        $response
             ->assertStatus(204);
 
         $this->assertCommentsAre($post, $comments);
@@ -461,7 +550,12 @@ class MorphManyTest extends TestCase
             return ['type' => 'comments', 'id' => (string) $comment->getRouteKey()];
         })->all();
 
-        $this->doAddToRelationship($post, 'comments', $data)
+        $response = $this
+            ->jsonApi('comments')
+            ->withData($data)
+            ->post(url('/api/v1/posts', [$post, 'relationships', 'comments']));
+
+        $response
             ->assertStatus(204);
 
         $this->assertCommentsAre($post, $existing->merge($add));
@@ -479,7 +573,12 @@ class MorphManyTest extends TestCase
             return ['type' => 'comments', 'id' => (string) $comment->getRouteKey()];
         })->all();
 
-        $this->doRemoveFromRelationship($post, 'comments', $data)
+        $response = $this
+            ->jsonApi('comments')
+            ->withData($data)
+            ->delete(url('/api/v1/posts', [$post, 'relationships', 'comments']));
+
+        $response
             ->assertStatus(204);
 
         $this->assertCommentsAre($post, [$comments->get(2), $comments->get(3)]);

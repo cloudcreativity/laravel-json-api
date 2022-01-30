@@ -29,11 +29,6 @@ class ClientDispatchTest extends TestCase
 {
 
     /**
-     * @var string
-     */
-    protected $resourceType = 'downloads';
-
-    /**
      * @return void
      */
     protected function setUp(): void
@@ -67,10 +62,14 @@ class ClientDispatchTest extends TestCase
             ],
         ];
 
-        $id = $this->doCreate($data)->assertAcceptedWithId(
-            'http://localhost/api/v1/downloads/queue-jobs',
-            $expected
-        )->jsonApi('/data/id');
+        $response = $this
+            ->jsonApi('downloads')
+            ->withData($data)
+            ->post('/api/v1/downloads');
+
+        $id = $response
+            ->assertAcceptedWithId('http://localhost/api/v1/downloads/queue-jobs', $expected)
+            ->id();
 
         $job = $this->assertDispatchedCreate();
 
@@ -109,7 +108,12 @@ class ClientDispatchTest extends TestCase
             ],
         ];
 
-        $this->doCreate($data)->assertAcceptedWithId('http://localhost/api/v1/downloads/queue-jobs', [
+        $response = $this
+            ->jsonApi('downloads')
+            ->withData($data)
+            ->post('/api/v1/downloads');
+
+        $response->assertAcceptedWithId('http://localhost/api/v1/downloads/queue-jobs', [
             'type' => 'queue-jobs',
             'attributes' => [
                 'resourceType' => 'downloads',
@@ -159,7 +163,12 @@ class ClientDispatchTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data)->assertAcceptedWithId(
+        $response = $this
+            ->jsonApi('downloads')
+            ->withData($data)
+            ->patch(url('/api/v1/downloads', $download));
+
+        $response->assertAcceptedWithId(
             'http://localhost/api/v1/downloads/queue-jobs',
             $expected
         );
@@ -183,7 +192,11 @@ class ClientDispatchTest extends TestCase
     {
         $download = factory(Download::class)->create();
 
-        $this->doDelete($download)->assertAcceptedWithId('http://localhost/api/v1/downloads/queue-jobs', [
+        $response = $this
+            ->jsonApi('downloads')
+            ->delete(url('/api/v1/downloads', $download));
+
+        $response->assertAcceptedWithId('http://localhost/api/v1/downloads/queue-jobs', [
             'type' => 'queue-jobs',
             'attributes' => [
                 'resourceType' => 'downloads',

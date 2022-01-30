@@ -23,11 +23,6 @@ use DummyApp\Post;
 class QueriesManyTest extends TestCase
 {
 
-    /**
-     * @var string
-     */
-    protected $resourceType = 'posts';
-
     public function testRelated()
     {
         /** @var Post $post */
@@ -44,8 +39,12 @@ class QueriesManyTest extends TestCase
 
         factory(Post::class, 3)->create();
 
-        $this->doReadRelated($post, 'related')
-            ->willSeeType('posts')
+        $response = $this
+            ->jsonApi('posts')
+            ->get(url('/api/v1/posts', [$post, 'related']));
+
+
+        $response
             ->assertFetchedMany($expected);
     }
 
@@ -65,8 +64,11 @@ class QueriesManyTest extends TestCase
 
         factory(Post::class, 3)->create();
 
-        $this->doReadRelationship($post, 'related')
-            ->willSeeType('posts')
+        $response = $this
+            ->jsonApi('posts')
+            ->get(url('/api/v1/posts', [$post, 'relationships', 'related']));
+
+        $response
             ->assertFetchedToMany($expected);
     }
 }

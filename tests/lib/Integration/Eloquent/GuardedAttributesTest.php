@@ -22,12 +22,6 @@ use DummyApp\Video;
 
 class GuardedAttributesTest extends TestCase
 {
-
-    /**
-     * @var string
-     */
-    protected $resourceType = 'videos';
-
     /**
      * An adapter must be allowed to 'guard' some fields - i.e. prevent them
      * from being filled to the model. The video adapter in our dummy app is
@@ -51,6 +45,11 @@ class GuardedAttributesTest extends TestCase
         $expected = $data;
         $expected['attributes']['url'] = $video->url;
 
-        $this->doUpdate($data)->assertFetchedOne($expected);
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->patch(url('/api/v1/videos', $video));
+
+        $response->assertFetchedOne($expected);
     }
 }

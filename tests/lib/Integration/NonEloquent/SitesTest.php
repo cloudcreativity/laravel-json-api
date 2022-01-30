@@ -24,15 +24,17 @@ use DummyApp\Entities\SiteRepository;
 class SitesTest extends TestCase
 {
 
-    /**
-     * @var string
-     */
-    protected $resourceType = 'sites';
-
     public function testSearchAll()
     {
         $site = $this->createSite(); // ensure there is at least one site.
-        $this->doSearch()->assertFetchedMany(['id' => $site->getSlug()]);
+
+        $response = $this
+            ->jsonApi()
+            ->get('/api/v1/sites');
+
+        $response->assertFetchedMany([
+            ['type' => 'sites', 'id' => $site->getSlug()],
+        ]);
     }
 
     public function testCreate()
@@ -46,7 +48,12 @@ class SitesTest extends TestCase
             ],
         ];
 
-        $this->doCreate($data)->assertCreatedWithClientId(
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->post('/api/v1/sites');
+
+        $response->assertCreatedWithClientId(
             'http://localhost/api/v1/sites',
             $data
         );
@@ -67,7 +74,11 @@ class SitesTest extends TestCase
             ],
         ];
 
-        $this->doRead('my-site')->assertFetchedOne($expected);
+        $response = $this
+            ->jsonApi()
+            ->get('/api/v1/sites/my-site');
+
+        $response->assertFetchedOne($expected);
     }
 
     public function testUpdate()
@@ -85,13 +96,23 @@ class SitesTest extends TestCase
         $expected = $data;
         $expected['attributes']['domain'] = $site->getDomain();
 
-        $this->doUpdate($data)->assertFetchedOne($expected);
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->patch('/api/v1/sites/my-site');
+
+        $response->assertFetchedOne($expected);
     }
 
     public function testDelete()
     {
         $this->createSite();
-        $this->doDelete('my-site')->assertNoContent();
+
+        $response = $this
+            ->jsonApi()
+            ->delete('/api/v1/sites/my-site');
+
+        $response->assertNoContent();
         $this->assertNull(app(SiteRepository::class)->find('my-site'));
     }
 

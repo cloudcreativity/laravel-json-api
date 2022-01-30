@@ -28,11 +28,6 @@ class CustomTest extends TestCase
 {
 
     /**
-     * @var string
-     */
-    protected $resourceType = 'posts';
-
-    /**
      * @var bool
      */
     protected $appRoutes = false;
@@ -77,9 +72,9 @@ class CustomTest extends TestCase
      */
     public function testVersion(string $uri): void
     {
-        $this->getJsonApi($uri)->assertMetaWithoutData([
-            'version' => 'v1',
-        ]);
+        $response = $this->jsonApi()->get($uri);
+
+        $response->assertMetaWithoutData(['version' => 'v1']);
     }
 
     /**
@@ -103,7 +98,12 @@ class CustomTest extends TestCase
         $post = factory(Post::class)->create();
         $uri = url('/api/v1/posts', [$post, 'share']);
 
-        $this->postJsonApi($uri, ['include' => 'author'])
+        $response = $this
+            ->jsonApi('posts')
+            ->includePaths('author')
+            ->post($uri);
+
+        $response
             ->assertFetchedOne($post)
             ->assertIsIncluded('users', $post->author);
 
@@ -114,7 +114,12 @@ class CustomTest extends TestCase
 
     public function testResourceNotFound(): void
     {
-        $this->postJsonApi('/api/v1/posts/999/share')->assertErrorStatus([
+        $response = $this
+            ->jsonApi('posts')
+            ->includePaths('author')
+            ->post('/api/v1/posts/999/share');
+
+        $response->assertErrorStatus([
             'status' => '404',
             'title' => 'Not Found',
         ]);
@@ -145,7 +150,12 @@ class CustomTest extends TestCase
             'source' => ['parameter' => 'include'],
         ];
 
-        $this->postJsonApi($uri, ['include' => 'foo'])
+        $response = $this
+            ->jsonApi()
+            ->includePaths('foo')
+            ->post($uri);
+
+        $response
             ->assertErrorStatus($expected);
     }
 
@@ -155,7 +165,12 @@ class CustomTest extends TestCase
         $post = $comment->commentable;
         $uri = url('/api/v1/comments', [$comment, 'post', 'share']);
 
-        $this->postJsonApi($uri, ['include' => 'author'])
+        $response = $this
+            ->jsonApi('posts')
+            ->includePaths('author')
+            ->post($uri);
+
+        $response
             ->assertFetchedOne($post)
             ->assertIsIncluded('users', $post->author);
 
@@ -166,7 +181,11 @@ class CustomTest extends TestCase
 
     public function testRelationshipNotFound(): void
     {
-        $this->postJsonApi('/api/v1/comments/999/post/share')->assertErrorStatus([
+        $response = $this
+            ->jsonApi()
+            ->post('/api/v1/comments/999/post/share');
+
+        $response->assertErrorStatus([
             'status' => '404',
             'title' => 'Not Found',
         ]);
@@ -197,7 +216,12 @@ class CustomTest extends TestCase
             'source' => ['parameter' => 'include'],
         ];
 
-        $this->postJsonApi($uri, ['include' => 'foo'])
+        $response = $this
+            ->jsonApi()
+            ->includePaths('foo')
+            ->post($uri);
+
+        $response
             ->assertErrorStatus($expected);
     }
 }

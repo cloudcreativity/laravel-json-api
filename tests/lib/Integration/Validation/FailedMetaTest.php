@@ -175,8 +175,13 @@ class FailedMetaTest extends TestCase
 
         $this->validator->method('rules')->willReturn($rules);
 
-        $this->postJsonApi('/api/v1/posts', [], compact('data'))
-            ->assertExactJson(['errors' => [$expected]]);
+        $response = $this
+            ->jsonApi('posts')
+            ->withData($data)
+            ->post('/api/v1/posts');
+
+        $response
+            ->assertExactErrorStatus($expected);
     }
 
     /**
@@ -214,8 +219,13 @@ class FailedMetaTest extends TestCase
             'value' => Rule::unique('posts', 'slug'),
         ]);
 
-        $this->postJsonApi('/api/v1/posts', [], compact('data'))
-            ->assertExactJson(['errors' => [$expected]]);
+        $response = $this
+            ->jsonApi('posts')
+            ->withData($data)
+            ->post('/api/v1/posts');
+
+        $response
+            ->assertExactErrorStatus($expected);
     }
 
     public function testMultiple(): void
@@ -257,7 +267,11 @@ class FailedMetaTest extends TestCase
 
         $this->validator->method('rules')->willReturn(['title' => 'string|between:5,255']);
 
-        $this->postJsonApi('/api/v1/posts', [], compact('data'))
-            ->assertExactJson(['errors' => $expected]);
+        $response = $this
+            ->jsonApi('posts')
+            ->withData($data)
+            ->post('/api/v1/posts');
+
+        $response->assertExactErrors(422, $expected);
     }
 }

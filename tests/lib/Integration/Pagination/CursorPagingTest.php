@@ -27,11 +27,6 @@ class CursorPagingTest extends TestCase
 {
 
     /**
-     * @var string
-     */
-    protected $resourceType = 'comments';
-
-    /**
      * @var Generator
      */
     private $faker;
@@ -73,8 +68,13 @@ class CursorPagingTest extends TestCase
             'has-more' => false,
         ];
 
-        $this->actingAsUser()
-            ->doSearch(['page' => ['limit' => 10]])
+        $response = $this
+            ->actingAsUser()
+            ->jsonApi()
+            ->page(['limit' => 10])
+            ->get('/api/v1/comments');
+
+        $response
             ->assertFetchedNone()
             ->assertExactMeta(compact('page'))
             ->assertExactLinks($links);
@@ -89,20 +89,25 @@ class CursorPagingTest extends TestCase
             }
         ])->sortByDesc('created_at')->values();
 
-        $this->actingAsUser()
-            ->doSearch(['page' => ['limit' => 4]])
+        $meta = [
+            'page' => [
+                'per-page' => 4,
+                'from' => (string) $comments->first()->getRouteKey(),
+                'to' => (string) $comments->get(3)->getRouteKey(),
+                'has-more' => true,
+            ],
+        ];
+
+        $response = $this
+            ->actingAsUser()
+            ->jsonApi('comments')
+            ->page(['limit' => 4])
+            ->get('/api/v1/comments');
+
+        $response
             ->assertFetchedMany($comments->take(4))
-            ->assertJson([
-                'meta' => [
-                    'page' => [
-                        'per-page' => 4,
-                        'from' => $comments->first()->getRouteKey(),
-                        'to' => $comments->get(3)->getRouteKey(),
-                        'has-more' => true,
-                    ],
-                ],
-                'links' => $this->createLinks(4, $comments->first(), $comments->get(3)),
-            ]);
+            ->assertExactMeta($meta)
+            ->assertExactLinks($this->createLinks(4, $comments->first(), $comments->get(3)));
     }
 
     public function testBefore()
@@ -125,20 +130,25 @@ class CursorPagingTest extends TestCase
             $comments->get(6),
         ]);
 
-        $this->actingAsUser()
-            ->doSearch(compact('page'))
+        $meta = [
+            'page' => [
+                'per-page' => 3,
+                'from' => (string) $expected->first()->getRouteKey(),
+                'to' => (string) $expected->last()->getRouteKey(),
+                'has-more' => true,
+            ],
+        ];
+
+        $response = $this
+            ->actingAsUser()
+            ->jsonApi('comments')
+            ->page($page)
+            ->get('/api/v1/comments');
+
+        $response
             ->assertFetchedMany($expected)
-            ->assertJson([
-                'meta' => [
-                    'page' => [
-                        'per-page' => 3,
-                        'from' => $expected->first()->getRouteKey(),
-                        'to' => $expected->last()->getRouteKey(),
-                        'has-more' => true,
-                    ],
-                ],
-                'links' => $this->createLinks(3, $expected->first(), $expected->last()),
-            ]);
+            ->assertExactMeta($meta)
+            ->assertExactLinks($this->createLinks(3, $expected->first(), $expected->last()));
     }
 
     public function testBeforeAscending()
@@ -163,20 +173,25 @@ class CursorPagingTest extends TestCase
             $comments->get(6),
         ]);
 
-        $this->actingAsUser()
-            ->doSearch(compact('page'))
+        $meta = [
+            'page' => [
+                'per-page' => 3,
+                'from' => (string) $expected->first()->getRouteKey(),
+                'to' => (string) $expected->last()->getRouteKey(),
+                'has-more' => true,
+            ],
+        ];
+
+        $response = $this
+            ->actingAsUser()
+            ->jsonApi('comments')
+            ->page($page)
+            ->get('/api/v1/comments');
+
+        $response
             ->assertFetchedMany($expected)
-            ->assertJson([
-                'meta' => [
-                    'page' => [
-                        'per-page' => 3,
-                        'from' => $expected->first()->getRouteKey(),
-                        'to' => $expected->last()->getRouteKey(),
-                        'has-more' => true,
-                    ],
-                ],
-                'links' => $this->createLinks(3, $expected->first(), $expected->last()),
-            ]);
+            ->assertExactMeta($meta)
+            ->assertExactLinks($this->createLinks(3, $expected->first(), $expected->last()));
     }
 
     public function testBeforeWithEqualDates()
@@ -204,19 +219,24 @@ class CursorPagingTest extends TestCase
             'before' => $equal->last()->getRouteKey(),
         ];
 
-        $this->actingAsUser()
-            ->doSearch(compact('page'))
+        $meta = [
+            'page' => [
+                'per-page' => 15,
+                'from' => (string) $expected->first()->getRouteKey(),
+                'to' => (string) $expected->last()->getRouteKey(),
+                'has-more' => true,
+            ],
+        ];
+
+        $response = $this
+            ->actingAsUser()
+            ->jsonApi('comments')
+            ->page($page)
+            ->get('/api/v1/comments');
+
+        $response
             ->assertFetchedMany($expected)
-            ->assertJson([
-                'meta' => [
-                    'page' => [
-                        'per-page' => 15,
-                        'from' => $expected->first()->getRouteKey(),
-                        'to' => $expected->last()->getRouteKey(),
-                        'has-more' => true,
-                    ],
-                ],
-            ]);
+            ->assertExactMeta($meta);
     }
 
     /**
@@ -226,8 +246,13 @@ class CursorPagingTest extends TestCase
      */
     public function testBeforeDoesNotExist()
     {
-        $this->actingAsUser()
-            ->doSearch(['page' => ['before' => '999']])
+        $response = $this
+            ->actingAsUser()
+            ->jsonApi('comments')
+            ->page(['before' => '999'])
+            ->get('/api/v1/comments');
+
+        $response
             ->assertStatus(500);
     }
 
@@ -251,19 +276,24 @@ class CursorPagingTest extends TestCase
             $comments->get(6),
         ]);
 
-        $this->actingAsUser()
-            ->doSearch(compact('page'))
+        $meta = [
+            'page' => [
+                'per-page' => 3,
+                'from' => (string) $expected->first()->getRouteKey(),
+                'to' => (string) $expected->last()->getRouteKey(),
+                'has-more' => true,
+            ],
+        ];
+
+        $response = $this
+            ->actingAsUser()
+            ->jsonApi('comments')
+            ->page($page)
+            ->get('/api/v1/comments');
+
+        $response
             ->assertFetchedMany($expected)
-            ->assertJson([
-                'meta' => [
-                    'page' => [
-                        'per-page' => 3,
-                        'from' => $expected->first()->getRouteKey(),
-                        'to' => $expected->last()->getRouteKey(),
-                        'has-more' => true,
-                    ],
-                ],
-            ]);
+            ->assertExactMeta($meta);
     }
 
     public function testAfterAscending()
@@ -288,19 +318,24 @@ class CursorPagingTest extends TestCase
             $comments->get(6),
         ]);
 
-        $this->actingAsUser()
-            ->doSearch(compact('page'))
+        $meta = [
+            'page' => [
+                'per-page' => 3,
+                'from' => (string) $expected->first()->getRouteKey(),
+                'to' => (string) $expected->last()->getRouteKey(),
+                'has-more' => true,
+            ],
+        ];
+
+        $response = $this
+            ->actingAsUser()
+            ->jsonApi('comments')
+            ->page($page)
+            ->get('/api/v1/comments');
+
+        $response
             ->assertFetchedMany($expected)
-            ->assertJson([
-                'meta' => [
-                    'page' => [
-                        'per-page' => 3,
-                        'from' => $expected->first()->getRouteKey(),
-                        'to' => $expected->last()->getRouteKey(),
-                        'has-more' => true,
-                    ],
-                ],
-            ]);
+            ->assertExactMeta($meta);
     }
 
     public function testAfterWithoutMore()
@@ -322,25 +357,28 @@ class CursorPagingTest extends TestCase
             $comments->get(3),
         ]);
 
-        $response = $this
-            ->actingAsUser()
-            ->doSearch(compact('page'))
-            ->assertFetchedMany($expected)
-            ->assertJson([
-                'meta' => [
-                    'page' => [
-                        'per-page' => 10,
-                        'from' => $expected->first()->getRouteKey(),
-                        'to' => $expected->last()->getRouteKey(),
-                        'has-more' => false,
-                    ],
-                ],
-            ]);
+        $meta = [
+            'page' => [
+                'per-page' => 10,
+                'from' => (string) $expected->first()->getRouteKey(),
+                'to' => (string) $expected->last()->getRouteKey(),
+                'has-more' => false,
+            ],
+        ];
 
         $links = $this->createLinks(10, $expected->first(), $expected->last());
         unset($links['next']);
 
-        $this->assertEquals($links, $response->json()['links']);
+        $response = $this
+            ->actingAsUser()
+            ->jsonApi('comments')
+            ->page($page)
+            ->get('/api/v1/comments');
+
+        $response
+            ->assertFetchedMany($expected)
+            ->assertExactMeta($meta)
+            ->assertExactLinks($links);
     }
 
     public function testAfterWithEqualDates()
@@ -366,19 +404,24 @@ class CursorPagingTest extends TestCase
             'after' => $equal->first()->getRouteKey(),
         ];
 
-        $this->actingAsUser()
-            ->doSearch(compact('page'))
+        $meta = [
+            'page' => [
+                'per-page' => 15,
+                'from' => (string) $expected->first()->getRouteKey(),
+                'to' => (string) $expected->last()->getRouteKey(),
+                'has-more' => false,
+            ],
+        ];
+
+        $response = $this
+            ->actingAsUser()
+            ->jsonApi('comments')
+            ->page($page)
+            ->get('/api/v1/comments');
+
+        $response
             ->assertFetchedMany($expected)
-            ->assertJson([
-                'meta' => [
-                    'page' => [
-                        'per-page' => 15,
-                        'from' => $expected->first()->getRouteKey(),
-                        'to' => $expected->last()->getRouteKey(),
-                        'has-more' => false,
-                    ],
-                ],
-            ]);
+            ->assertExactMeta($meta);
     }
 
     /**
@@ -409,8 +452,13 @@ class CursorPagingTest extends TestCase
             $comments->get(4),
         ]);
 
-        $this->actingAsUser()
-            ->doSearch(compact('page'))
+        $response = $this
+            ->actingAsUser()
+            ->jsonApi('comments')
+            ->page($page)
+            ->get('/api/v1/comments');
+
+        $response
             ->assertFetchedMany($expected)
             ->assertJson([
                 'meta' => [
@@ -459,8 +507,13 @@ class CursorPagingTest extends TestCase
      */
     public function testAfterDoesNotExist()
     {
-        $this->actingAsUser()
-            ->doSearch(['page' => ['after' => '999']])
+        $response = $this
+            ->actingAsUser()
+            ->jsonApi('comments')
+            ->page(['after' => '999'])
+            ->get('/api/v1/comments');
+
+        $response
             ->assertStatus(500);
     }
 
@@ -488,20 +541,25 @@ class CursorPagingTest extends TestCase
             $comments->get(4),
         ]);
 
-        $this->actingAsUser()
-            ->doSearch(compact('page'))
+        $meta = [
+            'page' => [
+                'per-page' => 3,
+                'from' => (string) $expected->first()->getRouteKey(),
+                'to' => (string) $expected->last()->getRouteKey(),
+                'has-more' => true,
+            ],
+        ];
+
+        $response = $this
+            ->actingAsUser()
+            ->jsonApi('comments')
+            ->page($page)
+            ->get('/api/v1/comments');
+
+        $response
             ->assertFetchedMany($expected)
-            ->assertJson([
-                'meta' => [
-                    'page' => [
-                        'per-page' => 3,
-                        'from' => $expected->first()->getRouteKey(),
-                        'to' => $expected->last()->getRouteKey(),
-                        'has-more' => true,
-                    ],
-                ],
-                'links' => $this->createLinks(3, $expected->first(), $expected->last()),
-            ]);
+            ->assertExactMeta($meta)
+            ->assertExactLinks($this->createLinks(3, $expected->first(), $expected->last()));
     }
 
     /**
@@ -531,20 +589,25 @@ class CursorPagingTest extends TestCase
             $comments->get(3),
         ]);
 
-        $this->actingAsUser()
-            ->doSearch(compact('page'))
+        $meta = [
+            'page' => [
+                'per-page' => 3,
+                'from' => (string) $expected->first()->getRouteKey(),
+                'to' => (string) $expected->last()->getRouteKey(),
+                'has-more' => true,
+            ],
+        ];
+
+        $response = $this
+            ->actingAsUser()
+            ->jsonApi('comments')
+            ->page($page)
+            ->get('/api/v1/comments');
+
+        $response
             ->assertFetchedMany($expected)
-            ->assertJson([
-                'meta' => [
-                    'page' => [
-                        'per-page' => 3,
-                        'from' => $expected->first()->getRouteKey(),
-                        'to' => $expected->last()->getRouteKey(),
-                        'has-more' => true,
-                    ],
-                ],
-                'links' => $this->createLinks(3, $expected->first(), $expected->last()),
-            ]);
+            ->assertExactMeta($meta)
+            ->assertExactLinks($this->createLinks(3, $expected->first(), $expected->last()));
     }
 
     /**
@@ -572,19 +635,24 @@ class CursorPagingTest extends TestCase
             $comments->get(3),
         ]);
 
-        $this->actingAsUser()
-            ->doSearch(compact('page'))
+        $meta = [
+            'cursor' => [
+                'per_page' => 3,
+                'from' => (string) $expected->first()->getRouteKey(),
+                'to' => (string) $expected->last()->getRouteKey(),
+                'has_more' => true,
+            ],
+        ];
+
+        $response = $this
+            ->actingAsUser()
+            ->jsonApi('comments')
+            ->page($page)
+            ->get('/api/v1/comments');
+
+        $response
             ->assertFetchedMany($expected)
-            ->assertJson([
-                'meta' => [
-                    'cursor' => [
-                        'per_page' => 3,
-                        'from' => $expected->first()->getRouteKey(),
-                        'to' => $expected->last()->getRouteKey(),
-                        'has_more' => true,
-                    ],
-                ],
-            ]);
+            ->assertExactMeta($meta);
     }
 
     /**
@@ -612,19 +680,24 @@ class CursorPagingTest extends TestCase
             $comments->get(3),
         ]);
 
-        $this->actingAsUser()
-            ->doSearch(compact('page'))
+        $meta = [
+            'page' => [
+                'per-page' => 3,
+                'from' => (string) $expected->first()->getRouteKey(),
+                'to' => (string) $expected->last()->getRouteKey(),
+                'has-more' => true,
+            ],
+        ];
+
+        $response = $this
+            ->actingAsUser()
+            ->jsonApi('comments')
+            ->page($page)
+            ->get('/api/v1/comments');
+
+        $response
             ->assertFetchedMany($expected)
-            ->assertJson([
-                'meta' => [
-                    'page' => [
-                        'per-page' => 3,
-                        'from' => $expected->first()->getRouteKey(),
-                        'to' => $expected->last()->getRouteKey(),
-                        'has-more' => true,
-                    ],
-                ],
-            ]);
+            ->assertExactMeta($meta);
     }
 
     /**

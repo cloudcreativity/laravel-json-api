@@ -44,7 +44,11 @@ class Issue284Test extends TestCase
             });
         });
 
-        $this->getJsonApi('/api/v1/posts')->assertErrorStatus([
+        $response = $this
+            ->jsonApi()
+            ->get('/api/v1/posts');
+
+        $response->assertErrorStatus([
             'status' => '401',
             'title' => 'Unauthenticated',
         ]);
@@ -61,7 +65,11 @@ class Issue284Test extends TestCase
             });
         });
 
-        $this->getJsonApi('/api/v1/posts')->assertErrorStatus([
+        $response = $this
+            ->jsonApi()
+            ->get('/api/v1/posts');
+
+        $response->assertErrorStatus([
             'status' => '401',
             'title' => 'Unauthenticated',
         ]);

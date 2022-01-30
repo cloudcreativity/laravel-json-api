@@ -22,17 +22,16 @@ use DummyApp\Tag;
 class SortingTest extends TestCase
 {
 
-    /**
-     * @var string
-     */
-    protected $resourceType;
-
     public function testDefaultSort()
     {
         $b = factory(Tag::class)->create(['name' => 'Tag B']);
         $a = factory(Tag::class)->create(['name' => 'Tag A']);
 
-        $this->resourceType = 'tags';
-        $this->actingAsUser()->doSearch()->assertFetchedManyInOrder([$a, $b]);
+        $response = $this
+            ->actingAsUser()
+            ->jsonApi('tags')
+            ->get('/api/v1/tags');
+
+        $response->assertFetchedManyInOrder([$a, $b]);
     }
 }

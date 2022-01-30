@@ -34,6 +34,7 @@
         "ext-sqlite3": "*",
         "cloudcreativity/json-api-testing": "^4.0",
         "guzzlehttp/guzzle": "^7.0",
+        "laravel-json-api/testing": "^1.1",
         "laravel/legacy-factories": "^1.0.4",
         "laravel/ui": "^3.0",
         "mockery/mockery": "^1.1",

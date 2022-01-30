@@ -31,6 +31,7 @@ use Illuminate\Session\TokenMismatchException;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\MessageBag;
 use Illuminate\Validation\ValidationException;
+use LaravelJsonApi\Testing\TestResponse;
 use Neomerx\JsonApi\Document\Error as NeomerxError;
 use Neomerx\JsonApi\Exceptions\JsonApiException as NeomerxException;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
@@ -40,16 +41,15 @@ class ErrorsTest extends TestCase
 {
 
     /**
-     * @var string
-     */
-    protected $resourceType = 'posts';
-
-    /**
      * Returns a JSON API error for 404.
      */
     public function test404()
     {
-        $this->doRead('999')->assertStatus(404)->assertErrorStatus([
+        $response = $this
+            ->jsonApi()
+            ->get('/api/v1/posts/999');
+
+        $response->assertStatus(404)->assertErrorStatus([
             'title' => 'Not Found',
             'status' => '404',
         ]);
@@ -63,7 +63,11 @@ class ErrorsTest extends TestCase
         $this->markTestSkipped('@todo work out how to override translation config');
         $expected = $this->withCustomError(ResourceNotFoundException::class);
 
-        $this->doRead('999')->assertStatus(404)->assertExactJson($expected);
+        $response = $this
+            ->jsonApi()
+            ->get('/api/v1/posts/999');
+
+        $response->assertStatus(404)->assertExactJson($expected);
     }
 
     /**
@@ -92,9 +96,9 @@ class ErrorsTest extends TestCase
     public function testDocumentRequired($content, $method = 'POST')
     {
         if ('POST' === $method) {
-            $uri = $this->resourceUrl();
+            $uri = '/api/v1/posts';
         } else {
-            $uri = $this->resourceUrl(factory(Post::class)->create());
+            $uri = url('/api/v1/posts', factory(Post::class)->create());
         }
 
         $expected = [
@@ -137,7 +141,7 @@ class ErrorsTest extends TestCase
     public function testIgnoresData($content, $method = 'GET')
     {
         $model = factory(Post::class)->create();
-        $uri = $this->jsonApiUrl('posts', $model);
+        $uri = url('/api/v1/posts', $model);
 
         $this->doInvalidRequest($uri, $content, $method)
             ->assertSuccessful();
@@ -149,7 +153,7 @@ class ErrorsTest extends TestCase
     public function testCustomDocumentRequired()
     {
         $this->markTestSkipped('@todo work out how to override translation config');
-        $uri = $this->resourceUrl();
+        $uri = '/api/v1/posts';
         $expected = $this->withCustomError(DocumentRequiredException::class);
 
         $this->doInvalidRequest($uri, '')
@@ -163,7 +167,7 @@ class ErrorsTest extends TestCase
      */
     public function testInvalidJson()
     {
-        $uri = $this->resourceUrl();
+        $uri = '/api/v1/posts';
         $content = '{"data": {}';
 
         $this->doInvalidRequest($uri, $content)->assertStatus(400)->assertExactJson([
@@ -184,7 +188,7 @@ class ErrorsTest extends TestCase
     public function testCustomInvalidJson()
     {
         $this->markTestSkipped('@todo work out how to override translation config');
-        $uri = $this->resourceUrl();
+        $uri = '/api/v1/posts';
         $expected = $this->withCustomError(InvalidJsonException::class);
         $content = '{"data": {}';
 
@@ -207,7 +211,11 @@ class ErrorsTest extends TestCase
             ],
         ];
 
-        $this->postJsonApi('/api/v99/posts')
+        $response = $this
+            ->jsonApi()
+            ->post('/api/v99/posts');
+
+        $response
             ->assertStatus(404)
             ->assertHeader('Content-Type', 'application/vnd.api+json')
             ->assertExactJson($expected);
@@ -441,7 +449,7 @@ class ErrorsTest extends TestCase
 
     /**
      * @param \Exception $ex
-     * @return \CloudCreativity\LaravelJsonApi\Testing\TestResponse
+     * @return TestResponse
      */
     private function request(\Exception $ex)
     {
@@ -449,7 +457,7 @@ class ErrorsTest extends TestCase
             throw $ex;
         });
 
-        return $this->getJsonApi('/test');
+        return $this->jsonApi()->get('/test');
     }
 
     /**
@@ -470,7 +478,7 @@ class ErrorsTest extends TestCase
      * @param $uri
      * @param $content
      * @param $method
-     * @return \Illuminate\Foundation\Testing\TestResponse
+     * @return \Illuminate\Testing\TestResponse
      */
     private function doInvalidRequest($uri, $content, $method = 'POST')
     {

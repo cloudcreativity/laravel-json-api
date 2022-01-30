@@ -21,7 +21,6 @@ namespace CloudCreativity\LaravelJsonApi\Tests\Integration;
 use CloudCreativity\LaravelJsonApi\Facades\JsonApi;
 use CloudCreativity\LaravelJsonApi\Routing\ApiRegistration;
 use CloudCreativity\LaravelJsonApi\ServiceProvider;
-use CloudCreativity\LaravelJsonApi\Testing\MakesJsonApiRequests;
 use CloudCreativity\LaravelJsonApi\Testing\TestExceptionHandler;
 use DummyApp;
 use DummyApp\User;
@@ -32,6 +31,7 @@ use Illuminate\Foundation\Testing\Concerns\InteractsWithDeprecationHandling;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Route;
 use Laravel\Ui\UiServiceProvider;
+use LaravelJsonApi\Testing\MakesJsonApiRequests;
 use Orchestra\Testbench\TestCase as BaseTestCase;
 
 /**

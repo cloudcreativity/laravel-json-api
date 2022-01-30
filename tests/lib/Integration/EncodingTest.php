@@ -46,9 +46,12 @@ class EncodingTest extends TestCase
         $id = factory(Post::class)->create()->getRouteKey();
         config()->set('json-api-v1.url.host', null);
 
-        $json = $this
+        $response = $this
             ->withAppRoutes()
-            ->getJsonApi("http://www.example.com/api/v1/posts/$id")
+            ->jsonApi()
+            ->get("http://www.example.com/api/v1/posts/$id");
+
+        $json = $response
             ->assertStatus(200)
             ->json();
 
@@ -63,9 +66,12 @@ class EncodingTest extends TestCase
         $id = factory(Post::class)->create()->getRouteKey();
         config()->set('json-api-v1.url.host', false);
 
-        $json = $this
+        $response = $this
             ->withAppRoutes()
-            ->getJsonApi("http://www.example.com/api/v1/posts/$id")
+            ->jsonApi()
+            ->get("http://www.example.com/api/v1/posts/$id");
+
+        $json = $response
             ->assertStatus(200)
             ->json();
 
@@ -80,9 +86,12 @@ class EncodingTest extends TestCase
         $id = factory(Post::class)->create()->getRouteKey();
         config()->set('json-api-v1.url.namespace', null);
 
-        $json = $this
+        $response = $this
             ->withAppRoutes()
-            ->getJsonApi("http://www.example.com/posts/$id")
+            ->jsonApi()
+            ->get("http://www.example.com/posts/$id");
+
+        $json = $response
             ->assertStatus(200)
             ->json();
 
@@ -97,9 +106,12 @@ class EncodingTest extends TestCase
         $id = factory(Post::class)->create()->getRouteKey();
         config()->set('json-api-v1.url.namespace', '');
 
-        $json = $this
+        $response = $this
             ->withAppRoutes()
-            ->getJsonApi("http://www.example.com/posts/$id")
+            ->jsonApi()
+            ->get("http://www.example.com/posts/$id");
+
+        $json = $response
             ->assertStatus(200)
             ->json();
 
@@ -115,9 +127,12 @@ class EncodingTest extends TestCase
         config()->set('json-api-v1.url.host', false);
         config()->set('json-api-v1.url.namespace', null);
 
-        $json = $this
+        $response = $this
             ->withAppRoutes()
-            ->getJsonApi("http://www.example.com/posts/$id")
+            ->jsonApi()
+            ->get("http://www.example.com/posts/$id");
+
+        $json = $response
             ->assertStatus(200)
             ->json();
 

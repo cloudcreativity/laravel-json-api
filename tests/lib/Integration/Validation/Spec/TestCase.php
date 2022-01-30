@@ -17,8 +17,8 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Validation\Spec;
 
-use CloudCreativity\LaravelJsonApi\Testing\TestResponse;
 use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase as BaseTestCase;
+use LaravelJsonApi\Testing\TestResponse;
 
 abstract class TestCase extends BaseTestCase
 {
