@@ -83,7 +83,7 @@ class ServiceProvider extends BaseServiceProvider
             ], 'json-api:migrations');
 
             $this->publishes([
-                __DIR__ . '/../resources/lang' => resource_path('lang/vendor/jsonapi'),
+                __DIR__ . '/../lang' => $this->app->langPath() . '/vendor/jsonapi',
             ], 'json-api:translations');
 
             $this->commands([
@@ -133,7 +133,7 @@ class ServiceProvider extends BaseServiceProvider
      */
     protected function bootTranslations()
     {
-        $this->loadTranslationsFrom(__DIR__ . '/../resources/lang', 'jsonapi');
+        $this->loadTranslationsFrom(__DIR__ . '/../lang', 'jsonapi');
     }
 
     /**
