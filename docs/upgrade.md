@@ -7,7 +7,7 @@ To upgrade, run the following Composer commands:
 ```bash
 composer remove cloudcreativity/json-api-testing --dev
 composer require cloudcreativity/laravel-json-api:^4.0 --no-update
-composer require laravel-json-api/testing:^1.1 --no-update
+composer require laravel-json-api/testing:^1.1 --dev --no-update
 composer up cloudcreativity/* laravel-json-api/*
 ```
 
