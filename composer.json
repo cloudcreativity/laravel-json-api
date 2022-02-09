@@ -32,7 +32,6 @@
     },
     "require-dev": {
         "ext-sqlite3": "*",
-        "cloudcreativity/json-api-testing": "^4.0",
         "guzzlehttp/guzzle": "^7.0",
         "laravel-json-api/testing": "^1.1",
         "laravel/legacy-factories": "^1.0.4",
@@ -73,7 +72,7 @@
             }
         }
     },
-    "minimum-stability": "dev",
+    "minimum-stability": "stable",
     "prefer-stable": true,
     "config": {
         "sort-packages": true
