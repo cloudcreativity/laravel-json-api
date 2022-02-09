@@ -3,7 +3,7 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
-## Unreleased (4.0)
+## [4.0.0] - 2022-02-09
 
 ### Added
 
@@ -16,6 +16,8 @@ All notable changes to this project will be documented in this file. This projec
 - Minimum Laravel version is now 8.76. This is needed as we are dependent on all the Laravel PHP 8.1 changes.
 - Package now depends on our fork of the Neomerx JSON:API package - `laravel-json-api/neomerx-json-api`. This is a
   non-breaking change.
+- **BREAKING** Added return types to internal methods, to remove deprecation notices in PHP 8.1. This will affect your
+  implementation if you have extended any of our classes and overloaded a method that now has a return type. 
 
 ### Removed
 
