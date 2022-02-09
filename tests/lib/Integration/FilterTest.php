@@ -1,6 +1,6 @@
 <?php
-/**
- * Copyright 2020 Cloud Creativity Limited
+/*
+ * Copyright 2022 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,14 +21,10 @@ use Carbon\Carbon;
 use DummyApp\Comment;
 use DummyApp\Post;
 use DummyApp\User;
+use Illuminate\Support\Collection;
 
 class FilterTest extends TestCase
 {
-
-    /**
-     * @var string
-     */
-    protected $resourceType;
 
     /**
      * The `id` filter must work with other filters. In this example, if
@@ -46,11 +42,18 @@ class FilterTest extends TestCase
 
         $other = factory(Comment::class)->create();
 
-        $filter = ['filter' => ['createdBy' => $user->getRouteKey()]];
+        $filter = [
+            'createdBy' => $user,
+            'id' => [$comments[0], $comments[1], $other],
+        ];
 
-        $this->resourceType = 'comments';
-        $this->actingAsUser()
-            ->doSearchById([$comments[0], $comments[1], $other], $filter)
+        $response = $this
+            ->actingAsUser()
+            ->jsonApi('comments')
+            ->filter($filter)
+            ->get('/api/v1/comments');
+
+        $response
             ->assertFetchedMany($comments);
     }
 
@@ -60,16 +63,19 @@ class FilterTest extends TestCase
             'created_at' => Carbon::now(),
         ])->sortByDesc('id')->values();
 
-        $this->resourceType = 'comments';
-        $this->actingAsUser()
-            ->doSearchById($comments, ['page' => ['limit' => 2]])
+        $response = $this
+            ->actingAsUser()
+            ->jsonApi('comments')
+            ->filter(['id' => $comments])
+            ->page(['limit' => 2])
+            ->get('/api/v1/comments');
+
+        $response
             ->assertFetchedMany([$comments[0], $comments[1]])
-            ->assertJson([
-                'meta' => [
-                    'page' => [
-                        'per-page' => 2,
-                        'has-more' => true,
-                    ],
+            ->assertMeta([
+                'page' => [
+                    'per-page' => 2,
+                    'has-more' => true,
                 ],
             ]);
     }
@@ -83,15 +89,17 @@ class FilterTest extends TestCase
         ]);
 
         $ids = [
-            $comments[0]->getRouteKey(),
-            $comments[2]->getRouteKey(),
+            $comments[0],
+            $comments[2],
             '999',
         ];
 
-        $this->resourceType = 'posts';
-        $this->actingAsUser()
-            ->doReadRelated($post, 'comments', ['filter' => ['id' => $ids]])
-            ->willSeeType('comments')
+        $response = $this
+            ->jsonApi('comments')
+            ->filter(['id' => $ids])
+            ->get(url('/api/v1/posts', [$post, 'comments']));
+
+        $response
             ->assertFetchedMany([$comments[0], $comments[2]]);
     }
 
@@ -121,8 +129,12 @@ class FilterTest extends TestCase
             ],
         ];
 
-        $this->resourceType = 'posts';
-        $this->doRead($post, ['filter' => ['published' => 1]])
+        $response = $this
+            ->jsonApi()
+            ->filter(['published' => '1'])
+            ->get(url('/api/v1/posts', $post));
+
+        $response
             ->assertFetchedOne($expected);
 
         $this->assertSame(1, $retrieved, 'retrieved once');
@@ -133,8 +145,12 @@ class FilterTest extends TestCase
         $post = factory(Post::class)->create();
         factory(Post::class)->states('published')->create(); // should not appear as the result
 
-        $this->resourceType = 'posts';
-        $this->doRead($post, ['filter' => ['published' => 1]])->assertFetchedNull();
+        $response = $this
+            ->jsonApi('posts')
+            ->filter(['published' => '1'])
+            ->get(url('/api/v1/posts', $post));
+
+        $response->assertFetchedNull();
     }
 
     /**
@@ -145,16 +161,15 @@ class FilterTest extends TestCase
     {
         $post = factory(Post::class)->create();
 
-        $this->resourceType = 'posts';
-        $this->doRead($post, ['filter' => ['id' => '999']])
-            ->assertStatus(400)
-            ->assertJson([
-                'errors' => [
-                    [
-                        'source' => ['parameter' => 'filter'],
-                    ],
-                ],
-            ]);
+        $response = $this
+            ->jsonApi('posts')
+            ->filter(['id' => '999'])
+            ->get(url('/api/v1/posts', $post));
+
+        $response->assertHasError(400, [
+            'status' => '400',
+            'source' => ['parameter' => 'filter'],
+        ]);
     }
 
     public function testFilterToOne()
@@ -169,10 +184,13 @@ class FilterTest extends TestCase
             ],
         ];
 
-        $this->resourceType = 'comments';
+        $response = $this
+            ->actingAsUser()
+            ->jsonApi()
+            ->filter(['published' => '1'])
+            ->get(url('/api/v1/comments', [$comment, 'commentable']));
 
-        $this->actingAsUser()
-            ->doReadRelated($comment, 'commentable', ['filter' => ['published' => 1]])
+        $response
             ->assertFetchedOne($expected);
     }
 
@@ -186,10 +204,13 @@ class FilterTest extends TestCase
 
         factory(Comment::class)->states('post')->create();
 
-        $this->resourceType = 'comments';
+        $response = $this
+            ->actingAsUser()
+            ->jsonApi()
+            ->filter(['published' => 1])
+            ->get(url('/api/v1/comments', [$comment, 'commentable']));
 
-        $this->actingAsUser()
-            ->doReadRelated($comment, 'commentable', ['filter' => ['published' => 1]])
+        $response
             ->assertFetchedNull();
     }
 }

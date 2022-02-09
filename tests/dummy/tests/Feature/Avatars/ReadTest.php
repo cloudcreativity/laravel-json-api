@@ -1,6 +1,6 @@
 <?php
-/**
- * Copyright 2020 Cloud Creativity Limited
+/*
+ * Copyright 2022 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,11 @@ class ReadTest extends TestCase
         $avatar = factory(Avatar::class)->create();
         $expected = $this->serialize($avatar)->toArray();
 
-        $this->doRead($avatar)
+        $response = $this
+            ->jsonApi()
+            ->get(url('/api/v1/avatars', $avatar));
+
+        $response
             ->assertFetchedOneExact($expected);
     }
 
@@ -43,11 +47,15 @@ class ReadTest extends TestCase
     {
         Storage::fake('local');
 
-        $path = UploadedFile::fake()->create('avatar.jpg')->store('avatars');
+        $path = UploadedFile::fake()->image('avatar.jpg')->store('avatars');
         $avatar = factory(Avatar::class)->create(compact('path'));
 
-        $this->withAcceptMediaType('image/*')
-            ->doRead($avatar)
+        $response = $this
+            ->jsonApi()
+            ->accept('image/*')
+            ->get(url('/api/v1/avatars', $avatar));
+
+        $response
             ->assertSuccessful()
             ->assertHeader('Content-Type', $avatar->media_type);
     }
@@ -62,8 +70,12 @@ class ReadTest extends TestCase
         $path = 'avatars/does-not-exist.jpg';
         $avatar = factory(Avatar::class)->create(compact('path'));
 
-        $this->withAcceptMediaType('image/*')
-            ->doRead($avatar)
+        $response = $this
+            ->jsonApi()
+            ->accept('image/*')
+            ->get(url('/api/v1/avatars', $avatar));
+
+        $response
             ->assertStatus(404)
             ->assertHeader('Content-Type', 'text/html; charset=UTF-8');
     }
@@ -78,12 +90,16 @@ class ReadTest extends TestCase
 
         $expected = $this
             ->serialize($avatar)
-            ->replace('user', $userId)
-            ->toArray();
+            ->replace('user', $userId);
 
-        $this->doRead($avatar, ['include' => 'user'])
+        $response = $this
+            ->jsonApi()
+            ->includePaths('user')
+            ->get(url('/api/v1/avatars', $avatar));
+
+        $response
             ->assertFetchedOneExact($expected)
-            ->assertIncluded($userId);
+            ->assertIncluded([$userId]);
     }
 
     /**
@@ -99,7 +115,12 @@ class ReadTest extends TestCase
             'source' => ['parameter' => 'include'],
         ];
 
-        $this->doRead($avatar, ['include' => 'foo'])
+        $response = $this
+            ->jsonApi()
+            ->includePaths('foo')
+            ->get(url('/api/v1/avatars', $avatar));
+
+        $response
             ->assertErrorStatus($expected);
     }
 
@@ -111,8 +132,12 @@ class ReadTest extends TestCase
     {
         $avatar = factory(Avatar::class)->create();
         $expected = $this->serialize($avatar)->only($field)->toArray();
-        $fields = ['avatars' => $field];
 
-        $this->doRead($avatar, compact('fields'))->assertFetchedOneExact($expected);
+        $response = $this
+            ->jsonApi()
+            ->sparseFields('avatars', $field)
+            ->get(url('/api/v1/avatars', $avatar));
+
+        $response->assertFetchedOneExact($expected);
     }
 }

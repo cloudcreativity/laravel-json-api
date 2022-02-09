@@ -1,6 +1,6 @@
 <?php
-/**
- * Copyright 2020 Cloud Creativity Limited
+/*
+ * Copyright 2022 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -532,7 +532,13 @@ class ResourceValidationTest extends TestCase
             ],
         ];
 
-        $this->actingAsUser()->doCreate($data)->assertStatus(400)->assertJson([
+        $response = $this
+            ->actingAsUser()
+            ->jsonApi()
+            ->withData($data)
+            ->post('/api/v1/comments');
+
+        $response->assertStatus(400)->assertJson([
             'errors' => [
                 [
                     'detail' => "Resource type post is not recognised.",

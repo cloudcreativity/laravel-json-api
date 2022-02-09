@@ -1,6 +1,6 @@
 <?php
-/**
- * Copyright 2020 Cloud Creativity Limited
+/*
+ * Copyright 2022 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@ class UpdateTest extends TestCase
      */
     public function test(string $contentType): void
     {
-        $file = UploadedFile::fake()->create('avatar.jpg');
+        $file = UploadedFile::fake()->image('avatar.jpg');
 
         $expected = [
             'type' => 'avatars',
@@ -60,12 +60,13 @@ class UpdateTest extends TestCase
 
         $response = $this
             ->jsonApi()
+            ->contentType($contentType)
             ->includePaths('user')
-            ->content(['avatar' => $file], $contentType)
+            ->withPayload(['avatar' => $file])
             ->patch(url('/api/v1/avatars', $this->avatar));
 
         $response
-            ->assertUpdated($expected)
+            ->assertFetchedOne($expected)
             ->assertIsIncluded('users', $this->avatar->user)
             ->id();
 

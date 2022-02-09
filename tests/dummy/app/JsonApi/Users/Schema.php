@@ -1,6 +1,6 @@
 <?php
-/**
- * Copyright 2020 Cloud Creativity Limited
+/*
+ * Copyright 2022 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,6 +66,14 @@ class Schema extends SchemaProvider
                 self::SHOW_DATA => isset($includeRelationships['phone']),
                 self::DATA => function () use ($resource) {
                     return $resource->phone;
+                },
+            ],
+            'roles' => [
+                self::SHOW_SELF => true,
+                self::SHOW_RELATED => true,
+                self::SHOW_DATA => isset($includeRelationships['roles']),
+                self::DATA => function () use ($resource) {
+                    return $resource->roles;
                 },
             ],
         ];

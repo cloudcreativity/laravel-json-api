@@ -1,6 +1,6 @@
 <?php
-/**
- * Copyright 2020 Cloud Creativity Limited
+/*
+ * Copyright 2022 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,11 +36,6 @@ class MorphToTest extends TestCase
 {
 
     /**
-     * @var string
-     */
-    protected $resourceType = 'comments';
-
-    /**
      * @return void
      */
     public function setUp(): void
@@ -72,9 +67,14 @@ class MorphToTest extends TestCase
             ],
         ];
 
-        $id = $this
+        $response = $this
             ->actingAs($comment->user)
-            ->doCreate($data, ['include' => 'createdBy,commentable'])
+            ->jsonApi()
+            ->withData($data)
+            ->includePaths('createdBy', 'commentable')
+            ->post('/api/v1/comments');
+
+        $id = $response
             ->assertCreatedWithServerId(url('/api/v1/comments'), $data)
             ->id();
 
@@ -105,8 +105,13 @@ class MorphToTest extends TestCase
             ],
         ];
 
-        $id = $this
-            ->doCreate($data, ['include' => 'commentable'])
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->includePaths('commentable')
+            ->post('/api/v1/comments');
+
+        $id = $response
             ->assertCreatedWithServerId(url('/api/v1/comments'), $data)
             ->id();
 
@@ -132,7 +137,13 @@ class MorphToTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data, ['include' => 'commentable'])->assertUpdated($data);
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->includePaths('commentable')
+            ->patch(url('/api/v1/comments', $comment));
+
+        $response->assertFetchedOne($data);
 
         $this->assertDatabaseHas('comments', [
             'id' => $comment->getKey(),
@@ -162,7 +173,13 @@ class MorphToTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data, ['include' => 'commentable'])->assertUpdated($data);
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->includePaths('commentable')
+            ->patch(url('/api/v1/comments', $comment));
+
+        $response->assertFetchedOne($data);
 
         $this->assertDatabaseHas('comments', [
             'id' => $comment->getKey(),
@@ -174,7 +191,7 @@ class MorphToTest extends TestCase
     public function testUpdateChangesRelatedResource()
     {
         /** @var Comment $comment */
-        $comment = factory(Comment::class)->states('video')->create();
+        $comment = factory(Comment::class)->states('post')->create();
 
         /** @var Post $post */
         $post = factory(Post::class)->create();
@@ -192,7 +209,13 @@ class MorphToTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data, ['include' => 'commentable'])->assertUpdated($data);
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->includePaths('commentable')
+            ->patch(url('/api/v1/comments', $comment));
+
+        $response->assertFetchedOne($data);
 
         $this->assertDatabaseHas('comments', [
             'id' => $comment->getKey(),
@@ -216,7 +239,11 @@ class MorphToTest extends TestCase
             ],
         ];
 
-        $this->doReadRelated($comment, 'commentable')
+        $response = $this
+            ->jsonApi()
+            ->get(url('/api/v1/comments', [$comment, 'commentable']));
+
+        $response
             ->assertFetchedOne($expected);
     }
 
@@ -225,7 +252,11 @@ class MorphToTest extends TestCase
         /** @var Comment $comment */
         $comment = factory(Comment::class)->create();
 
-        $this->doReadRelated($comment, 'commentable')
+        $response = $this
+            ->jsonApi()
+            ->get(url('/api/v1/comments', [$comment, 'commentable']));
+
+        $response
             ->assertFetchedNull();
     }
 
@@ -233,8 +264,11 @@ class MorphToTest extends TestCase
     {
         $comment = factory(Comment::class)->states('video')->create();
 
-        $this->doReadRelationship($comment, 'commentable')
-            ->willSeeType('videos')
+        $response = $this
+            ->jsonApi('videos')
+            ->get(url('/api/v1/comments', [$comment, 'relationships', 'commentable']));
+
+        $response
             ->assertFetchedToOne($comment->commentable_id);
     }
 
@@ -242,7 +276,11 @@ class MorphToTest extends TestCase
     {
         $comment = factory(Comment::class)->create();
 
-        $this->doReadRelationship($comment, 'commentable')
+        $response = $this
+            ->jsonApi()
+            ->get(url('/api/v1/comments', [$comment, 'relationships', 'commentable']));
+
+        $response
             ->assertFetchedNull();
     }
 
@@ -253,7 +291,12 @@ class MorphToTest extends TestCase
 
         $data = ['type' => 'posts', 'id' => (string) $post->getKey()];
 
-        $this->doReplaceRelationship($comment, 'commentable', $data)
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->patch(url('/api/v1/comments', [$comment, 'relationships', 'commentable']));
+
+        $response
             ->assertStatus(204);
 
         $this->assertDatabaseHas('comments', [
@@ -267,7 +310,12 @@ class MorphToTest extends TestCase
     {
         $comment = factory(Comment::class)->states('post')->create();
 
-        $this->doReplaceRelationship($comment, 'commentable', null)
+        $response = $this
+            ->jsonApi()
+            ->withData(null)
+            ->patch(url('/api/v1/comments', [$comment, 'relationships', 'commentable']));
+
+        $response
             ->assertStatus(204);
 
         $this->assertDatabaseHas('comments', [
@@ -280,17 +328,22 @@ class MorphToTest extends TestCase
     public function testReplaceRelationshipWithDifferentResource()
     {
         $comment = factory(Comment::class)->states('post')->create();
-        $video = factory(Video::class)->create();
+        $post = factory(Post::class)->create();
 
-        $data = ['type' => 'videos', 'id' => (string) $video->getKey()];
+        $data = ['type' => 'posts', 'id' => (string) $post->getKey()];
 
-        $this->doReplaceRelationship($comment, 'commentable', $data)
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->patch(url('/api/v1/comments', [$comment, 'relationships', 'commentable']));
+
+        $response
             ->assertStatus(204);
 
         $this->assertDatabaseHas('comments', [
             'id' => $comment->getKey(),
-            'commentable_type' => Video::class,
-            'commentable_id' => $video->getKey(),
+            'commentable_type' => Post::class,
+            'commentable_id' => $post->getKey(),
         ]);
     }
 }

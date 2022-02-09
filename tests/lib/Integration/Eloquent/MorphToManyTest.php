@@ -1,6 +1,6 @@
 <?php
-/**
- * Copyright 2020 Cloud Creativity Limited
+/*
+ * Copyright 2022 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,11 +34,6 @@ use DummyApp\Tag;
 class MorphToManyTest extends TestCase
 {
 
-    /**
-     * @var string
-     */
-    protected $resourceType = 'posts';
-
     public function testCreateWithEmpty()
     {
         /** @var Post $post */
@@ -60,7 +55,13 @@ class MorphToManyTest extends TestCase
             ],
         ];
 
-        $this->doCreate($data, ['include' => 'tags'])
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->includePaths('tags')
+            ->post('/api/v1/posts');
+
+        $response
             ->assertCreatedWithServerId(url('/api/v1/posts'), $data);
 
         $this->assertDatabaseMissing('taggables', [
@@ -94,8 +95,13 @@ class MorphToManyTest extends TestCase
             ],
         ];
 
-        $id = $this
-            ->doCreate($data, ['include' => 'tags'])
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->includePaths('tags')
+            ->post('/api/v1/posts');
+
+        $id = $response
             ->assertCreatedWithServerId(url('/api/v1/posts'), $data)
             ->id();
 
@@ -131,8 +137,13 @@ class MorphToManyTest extends TestCase
             ],
         ];
 
-        $id = $this
-            ->doCreate($data, ['include' => 'tags'])
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->includePaths('tags')
+            ->post('/api/v1/posts');
+
+        $id = $response
             ->assertCreatedWithServerId(url('/api/v1/posts'), $data)
             ->id();
 
@@ -156,7 +167,13 @@ class MorphToManyTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data, ['include' => 'tags'])->assertUpdated($data);
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->includePaths('tags')
+            ->patch(url('/api/v1/posts', $post));
+
+        $response->assertFetchedOne($data);
 
         $this->assertDatabaseMissing('taggables', [
             'taggable_type' => Post::class,
@@ -189,7 +206,13 @@ class MorphToManyTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data, ['include' => 'tags'])->assertUpdated($data);
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->includePaths('tags')
+            ->patch(url('/api/v1/posts', $post));
+
+        $response->assertFetchedOne($data);
         $this->assertTagIs($post, $tag);
     }
 
@@ -225,7 +248,13 @@ class MorphToManyTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data, ['include' => 'tags'])->assertUpdated($data);
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->includePaths('tags')
+            ->patch(url('/api/v1/posts', $post));
+
+        $response->assertFetchedOne($data);
         $this->assertTagsAre($post, $tags);
     }
 
@@ -238,8 +267,11 @@ class MorphToManyTest extends TestCase
 
         $post->tags()->sync($tags);
 
-        $this->doReadRelated($post, 'tags')
-            ->willSeeType('tags')
+        $response = $this
+            ->jsonApi('tags')
+            ->get(url('/api/v1/posts', [$post, 'tags']));
+
+        $response
             ->assertFetchedMany($expected);
     }
 
@@ -248,7 +280,11 @@ class MorphToManyTest extends TestCase
         /** @var Post $post */
         $post = factory(Post::class)->create();
 
-        $this->doReadRelated($post, 'tags')
+        $response = $this
+            ->jsonApi('tags')
+            ->get(url('/api/v1/posts', [$post, 'tags']));
+
+        $response
             ->assertFetchedNone();
     }
 
@@ -262,8 +298,11 @@ class MorphToManyTest extends TestCase
             return $tag->getRouteKey();
         });
 
-        $this->doReadRelationship($post, 'tags')
-            ->willSeeType('tags')
+        $response = $this
+            ->jsonApi('tags')
+            ->get(url('/api/v1/posts', [$post, 'relationships', 'tags']));
+
+        $response
             ->assertFetchedToMany($expected);
     }
 
@@ -271,7 +310,11 @@ class MorphToManyTest extends TestCase
     {
         $post = factory(Post::class)->create();
 
-        $this->doReadRelationship($post, 'tags')
+        $response = $this
+            ->jsonApi('tags')
+            ->get(url('/api/v1/posts', [$post, 'relationships', 'tags']));
+
+        $response
             ->assertFetchedNone();
     }
 
@@ -284,7 +327,12 @@ class MorphToManyTest extends TestCase
             return ['type' => 'tags', 'id' => $tag->getRouteKey()];
         })->all();
 
-        $this->doReplaceRelationship($post, 'tags', $data)
+        $response = $this
+            ->jsonApi('tags')
+            ->withData($data)
+            ->patch(url('/api/v1/posts', [$post, 'relationships', 'tags']));
+
+        $response
             ->assertStatus(204);
 
         $this->assertTagsAre($post, $tags);
@@ -296,7 +344,12 @@ class MorphToManyTest extends TestCase
         $tags = factory(Tag::class, 2)->create();
         $post->tags()->sync($tags);
 
-        $this->doReplaceRelationship($post, 'tags', [])
+        $response = $this
+            ->jsonApi('tags')
+            ->withData([])
+            ->patch(url('/api/v1/posts', [$post, 'relationships', 'tags']));
+
+        $response
             ->assertStatus(204);
 
         $this->assertFalse($post->tags()->exists());
@@ -313,7 +366,12 @@ class MorphToManyTest extends TestCase
             return ['type' => 'tags', 'id' => $tag->getRouteKey()];
         })->all();
 
-        $this->doReplaceRelationship($post, 'tags', $data)
+        $response = $this
+            ->jsonApi('tags')
+            ->withData($data)
+            ->patch(url('/api/v1/posts', [$post, 'relationships', 'tags']));
+
+        $response
             ->assertStatus(204);
 
         $this->assertTagsAre($post, $tags);
@@ -330,7 +388,12 @@ class MorphToManyTest extends TestCase
             return ['type' => 'tags', 'id' => $tag->getRouteKey()];
         })->all();
 
-        $this->doAddToRelationship($post, 'tags', $data)
+        $response = $this
+            ->jsonApi('tags')
+            ->withData($data)
+            ->post(url('/api/v1/posts', [$post, 'relationships', 'tags']));
+
+        $response
             ->assertStatus(204);
 
         $this->assertTagsAre($post, $existing->merge($add));
@@ -355,7 +418,12 @@ class MorphToManyTest extends TestCase
             return ['type' => 'tags', 'id' => $tag->getRouteKey()];
         })->all();
 
-        $this->doAddToRelationship($post, 'tags', $data)
+        $response = $this
+            ->jsonApi('tags')
+            ->withData($data)
+            ->post(url('/api/v1/posts', [$post, 'relationships', 'tags']));
+
+        $response
             ->assertStatus(204);
 
         $this->assertTagsAre($post, $existing->merge($add));
@@ -371,7 +439,12 @@ class MorphToManyTest extends TestCase
             return ['type' => 'tags', 'id' => $tag->getRouteKey()];
         })->all();
 
-        $this->doRemoveFromRelationship($post, 'tags', $data)
+        $response = $this
+            ->jsonApi('tags')
+            ->withData($data)
+            ->delete(url('/api/v1/posts', [$post, 'relationships', 'tags']));
+
+        $response
             ->assertStatus(204);
 
         $this->assertTagsAre($post, [$tags->get(2), $tags->get(3)]);
@@ -394,7 +467,12 @@ class MorphToManyTest extends TestCase
             return ['type' => 'tags', 'id' => $tag->getRouteKey()];
         })->all();
 
-        $this->doRemoveFromRelationship($post, 'tags', $data)
+        $response = $this
+            ->jsonApi('tags')
+            ->withData($data)
+            ->delete(url('/api/v1/posts', [$post, 'relationships', 'tags']));
+
+        $response
             ->assertStatus(204);
 
         $this->assertTagsAre($post, $tags);

@@ -1,6 +1,6 @@
 <?php
-/**
- * Copyright 2020 Cloud Creativity Limited
+/*
+ * Copyright 2022 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,11 +23,6 @@ use DummyApp\Country;
 
 class QueryValidationTest extends TestCase
 {
-
-    /**
-     * @var string
-     */
-    protected $resourceType;
 
     /**
      * @return void
@@ -117,15 +112,19 @@ class QueryValidationTest extends TestCase
     {
         $expected = [
             'title' => 'Invalid Query Parameter',
-            'status' => "400",
+            'status' => '400',
             'detail' => $detail,
             'source' => ['parameter' => $param],
         ];
 
         $this->resourceType = 'posts';
-        $this->doSearch($params)
-            ->assertStatus(400)
-            ->assertExactJson(['errors' => [$expected]]);
+
+        $response = $this
+            ->jsonApi('posts')
+            ->query($params)
+            ->get('/api/v1/posts');
+
+        $response->assertExactErrorStatus($expected);
     }
 
     public function testSearchWithFailureMeta(): void
@@ -144,8 +143,12 @@ class QueryValidationTest extends TestCase
             ],
         ];
 
-        $this->resourceType = 'posts';
-        $this->doSearch(['filter' => ['foo' => 'bar']])
+        $response = $this
+            ->jsonApi('posts')
+            ->filter(['foo' => 'bar'])
+            ->get('/api/v1/posts');
+
+        $response
             ->assertExactErrorStatus($expected);
     }
 
@@ -159,12 +162,17 @@ class QueryValidationTest extends TestCase
     {
         $country = factory(Country::class)->create();
 
-        $this->resourceType = 'countries';
-        $this->doReadRelated($country, 'posts', $params)->assertStatus(400)->assertJson(['errors' => [
-            [
-                'detail' => $detail,
-                'source' => ['parameter' => $param],
-            ]
-        ]]);
+        $expected = [
+            'detail' => $detail,
+            'source' => ['parameter' => $param],
+            'status' => '400',
+        ];
+
+        $response = $this
+            ->jsonApi('countries')
+            ->query($params)
+            ->get(url('/api/v1/countries', [$country, 'posts']));
+
+        $response->assertErrorStatus($expected);
     }
 }

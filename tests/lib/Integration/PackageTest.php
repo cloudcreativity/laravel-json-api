@@ -1,6 +1,6 @@
 <?php
-/**
- * Copyright 2020 Cloud Creativity Limited
+/*
+ * Copyright 2022 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,8 +28,6 @@ class PackageTest extends TestCase
      */
     public function testReadBlog()
     {
-        $this->resourceType = 'blogs';
-
         /** @var Blog $blog */
         $blog = factory(Blog::class)->states('published')->create();
 
@@ -43,7 +41,11 @@ class PackageTest extends TestCase
             ],
         ];
 
-        $this->doRead($blog)->assertFetchedOne($expected);
+        $response = $this
+            ->jsonApi()
+            ->get(url('/api/v1/blogs', $blog));
+
+        $response->assertFetchedOne($expected);
     }
 
     /**
@@ -56,6 +58,10 @@ class PackageTest extends TestCase
         /** @var Post $post */
         $post = factory(Post::class)->create();
 
-        $this->doRead($post)->assertFetchedOne($post);
+        $response = $this
+            ->jsonApi('posts')
+            ->get(url('/api/v1/posts', $post));
+
+        $response->assertFetchedOne($post);
     }
 }

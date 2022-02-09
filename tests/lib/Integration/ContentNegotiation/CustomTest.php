@@ -1,6 +1,6 @@
 <?php
-/**
- * Copyright 2020 Cloud Creativity Limited
+/*
+ * Copyright 2022 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,7 +69,7 @@ class CustomTest extends TestCase
     {
         Storage::fake('local');
 
-        $path = UploadedFile::fake()->create('avatar.jpg')->store('avatars');
+        $path = UploadedFile::fake()->image('avatar.jpg')->store('avatars');
         $avatar = factory(Avatar::class)->create(compact('path'));
         $uri = url('/api/v1/avatars', $avatar);
 

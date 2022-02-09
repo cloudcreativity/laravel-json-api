@@ -1,6 +1,6 @@
 <?php
-/**
- * Copyright 2020 Cloud Creativity Limited
+/*
+ * Copyright 2022 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,11 +23,6 @@ class QueryParameterValidationTest extends TestCase
 {
 
     /**
-     * @var string
-     */
-    protected $resourceType = 'comments';
-
-    /**
      * If we submit a create request with a sort parameter that is allowed for querying,
      * it is rejected because create does not support sorting.
      */
@@ -36,7 +31,14 @@ class QueryParameterValidationTest extends TestCase
         $comment = factory(Comment::class)->states('post')->make();
         $data = $this->serialize($comment);
 
-        $this->actingAs($comment->user)->doCreate($data, ['sort' => 'created-at'])->assertError(400, [
+        $response = $this
+            ->actingAs($comment->user)
+            ->jsonApi()
+            ->withData($data)
+            ->sort('created-at')
+            ->post('/api/v1/comments');
+
+        $response->assertError(400, [
             'source' => ['parameter' => 'sort'],
         ]);
     }
@@ -50,7 +52,14 @@ class QueryParameterValidationTest extends TestCase
         $comment = factory(Comment::class)->states('post')->make();
         $data = $this->serialize($comment);
 
-        $this->actingAs($comment->user)->doCreate($data, ['filter' => ['created-by' => '1']])->assertError(400, [
+        $response = $this
+            ->actingAs($comment->user)
+            ->jsonApi()
+            ->withData($data)
+            ->filter(['created-by' => '1'])
+            ->post('/api/v1/comments');
+
+        $response->assertError(400, [
             'source' => ['parameter' => 'filter'],
         ]);
     }
@@ -64,7 +73,14 @@ class QueryParameterValidationTest extends TestCase
         $comment = factory(Comment::class)->states('post')->make();
         $data = $this->serialize($comment);
 
-        $this->actingAs($comment->user)->doCreate($data, ['page' => ['size' => 12]])->assertError(400, [
+        $response = $this
+            ->actingAs($comment->user)
+            ->jsonApi()
+            ->withData($data)
+            ->page(['size' => '12'])
+            ->post('/api/v1/comments');
+
+        $response->assertError(400, [
             'source' => ['parameter' => 'page'],
         ]);
     }
@@ -77,7 +93,13 @@ class QueryParameterValidationTest extends TestCase
     {
         $comment = factory(Comment::class)->states('post')->create();
 
-        $this->actingAs($comment->user)->doRead($comment, ['sort' => 'created-at'])->assertError(400, [
+        $response = $this
+            ->actingAs($comment->user)
+            ->jsonApi()
+            ->sort('created-at')
+            ->get(url('/api/v1/comments', $comment));
+
+        $response->assertError(400, [
             'source' => ['parameter' => 'sort'],
         ]);
     }
@@ -90,7 +112,13 @@ class QueryParameterValidationTest extends TestCase
     {
         $comment = factory(Comment::class)->states('post')->create();
 
-        $this->actingAs($comment->user)->doRead($comment, ['page' => ['size' => 12]])->assertError(400, [
+        $response = $this
+            ->actingAs($comment->user)
+            ->jsonApi()
+            ->page(['size' => '12'])
+            ->get(url('/api/v1/comments', $comment));
+
+        $response->assertError(400, [
             'source' => ['parameter' => 'page'],
         ]);
     }
@@ -104,7 +132,14 @@ class QueryParameterValidationTest extends TestCase
         $comment = factory(Comment::class)->states('post')->create();
         $data = $this->serialize($comment);
 
-        $this->actingAs($comment->user)->doUpdate($data, ['sort' => 'created-at'])->assertError(400, [
+        $response = $this
+            ->actingAs($comment->user)
+            ->jsonApi()
+            ->withData($data)
+            ->sort('created-at')
+            ->patch(url('/api/v1/comments', $comment));
+
+        $response->assertError(400, [
             'source' => ['parameter' => 'sort'],
         ]);
     }
@@ -118,7 +153,14 @@ class QueryParameterValidationTest extends TestCase
         $comment = factory(Comment::class)->states('post')->create();
         $data = $this->serialize($comment);
 
-        $this->actingAs($comment->user)->doUpdate($data, ['filter' => ['created-by' => '1']])->assertError(400, [
+        $response = $this
+            ->actingAs($comment->user)
+            ->jsonApi()
+            ->withData($data)
+            ->filter(['created-by' => '1'])
+            ->patch(url('/api/v1/comments', $comment));
+
+        $response->assertError(400, [
             'source' => ['parameter' => 'filter'],
         ]);
     }
@@ -132,7 +174,14 @@ class QueryParameterValidationTest extends TestCase
         $comment = factory(Comment::class)->states('post')->create();
         $data = $this->serialize($comment);
 
-        $this->actingAs($comment->user)->doUpdate($data, ['page' => ['size' => 12]])->assertError(400, [
+        $response = $this
+            ->actingAs($comment->user)
+            ->jsonApi()
+            ->withData($data)
+            ->page(['size' => '12'])
+            ->patch(url('/api/v1/comments', $comment));
+
+        $response->assertError(400, [
             'source' => ['parameter' => 'page'],
         ]);
     }
@@ -145,7 +194,13 @@ class QueryParameterValidationTest extends TestCase
     {
         $comment = factory(Comment::class)->states('post')->create();
 
-        $this->actingAs($comment->user)->doDelete($comment, ['sort' => 'created-at'])->assertError(400, [
+        $response = $this
+            ->actingAs($comment->user)
+            ->jsonApi()
+            ->sort('created-at')
+            ->delete(url('/api/v1/comments', $comment));
+
+        $response->assertError(400, [
             'source' => ['parameter' => 'sort'],
         ]);
     }
@@ -158,7 +213,13 @@ class QueryParameterValidationTest extends TestCase
     {
         $comment = factory(Comment::class)->states('post')->create();
 
-        $this->actingAs($comment->user)->doDelete($comment, ['filter' => ['created-by' => '1']])->assertError(400, [
+        $response = $this
+            ->actingAs($comment->user)
+            ->jsonApi()
+            ->filter(['created-by' => '1'])
+            ->delete(url('/api/v1/comments', $comment));
+
+        $response->assertError(400, [
             'source' => ['parameter' => 'filter'],
         ]);
     }
@@ -171,7 +232,13 @@ class QueryParameterValidationTest extends TestCase
     {
         $comment = factory(Comment::class)->states('post')->create();
 
-        $this->actingAs($comment->user)->doDelete($comment, ['page' => ['size' => 12]])->assertError(400, [
+        $response = $this
+            ->actingAs($comment->user)
+            ->jsonApi()
+            ->page(['size' => '12'])
+            ->delete(url('/api/v1/comments', $comment));
+
+        $response->assertError(400, [
             'source' => ['parameter' => 'page'],
         ]);
     }

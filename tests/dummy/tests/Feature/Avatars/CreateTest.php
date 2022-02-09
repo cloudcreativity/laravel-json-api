@@ -1,6 +1,6 @@
 <?php
-/**
- * Copyright 2020 Cloud Creativity Limited
+/*
+ * Copyright 2022 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ class CreateTest extends TestCase
     public function test(string $contentType): void
     {
         $user = factory(User::class)->create();
-        $file = UploadedFile::fake()->create('avatar.jpg');
+        $file = UploadedFile::fake()->image('avatar.jpg');
 
         $expected = [
             'type' => 'avatars',
@@ -72,12 +72,11 @@ class CreateTest extends TestCase
     {
         $user = factory(User::class)->create();
 
-        $this->actingAs($user, 'api');
-
         $response = $this
+            ->actingAs($user, 'api')
             ->jsonApi()
             ->contentType('multipart/form-data')
-            ->content(['avatar' => null])
+            ->withPayload(['avatar' => ''])
             ->post('/api/v1/avatars');
 
         $response->assertExactErrorStatus([

@@ -1,6 +1,6 @@
 <?php
-/**
- * Copyright 2020 Cloud Creativity Limited
+/*
+ * Copyright 2022 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,11 +33,6 @@ class CustomiseTest extends TestCase
     protected $appRoutes = false;
 
     /**
-     * @var string
-     */
-    protected $resourceType = 'client-jobs';
-
-    /**
      * @return void
      */
     protected function setUp(): void
@@ -45,7 +40,7 @@ class CustomiseTest extends TestCase
         parent::setUp();
 
         config()->set('json-api-v1.jobs', [
-            'resource' => $this->resourceType,
+            'resource' => 'client-jobs',
             'model' => CustomJob::class,
         ]);
 
@@ -62,7 +57,11 @@ class CustomiseTest extends TestCase
         // this one should not appear in results as it is for a different resource type.
         factory(ClientJob::class)->create(['resource_type' => 'foo']);
 
-        $this->getJsonApi('/api/v1/downloads/client-jobs')
+        $response = $this
+            ->jsonApi('client-jobs')
+            ->get('/api/v1/downloads/client-jobs');
+
+        $response
             ->assertFetchedMany($jobs);
     }
 

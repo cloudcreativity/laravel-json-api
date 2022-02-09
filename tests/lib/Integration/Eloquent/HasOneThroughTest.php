@@ -1,6 +1,6 @@
 <?php
-/**
- * Copyright 2020 Cloud Creativity Limited
+/*
+ * Copyright 2022 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,11 +41,6 @@ class HasOneThroughTest extends TestCase
 {
 
     /**
-     * @var string
-     */
-    protected $resourceType = 'suppliers';
-
-    /**
      * Test that we can read the related phone.
      */
     public function testReadRelated(): void
@@ -72,8 +67,12 @@ class HasOneThroughTest extends TestCase
             ],
         ];
 
-        $this->withoutExceptionHandling()
-            ->doReadRelated($supplier, 'user-history', ['include' => 'user'])
+        $response = $this
+            ->jsonApi()
+            ->includePaths('user')
+            ->get(url('/api/v1/suppliers', [$supplier, 'user-history']));
+
+        $response
             ->assertFetchedOne($data);
     }
 
@@ -83,8 +82,12 @@ class HasOneThroughTest extends TestCase
 
         $supplier = factory(Supplier::class)->create();
 
-        $this->withoutExceptionHandling()
-            ->doReadRelated($supplier, 'user-history')
+        $response = $this
+            ->jsonApi()
+            ->includePaths('user')
+            ->get(url('/api/v1/suppliers', [$supplier, 'user-history']));
+
+        $response
             ->assertFetchedNull();
     }
 
@@ -96,9 +99,12 @@ class HasOneThroughTest extends TestCase
         $user = factory(User::class)->create(['supplier_id' => $supplier->getKey()]);
         $history = factory(History::class)->create(['user_id' => $user->getKey()]);
 
-        $this->withoutExceptionHandling()
-            ->willSeeResourceType('histories')
-            ->doReadRelationship($supplier, 'user-history')
+        $response = $this
+            ->jsonApi('histories')
+            ->includePaths('user')
+            ->get(url('/api/v1/suppliers', [$supplier, 'relationships', 'user-history']));
+
+        $response
             ->assertFetchedToOne($history);
     }
 
@@ -108,8 +114,12 @@ class HasOneThroughTest extends TestCase
 
         $supplier = factory(Supplier::class)->create();
 
-        $this->withoutExceptionHandling()
-            ->doReadRelationship($supplier, 'user-history')
+        $response = $this
+            ->jsonApi('histories')
+            ->includePaths('user')
+            ->get(url('/api/v1/suppliers', [$supplier, 'relationships', 'user-history']));
+
+        $response
             ->assertFetchedNull();
     }
 

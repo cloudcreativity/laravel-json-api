@@ -1,7 +1,7 @@
 <?php
 
-/**
- * Copyright 2020 Cloud Creativity Limited
+/*
+ * Copyright 2022 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,16 +21,17 @@ namespace CloudCreativity\LaravelJsonApi\Tests\Integration;
 use CloudCreativity\LaravelJsonApi\Facades\JsonApi;
 use CloudCreativity\LaravelJsonApi\Routing\ApiRegistration;
 use CloudCreativity\LaravelJsonApi\ServiceProvider;
-use CloudCreativity\LaravelJsonApi\Testing\MakesJsonApiRequests;
 use CloudCreativity\LaravelJsonApi\Testing\TestExceptionHandler;
 use DummyApp;
 use DummyApp\User;
 use DummyPackage;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Foundation\Application;
+use Illuminate\Foundation\Testing\Concerns\InteractsWithDeprecationHandling;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Route;
 use Laravel\Ui\UiServiceProvider;
+use LaravelJsonApi\Testing\MakesJsonApiRequests;
 use Orchestra\Testbench\TestCase as BaseTestCase;
 
 /**
@@ -42,6 +43,7 @@ abstract class TestCase extends BaseTestCase
 {
 
     use MakesJsonApiRequests;
+    use InteractsWithDeprecationHandling;
 
     /**
      * Whether the dummy app routes should be used.
@@ -56,6 +58,15 @@ abstract class TestCase extends BaseTestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->withoutDeprecationHandling();
+
+        config()->set('auth.guards.api', [
+            'driver' => 'token',
+            'provider' => 'users',
+            'hash' => false,
+        ]);
+
         $this->artisan('migrate');
 
         if ($this->appRoutes) {

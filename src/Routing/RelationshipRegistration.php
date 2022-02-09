@@ -1,6 +1,6 @@
 <?php
-/**
- * Copyright 2020 Cloud Creativity Limited
+/*
+ * Copyright 2022 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,17 @@ class RelationshipRegistration implements Arrayable
     public function __construct(array $options = [])
     {
         $this->options = $options;
+    }
+
+    /**
+     * @param string $uri
+     * @return $this
+     */
+    public function uri(string $uri): self
+    {
+        $this->options['relationship_uri'] = $uri;
+
+        return $this;
     }
 
     /**

@@ -4,7 +4,7 @@ Install using [Composer](http://getcomposer.org):
 
 ```bash
 $ composer require cloudcreativity/laravel-json-api
-$ composer require --dev "cloudcreativity/json-api-testing"
+$ composer require --dev "laravel-json-api/testing:^1.1"
 ```
 
 This package's service provider and facade will be automatically added using package discovery. You will

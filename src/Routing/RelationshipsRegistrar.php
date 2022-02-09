@@ -1,7 +1,7 @@
 <?php
 
-/**
- * Copyright 2020 Cloud Creativity Limited
+/*
+ * Copyright 2022 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,7 +75,7 @@ final class RelationshipsRegistrar implements \IteratorAggregate
     /**
      * @inheritDoc
      */
-    public function getIterator()
+    public function getIterator(): \Generator
     {
         foreach ($this->hasOne() as $hasOne => $options) {
             $options['actions'] = $this->hasOneActions($options);
@@ -115,7 +115,7 @@ final class RelationshipsRegistrar implements \IteratorAggregate
 
         $this->router->group([], function () use ($field, $options, $inverse) {
             foreach ($options['actions'] as $action) {
-                $this->route($field, $action, $inverse);
+                $this->route($field, $action, $inverse, $options);
             }
         });
     }
@@ -125,13 +125,14 @@ final class RelationshipsRegistrar implements \IteratorAggregate
      * @param string $action
      * @param string $inverse
      *      the inverse resource type
+     * @param array $options
      * @return Route
      */
-    private function route(string $field, string $action, string $inverse): Route
+    private function route(string $field, string $action, string $inverse, array $options): Route
     {
         $route = $this->createRoute(
             $this->methodForAction($action),
-            $this->urlForAction($field, $action),
+            $this->urlForAction($field, $action, $options),
             $this->actionForRoute($field, $action)
         );
 
@@ -161,24 +162,30 @@ final class RelationshipsRegistrar implements \IteratorAggregate
 
     /**
      * @param string $relationship
+     * @param array $options
      * @return string
      */
-    private function relatedUrl($relationship): string
+    private function relatedUrl(string $relationship, array $options): string
     {
-        return sprintf('%s/%s', $this->resourceUrl(), $relationship);
+        return sprintf(
+            '%s/%s',
+            $this->resourceUrl(),
+            $options['relationship_uri'] ?? $relationship
+        );
     }
 
     /**
-     * @param $relationship
+     * @param string $relationship
+     * @param array $options
      * @return string
      */
-    private function relationshipUrl($relationship): string
+    private function relationshipUrl(string $relationship, array $options): string
     {
         return sprintf(
             '%s/%s/%s',
             $this->resourceUrl(),
             ResourceRegistrar::KEYWORD_RELATIONSHIPS,
-            $relationship
+            $options['relationship_uri'] ?? $relationship
         );
     }
 
@@ -194,15 +201,16 @@ final class RelationshipsRegistrar implements \IteratorAggregate
     /**
      * @param string $field
      * @param string $action
+     * @param array $options
      * @return string
      */
-    private function urlForAction(string $field, string $action): string
+    private function urlForAction(string $field, string $action, array $options): string
     {
         if ('related' === $action) {
-            return $this->relatedUrl($field);
+            return $this->relatedUrl($field, $options);
         }
 
-        return $this->relationshipUrl($field);
+        return $this->relationshipUrl($field, $options);
     }
 
     /**

@@ -1,6 +1,6 @@
 <?php
-/**
- * Copyright 2020 Cloud Creativity Limited
+/*
+ * Copyright 2022 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,11 +33,6 @@ class IssueTest extends TestCase
     protected $appRoutes = false;
 
     /**
-     * @var string
-     */
-    protected $resourceType = 'endUsers';
-
-    /**
      * @return void
      */
     protected function setUp(): void
@@ -66,7 +61,11 @@ class IssueTest extends TestCase
     {
         $user = factory(User::class)->create();
 
-        $this->getJsonApi("/api/v1/endUsers/{$user->getRouteKey()}")->assertFetchedOne([
+        $response = $this
+            ->jsonApi()
+            ->get(url('/api/v1/endUsers', $user));
+
+        $response->assertFetchedOne([
             'type' => 'endUsers',
             'id' => (string) $user->getRouteKey(),
             'attributes' => [

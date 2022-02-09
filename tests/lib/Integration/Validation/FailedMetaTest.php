@@ -1,6 +1,6 @@
 <?php
-/**
- * Copyright 2020 Cloud Creativity Limited
+/*
+ * Copyright 2022 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -175,8 +175,13 @@ class FailedMetaTest extends TestCase
 
         $this->validator->method('rules')->willReturn($rules);
 
-        $this->postJsonApi('/api/v1/posts', [], compact('data'))
-            ->assertExactJson(['errors' => [$expected]]);
+        $response = $this
+            ->jsonApi('posts')
+            ->withData($data)
+            ->post('/api/v1/posts');
+
+        $response
+            ->assertExactErrorStatus($expected);
     }
 
     /**
@@ -214,8 +219,13 @@ class FailedMetaTest extends TestCase
             'value' => Rule::unique('posts', 'slug'),
         ]);
 
-        $this->postJsonApi('/api/v1/posts', [], compact('data'))
-            ->assertExactJson(['errors' => [$expected]]);
+        $response = $this
+            ->jsonApi('posts')
+            ->withData($data)
+            ->post('/api/v1/posts');
+
+        $response
+            ->assertExactErrorStatus($expected);
     }
 
     public function testMultiple(): void
@@ -257,7 +267,11 @@ class FailedMetaTest extends TestCase
 
         $this->validator->method('rules')->willReturn(['title' => 'string|between:5,255']);
 
-        $this->postJsonApi('/api/v1/posts', [], compact('data'))
-            ->assertExactJson(['errors' => $expected]);
+        $response = $this
+            ->jsonApi('posts')
+            ->withData($data)
+            ->post('/api/v1/posts');
+
+        $response->assertExactErrors(422, $expected);
     }
 }

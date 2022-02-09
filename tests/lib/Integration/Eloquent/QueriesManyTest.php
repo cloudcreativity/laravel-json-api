@@ -1,6 +1,6 @@
 <?php
-/**
- * Copyright 2020 Cloud Creativity Limited
+/*
+ * Copyright 2022 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,11 +23,6 @@ use DummyApp\Post;
 class QueriesManyTest extends TestCase
 {
 
-    /**
-     * @var string
-     */
-    protected $resourceType = 'posts';
-
     public function testRelated()
     {
         /** @var Post $post */
@@ -44,8 +39,12 @@ class QueriesManyTest extends TestCase
 
         factory(Post::class, 3)->create();
 
-        $this->doReadRelated($post, 'related')
-            ->willSeeType('posts')
+        $response = $this
+            ->jsonApi('posts')
+            ->get(url('/api/v1/posts', [$post, 'related']));
+
+
+        $response
             ->assertFetchedMany($expected);
     }
 
@@ -65,8 +64,11 @@ class QueriesManyTest extends TestCase
 
         factory(Post::class, 3)->create();
 
-        $this->doReadRelationship($post, 'related')
-            ->willSeeType('posts')
+        $response = $this
+            ->jsonApi('posts')
+            ->get(url('/api/v1/posts', [$post, 'relationships', 'related']));
+
+        $response
             ->assertFetchedToMany($expected);
     }
 }

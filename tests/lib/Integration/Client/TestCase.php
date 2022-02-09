@@ -1,6 +1,6 @@
 <?php
-/**
- * Copyright 2020 Cloud Creativity Limited
+/*
+ * Copyright 2022 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase as BaseTestCase;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;
-use function GuzzleHttp\Psr7\parse_query;
 
 abstract class TestCase extends BaseTestCase
 {
@@ -156,6 +155,6 @@ abstract class TestCase extends BaseTestCase
     protected function assertQueryParameters(array $expected)
     {
         $query = $this->mock->getLastRequest()->getUri()->getQuery();
-        $this->assertEquals($expected, parse_query($query));
+        $this->assertEquals($expected, \GuzzleHttp\Psr7\Query::parse($query));
     }
 }

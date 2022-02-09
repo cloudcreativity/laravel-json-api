@@ -1,6 +1,6 @@
 <?php
-/**
- * Copyright 2020 Cloud Creativity Limited
+/*
+ * Copyright 2022 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,7 +44,11 @@ class Issue284Test extends TestCase
             });
         });
 
-        $this->getJsonApi('/api/v1/posts')->assertErrorStatus([
+        $response = $this
+            ->jsonApi()
+            ->get('/api/v1/posts');
+
+        $response->assertErrorStatus([
             'status' => '401',
             'title' => 'Unauthenticated',
         ]);
@@ -61,7 +65,11 @@ class Issue284Test extends TestCase
             });
         });
 
-        $this->getJsonApi('/api/v1/posts')->assertErrorStatus([
+        $response = $this
+            ->jsonApi()
+            ->get('/api/v1/posts');
+
+        $response->assertErrorStatus([
             'status' => '401',
             'title' => 'Unauthenticated',
         ]);

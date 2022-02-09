@@ -1,6 +1,6 @@
 <?php
-/**
- * Copyright 2020 Cloud Creativity Limited
+/*
+ * Copyright 2022 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,11 +24,6 @@ use DummyApp\Tag;
 
 class HooksTest extends TestCase
 {
-
-    /**
-     * @var string
-     */
-    protected $resourceType = 'posts';
 
     /**
      * @var bool
@@ -69,7 +64,11 @@ class HooksTest extends TestCase
      */
     public function testSearching()
     {
-        $this->doSearch()->assertStatus(200);
+        $response = $this
+            ->jsonApi()
+            ->get('/api/v1/posts');
+
+        $response->assertStatus(200);
         $this->assertHooksInvoked('searching', 'searched');
     }
 
@@ -102,7 +101,12 @@ class HooksTest extends TestCase
             ],
         ];
 
-        $this->doCreate($data)->assertStatus(201);
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->post('/api/v1/posts');
+
+        $response->assertStatus(201);
 
         $this->assertHooksInvoked('saving', 'creating', 'created', 'saved');
     }
@@ -118,7 +122,12 @@ class HooksTest extends TestCase
             ],
         ];
 
-        $this->doCreate($data)->assertStatus(422);
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->post('/api/v1/posts');
+
+        $response->assertStatus(422);
         $this->assertNoHooksInvoked();
     }
 
@@ -129,7 +138,11 @@ class HooksTest extends TestCase
     {
         $post = factory(Post::class)->create();
 
-        $this->doRead($post)->assertStatus(200);
+        $response = $this
+            ->jsonApi()
+            ->get(url('/api/v1/posts', $post));
+
+        $response->assertStatus(200);
         $this->assertHooksInvoked('reading', 'did-read');
     }
 
@@ -153,7 +166,12 @@ class HooksTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data)->assertStatus(200);
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->patch(url('/api/v1/posts', $post));
+
+        $response->assertStatus(200);
         $this->assertHooksInvoked('saving', 'updating', 'updated', 'saved');
     }
 
@@ -167,7 +185,12 @@ class HooksTest extends TestCase
             'attributes' => ['title' => null],
         ];
 
-        $this->doUpdate($data)->assertStatus(422);
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->patch(url('/api/v1/posts', $post));
+
+        $response->assertStatus(422);
         $this->assertNoHooksInvoked();
     }
 
@@ -181,13 +204,21 @@ class HooksTest extends TestCase
     {
         $post = factory(Post::class)->create();
 
-        $this->doDelete($post)->assertStatus(204);
+        $response = $this
+            ->jsonApi()
+            ->delete(url('/api/v1/posts', $post));
+
+        $response->assertStatus(204);
         $this->assertHooksInvoked('deleting', 'deleted');
     }
 
     public function testUnsuccessfulDelete()
     {
-        $this->doDelete('999')->assertStatus(404);
+        $response = $this
+            ->jsonApi()
+            ->delete('/api/v1/posts/999');
+
+        $response->assertStatus(404);
         $this->assertNoHooksInvoked();
     }
 
@@ -195,7 +226,11 @@ class HooksTest extends TestCase
     {
         $post = factory(Post::class)->create();
 
-        $this->doReadRelated($post, 'author')->assertStatus(200);
+        $response = $this
+            ->jsonApi()
+            ->get(url('/api/v1/posts', [$post, 'author']));
+
+        $response->assertStatus(200);
 
         $this->assertHooksInvoked(
             'reading-relationship',
@@ -209,7 +244,11 @@ class HooksTest extends TestCase
     {
         $post = factory(Post::class)->create();
 
-        $this->doReadRelationship($post, 'author')->assertStatus(200);
+        $response = $this
+            ->jsonApi()
+            ->get(url('/api/v1/posts', [$post, 'relationships', 'author']));
+
+        $response->assertStatus(200);
 
         $this->assertHooksInvoked(
             'reading-relationship',
@@ -223,7 +262,12 @@ class HooksTest extends TestCase
     {
         $post = factory(Post::class)->create();
 
-        $this->doReplaceRelationship($post, 'author', null)->assertStatus(204);
+        $response = $this
+            ->jsonApi()
+            ->withData(null)
+            ->patch(url('/api/v1/posts', [$post, 'relationships', 'author']));
+
+        $response->assertStatus(204);
         $this->assertHooksInvoked('replacing', 'replacing-author', 'replaced-author', 'replaced');
     }
 
@@ -232,7 +276,12 @@ class HooksTest extends TestCase
         $post = factory(Post::class)->create();
         $tag = ['type' => 'tags', 'id' => (string) factory(Tag::class)->create()->uuid];
 
-        $this->doAddToRelationship($post, 'tags', [$tag])->assertStatus(204);
+        $response = $this
+            ->jsonApi()
+            ->withData([$tag])
+            ->post(url('/api/v1/posts', [$post, 'relationships', 'tags']));
+
+        $response->assertStatus(204);
         $this->assertHooksInvoked('adding', 'adding-tags', 'added-tags', 'added');
     }
 
@@ -243,7 +292,12 @@ class HooksTest extends TestCase
         $tag = $post->tags()->create(['name' => 'news']);
         $identifier = ['type' => 'tags', 'id' => $tag->uuid];
 
-        $this->doRemoveFromRelationship($post, 'tags', [$identifier])->assertStatus(204);
+        $response = $this
+            ->jsonApi()
+            ->withData([$identifier])
+            ->delete(url('/api/v1/posts', [$post, 'relationships', 'tags']));
+
+        $response->assertStatus(204);
         $this->assertHooksInvoked('removing', 'removing-tags', 'removed-tags', 'removed');
     }
 

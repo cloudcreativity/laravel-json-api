@@ -1,6 +1,6 @@
 <?php
-/**
- * Copyright 2020 Cloud Creativity Limited
+/*
+ * Copyright 2022 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,11 +25,6 @@ use DummyApp\Video;
 class QueriesOneTest extends TestCase
 {
 
-    /**
-     * @var string
-     */
-    protected $resourceType = 'posts';
-
     public function testRelated()
     {
         $tag = factory(Tag::class)->create();
@@ -51,7 +46,11 @@ class QueriesOneTest extends TestCase
             ],
         ];
 
-        $this->doReadRelated($post, 'related-video')
+        $response = $this
+            ->jsonApi('videos')
+            ->get(url('/api/v1/posts', [$post, 'related-video']));
+
+        $response
             ->assertFetchedOne($expected);
     }
 
@@ -68,8 +67,11 @@ class QueriesOneTest extends TestCase
 
         factory(Video::class, 2)->create();
 
-        $this->doReadRelationship($post, 'related-video')
-            ->willSeeType('videos')
+        $response = $this
+            ->jsonApi('videos')
+            ->get(url('/api/v1/posts', [$post, 'relationships', 'related-video']));
+
+        $response
             ->assertFetchedToOne($video);
     }
 }

@@ -1,6 +1,6 @@
 <?php
-/**
- * Copyright 2020 Cloud Creativity Limited
+/*
+ * Copyright 2022 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,8 @@ use CloudCreativity\LaravelJsonApi\Rules\AllowedSortParameters;
 use CloudCreativity\LaravelJsonApi\Rules\DisallowedParameter;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
+use function json_decode;
+use function json_encode;
 
 /**
  * Class AbstractValidators
@@ -435,6 +437,9 @@ abstract class AbstractValidators implements ValidatorFactoryInterface
                 $record,
                 $resource['relationships'] ?? []
             );
+
+            /** @see https://github.com/cloudcreativity/laravel-json-api/issues/576 */
+            $resource = json_decode(json_encode($resource), true);
         }
 
         return $resource;

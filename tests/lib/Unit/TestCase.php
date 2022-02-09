@@ -1,7 +1,6 @@
 <?php
-
-/**
- * Copyright 2020 Cloud Creativity Limited
+/*
+ * Copyright 2022 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,19 +17,8 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Unit;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Object\DocumentInterface;
-use CloudCreativity\LaravelJsonApi\Object\Document;
 use PHPUnit\Framework\TestCase as BaseTestCase;
 
 class TestCase extends BaseTestCase
 {
-
-    /**
-     * @param $content
-     * @return DocumentInterface
-     */
-    protected function decode($content)
-    {
-        return new Document(json_decode($content));
-    }
 }

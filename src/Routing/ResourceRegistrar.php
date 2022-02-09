@@ -1,6 +1,6 @@
 <?php
-/**
- * Copyright 2020 Cloud Creativity Limited
+/*
+ * Copyright 2022 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -168,10 +168,12 @@ final class ResourceRegistrar
      */
     private function attributes(): array
     {
+        $prefix = $this->options['resource_uri'] ?? $this->resourceType;
+
         return [
             'middleware' => $this->middleware(),
             'as' => "{$this->resourceType}.",
-            'prefix' => $this->resourceType,
+            'prefix' => $prefix,
         ];
     }
 

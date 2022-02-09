@@ -1,6 +1,6 @@
 <?php
-/**
- * Copyright 2020 Cloud Creativity Limited
+/*
+ * Copyright 2022 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -495,8 +495,12 @@ class Container implements ContainerInterface
      * @param $className
      * @return bool
      */
-    protected function exists($className)
+    protected function exists($className): bool
     {
+        if (null === $className) {
+            return false;
+        }
+
         return class_exists($className) || $this->container->bound($className);
     }
 

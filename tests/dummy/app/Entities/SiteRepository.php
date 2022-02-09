@@ -1,6 +1,6 @@
 <?php
-/**
- * Copyright 2020 Cloud Creativity Limited
+/*
+ * Copyright 2022 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,7 +80,7 @@ class SiteRepository implements IteratorAggregate
     /**
      * @return Generator
      */
-    public function getIterator()
+    public function getIterator(): Generator
     {
         foreach ($this->sites as $slug => $values) {
             yield $slug => Site::create($slug, $values);

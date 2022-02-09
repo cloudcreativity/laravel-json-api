@@ -1,7 +1,7 @@
 <?php
 
-/**
- * Copyright 2020 Cloud Creativity Limited
+/*
+ * Copyright 2022 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -139,7 +139,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     public function queryToMany($relation, EncodingParametersInterface $parameters)
     {
         $this->applyScopes(
-            $query = $relation->newQuery()
+            $query = $this->newRelationQuery($relation)
         );
 
         return $this->queryAllOrOne(
@@ -161,7 +161,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     public function queryToOne($relation, EncodingParametersInterface $parameters)
     {
         $this->applyScopes(
-            $query = $relation->newQuery()
+            $query = $this->newRelationQuery($relation)
         );
 
         return $this->queryOne(
@@ -284,6 +284,15 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
         );
 
         return $builder;
+    }
+
+    /**
+     * @param Relations\BelongsToMany|Relations\HasMany|Relations\HasManyThrough|Builder $relation
+     * @return Builder
+     */
+    protected function newRelationQuery($relation)
+    {
+        return $relation->newQuery();
     }
 
     /**
@@ -699,7 +708,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      */
     private function guessRelation()
     {
-        list($one, $two, $caller) = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3);
+        [$one, $two, $caller] = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3);
 
         return $this->modelRelationForField($caller['function']);
     }

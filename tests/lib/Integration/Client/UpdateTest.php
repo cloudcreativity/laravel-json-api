@@ -1,6 +1,6 @@
 <?php
-/**
- * Copyright 2020 Cloud Creativity Limited
+/*
+ * Copyright 2022 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -141,6 +141,12 @@ class UpdateTest extends TestCase
                     'links' => [
                         'self' => "{$self}/relationships/phone",
                         'related' => "{$self}/phone",
+                    ],
+                ],
+                'roles' => [
+                    'links' => [
+                        'self' => "{$self}/relationships/roles",
+                        'related' => "{$self}/roles",
                     ],
                 ],
             ],

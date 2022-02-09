@@ -1,6 +1,25 @@
-[![Build Status](https://travis-ci.org/cloudcreativity/laravel-json-api.svg?branch=master)](https://travis-ci.org/cloudcreativity/laravel-json-api)
+![Tests](https://github.com/cloudcreativity/laravel-json-api/workflows/Tests/badge.svg)
 
 # cloudcreativity/laravel-json-api
+
+## Status
+
+**DO NOT USE THIS PACKAGE FOR NEW PROJECTS - USE [laravel-json-api/laravel](https://github.com/laravel-json-api/laravel)
+INSTEAD.**
+
+This package has now been rewritten, substantially improved and released as the `laravel-json-api/laravel` package.
+Documentation for the new version is available on our new website [laraveljsonapi.io](https://laraveljsonapi.io) and the
+code is now developed under the
+[Laravel JSON:API Github organisation.](https://github.com/laravel-json-api)
+
+The `cloudcreativity/laravel-json-api` package is now considered to be the *legacy* package. As we know it is in use in
+a lot of production applications, it will continue to receive bug fixes and updates for new Laravel versions. However,
+it is no longer supported for new features.
+
+If you are starting a new project, you MUST use the
+[new package `laravel-json-api/laravel`.](https://github.com/laravel-json-api/laravel)
+
+## Introduction
 
 Build feature-rich and standards-compliant APIs in Laravel.
 
@@ -38,31 +57,30 @@ The following additional features are also supported:
 From [jsonapi.org](http://jsonapi.org)
 
 > If you've ever argued with your team about the way your JSON responses should be formatted, JSON API is your
-anti-bikeshedding weapon.
+> anti-bikeshedding weapon.
 >
-> By following shared conventions, you can increase productivity, take advantage of generalized tooling, and focus
-on what matters: your application. Clients built around JSON API are able to take advantage of its features around
-efficiently caching responses, sometimes eliminating network requests entirely.
+> By following shared conventions, you can increase productivity, take advantage of generalized tooling, and focus on
+> what matters: your application. Clients built around JSON API are able to take advantage of its features around
+> efficiently caching responses, sometimes eliminating network requests entirely.
 
 For full information on the spec, plus examples, see [http://jsonapi.org](http://jsonapi.org).
 
-## Tutorial and Documentation
-
-Want a tutorial to get started? Read the
-[*How to JSON:API* Laravel tutorial.](https://howtojsonapi.com/laravel.html)
+## Documentation
 
 Full package documentation is available on
 [Read the Docs](http://laravel-json-api.readthedocs.io/en/latest/).
 
-## Demo
+## Slack
 
-A demo application is available at [here](https://github.com/cloudcreativity/demo-laravel-json-api).
+Join the Laravel JSON:API community on
+[Slack.](https://join.slack.com/t/laraveljsonapi/shared_invite/zt-e3oi2r4y-8nkmhzpKnPQViaXrkPJHtQ)
 
 ## Laravel Versions
 
 | Laravel | This Package |
 | --- | --- |
-| `^8.0` | `^3.0` |
+| `^9.0` | `^4.0` |
+| `^8.0` | `^3.0|^4.0` |
 | `^7.0` | `^2.0` |
 | `^6.0` | `^1.7` |
 | `5.8.*` | `^1.7` |
@@ -72,12 +90,6 @@ A demo application is available at [here](https://github.com/cloudcreativity/dem
 
 Make sure you consult the [Upgrade Guide](http://laravel-json-api.readthedocs.io/en/latest/upgrade/)
 when upgrading between major or pre-release versions.
-
-## Lumen
-
-Currently we have not integrated the package with Lumen. We do not have any active projects that use Lumen,
-so if you do and can help, please let us know on
-[this issue](https://github.com/cloudcreativity/laravel-json-api/issues/61).
 
 ## License
 
@@ -89,8 +101,8 @@ Installation is via `composer`. See the documentation for complete instructions.
 
 ## Contributing
 
-Contributions are absolutely welcome. Ideally submit a pull request, even more ideally with unit tests.
-Please note the following:
+Contributions are absolutely welcome. Ideally submit a pull request, even more ideally with unit tests. Please note the
+following:
 
 - **Bug Fixes** - submit a pull request against the `master` branch.
 - **Enhancements / New Features** - submit a pull request against the `develop` branch.

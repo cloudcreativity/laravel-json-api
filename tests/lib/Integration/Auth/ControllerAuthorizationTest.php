@@ -1,6 +1,6 @@
 <?php
-/**
- * Copyright 2020 Cloud Creativity Limited
+/*
+ * Copyright 2022 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,14 +24,9 @@ class ControllerAuthorizationTest extends TestCase
 {
 
     /**
-     * @var string
-     */
-    protected $resourceType = 'comments';
-
-    /**
      * @var array
      */
-    private $data;
+    private array $data;
 
     /**
      * @return void
@@ -60,7 +55,12 @@ class ControllerAuthorizationTest extends TestCase
 
     public function testCreateUnauthenticated()
     {
-        $this->doCreate($this->data)->assertStatus(401)->assertJson([
+        $response = $this
+            ->jsonApi()
+            ->withData($this->data)
+            ->post('/api/v1/comments');
+
+        $response->assertStatus(401)->assertJson([
             'errors' => [
                 [
                     'title' => 'Unauthenticated',
@@ -72,7 +72,13 @@ class ControllerAuthorizationTest extends TestCase
 
     public function testCreateUnauthorized()
     {
-        $this->actingAsUser('admin')->doCreate($this->data)->assertStatus(403)->assertJson([
+        $response = $this
+            ->actingAsUser('admin')
+            ->jsonApi()
+            ->withData($this->data)
+            ->post('/api/v1/comments');
+
+        $response->assertStatus(403)->assertJson([
             'errors' => [
                 [
                     'title' => 'Unauthorized',
@@ -84,6 +90,12 @@ class ControllerAuthorizationTest extends TestCase
 
     public function testCreateAllowed()
     {
-        $this->actingAsUser()->doCreate($this->data)->assertStatus(201);
+        $response = $this
+            ->actingAsUser()
+            ->jsonApi()
+            ->withData($this->data)
+            ->post('/api/v1/comments');
+
+        $response->assertStatus(201);
     }
 }

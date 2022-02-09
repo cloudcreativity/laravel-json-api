@@ -1,6 +1,6 @@
 <?php
-/**
- * Copyright 2020 Cloud Creativity Limited
+/*
+ * Copyright 2022 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@
 namespace DummyApp\JsonApi\Users;
 
 use CloudCreativity\LaravelJsonApi\Eloquent\AbstractAdapter;
+use CloudCreativity\LaravelJsonApi\Eloquent\HasMany;
 use CloudCreativity\LaravelJsonApi\Eloquent\HasOne;
 use CloudCreativity\LaravelJsonApi\Pagination\StandardStrategy;
 use DummyApp\User;
@@ -42,6 +43,22 @@ class Adapter extends AbstractAdapter
     }
 
     /**
+     * @return HasOne
+     */
+    protected function phone(): HasOne
+    {
+        return $this->hasOne();
+    }
+
+    /**
+     * @return HasMany
+     */
+    protected function roles(): HasMany
+    {
+        return $this->hasMany();
+    }
+
+    /**
      * @inheritDoc
      */
     protected function filter($query, Collection $filters)
@@ -49,14 +66,6 @@ class Adapter extends AbstractAdapter
         if ($name = $filters->get('name')) {
             $query->where('users.name', 'like', "%{$name}%");
         }
-    }
-
-    /**
-     * @return HasOne
-     */
-    protected function phone()
-    {
-        return $this->hasOne();
     }
 
     /**

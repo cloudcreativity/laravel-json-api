@@ -1,6 +1,6 @@
 <?php
-/**
- * Copyright 2020 Cloud Creativity Limited
+/*
+ * Copyright 2022 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,11 +26,6 @@ use Illuminate\Support\Facades\Event;
 
 class ResourceTest extends TestCase
 {
-
-    /**
-     * @var string
-     */
-    protected $resourceType = 'posts';
 
     /**
      * @return void
@@ -63,7 +58,12 @@ class ResourceTest extends TestCase
             'title' => 'Title B',
         ]);
 
-        $this->doSearch(['sort' => '-title'])
+        $response = $this
+            ->jsonApi('posts')
+            ->sort('-title')
+            ->get('/api/v1/posts');
+
+        $response
             ->assertFetchedManyInOrder([$b, $a]);
     }
 
@@ -71,8 +71,11 @@ class ResourceTest extends TestCase
     {
         $posts = factory(Post::class, 2)->create();
 
-        $this->jsonApi()
-            ->get('api/v1/posts?sort=')
+        $response = $this
+            ->jsonApi('posts')
+            ->get('/api/v1/posts?sort=');
+
+        $response
             ->assertFetchedMany($posts);
     }
 
@@ -90,13 +93,23 @@ class ResourceTest extends TestCase
             'title' => 'Some Other Post',
         ]);
 
-        $this->doSearch(['filter' => ['title' => 'My']])
-            ->assertFetchedManyInOrder([$a, $b]);
+        $response = $this
+            ->jsonApi('posts')
+            ->filter(['title' => 'My'])
+            ->get('/api/v1/posts');
+
+        $response
+            ->assertFetchedMany([$a, $b]);
     }
 
     public function testInvalidFilter()
     {
-        $this->doSearch(['filter' => ['title' => '']])->assertError(400, [
+        $response = $this
+            ->jsonApi('posts')
+            ->filter(['title' => ''])
+            ->get('/api/v1/posts');
+
+        $response->assertErrorStatus([
             'detail' => 'The filter.title field must have a value.',
             'status' => '400',
             'source' => ['parameter' => 'filter.title'],
@@ -111,7 +124,12 @@ class ResourceTest extends TestCase
 
         $expected = $this->serialize($post);
 
-        $this->doSearch(['filter' => ['slug' => 'my-first-post']])
+        $response = $this
+            ->jsonApi('posts')
+            ->filter(['slug' => 'my-first-post'])
+            ->get('/api/v1/posts');
+
+        $response
             ->assertFetchedOne($expected);
     }
 
@@ -119,7 +137,12 @@ class ResourceTest extends TestCase
     {
         factory(Post::class)->create(['slug' => 'my-first-post']);
 
-        $this->doSearch(['filter' => ['slug' => 'my-second-post']])
+        $response = $this
+            ->jsonApi('posts')
+            ->filter(['slug' => 'my-second-post'])
+            ->get('/api/v1/posts');
+
+        $response
             ->assertFetchedNull();
     }
 
@@ -129,7 +152,12 @@ class ResourceTest extends TestCase
      */
     public function testUnrecognisedFilter()
     {
-        $this->doSearch(['filter' => ['foo' => 'bar', 'slug' => 'my-first-post']])
+        $response = $this
+            ->jsonApi('posts')
+            ->filter(['foo' => 'bar', 'slug' => 'my-first-post'])
+            ->get('/api/v1/posts');
+
+        $response
             ->assertStatus(400);
     }
 
@@ -140,7 +168,12 @@ class ResourceTest extends TestCase
     {
         $expected = factory(Comment::class, 5)->states('post')->create();
 
-        $this->doSearch(['include' => 'comments.createdBy'])
+        $response = $this
+            ->jsonApi('posts')
+            ->includePaths('comments.createdBy')
+            ->get('/api/v1/posts');
+
+        $response
             ->assertFetchedMany($expected);
     }
 
@@ -153,7 +186,14 @@ class ResourceTest extends TestCase
         // this model should not be in the search results
         $this->createPost();
 
-        $this->doSearchById($models)->assertFetchedMany($models);
+        $ids = $models->map(fn($model) => $model->getRouteKey());
+
+        $response = $this
+            ->jsonApi('posts')
+            ->filter(['id' => $ids])
+            ->get('/api/v1/posts');
+
+        $response->assertFetchedMany($models);
     }
 
     /**
@@ -183,8 +223,12 @@ class ResourceTest extends TestCase
         $expected = $data;
         unset($expected['relationships']);
 
-        $id = $this
-            ->doCreate($data)
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->post('/api/v1/posts');
+
+        $id = $response
             ->assertCreatedWithServerId(url('/api/v1/posts'), $expected)
             ->id();
 
@@ -237,7 +281,12 @@ class ResourceTest extends TestCase
             ],
         ];
 
-        $this->doCreate($data)->assertErrors(422, $expected);
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->post('/api/v1/posts');
+
+        $response->assertErrors(422, $expected);
     }
 
     /**
@@ -263,7 +312,12 @@ class ResourceTest extends TestCase
             ],
         ];
 
-        $this->doCreate($data)->assertErrorStatus([
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->post('/api/v1/posts');
+
+        $response->assertErrorStatus([
             'status' => '422',
             'detail' => 'The slug field is required.',
             'source' => [
@@ -290,7 +344,11 @@ class ResourceTest extends TestCase
         $model = $this->createPost();
         $model->tags()->create(['name' => 'Important']);
 
-        $this->doRead($model)->assertFetchedOneExact(
+        $response = $this
+            ->jsonApi()
+            ->get(url('/api/v1/posts', $model));
+
+        $response->assertFetchedOneExact(
             $this->serialize($model)
         );
 
@@ -304,7 +362,11 @@ class ResourceTest extends TestCase
     {
         $post = factory(Post::class)->create(['deleted_at' => Carbon::now()]);
 
-        $this->doRead($post)->assertFetchedOneExact(
+        $response = $this
+            ->jsonApi()
+            ->get(url('/api/v1/posts', $post));
+
+        $response->assertFetchedOneExact(
             $this->serialize($post)
         );
     }
@@ -332,7 +394,12 @@ class ResourceTest extends TestCase
 
         $expected['relationships']['comments']['data'] = [];
 
-        $this->doRead($model, ['include' => 'author,tags,comments'])
+        $response = $this
+            ->jsonApi()
+            ->includePaths('author', 'tags', 'comments')
+            ->get(url('/api/v1/posts', $model));
+
+        $response
             ->assertFetchedOne($expected)
             ->assertIsIncluded('users', $model->author)
             ->assertIsIncluded('tags', $tag);
@@ -345,9 +412,11 @@ class ResourceTest extends TestCase
     {
         $post = factory(Post::class)->create();
 
-        $this->jsonApi()
-            ->get("api/v1/posts/{$post->getRouteKey()}?include=")
-            ->assertFetchedOne($this->serialize($post));
+        $response = $this
+            ->jsonApi()
+            ->get("api/v1/posts/{$post->getRouteKey()}?include=");
+
+        $response->assertFetchedOne($this->serialize($post));
     }
 
     /**
@@ -357,7 +426,12 @@ class ResourceTest extends TestCase
     {
         $post = $this->createPost();
 
-        $this->doRead($post, ['include' => 'author,foo'])->assertError(400, [
+        $response = $this
+            ->jsonApi()
+            ->includePaths('author', 'foo')
+            ->get(url('/api/v1/posts', $post));
+
+        $response->assertError(400, [
             'status' => '400',
             'detail' => 'Include path foo is not allowed.',
             'source' => ['parameter' => 'include'],
@@ -414,7 +488,11 @@ class ResourceTest extends TestCase
      */
     public function testResourceNotFound()
     {
-        $this->doRead('xyz')->assertStatus(404);
+        $response = $this
+            ->jsonApi()
+            ->get('/api/v1/posts/xyz');
+
+        $response->assertStatus(404);
     }
 
     /**
@@ -439,7 +517,12 @@ class ResourceTest extends TestCase
         $expected = $data;
         unset($expected['attributes']['foo']);
 
-        $this->doUpdate($data)->assertUpdated($expected);
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->patch(url('/api/v1/posts', $model));
+
+        $response->assertFetchedOne($expected);
 
         $this->assertDatabaseHas('posts', [
             'id' => $model->getKey(),
@@ -482,7 +565,13 @@ class ResourceTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data, ['include' => 'tags'])->assertUpdated($data);
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->includePaths('tags')
+            ->patch(url('/api/v1/posts', $post));
+
+        $response->assertFetchedOne($data);
 
         $this->assertDatabaseHas('taggables', [
             'taggable_type' => Post::class,
@@ -515,7 +604,12 @@ class ResourceTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data)->assertStatus(200);
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->patch(url('/api/v1/posts', $post));
+
+        $response->assertStatus(200);
 
         $this->assertDatabaseHas('posts', [
             'id' => $post->getKey(),
@@ -540,7 +634,12 @@ class ResourceTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data)->assertStatus(200);
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->patch(url('/api/v1/posts', $post));
+
+        $response->assertStatus(200);
 
         $this->assertDatabaseHas('posts', [
             'id' => $post->getKey(),
@@ -569,7 +668,12 @@ class ResourceTest extends TestCase
         $expected = $data;
         $expected['attributes']['content'] = 'Hello world.';
 
-        $this->doUpdate($data)->assertUpdated($expected);
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->patch(url('/api/v1/posts', $model));
+
+        $response->assertFetchedOne($expected);
 
         $this->assertDatabaseHas('posts', [
             'id' => $model->getKey(),
@@ -597,7 +701,12 @@ class ResourceTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data)->assertErrorStatus($expected);
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->patch(url('/api/v1/posts', $model));
+
+        $response->assertErrorStatus($expected);
     }
 
     public function testSoftDelete()
@@ -614,7 +723,12 @@ class ResourceTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data)->assertUpdated($data);
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->patch(url('/api/v1/posts', $post));
+
+        $response->assertFetchedOne($data);
         $this->assertSoftDeleted('posts', [$post->getKeyName() => $post->getKey()]);
 
         Event::assertDispatched("eloquent.deleting: " . Post::class, function ($name, $actual) use ($post) {
@@ -643,7 +757,12 @@ class ResourceTest extends TestCase
         $expected = $data;
         $expected['attributes']['deletedAt'] = Carbon::now()->toJSON();
 
-        $this->doUpdate($data)->assertUpdated($expected);
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->patch(url('/api/v1/posts', $post));
+
+        $response->assertFetchedOne($expected);
         $this->assertSoftDeleted('posts', [$post->getKeyName() => $post->getKey()]);
     }
 
@@ -663,7 +782,12 @@ class ResourceTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data)->assertUpdated($data);
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->patch(url('/api/v1/posts', $post));
+
+        $response->assertFetchedOne($data);
 
         $this->assertDatabaseHas('posts', [
             $post->getKeyName() => $post->getKey(),
@@ -685,7 +809,12 @@ class ResourceTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data)->assertUpdated($data);
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->patch(url('/api/v1/posts', $post));
+
+        $response->assertFetchedOne($data);
 
         $this->assertDatabaseHas('posts', [
             $post->getKeyName() => $post->getKey(),
@@ -714,7 +843,12 @@ class ResourceTest extends TestCase
         $expected = $data;
         $expected['attributes']['deletedAt'] = null;
 
-        $this->doUpdate($data)->assertUpdated($expected);
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->patch(url('/api/v1/posts', $post));
+
+        $response->assertFetchedOne($expected);
 
         $this->assertDatabaseHas('posts', [
             $post->getKeyName() => $post->getKey(),
@@ -744,7 +878,12 @@ class ResourceTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data)->assertUpdated($data);
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->patch(url('/api/v1/posts', $post));
+
+        $response->assertFetchedOne($data);
 
         $this->assertDatabaseHas('posts', [
             $post->getKeyName() => $post->getKey(),
@@ -766,7 +905,11 @@ class ResourceTest extends TestCase
 
         $post = $this->createPost();
 
-        $this->doDelete($post)->assertDeleted();
+        $response = $this
+            ->jsonApi()
+            ->delete(url('/api/v1/posts', $post));
+
+        $response->assertNoContent();
         $this->assertDatabaseMissing('posts', [$post->getKeyName() => $post->getKey()]);
 
         Event::assertDispatched("eloquent.deleting: " . Post::class, function ($name, $actual) use ($post) {
@@ -795,7 +938,11 @@ class ResourceTest extends TestCase
             'detail' => 'Cannot delete a post with comments.',
         ];
 
-        $this->doDelete($post)->assertExactErrorStatus($expected);
+        $response = $this
+            ->jsonApi()
+            ->delete(url('/api/v1/posts', $post));
+
+        $response->assertExactErrorStatus($expected);
     }
 
     /**

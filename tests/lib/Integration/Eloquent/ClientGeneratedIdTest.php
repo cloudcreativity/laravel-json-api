@@ -1,6 +1,6 @@
 <?php
-/**
- * Copyright 2020 Cloud Creativity Limited
+/*
+ * Copyright 2022 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,11 +22,6 @@ use DummyApp\Video;
 
 class ClientGeneratedIdTest extends TestCase
 {
-
-    /**
-     * @var string
-     */
-    protected $resourceType = 'videos';
 
     public function testCreate()
     {
@@ -54,7 +49,13 @@ class ClientGeneratedIdTest extends TestCase
 
         $this->actingAs($video->user);
 
-        $this->doCreate($data, ['include' => 'uploadedBy'])->assertCreatedWithClientId(
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->includePaths('uploadedBy')
+            ->post('/api/v1/videos');
+
+        $response->assertCreatedWithClientId(
             'http://localhost/api/v1/videos',
             $expected
         );
@@ -84,7 +85,12 @@ class ClientGeneratedIdTest extends TestCase
 
         $this->actingAs($video->user);
 
-        $this->doCreate($data)
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->post('/api/v1/videos');
+
+        $response
             ->assertStatus((int) $error['status'])
             ->assertJson(['errors' => [$error]]);
     }
@@ -112,7 +118,12 @@ class ClientGeneratedIdTest extends TestCase
 
         $this->actingAs($video->user);
 
-        $this->doCreate($data)
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->post('/api/v1/videos');
+
+        $response
             ->assertStatus((int) $error['status'])
             ->assertJson(['errors' => [$error]]);
     }
@@ -140,7 +151,12 @@ class ClientGeneratedIdTest extends TestCase
 
         $this->actingAs($video->user);
 
-        $this->doCreate($data)
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->post('/api/v1/videos');
+
+        $response
             ->assertStatus((int) $error['status'])
             ->assertJson(['errors' => [$error]]);
     }
@@ -161,7 +177,12 @@ class ClientGeneratedIdTest extends TestCase
 
         $this->actingAs($video->user);
 
-        $this->doUpdate($data)->assertUpdated($expected);
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->patch(url('/api/v1/videos', $video));
+
+        $response->assertFetchedOne($expected);
 
         $this->assertDatabaseHas('videos', [
             'uuid' => $video->getKey(),

@@ -1,6 +1,6 @@
 <?php
-/**
- * Copyright 2020 Cloud Creativity Limited
+/*
+ * Copyright 2022 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,18 +23,17 @@ use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
 class QueueJobsTest extends TestCase
 {
 
-    /**
-     * @var string
-     */
-    protected $resourceType = 'queue-jobs';
-
     public function testListAll()
     {
         $jobs = factory(ClientJob::class, 2)->create();
         // this one should not appear in results as it is for a different resource type.
         factory(ClientJob::class)->create(['resource_type' => 'foo']);
 
-        $this->getJsonApi('/api/v1/downloads/queue-jobs')
+        $response = $this
+            ->jsonApi('queue-jobs')
+            ->get('/api/v1/downloads/queue-jobs');
+
+        $response
             ->assertFetchedMany($jobs);
     }
 
@@ -43,7 +42,11 @@ class QueueJobsTest extends TestCase
         $job = factory(ClientJob::class)->create();
         $expected = $this->serialize($job);
 
-        $this->getJsonApi($expected['links']['self'])
+        $response = $this
+            ->jsonApi('queue-jobs')
+            ->get($expected['links']['self']);
+
+        $response
             ->assertFetchedOneExact($expected);
     }
 
@@ -55,9 +58,13 @@ class QueueJobsTest extends TestCase
     public function testReadNotPending()
     {
        $job = factory(ClientJob::class)->states('success', 'with_download')->create();
+       $expected = $this->serialize($job);
 
-       $response = $this
-           ->getJsonApi($this->jobUrl($job))
+        $response = $this
+            ->jsonApi('queue-jobs')
+            ->get($expected['links']['self']);
+
+       $response
            ->assertStatus(303)
            ->assertHeader('Location', url('/api/v1/downloads', [$job->resource_id]))
            ->assertHeader('Content-Type', 'application/vnd.api+json');
@@ -74,7 +81,11 @@ class QueueJobsTest extends TestCase
         $job = factory(ClientJob::class)->states('success')->create();
         $expected = $this->serialize($job);
 
-        $this->getJsonApi($this->jobUrl($job))
+        $response = $this
+            ->jsonApi('queue-jobs')
+            ->get($expected['links']['self']);
+
+        $response
             ->assertFetchedOneExact($expected)
             ->assertHeaderMissing('Location');
     }
@@ -89,39 +100,40 @@ class QueueJobsTest extends TestCase
         $job = factory(ClientJob::class)->states('failed', 'with_download')->create();
         $expected = $this->serialize($job);
 
-        $this->getJsonApi($this->jobUrl($job))
+        $response = $this
+            ->jsonApi('queue-jobs')
+            ->get($expected['links']['self']);
+
+        $response
             ->assertFetchedOneExact($expected)
             ->assertHeaderMissing('Location');
     }
 
-    public function testReadNotFound()
+    public function testReadUnknownResourceType()
     {
         $job = factory(ClientJob::class)->create(['resource_type' => 'foo']);
+        $expected = $this->serialize($job);
 
-        $this->getJsonApi($this->jobUrl($job, 'downloads'))
+        $response = $this
+            ->jsonApi('queue-jobs')
+            ->get($expected['links']['self']);
+
+        $response
             ->assertStatus(404);
     }
 
     public function testInvalidInclude()
     {
         $job = factory(ClientJob::class)->create();
+        $expected = $this->serialize($job);
 
-        $this->getJsonApi($this->jobUrl($job) . '?' . http_build_query(['include' => 'foo']))
+        $response = $this
+            ->jsonApi('queue-jobs')
+            ->includePaths('foo')
+            ->get($expected['links']['self']);
+
+        $response
             ->assertStatus(400);
-    }
-
-    /**
-     * @param ClientJob $job
-     * @param string|null $resourceType
-     * @return string
-     */
-    private function jobUrl(ClientJob $job, string $resourceType = null): string
-    {
-        return url('/api/v1', [
-            $resourceType ?: $job->resource_type,
-            'queue-jobs',
-            $job
-        ]);
     }
 
     /**
@@ -132,8 +144,6 @@ class QueueJobsTest extends TestCase
      */
     private function serialize(ClientJob $job): array
     {
-        $self = $this->jobUrl($job);
-
         return [
             'type' => 'queue-jobs',
             'id' => (string) $job->getRouteKey(),
@@ -149,7 +159,7 @@ class QueueJobsTest extends TestCase
                 'updatedAt' => $job->updated_at->toJSON(),
             ],
             'links' => [
-                'self' => $self,
+                'self' => url('/api/v1', [$job->resource_type, 'queue-jobs', $job]),
             ],
         ];
     }

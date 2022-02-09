@@ -1,6 +1,6 @@
 <?php
-/**
- * Copyright 2020 Cloud Creativity Limited
+/*
+ * Copyright 2022 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,11 +23,6 @@ use DummyApp\Post;
 
 class IssueTest extends TestCase
 {
-
-    /**
-     * @var string
-     */
-    protected $resourceType = 'posts';
 
     /**
      * @var bool
@@ -85,9 +80,14 @@ class IssueTest extends TestCase
             ],
         ];
 
+        $this->withResponse($hook, $unexpected);
 
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->post('/api/v1/posts');
 
-        $this->withResponse($hook, $unexpected)->doCreate($data)->assertStatus(202);
+        $response->assertStatus(202);
     }
 
     /**
@@ -120,7 +120,14 @@ class IssueTest extends TestCase
             ],
         ];
 
-        $this->withResponse($hook, $unexpected)->doUpdate($data)->assertStatus(202);
+        $this->withResponse($hook, $unexpected);
+
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->patch(url('/api/v1/posts', $post));
+
+        $response->assertStatus(202);
     }
 
     /**
@@ -143,7 +150,13 @@ class IssueTest extends TestCase
     {
         $post = factory(Post::class)->create();
 
-        $this->withResponse($hook, $unexpected)->doDelete($post)->assertStatus(202);
+        $this->withResponse($hook, $unexpected);
+
+        $response = $this
+            ->jsonApi()
+            ->delete(url('/api/v1/posts', $post));
+
+        $response->assertStatus(202);
     }
 
     /**

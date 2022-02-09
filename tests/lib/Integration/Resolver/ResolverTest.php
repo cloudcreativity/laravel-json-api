@@ -1,6 +1,6 @@
 <?php
-/**
- * Copyright 2020 Cloud Creativity Limited
+/*
+ * Copyright 2022 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,11 +26,6 @@ use Illuminate\Support\Facades\Route;
 
 class ResolverTest extends TestCase
 {
-
-    /**
-     * @var string
-     */
-    protected $resourceType = 'foobars';
 
     /**
      * @var bool
@@ -69,7 +64,11 @@ class ResolverTest extends TestCase
 
         $post = factory(Post::class)->create();
 
-        $this->doRead($post)->assertFetchedOne([
+        $response = $this
+            ->jsonApi('foobars')
+            ->get(url('/api/v1/foobars', $post));
+
+        $response->assertFetchedOne([
             'type' => 'foobars',
             'id' => $post,
             'attributes' => [
@@ -90,7 +89,12 @@ class ResolverTest extends TestCase
 
         $post = factory(Post::class)->create();
 
-        $this->doRead($post)->assertFetchedOne([
+
+        $response = $this
+            ->jsonApi('foobars')
+            ->get(url('/api/v1/foobars', $post));
+
+        $response->assertFetchedOne([
             'type' => 'foobars',
             'id' => $post,
             'attributes' => [

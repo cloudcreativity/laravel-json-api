@@ -1,6 +1,6 @@
 <?php
-/**
- * Copyright 2020 Cloud Creativity Limited
+/*
+ * Copyright 2022 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,9 +61,14 @@ class BelongsToTest extends TestCase
             ],
         ];
 
-        $id = $this
-            ->doCreate($data, ['include' => 'author'])
-            ->assertCreatedWithServerId(url('/api/v1/posts'), $data)
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->includePaths('author')
+            ->post($uri =  url('/api/v1/posts'));
+
+        $id = $response
+            ->assertCreatedWithServerId($uri, $data)
             ->id();
 
         $this->assertDatabaseHas('posts', [
@@ -94,9 +99,14 @@ class BelongsToTest extends TestCase
             ],
         ];
 
-        $id = $this
-            ->doCreate($data, ['include' => 'author'])
-            ->assertCreatedWithServerId(url('/api/v1/posts'), $data)
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->includePaths('author')
+            ->post($uri = url('/api/v1/posts'));
+
+        $id = $response
+            ->assertCreatedWithServerId($uri, $data)
             ->id();
 
         $this->assertDatabaseHas('posts', [
@@ -125,7 +135,13 @@ class BelongsToTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data, ['include' => 'author'])->assertUpdated($data);
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->includePaths('author')
+            ->patch(url('/api/v1/posts', $post));
+
+        $response->assertFetchedOne($data);
 
         $this->assertDatabaseHas('posts', [
             'id' => $post->getKey(),
@@ -161,7 +177,13 @@ class BelongsToTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data, ['include' => 'author'])->assertUpdated($data);
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->includePaths('author')
+            ->patch(url('/api/v1/posts', $post));
+
+        $response->assertFetchedOne($data);
 
         $this->assertDatabaseHas('posts', [
             'id' => $post->getKey(),
@@ -196,7 +218,13 @@ class BelongsToTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data, ['include' => 'author'])->assertUpdated($data);
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->includePaths('author')
+            ->patch(url('/api/v1/posts', $post));
+
+        $response->assertFetchedOne($data);
 
         $this->assertDatabaseHas('posts', [
             'id' => $post->getKey(),
@@ -219,8 +247,11 @@ class BelongsToTest extends TestCase
             ],
         ];
 
-        $this->doReadRelated($post, 'author')
-            ->assertFetchedOne($expected);
+        $response = $this
+            ->jsonApi()
+            ->get(url('/api/v1/posts', [$post, 'author']));
+
+        $response->assertFetchedOne($expected);
     }
 
     public function testReadRelatedNull()
@@ -230,17 +261,22 @@ class BelongsToTest extends TestCase
             'author_id' => null,
         ]);
 
-        $this->doReadRelated($post, 'author')
-            ->assertFetchedNull();
+        $response = $this
+            ->jsonApi()
+            ->get(url('/api/v1/posts', [$post, 'author']));
+
+        $response->assertFetchedNull();
     }
 
     public function testReadRelationship()
     {
         $post = factory(Post::class)->create();
 
-        $this->doReadRelationship($post, 'author')
-            ->willSeeType('users')
-            ->assertFetchedToOne($post->author);
+        $response = $this
+            ->jsonApi('users')
+            ->get(url('/api/v1/posts', [$post, 'relationships', 'author']));
+
+        $response->assertFetchedToOne($post->author);
     }
 
     public function testReadEmptyRelationship()
@@ -249,8 +285,11 @@ class BelongsToTest extends TestCase
             'author_id' => null,
         ]);
 
-        $this->doReadRelationship($post, 'author')
-            ->assertFetchedNull();
+        $response = $this
+            ->jsonApi('users')
+            ->get(url('/api/v1/posts', [$post, 'relationships', 'author']));
+
+        $response->assertFetchedNull();
     }
 
     public function testReplaceNullRelationshipWithRelatedResource()
@@ -261,11 +300,15 @@ class BelongsToTest extends TestCase
 
         $user = factory(User::class)->create();
 
-        $data = ['type' => 'users', 'id' => (string) $user->getKey()];
+        $data = ['type' => 'users', 'id' => (string) $user->getRouteKey()];
 
-        $this->withoutExceptionHandling()
-            ->doReplaceRelationship($post, 'author', $data)
-            ->assertStatus(204);
+        $response = $this
+            ->withoutExceptionHandling()
+            ->jsonApi()
+            ->withData($data)
+            ->patch(url('/api/v1/posts', [$post, 'relationships', 'author']));
+
+        $response->assertStatus(204);
 
         $this->assertDatabaseHas('posts', [
             'id' => $post->getKey(),
@@ -278,8 +321,12 @@ class BelongsToTest extends TestCase
         $post = factory(Post::class)->create();
         $this->assertNotNull($post->author_id);
 
-        $this->doReplaceRelationship($post, 'author', null)
-            ->assertStatus(204);
+        $response = $this
+            ->jsonApi()
+            ->withData(null)
+            ->patch(url('/api/v1/posts', [$post, 'relationships', 'author']));
+
+        $response->assertStatus(204);
 
         $this->assertDatabaseHas('posts', [
             'id' => $post->getKey(),
@@ -294,10 +341,14 @@ class BelongsToTest extends TestCase
 
         $user = factory(User::class)->create();
 
-        $data = ['type' => 'users', 'id' => (string) $user->getKey()];
+        $data = ['type' => 'users', 'id' => (string) $user->getRouteKey()];
 
-        $this->doReplaceRelationship($post, 'author', $data)
-            ->assertStatus(204);
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->patch(url('/api/v1/posts', [$post, 'relationships', 'author']));
+
+        $response->assertStatus(204);
 
         $this->assertDatabaseHas('posts', [
             'id' => $post->getKey(),
@@ -323,7 +374,11 @@ class BelongsToTest extends TestCase
             ],
         ];
 
-        $this->doReplaceRelationship($post, 'author', $data)
-            ->assertErrorStatus($expected);
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->patch(url('/api/v1/posts', [$post, 'relationships', 'author']));
+
+        $response->assertErrorStatus($expected);
     }
 }

@@ -1,6 +1,6 @@
 <?php
-/**
- * Copyright 2020 Cloud Creativity Limited
+/*
+ * Copyright 2022 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,11 +35,6 @@ class HasOneTest extends TestCase
 {
 
     /**
-     * @var string
-     */
-    protected $resourceType = 'users';
-
-    /**
      * We can create a user resource providing `null` as the phone relationship.
      */
     public function testCreateWithNull()
@@ -66,8 +61,13 @@ class HasOneTest extends TestCase
         $expected = $data;
         unset($expected['attributes']['password'], $expected['attributes']['passwordConfirmation']);
 
-        $id = $this
-            ->doCreate($data, ['include' => 'phone'])
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->includePaths('phone')
+            ->post('/api/v1/users');
+
+        $id = $response
             ->assertCreatedWithServerId(url('/api/v1/users'), $expected)
             ->id();
 
@@ -120,9 +120,13 @@ class HasOneTest extends TestCase
             ],
         ];
 
-        $id = $this
-            ->doCreate($data, ['include' => 'phone'])
-            ->assertErrorStatus($expected);
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->includePaths('phone')
+            ->post('/api/v1/users');
+
+        $response->assertErrorStatus($expected);
     }
 
     /**
@@ -156,8 +160,13 @@ class HasOneTest extends TestCase
         $expected = $data;
         unset($expected['attributes']['password'], $expected['attributes']['passwordConfirmation']);
 
-        $id = $this
-            ->doCreate($data, ['include' => 'phone'])
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->includePaths('phone')
+            ->post('/api/v1/users');
+
+        $id = $response
             ->assertCreatedWithServerId(url('/api/v1/users'), $expected)
             ->id();
 
@@ -185,7 +194,13 @@ class HasOneTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data, ['include' => 'phone'])->assertUpdated($data);
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->includePaths('phone')
+            ->patch(url('/api/v1/users', $phone->user_id));
+
+        $response->assertFetchedOne($data);
 
         $this->assertDatabaseHas('phones', [
             'id' => $phone->getKey(),
@@ -216,7 +231,13 @@ class HasOneTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data, ['include' => 'phone'])->assertUpdated($data);
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->includePaths('phone')
+            ->patch(url('/api/v1/users', $user));
+
+        $response->assertFetchedOne($data);
 
         $this->assertDatabaseHas('phones', [
             'id' => $phone->getKey(),
@@ -247,7 +268,13 @@ class HasOneTest extends TestCase
             ],
         ];
 
-        $this->doUpdate($data, ['include' => 'phone'])->assertUpdated($data);
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->includePaths('phone')
+            ->patch(url('/api/v1/users', $existing->user_id));
+
+        $response->assertFetchedOne($data);
 
         $this->assertDatabaseHas('phones', [
             'id' => $existing->getKey(),
@@ -286,7 +313,12 @@ class HasOneTest extends TestCase
             ],
         ];
 
-        $this->doReadRelated($user, 'phone', ['include' => 'user'])->assertFetchedOne($data);
+        $response = $this
+            ->jsonApi()
+            ->includePaths('user')
+            ->get(url('/api/v1/users', [$user, 'phone']));
+
+        $response->assertFetchedOne($data);
     }
 
     /**
@@ -297,8 +329,12 @@ class HasOneTest extends TestCase
         /** @var Phone $phone */
         $phone = factory(Phone::class)->states('user')->create();
 
-        $this->doReadRelationship($phone->user, 'phone')
-            ->willSeeType('phones')
+        $response = $this
+            ->jsonApi('phones')
+            ->includePaths('user')
+            ->get(url('/api/v1/users', [$phone->user, 'relationships', 'phone']));
+
+        $response
             ->assertFetchedToOne($phone);
     }
 
@@ -312,9 +348,14 @@ class HasOneTest extends TestCase
         /** @var Phone $phone */
         $phone = factory(Phone::class)->create();
 
-        $data = ['type' => 'phones', 'id' => (string) $phone->getKey()];
+        $data = ['type' => 'phones', 'id' => (string) $phone->getRouteKey()];
 
-        $this->doReplaceRelationship($user, 'phone', $data)
+        $response = $this
+            ->jsonApi('phones')
+            ->withData($data)
+            ->patch(url('/api/v1/users', [$user, 'relationships', 'phone']));
+
+        $response
             ->assertStatus(204);
 
         $this->assertDatabaseHas('phones', [
@@ -334,7 +375,12 @@ class HasOneTest extends TestCase
         /** @var Phone $other */
         $other = factory(Phone::class)->states('user')->create();
 
-        $this->doReplaceRelationship($phone->user, 'phone', null)
+        $response = $this
+            ->jsonApi('phones')
+            ->withData(null)
+            ->patch(url('/api/v1/users', [$phone->user, 'relationships', 'phone']));
+
+        $response
             ->assertStatus(204);
 
         $this->assertDatabaseHas('phones', [
@@ -359,9 +405,14 @@ class HasOneTest extends TestCase
         /** @var Phone $other */
         $other = factory(Phone::class)->create();
 
-        $data = ['type' => 'phones', 'id' => (string) $other->getKey()];
+        $data = ['type' => 'phones', 'id' => (string) $other->getRouteKey()];
 
-        $this->doReplaceRelationship($existing->user, 'phone', $data)
+        $response = $this
+            ->jsonApi('phones')
+            ->withData($data)
+            ->patch(url('/api/v1/users', [$existing->user, 'relationships', 'phone']));
+
+        $response
             ->assertStatus(204);
 
         $this->assertDatabaseHas('phones', [

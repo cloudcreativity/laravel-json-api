@@ -1,6 +1,6 @@
 <?php
-/**
- * Copyright 2020 Cloud Creativity Limited
+/*
+ * Copyright 2022 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,7 +63,9 @@ class SubDomainTest extends TestCase
         $post = factory(Post::class)->create();
         $uri = "http://foo.example.com/api/v1/posts/{$post->getRouteKey()}";
 
-        $this->getJsonApi($uri)->assertFetchedOne([
+        $response = $this->jsonApi()->get($uri);
+
+        $response->assertFetchedOne([
             'type' => 'posts',
             'id' => (string) $post->getRouteKey(),
             'links' => [
@@ -85,7 +87,12 @@ class SubDomainTest extends TestCase
             ],
         ];
 
-        $this->patchJsonApi($uri, [], compact('data'))->assertStatus(200);
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->patch($uri);
+
+        $response->assertStatus(200);
     }
 
     public function testDelete()
@@ -93,7 +100,11 @@ class SubDomainTest extends TestCase
         $post = factory(Post::class)->create();
         $uri = "http://foo.example.com/api/v1/posts/{$post->getRouteKey()}";
 
-        $this->deleteJsonApi($uri)->assertStatus(204);
+        $response = $this
+            ->jsonApi()
+            ->delete($uri);
+
+        $response->assertStatus(204);
     }
 
     public function testReadRelated()
@@ -101,7 +112,9 @@ class SubDomainTest extends TestCase
         $post = factory(Post::class)->create();
         $uri = "http://foo.example.com/api/v1/posts/{$post->getRouteKey()}/author";
 
-        $this->getJsonApi($uri)->assertStatus(200);
+        $response = $this->jsonApi()->get($uri);
+
+        $response->assertStatus(200);
     }
 
     public function testReadRelationship()
@@ -109,7 +122,9 @@ class SubDomainTest extends TestCase
         $post = factory(Post::class)->create();
         $uri = "http://foo.example.com/api/v1/posts/{$post->getRouteKey()}/relationships/author";
 
-        $this->getJsonApi($uri)->assertStatus(200);
+        $response = $this->jsonApi()->get($uri);
+
+        $response->assertStatus(200);
     }
 
     public function testReplaceRelationship()
@@ -123,7 +138,12 @@ class SubDomainTest extends TestCase
             'id' => (string) $user->getRouteKey(),
         ];
 
-        $this->patchJsonApi($uri, [], compact('data'))->assertStatus(204);
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->patch($uri);
+
+        $response->assertStatus(204);
     }
 
 }

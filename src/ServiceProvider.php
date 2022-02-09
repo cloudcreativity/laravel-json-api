@@ -1,6 +1,6 @@
 <?php
-/**
- * Copyright 2020 Cloud Creativity Limited
+/*
+ * Copyright 2022 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -83,7 +83,7 @@ class ServiceProvider extends BaseServiceProvider
             ], 'json-api:migrations');
 
             $this->publishes([
-                __DIR__ . '/../resources/lang' => resource_path('lang/vendor/jsonapi'),
+                __DIR__ . '/../lang' => $this->app->langPath() . '/vendor/jsonapi',
             ], 'json-api:translations');
 
             $this->commands([
@@ -133,7 +133,7 @@ class ServiceProvider extends BaseServiceProvider
      */
     protected function bootTranslations()
     {
-        $this->loadTranslationsFrom(__DIR__ . '/../resources/lang', 'jsonapi');
+        $this->loadTranslationsFrom(__DIR__ . '/../lang', 'jsonapi');
     }
 
     /**
@@ -229,7 +229,7 @@ class ServiceProvider extends BaseServiceProvider
      *
      * @return void
      */
-    protected function bindInboundRequest()
+    protected function bindInboundRequest(): void
     {
         $this->app->singleton(Route::class, function (Application $app) {
             return new Route(
@@ -238,15 +238,15 @@ class ServiceProvider extends BaseServiceProvider
             );
         });
 
-        $this->app->bind(StoreInterface::class, function () {
+        $this->app->singleton(StoreInterface::class, function () {
             return json_api()->getStore();
         });
 
-        $this->app->bind(ResolverInterface::class, function () {
+        $this->app->singleton(ResolverInterface::class, function () {
             return json_api()->getResolver();
         });
 
-        $this->app->bind(ContainerInterface::class, function () {
+        $this->app->singleton(ContainerInterface::class, function () {
             return json_api()->getContainer();
         });
 

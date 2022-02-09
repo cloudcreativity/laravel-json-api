@@ -1,6 +1,6 @@
 <?php
-/**
- * Copyright 2020 Cloud Creativity Limited
+/*
+ * Copyright 2022 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,9 @@ class DefaultTest extends TestCase
 
     public function testOkWithoutBody()
     {
-        $this->getJsonApi('/api/v1/posts')
+        $response = $this->jsonApi()->get('/api/v1/posts');
+
+        $response
             ->assertStatus(200)
             ->assertHeader('Content-Type', 'application/vnd.api+json');
     }
@@ -34,7 +36,12 @@ class DefaultTest extends TestCase
     {
         $data = $this->willPatch();
 
-        $this->patchJsonApi("/api/v1/posts/{$data['id']}", [], ['data' => $data])->assertStatus(200);
+        $response = $this
+            ->jsonApi()
+            ->withData($data)
+            ->patch(url('/api/v1/posts', $data['id']));
+
+        $response->assertStatus(200);
     }
 
     public function testNotOkWithoutBody()
@@ -42,7 +49,17 @@ class DefaultTest extends TestCase
         $data = $this->willPatch();
 
         $headers = $this->transformHeadersToServerVars(['Accept' => 'application/vnd.api+json']);
-        $this->call('PATCH', "/api/v1/posts/{$data['id']}", [], [], [], $headers)->assertStatus(400);
+        $response = $this->call('PATCH', "/api/v1/posts/{$data['id']}", [], [], [], $headers);
+
+        $response->assertStatus(400)->assertExactJson([
+            'errors' => [
+                [
+                    "status" => "400",
+                    "title" => "Document Required",
+                    "detail" => "Expecting request to contain a JSON API document.",
+                ],
+            ],
+        ]);
     }
 
     /**
@@ -71,7 +88,11 @@ class DefaultTest extends TestCase
         $data = $this->willPatch();
         $uri = "/api/v1/posts/{$data['id']}";
 
-        $response = $this->jsonApi()->contentType('text/plain')->data($data)->patch($uri);
+        $response = $this
+            ->jsonApi()
+            ->contentType('text/plain')
+            ->withData($data)
+            ->patch($uri);
 
         $response->assertErrorStatus([
             'title' => 'Unsupported Media Type',
