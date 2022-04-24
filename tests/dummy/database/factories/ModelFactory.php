@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-use DummyApp\User;
 use Faker\Generator as Faker;
 use Illuminate\Database\Eloquent\Factory as EloquentFactory;
 use Illuminate\Support\Str;
@@ -27,45 +26,37 @@ $factory->define(DummyApp\Avatar::class, function (Faker $faker) {
     return [
         'path' => 'avatars/' . Str::random(6) . '.jpg',
         'media_type' => 'image/jpeg',
-        'user_id' => function () {
-            return factory(DummyApp\User::class)->create()->getKey();
-        },
+        'user_id' => factory(DummyApp\User::class),
     ];
 });
 
 /** Comment */
 $factory->define(DummyApp\Comment::class, function (Faker $faker) {
     return [
-        'content' => $faker->paragraph,
-        'user_id' => function () {
-            return factory(DummyApp\User::class)->create()->getKey();
-        },
+        'content' => $faker->paragraph(),
+        'user_id' => factory(DummyApp\User::class),
     ];
 });
 
 $factory->state(DummyApp\Comment::class, 'post', function () {
     return [
         'commentable_type' => DummyApp\Post::class,
-        'commentable_id' => function () {
-            return factory(DummyApp\Post::class)->states('published')->create()->getKey();
-        }
+        'commentable_id' => factory(DummyApp\Post::class)->states('published'),
     ];
 });
 
 $factory->state(DummyApp\Comment::class, 'video', function () {
     return [
         'commentable_type' => DummyApp\Video::class,
-        'commentable_id' => function () {
-            return factory(DummyApp\Video::class)->create()->getKey();
-        }
+        'commentable_id' => factory(DummyApp\Video::class),
     ];
 });
 
 /** Country */
 $factory->define(DummyApp\Country::class, function (Faker $faker) {
     return [
-        'name' => $faker->country,
-        'code' => $faker->countryCode,
+        'name' => $faker->country(),
+        'code' => $faker->countryCode(),
     ];
 });
 
@@ -92,21 +83,17 @@ $factory->define(DummyApp\Phone::class, function (Faker $faker) {
 
 $factory->state(DummyApp\Phone::class, 'user', function (Faker $faker) {
     return [
-        'user_id' => function () {
-            return factory(DummyApp\User::class)->create()->getKey();
-        },
+        'user_id' => factory(DummyApp\User::class),
     ];
 });
 
 /** Post */
 $factory->define(DummyApp\Post::class, function (Faker $faker) {
     return [
-        'title' => $faker->sentence,
-        'slug' => $faker->unique()->slug,
-        'content' => $faker->text,
-        'author_id' => function () {
-            return factory(DummyApp\User::class)->states('author')->create()->getKey();
-        },
+        'title' => $faker->sentence(),
+        'slug' => $faker->unique()->slug(),
+        'content' => $faker->text(),
+        'author_id' => factory(DummyApp\User::class)->states('author'),
     ];
 });
 
@@ -118,22 +105,22 @@ $factory->state(DummyApp\Post::class, 'published', function (Faker $faker) {
 
 /** Role */
 $factory->define(DummyApp\Role::class, function (Faker $faker) {
-    return ['name' => $faker->colorName];
+    return ['name' => $faker->colorName()];
 });
 
 /** Tag */
 $factory->define(DummyApp\Tag::class, function (Faker $faker) {
     return [
-        'uuid' => $faker->uuid,
-        'name' => $faker->country,
+        'uuid' => $faker->unique()->uuid(),
+        'name' => $faker->country(),
     ];
 });
 
 /** User */
 $factory->define(DummyApp\User::class, function (Faker $faker) {
     return [
-        'name' => $faker->name,
-        'email' => $faker->unique()->email,
+        'name' => $faker->name(),
+        'email' => $faker->unique()->email(),
         'password' => bcrypt(Str::random(10)),
     ];
 });
@@ -149,29 +136,25 @@ $factory->state(DummyApp\User::class, 'admin', function () {
 /** Video */
 $factory->define(DummyApp\Video::class, function (Faker $faker) {
     return [
-        'uuid' => $faker->unique()->uuid,
-        'url' => $faker->url,
+        'uuid' => $faker->unique()->uuid(),
+        'url' => $faker->url(),
         'title' => $faker->words(3, true),
-        'description' => $faker->paragraph,
-        'user_id' => function () {
-            return factory(DummyApp\User::class)->create()->getKey();
-        },
+        'description' => $faker->paragraph(),
+        'user_id' => factory(DummyApp\User::class),
     ];
 });
 
 /** Supplier */
 $factory->define(DummyApp\Supplier::class, function (Faker $faker) {
     return [
-        'name' => $faker->company,
+        'name' => $faker->company(),
     ];
 });
 
 /** History */
 $factory->define(DummyApp\History::class, function (Faker $faker) {
     return [
-        'detail' => $faker->paragraph,
-        'user_id' => function () {
-            return factory(DummyApp\User::class)->create()->getKey();
-        },
+        'detail' => $faker->paragraph(),
+        'user_id' => factory(DummyApp\User::class),
     ];
 });
