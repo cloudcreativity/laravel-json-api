@@ -50,6 +50,6 @@ $factory->state(ClientJob::class, 'failed', function (Faker $faker) {
 $factory->state(ClientJob::class, 'with_download', function () {
     return [
         'resource_type' => 'downloads',
-        'resource_id' => factory(Download::class)->create()->getRouteKey(),
+        'resource_id' => factory(Download::class),
     ];
 });

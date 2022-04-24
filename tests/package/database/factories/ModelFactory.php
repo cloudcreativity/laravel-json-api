@@ -24,8 +24,8 @@ use Illuminate\Database\Eloquent\Factory as EloquentFactory;
 /** Blog */
 $factory->define(Blog::class, function (Faker $faker) {
     return [
-        'title' => $faker->sentence,
-        'article' => $faker->text,
+        'title' => $faker->sentence(),
+        'article' => $faker->text(),
     ];
 });
 

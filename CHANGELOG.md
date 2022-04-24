@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## [4.0.1] - 2022-04-24
+
+### Fixed
+
+- Fixed deprecation messages in tests originating from the `fakerphp/faker` package.
+
 ## [4.0.0] - 2022-02-09
 
 ### Added

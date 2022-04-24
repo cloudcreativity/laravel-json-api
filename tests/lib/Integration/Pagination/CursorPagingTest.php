@@ -85,7 +85,7 @@ class CursorPagingTest extends TestCase
         /** @var Collection $comments */
         $comments = factory(Comment::class, 5)->create([
             'created_at' => function () {
-                return $this->faker->dateTime;
+                return $this->faker->dateTime();
             }
         ])->sortByDesc('created_at')->values();
 
@@ -115,7 +115,7 @@ class CursorPagingTest extends TestCase
         /** @var Collection $comments */
         $comments = factory(Comment::class, 10)->create([
             'created_at' => function () {
-                return $this->faker->dateTime;
+                return $this->faker->dateTime();
             }
         ])->sortByDesc('created_at')->values();
 
@@ -158,7 +158,7 @@ class CursorPagingTest extends TestCase
         /** @var Collection $comments */
         $comments = factory(Comment::class, 10)->create([
             'created_at' => function () {
-                return $this->faker->dateTime;
+                return $this->faker->dateTime();
             }
         ])->sortBy('created_at')->values();
 
@@ -261,7 +261,7 @@ class CursorPagingTest extends TestCase
         /** @var Collection $comments */
         $comments = factory(Comment::class, 10)->create([
             'created_at' => function () {
-                return $this->faker->dateTime;
+                return $this->faker->dateTime();
             }
         ])->sortByDesc('created_at')->values();
 
@@ -303,7 +303,7 @@ class CursorPagingTest extends TestCase
         /** @var Collection $comments */
         $comments = factory(Comment::class, 10)->create([
             'created_at' => function () {
-                return $this->faker->dateTime;
+                return $this->faker->dateTime();
             }
         ])->sortBy('created_at')->values();
 
@@ -343,7 +343,7 @@ class CursorPagingTest extends TestCase
         /** @var Collection $comments */
         $comments = factory(Comment::class, 4)->create([
             'created_at' => function () {
-                return $this->faker->dateTime;
+                return $this->faker->dateTime();
             }
         ])->sortByDesc('created_at')->values();
 
@@ -437,7 +437,7 @@ class CursorPagingTest extends TestCase
         /** @var Collection $comments */
         $comments = factory(Comment::class, 6)->create([
             'created_at' => function () {
-                return $this->faker->dateTime;
+                return $this->faker->dateTime();
             }
         ])->sortByDesc('created_at')->values();
 
@@ -525,7 +525,7 @@ class CursorPagingTest extends TestCase
         /** @var Collection $comments */
         $comments = factory(Comment::class, 6)->create([
             'created_at' => function () {
-                return $this->faker->dateTime;
+                return $this->faker->dateTime();
             }
         ])->sortByDesc('created_at')->values();
 
@@ -573,7 +573,7 @@ class CursorPagingTest extends TestCase
         /** @var Collection $comments */
         $comments = factory(Comment::class, 6)->create([
             'created_at' => function () {
-                return $this->faker->dateTime;
+                return $this->faker->dateTime();
             }
         ])->sortByDesc('id')->values();
 
@@ -620,7 +620,7 @@ class CursorPagingTest extends TestCase
         /** @var Collection $comments */
         $comments = factory(Comment::class, 6)->create([
             'created_at' => function () {
-                return $this->faker->dateTime;
+                return $this->faker->dateTime();
             }
         ])->sortByDesc('created_at')->values();
 
@@ -665,7 +665,7 @@ class CursorPagingTest extends TestCase
         /** @var Collection $comments */
         $comments = factory(Comment::class, 6)->create([
             'updated_at' => function () {
-                return $this->faker->dateTime;
+                return $this->faker->dateTime();
             }
         ])->sortByDesc('updated_at')->values();
 
