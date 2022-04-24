@@ -17,9 +17,9 @@
 
 namespace CloudCreativity\LaravelJsonApi\Codec;
 
+use CloudCreativity\LaravelJsonApi\Encoder\EncoderOptions;
 use Neomerx\JsonApi\Contracts\Http\Headers\AcceptMediaTypeInterface;
 use Neomerx\JsonApi\Contracts\Http\Headers\MediaTypeInterface;
-use Neomerx\JsonApi\Encoder\EncoderOptions;
 use Neomerx\JsonApi\Http\Headers\MediaType;
 
 /**

@@ -27,14 +27,13 @@ use CloudCreativity\LaravelJsonApi\Contracts\Encoder\SerializerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Exceptions\ExceptionParserInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
+use CloudCreativity\LaravelJsonApi\Encoder\EncoderOptions;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use CloudCreativity\LaravelJsonApi\Http\Responses\Responses;
 use CloudCreativity\LaravelJsonApi\Resolver\AggregateResolver;
 use CloudCreativity\LaravelJsonApi\Resolver\NamespaceResolver;
 use GuzzleHttp\Client;
 use Neomerx\JsonApi\Contracts\Http\Headers\MediaTypeInterface;
-use Neomerx\JsonApi\Contracts\Http\Headers\SupportedExtensionsInterface;
-use Neomerx\JsonApi\Encoder\EncoderOptions;
 
 /**
  * Class Api
@@ -213,18 +212,6 @@ class Api
     }
 
     /**
-     * @return SupportedExtensionsInterface|null
-     */
-    public function getSupportedExtensions()
-    {
-        if ($ext = $this->config->supportedExt()) {
-            return $this->factory->createSupportedExtensions($ext);
-        }
-
-        return null;
-    }
-
-    /**
      * @return EncodingList
      */
     public function getEncodings(): EncodingList
@@ -333,7 +320,9 @@ class Api
             $options = new EncoderOptions($options, $this->getUrl()->toString(), $depth);
         }
 
-        return $this->factory->createEncoder($this->getContainer(), $options);
+        return $this->factory
+            ->createExtendedEncoder($this->getContainer())
+            ->withEncoderOptions($options);
     }
 
     /**

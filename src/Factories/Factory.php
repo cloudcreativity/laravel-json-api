@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2022 Cloud Creativity Limited
  *
@@ -16,6 +15,8 @@
  * limitations under the License.
  */
 
+declare(strict_types=1);
+
 namespace CloudCreativity\LaravelJsonApi\Factories;
 
 use CloudCreativity\LaravelJsonApi\Api\AbstractProvider;
@@ -29,12 +30,13 @@ use CloudCreativity\LaravelJsonApi\Codec\Codec;
 use CloudCreativity\LaravelJsonApi\Codec\Decoding;
 use CloudCreativity\LaravelJsonApi\Codec\Encoding;
 use CloudCreativity\LaravelJsonApi\Container;
+use CloudCreativity\LaravelJsonApi\Contracts\Client\ClientInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Encoder\SerializerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\ContentNegotiatorInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PageInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Validation\DocumentValidatorInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorInterface;
 use CloudCreativity\LaravelJsonApi\Document\Error\Translator as ErrorTranslator;
 use CloudCreativity\LaravelJsonApi\Document\ResourceObject;
@@ -54,9 +56,9 @@ use Illuminate\Contracts\Routing\UrlGenerator as IlluminateUrlGenerator;
 use Illuminate\Contracts\Translation\Translator;
 use Illuminate\Contracts\Validation\Factory as ValidatorFactoryContract;
 use Illuminate\Contracts\Validation\Validator;
-use Neomerx\JsonApi\Contracts\Document\LinkInterface;
-use Neomerx\JsonApi\Contracts\Schema\ContainerInterface as SchemaContainerInterface;
-use Neomerx\JsonApi\Encoder\EncoderOptions;
+use Neomerx\JsonApi\Contracts\Encoder\EncoderInterface;
+use Neomerx\JsonApi\Contracts\Schema\LinkInterface;
+use Neomerx\JsonApi\Contracts\Schema\SchemaContainerInterface;
 use Neomerx\JsonApi\Factories\Factory as BaseFactory;
 
 /**
@@ -70,7 +72,7 @@ class Factory extends BaseFactory
     /**
      * @var IlluminateContainer
      */
-    protected $container;
+    protected IlluminateContainer $container;
 
     /**
      * Factory constructor.
@@ -79,7 +81,6 @@ class Factory extends BaseFactory
      */
     public function __construct(IlluminateContainer $container)
     {
-        parent::__construct();
         $this->container = $container;
     }
 
@@ -113,7 +114,8 @@ class Factory extends BaseFactory
     }
 
     /**
-     * @inheritdoc
+     * @param ResolverInterface $resolver
+     * @return Container
      */
     public function createExtendedContainer(ResolverInterface $resolver)
     {
@@ -121,28 +123,42 @@ class Factory extends BaseFactory
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public function createEncoder(SchemaContainerInterface $container, EncoderOptions $encoderOptions = null)
+    public function createEncoder(SchemaContainerInterface $container): EncoderInterface
     {
-        return $this->createSerializer($container, $encoderOptions);
+        return $this->createExtendedEncoder($container);
     }
 
     /**
-     * @inheritDoc
+     * @param SchemaContainerInterface $container
+     * @return Encoder
      */
-    public function createSerializer(SchemaContainerInterface $container, EncoderOptions $encoderOptions = null)
+    public function createExtendedEncoder(SchemaContainerInterface $container): Encoder
     {
-        $encoder = new Encoder($this, $container, $encoderOptions);
-        $encoder->setLogger($this->logger);
-
-        return $encoder;
+        return new Encoder($this, $container);
     }
 
     /**
-     * @inheritDoc
+     * @param SchemaContainerInterface $container
+     * @return SerializerInterface
      */
-    public function createClient($httpClient, SchemaContainerInterface $container, SerializerInterface $encoder)
+    public function createSerializer(SchemaContainerInterface $container): SerializerInterface
+    {
+        return $this->createExtendedEncoder($container);
+    }
+
+    /**
+     * @param mixed $httpClient
+     * @param SchemaContainerInterface $container
+     * @param SerializerInterface $encoder
+     * @return ClientInterface
+     */
+    public function createClient(
+        $httpClient,
+        SchemaContainerInterface $container,
+        SerializerInterface $encoder
+    ): ClientInterface
     {
         return new GuzzleClient(
             $httpClient,
@@ -152,15 +168,23 @@ class Factory extends BaseFactory
     }
 
     /**
-     * @inheritdoc
+     * @param ContainerInterface $container
+     * @return StoreInterface
      */
-    public function createStore(ContainerInterface $container)
+    public function createStore(ContainerInterface $container): StoreInterface
     {
         return new Store($container);
     }
 
     /**
-     * @inheritDoc
+     * @param mixed $data
+     * @param LinkInterface|null $first
+     * @param LinkInterface|null $previous
+     * @param LinkInterface|null $next
+     * @param LinkInterface|null $last
+     * @param mixed|null $meta
+     * @param string|null $metaKey
+     * @return PageInterface
      */
     public function createPage(
         $data,
@@ -169,16 +193,17 @@ class Factory extends BaseFactory
         LinkInterface $next = null,
         LinkInterface $last = null,
         $meta = null,
-        $metaKey = null
-    ) {
+        string $metaKey = null
+    ): PageInterface
+    {
         return new Page($data, $first, $previous, $next, $last, $meta, $metaKey);
     }
 
     /**
-     * @param $fqn
+     * @param string $fqn
      * @return AbstractProvider
      */
-    public function createResourceProvider($fqn): AbstractProvider
+    public function createResourceProvider(string $fqn): AbstractProvider
     {
         return $this->container->make($fqn);
     }
@@ -189,7 +214,7 @@ class Factory extends BaseFactory
      * @param Api $api
      * @return Responses
      */
-    public function createResponseFactory(Api $api)
+    public function createResponseFactory(Api $api): Responses
     {
         return new Responses(
             $this->container->make(EncoderFactory::class),
@@ -203,7 +228,7 @@ class Factory extends BaseFactory
      * @param Url $url
      * @return UrlGenerator
      */
-    public function createUrlGenerator(Url $url)
+    public function createUrlGenerator(Url $url): UrlGenerator
     {
         $generator = $this->container->make(IlluminateUrlGenerator::class);
 
@@ -214,7 +239,7 @@ class Factory extends BaseFactory
      * @param UrlGenerator $urls
      * @return LinkGenerator
      */
-    public function createLinkGenerator(UrlGenerator $urls)
+    public function createLinkGenerator(UrlGenerator $urls): LinkGenerator
     {
         $generator = $this->container->make(IlluminateUrlGenerator::class);
 
@@ -222,12 +247,18 @@ class Factory extends BaseFactory
     }
 
     /**
-     * @inheritdoc
+     * @param array|null $includePaths
+     * @param array|null $fieldSets
+     * @param array|null $sortParameters
+     * @param array|null $pagingParameters
+     * @param array|null $filteringParameters
+     * @param array|null $unrecognizedParams
+     * @return EncodingParameters
      */
     public function createQueryParameters(
-        $includePaths = null,
+        array $includePaths = null,
         array $fieldSets = null,
-        $sortParameters = null,
+        array $sortParameters = null,
         array $pagingParameters = null,
         array $filteringParameters = null,
         array $unrecognizedParams = null
@@ -251,7 +282,11 @@ class Factory extends BaseFactory
      *      whether client ids are supported.
      * @return Validation\Spec\CreateResourceValidator
      */
-    public function createNewResourceDocumentValidator($document, $expectedType, $clientIds)
+    public function createNewResourceDocumentValidator(
+        object $document,
+        string $expectedType,
+        bool $clientIds
+    ): Validation\Spec\CreateResourceValidator
     {
         $store = $this->container->make(StoreInterface::class);
         $errors = $this->createErrorTranslator();
@@ -273,7 +308,11 @@ class Factory extends BaseFactory
      * @param string $expectedId
      * @return Validation\Spec\UpdateResourceValidator
      */
-    public function createExistingResourceDocumentValidator($document, $expectedType, $expectedId)
+    public function createExistingResourceDocumentValidator(
+        object $document,
+        string $expectedType,
+        string $expectedId
+    ): Validation\Spec\UpdateResourceValidator
     {
         $store = $this->container->make(StoreInterface::class);
         $errors = $this->createErrorTranslator();
@@ -291,9 +330,9 @@ class Factory extends BaseFactory
      * Create a validator to check that a relationship document complies with the JSON API specification.
      *
      * @param object $document
-     * @return DocumentValidatorInterface
+     * @return Validation\Spec\RelationValidator
      */
-    public function createRelationshipDocumentValidator($document)
+    public function createRelationshipDocumentValidator(object $document): Validation\Spec\RelationValidator
     {
         return new Validation\Spec\RelationValidator(
             $this->container->make(StoreInterface::class),
@@ -307,7 +346,7 @@ class Factory extends BaseFactory
      *
      * @return ErrorTranslator
      */
-    public function createErrorTranslator()
+    public function createErrorTranslator(): ErrorTranslator
     {
         return new ErrorTranslator(
             $this->container->make(Translator::class)
@@ -319,7 +358,7 @@ class Factory extends BaseFactory
      *
      * @return ContentNegotiatorInterface
      */
-    public function createContentNegotiator()
+    public function createContentNegotiator(): ContentNegotiatorInterface
     {
         return new ContentNegotiator($this);
     }
@@ -329,9 +368,8 @@ class Factory extends BaseFactory
      * @param Encoding $encoding
      * @param Decoding|null $decoding
      * @return Codec
-     * @deprecated 2.0.0 use `Encoder\Neomerx\Factory::createCodec()`
      */
-    public function createCodec(ContainerInterface $container, Encoding $encoding, ?Decoding $decoding)
+    public function createCodec(ContainerInterface $container, Encoding $encoding, ?Decoding $decoding): Codec
     {
         return new Codec($this, $container, $encoding, $decoding);
     }

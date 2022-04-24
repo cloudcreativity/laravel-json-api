@@ -19,7 +19,7 @@ namespace CloudCreativity\LaravelJsonApi\Adapter\Concerns;
 
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
-use Neomerx\JsonApi\Contracts\Document\DocumentInterface;
+use Neomerx\JsonApi\Contracts\Schema\DocumentInterface;
 use function is_array;
 use function is_string;
 

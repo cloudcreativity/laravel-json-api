@@ -19,7 +19,7 @@
 namespace CloudCreativity\LaravelJsonApi\Broadcasting;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Encoder\SerializerInterface;
-use Neomerx\JsonApi\Encoder\Parameters\EncodingParameters;
+use CloudCreativity\LaravelJsonApi\Encoder\Parameters\EncodingParameters;
 
 /**
  * Trait BroadcastsData

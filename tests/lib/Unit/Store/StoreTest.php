@@ -21,11 +21,12 @@ use CloudCreativity\LaravelJsonApi\Contracts\Adapter\RelationshipAdapterInterfac
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\ResourceAdapterInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
+use CloudCreativity\LaravelJsonApi\Encoder\Parameters\EncodingParameters;
 use CloudCreativity\LaravelJsonApi\Exceptions\ResourceNotFoundException;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Store\Store;
 use CloudCreativity\LaravelJsonApi\Tests\Unit\TestCase;
-use Neomerx\JsonApi\Encoder\Parameters\EncodingParameters;
+use Neomerx\JsonApi\Contracts\Schema\SchemaInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 
 /**
@@ -89,7 +90,20 @@ class StoreTest extends TestCase
             'comments' => $this->willCreateRecord($document, $params, $expected)
         ]);
 
+        $this->container
+            ->expects($this->once())
+            ->method('getSchemaByResourceType')
+            ->with('comments')
+            ->willReturn($schema = $this->createMock(SchemaInterface::class));
+
+        $schema
+            ->expects($this->once())
+            ->method('getId')
+            ->with($expected)
+            ->willReturn('99');
+
         $this->assertSame($expected, $store->createRecord('comments', $document, $params));
+        $this->assertSame($expected, $store->find('comments', '99'));
     }
 
     public function testCannotCreate()

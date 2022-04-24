@@ -18,9 +18,9 @@
 namespace CloudCreativity\LaravelJsonApi\Contracts\Store;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\ResourceAdapterInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\ResourceNotFoundException;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
-use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 /**
  * Interface StoreInterface

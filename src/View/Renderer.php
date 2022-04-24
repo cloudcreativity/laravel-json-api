@@ -19,8 +19,8 @@
 namespace CloudCreativity\LaravelJsonApi\View;
 
 use CloudCreativity\LaravelJsonApi\Encoder\Encoder;
+use CloudCreativity\LaravelJsonApi\Encoder\Parameters\EncodingParameters;
 use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
-use Neomerx\JsonApi\Encoder\Parameters\EncodingParameters;
 
 /**
  * Class Renderer
@@ -99,6 +99,8 @@ class Renderer
             );
         }
 
-        return $this->encoder->encodeData($data, $params);
+        return $this->encoder
+            ->withEncodingParameters($params)
+            ->encodeData($data);
     }
 }

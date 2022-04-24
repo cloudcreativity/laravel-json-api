@@ -18,7 +18,7 @@
 namespace CloudCreativity\LaravelJsonApi\Exceptions;
 
 use Exception;
-use Neomerx\JsonApi\Document\Error;
+use Neomerx\JsonApi\Schema\Error;
 use Neomerx\JsonApi\Exceptions\JsonApiException;
 
 /**
@@ -100,6 +100,7 @@ class InvalidJsonException extends JsonApiException
     protected function createError()
     {
         return new Error(
+            null,
             null,
             null,
             self::HTTP_CODE_BAD_REQUEST,

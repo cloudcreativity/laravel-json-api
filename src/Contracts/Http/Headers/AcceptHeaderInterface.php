@@ -15,23 +15,18 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\LaravelJsonApi\Contracts\Validation;
+declare(strict_types=1);
 
-use Illuminate\Contracts\Validation\Validator;
-use Neomerx\JsonApi\Schema\ErrorCollection;
+namespace CloudCreativity\LaravelJsonApi\Contracts\Http\Headers;
 
-/**
- * Interface ValidatorInterface
- *
- * @package CloudCreativity\LaravelJsonApi
- */
-interface ValidatorInterface extends Validator
+use Neomerx\JsonApi\Contracts\Http\Headers\AcceptMediaTypeInterface;
+
+interface AcceptHeaderInterface extends HeaderInterface
 {
-
     /**
-     * Get the JSON API error objects.
+     * Get sorted/ranged media types (by quality factor, type, subtype and extensions).
      *
-     * @return ErrorCollection
+     * @return AcceptMediaTypeInterface[]
      */
-    public function getErrors(): ErrorCollection;
+    public function getMediaTypes(): array;
 }

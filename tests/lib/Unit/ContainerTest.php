@@ -24,7 +24,7 @@ use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use Illuminate\Container\Container as IlluminateContainer;
-use Neomerx\JsonApi\Contracts\Schema\SchemaProviderInterface;
+use Neomerx\JsonApi\Contracts\Schema\SchemaInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 
 class ContainerTest extends TestCase
@@ -70,7 +70,7 @@ class ContainerTest extends TestCase
 
     public function testSchema()
     {
-        $schema = $this->createMock(SchemaProviderInterface::class);
+        $schema = $this->createMock(SchemaInterface::class);
 
         $this->illuminateContainer
             ->expects($this->once())
@@ -91,9 +91,9 @@ class ContainerTest extends TestCase
 
     public function testSchemaCreateReturnsNull()
     {
-        $this->resolver->method('getSchemaByResourceType')->willReturn(SchemaProviderInterface::class);
+        $this->resolver->method('getSchemaByResourceType')->willReturn(SchemaInterface::class);
         $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage(SchemaProviderInterface::class);
+        $this->expectExceptionMessage(SchemaInterface::class);
         $this->container->getSchemaByResourceType('posts');
     }
 

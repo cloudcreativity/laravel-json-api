@@ -21,15 +21,31 @@ use CloudCreativity\LaravelJsonApi\Contracts\Adapter\ResourceAdapterInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Auth\AuthorizerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\ContentNegotiatorInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorFactoryInterface;
-use Neomerx\JsonApi\Contracts\Schema\ContainerInterface as BaseContainerInterface;
+use Neomerx\JsonApi\Contracts\Schema\SchemaContainerInterface;
+use Neomerx\JsonApi\Contracts\Schema\SchemaInterface;
 
 /**
  * Interface ContainerInterface
  *
  * @package CloudCreativity\LaravelJsonApi
  */
-interface ContainerInterface extends BaseContainerInterface
+interface ContainerInterface extends SchemaContainerInterface
 {
+    /**
+     * Get schema provider by resource type.
+     *
+     * @param string $type
+     * @return SchemaInterface
+     */
+    public function getSchemaByType(string $type): SchemaInterface;
+
+    /**
+     * Get schema provider by JSON:API type.
+     *
+     * @param string $resourceType
+     * @return SchemaInterface
+     */
+    public function getSchemaByResourceType(string $resourceType): SchemaInterface;
 
     /**
      * Get a resource adapter for a domain record.

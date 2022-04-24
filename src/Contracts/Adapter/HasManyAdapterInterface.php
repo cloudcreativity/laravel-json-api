@@ -17,7 +17,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Contracts\Adapter;
 
-use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 interface HasManyAdapterInterface extends RelationshipAdapterInterface
 {

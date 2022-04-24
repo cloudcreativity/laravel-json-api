@@ -20,11 +20,11 @@ namespace CloudCreativity\LaravelJsonApi\Store;
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\HasManyAdapterInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\ResourceAdapterInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreAwareInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\ResourceNotFoundException;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
-use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 /**
  * Class Store

@@ -25,7 +25,7 @@ use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use Illuminate\Contracts\Container\Container as IlluminateContainer;
-use Neomerx\JsonApi\Contracts\Schema\SchemaProviderInterface;
+use Neomerx\JsonApi\Contracts\Schema\SchemaInterface;
 
 /**
  * Class Container
@@ -80,7 +80,7 @@ class Container implements ContainerInterface
     /**
      * @inheritDoc
      */
-    public function getSchema($resourceObject)
+    public function getSchema($resourceObject): SchemaInterface
     {
         return $this->getSchemaByType(get_class($resourceObject));
     }
@@ -88,7 +88,22 @@ class Container implements ContainerInterface
     /**
      * @inheritDoc
      */
-    public function getSchemaByType($type)
+    public function hasSchema($resourceObject): bool
+    {
+        $type = get_class($resourceObject);
+
+        $jsonApiType = $this->resolver->getResourceType($type);
+
+        return !empty($jsonApiType);
+    }
+
+    /**
+     * Get resource by object type.
+     *
+     * @param string $type
+     * @return SchemaInterface
+     */
+    public function getSchemaByType(string $type): SchemaInterface
     {
         $resourceType = $this->getResourceType($type);
 
@@ -96,9 +111,12 @@ class Container implements ContainerInterface
     }
 
     /**
-     * @inheritDoc
+     * Get resource by JSON:API type.
+     *
+     * @param string $resourceType
+     * @return SchemaInterface
      */
-    public function getSchemaByResourceType($resourceType)
+    public function getSchemaByResourceType(string $resourceType): SchemaInterface
     {
         if ($this->hasCreatedSchema($resourceType)) {
             return $this->getCreatedSchema($resourceType);
@@ -305,32 +323,32 @@ class Container implements ContainerInterface
 
     /**
      * @param string $resourceType
-     * @return ResourceAdapterInterface|null
+     * @return SchemaInterface
      */
-    protected function getCreatedSchema($resourceType)
+    protected function getCreatedSchema($resourceType): SchemaInterface
     {
         return $this->createdSchemas[$resourceType];
     }
 
     /**
      * @param string $resourceType
-     * @param SchemaProviderInterface $schema
+     * @param SchemaInterface $schema
      * @return void
      */
-    protected function setCreatedSchema($resourceType, SchemaProviderInterface $schema)
+    protected function setCreatedSchema($resourceType, SchemaInterface $schema): void
     {
         $this->createdSchemas[$resourceType] = $schema;
     }
 
     /**
      * @param string $className
-     * @return SchemaProviderInterface
+     * @return SchemaInterface
      */
-    protected function createSchemaFromClassName($className)
+    protected function createSchemaFromClassName($className): SchemaInterface
     {
         $schema = $this->create($className);
 
-        if (!$schema instanceof SchemaProviderInterface) {
+        if (!$schema instanceof SchemaInterface) {
             throw new RuntimeException("Class [$className] is not a schema provider.");
         }
 

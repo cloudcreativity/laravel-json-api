@@ -18,8 +18,8 @@
 
 namespace CloudCreativity\LaravelJsonApi\Contracts\Client;
 
+use CloudCreativity\LaravelJsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\ClientException;
-use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use Psr\Http\Message\ResponseInterface;
 
 /**

@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2022 Cloud Creativity Limited
  *
@@ -19,7 +18,7 @@
 namespace CloudCreativity\LaravelJsonApi\Pagination;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PageInterface;
-use Neomerx\JsonApi\Contracts\Document\LinkInterface;
+use Neomerx\JsonApi\Contracts\Schema\LinkInterface;
 
 /**
  * Class Page
@@ -82,7 +81,7 @@ class Page implements PageInterface
         LinkInterface $next = null,
         LinkInterface $last = null,
         $meta = null,
-        $metaKey = null
+        string $metaKey = null
     ) {
         $this->data = $data;
         $this->first = $first;

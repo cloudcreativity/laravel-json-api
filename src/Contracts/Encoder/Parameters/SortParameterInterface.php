@@ -15,23 +15,30 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\LaravelJsonApi\Contracts\Validation;
+declare(strict_types=1);
 
-use Illuminate\Contracts\Validation\Validator;
-use Neomerx\JsonApi\Schema\ErrorCollection;
+namespace CloudCreativity\LaravelJsonApi\Contracts\Encoder\Parameters;
 
-/**
- * Interface ValidatorInterface
- *
- * @package CloudCreativity\LaravelJsonApi
- */
-interface ValidatorInterface extends Validator
+interface SortParameterInterface
 {
+    /**
+     * Get sort field name.
+     *
+     * @return string
+     */
+    public function getField(): string;
 
     /**
-     * Get the JSON API error objects.
+     * Get true if parameter is ascending.
      *
-     * @return ErrorCollection
+     * @return bool
      */
-    public function getErrors(): ErrorCollection;
+    public function isAscending(): bool;
+
+    /**
+     * Get true if parameter is descending.
+     *
+     * @return bool
+     */
+    public function isDescending(): bool;
 }

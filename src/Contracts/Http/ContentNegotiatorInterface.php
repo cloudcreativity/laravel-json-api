@@ -21,10 +21,10 @@ namespace CloudCreativity\LaravelJsonApi\Contracts\Http;
 use CloudCreativity\LaravelJsonApi\Api\Api;
 use CloudCreativity\LaravelJsonApi\Codec\Decoding;
 use CloudCreativity\LaravelJsonApi\Codec\Encoding;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Headers\AcceptHeaderInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Headers\HeaderInterface;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Neomerx\JsonApi\Contracts\Http\Headers\AcceptHeaderInterface;
-use Neomerx\JsonApi\Contracts\Http\Headers\HeaderInterface;
 use Neomerx\JsonApi\Exceptions\JsonApiException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 

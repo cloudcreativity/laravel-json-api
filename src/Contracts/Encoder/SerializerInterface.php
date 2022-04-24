@@ -18,11 +18,10 @@
 
 namespace CloudCreativity\LaravelJsonApi\Contracts\Encoder;
 
-use Iterator;
-use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use Neomerx\JsonApi\Contracts\Encoder\EncoderInterface;
-use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
-use Neomerx\JsonApi\Exceptions\ErrorCollection;
+use Neomerx\JsonApi\Contracts\Schema\ErrorInterface;
+use Neomerx\JsonApi\Schema\ErrorCollection;
 
 /**
  * Interface SerializerInterface
@@ -31,36 +30,33 @@ use Neomerx\JsonApi\Exceptions\ErrorCollection;
  */
 interface SerializerInterface extends EncoderInterface
 {
-
     /**
-     * @param object|array|Iterator|null $data
-     * @param EncodingParametersInterface|null $parameters
+     * @param object|array|iterable|null $data
      * @return array
      */
-    public function serializeData($data, EncodingParametersInterface $parameters = null);
+    public function serializeData($data): array;
 
     /**
-     * @param object|array|Iterator|null $data
-     * @param EncodingParametersInterface|null $parameters
+     * @param object|array|iterable|null $data
      * @return array
      */
-    public function serializeIdentifiers($data, EncodingParametersInterface $parameters = null);
+    public function serializeIdentifiers($data): array;
 
     /**
      * @param ErrorInterface $error
      * @return array
      */
-    public function serializeError(ErrorInterface $error);
+    public function serializeError(ErrorInterface $error): array;
 
     /**
      * @param ErrorInterface[]|ErrorCollection $errors
      * @return array
      */
-    public function serializeErrors($errors);
+    public function serializeErrors($errors): array;
 
     /**
      * @param array|object $meta
      * @return array
      */
-    public function serializeMeta($meta);
+    public function serializeMeta($meta): array;
 }

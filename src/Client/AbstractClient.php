@@ -20,8 +20,8 @@ namespace CloudCreativity\LaravelJsonApi\Client;
 use CloudCreativity\LaravelJsonApi\Contracts\Client\ClientInterface;
 use CloudCreativity\LaravelJsonApi\Encoder\Parameters\EncodingParameters;
 use CloudCreativity\LaravelJsonApi\Exceptions\ClientException;
-use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
-use Neomerx\JsonApi\Contracts\Schema\ContainerInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
+use Neomerx\JsonApi\Contracts\Schema\SchemaContainerInterface;
 use Neomerx\JsonApi\Http\Headers\MediaType;
 use Psr\Http\Message\ResponseInterface;
 
@@ -34,9 +34,9 @@ abstract class AbstractClient implements ClientInterface
 {
 
     /**
-     * @var ContainerInterface
+     * @var SchemaContainerInterface
      */
-    protected $schemas;
+    protected SchemaContainerInterface $schemas;
 
     /**
      * @var ClientSerializer
@@ -79,10 +79,10 @@ abstract class AbstractClient implements ClientInterface
     /**
      * AbstractClient constructor.
      *
-     * @param ContainerInterface $schemas
+     * @param SchemaContainerInterface $schemas
      * @param ClientSerializer $serializer
      */
-    public function __construct(ContainerInterface $schemas, ClientSerializer $serializer)
+    public function __construct(SchemaContainerInterface $schemas, ClientSerializer $serializer)
     {
         $this->schemas = $schemas;
         $this->serializer = $serializer;
@@ -406,7 +406,7 @@ abstract class AbstractClient implements ClientInterface
     {
         $schema = $this->schemas->getSchema($record);
 
-        return [$schema->getResourceType(), $schema->getId($record)];
+        return [$schema->getType(), $schema->getId($record)];
     }
 
     /**

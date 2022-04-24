@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2022 Cloud Creativity Limited
  *
@@ -16,12 +15,17 @@
  * limitations under the License.
  */
 
+declare(strict_types=1);
+
 namespace CloudCreativity\LaravelJsonApi\Encoder;
 
+use CloudCreativity\LaravelJsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Encoder\SerializerInterface;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
+use Neomerx\JsonApi\Contracts\Encoder\EncoderInterface;
+use Neomerx\JsonApi\Contracts\Schema\ErrorInterface;
 use Neomerx\JsonApi\Encoder\Encoder as BaseEncoder;
-use Neomerx\JsonApi\Encoder\Serialize\ArraySerializerTrait;
+use RuntimeException;
 
 /**
  * Class Encoder
@@ -30,13 +34,100 @@ use Neomerx\JsonApi\Encoder\Serialize\ArraySerializerTrait;
  */
 class Encoder extends BaseEncoder implements SerializerInterface
 {
+    /**
+     * Assert that the encoder is an extended encoder.
+     *
+     * @param EncoderInterface $encoder
+     * @return Encoder
+     */
+    public static function assertInstance(EncoderInterface $encoder): self
+    {
+        if ($encoder instanceof self) {
+            return $encoder;
+        }
 
-    use ArraySerializerTrait;
+        throw new RuntimeException('Expecting an extended encoder instance.');
+    }
+
+    /**
+     * Set the encoding parameters.
+     *
+     * @param EncodingParametersInterface|null $parameters
+     * @return $this
+     */
+    public function withEncodingParameters(?EncodingParametersInterface $parameters): self
+    {
+        if ($parameters) {
+            $this
+                ->withIncludedPaths($parameters->getIncludePaths() ?? [])
+                ->withFieldSets($parameters->getFieldSets() ?? []);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Set the encoder options.
+     *
+     * @param EncoderOptions|null $options
+     * @return $this
+     */
+    public function withEncoderOptions(?EncoderOptions $options): self
+    {
+        if ($options) {
+            $this
+                ->withEncodeOptions($options->getOptions())
+                ->withEncodeDepth($options->getDepth())
+                ->withUrlPrefix($options->getUrlPrefix());
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function serializeData($data): array
+    {
+        return $this->encodeDataToArray($data);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function serializeIdentifiers($data): array
+    {
+        return $this->encodeIdentifiersToArray($data);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function serializeError(ErrorInterface $error): array
+    {
+        return $this->encodeErrorToArray($error);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function serializeErrors($errors): array
+    {
+        return $this->encodeErrorsToArray($errors);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function serializeMeta($meta): array
+    {
+        return $this->encodeMetaToArray($meta);
+    }
 
     /**
      * @return Factory
      */
-    protected static function createFactory()
+    protected static function createFactory(): Factory
     {
         return app(Factory::class);
     }

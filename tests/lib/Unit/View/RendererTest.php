@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2022 Cloud Creativity Limited
  *
@@ -20,11 +19,11 @@ namespace CloudCreativity\LaravelJsonApi\Tests\Unit\View;
 
 use CloudCreativity\LaravelJsonApi\Api\Api;
 use CloudCreativity\LaravelJsonApi\Encoder\Encoder;
+use CloudCreativity\LaravelJsonApi\Encoder\Parameters\EncodingParameters;
 use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
 use CloudCreativity\LaravelJsonApi\View\Renderer;
-use Neomerx\JsonApi\Encoder\Parameters\EncodingParameters;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use PHPUnit_Framework_MockObject_MockObject as Mock;
 
 /**
  * Class RendererTest
@@ -35,12 +34,12 @@ class RendererTest extends TestCase
 {
 
     /**
-     * @var Mock
+     * @var MockObject
      */
     private $service;
 
     /**
-     * @var Mock
+     * @var MockObject
      */
     private $api;
 
@@ -120,16 +119,19 @@ class RendererTest extends TestCase
      * @param $name
      * @param int $options
      * @param int $depth
-     * @param $parameters
+     * @param EncodingParameters|null $parameters
      * @return object
      */
-    private function withEncoder($name = null, $options = 0, $depth = 512, $parameters = null)
+    private function withEncoder($name = null, $options = 0, $depth = 512, EncodingParameters $parameters = null)
     {
         $post = (object) ['type' => 'posts', 'id' => '1'];
 
         $encoder = $this->createMock(Encoder::class);
-        $encoder->expects($this->once())->method('encodeData')->with($post, $parameters);
+        $encoder->expects($this->once())->method('withEncodingParameters')->with($parameters)->willReturnSelf();
+        $encoder->expects($this->once())->method('encodeData')->with($post);
+
         $this->api->expects($this->once())->method('encoder')->with($options, $depth)->willReturn($encoder);
+
         $this->service->method('api')->with($name)->willReturn($this->api);
 
         return $post;

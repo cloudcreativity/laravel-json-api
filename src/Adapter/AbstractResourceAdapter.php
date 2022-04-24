@@ -21,6 +21,7 @@ namespace CloudCreativity\LaravelJsonApi\Adapter;
 use CloudCreativity\LaravelJsonApi\Codec\ChecksMediaTypes;
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\RelationshipAdapterInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\ResourceAdapterInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Queue\AsynchronousProcess;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreAwareInterface;
 use CloudCreativity\LaravelJsonApi\Document\ResourceObject;
@@ -29,7 +30,6 @@ use CloudCreativity\LaravelJsonApi\Store\StoreAwareTrait;
 use CloudCreativity\LaravelJsonApi\Utils\InvokesHooks;
 use CloudCreativity\LaravelJsonApi\Utils\Str;
 use Illuminate\Support\Collection;
-use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 /**
  * Class AbstractResourceAdaptor

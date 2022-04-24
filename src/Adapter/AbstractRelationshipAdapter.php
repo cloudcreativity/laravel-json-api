@@ -18,9 +18,9 @@
 namespace CloudCreativity\LaravelJsonApi\Adapter;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\RelationshipAdapterInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreAwareInterface;
 use CloudCreativity\LaravelJsonApi\Store\StoreAwareTrait;
-use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 /**
  * Class AbstractRelationshipAdapter

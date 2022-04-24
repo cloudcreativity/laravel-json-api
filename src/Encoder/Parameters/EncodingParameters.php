@@ -15,20 +15,52 @@
  * limitations under the License.
  */
 
+declare(strict_types=1);
+
 namespace CloudCreativity\LaravelJsonApi\Encoder\Parameters;
 
+use CloudCreativity\LaravelJsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Encoder\Parameters\SortParameterInterface;
 use Illuminate\Contracts\Support\Arrayable;
-use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
-use Neomerx\JsonApi\Contracts\Http\Query\QueryParametersParserInterface;
-use Neomerx\JsonApi\Encoder\Parameters\EncodingParameters as NeomerxEncodingParameters;
+use Illuminate\Support\Collection;
+use Neomerx\JsonApi\Contracts\Http\Query\BaseQueryParserInterface;
 
 /**
  * Class EncodingParameters
  *
  * @package CloudCreativity\LaravelJsonApi
  */
-class EncodingParameters extends NeomerxEncodingParameters implements Arrayable
+class EncodingParameters implements EncodingParametersInterface, Arrayable
 {
+    /**
+     * @var array|null
+     */
+    private ?array $includePaths;
+
+    /**
+     * @var array|null
+     */
+    private ?array $fieldSets;
+
+    /**
+     * @var SortParameterInterface[]|null
+     */
+    private ?array $sortParameters;
+
+    /**
+     * @var array|null
+     */
+    private ?array $pagingParameters;
+
+    /**
+     * @var array|null
+     */
+    private ?array $filteringParameters;
+
+    /**
+     * @var array|null
+     */
+    private ?array $unrecognizedParams;
 
     /**
      * @param EncodingParametersInterface $parameters
@@ -51,9 +83,106 @@ class EncodingParameters extends NeomerxEncodingParameters implements Arrayable
     }
 
     /**
+     * EncodingParameters constructor.
+     *
+     * @param string[]|null $includePaths
+     * @param array|null $fieldSets
+     * @param SortParameterInterface[]|null $sortParameters
+     * @param array|null $pagingParameters
+     * @param array|null $filteringParameters
+     * @param array|null $unrecognizedParams
+     */
+    public function __construct(
+        array $includePaths = null,
+        array $fieldSets = null,
+        array $sortParameters = null,
+        array $pagingParameters = null,
+        array $filteringParameters = null,
+        array $unrecognizedParams = null
+    ) {
+        $this->fieldSets = $fieldSets;
+        $this->includePaths = $includePaths;
+        $this->sortParameters = $this->assertSortParameters($sortParameters);
+        $this->pagingParameters = $pagingParameters;
+        $this->unrecognizedParams = $unrecognizedParams;
+        $this->filteringParameters = $filteringParameters;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getIncludePaths(): ?array
+    {
+        return $this->includePaths;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getFieldSets(): ?array
+    {
+        return $this->fieldSets;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getFieldSet(string $type): ?array
+    {
+        $fieldSets = $this->fieldSets ?? [];
+
+        return $fieldSets[$type] ?? null;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getSortParameters(): ?array
+    {
+        return $this->sortParameters;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getPaginationParameters(): ?array
+    {
+        return $this->pagingParameters;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getFilteringParameters(): ?array
+    {
+        return $this->filteringParameters;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getUnrecognizedParameters(): ?array
+    {
+        return $this->unrecognizedParams;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isEmpty(): bool
+    {
+        return
+            empty($this->getFieldSets()) === true &&
+            empty($this->getIncludePaths()) === true &&
+            empty($this->getSortParameters()) === true &&
+            empty($this->getPaginationParameters()) === true &&
+            empty($this->getFilteringParameters()) === true;
+    }
+
+    /**
      * @return string|null
      */
-    public function getIncludeParameter()
+    public function getIncludeParameter(): ?string
     {
         return implode(',', (array) $this->getIncludePaths()) ?: null;
     }
@@ -61,9 +190,9 @@ class EncodingParameters extends NeomerxEncodingParameters implements Arrayable
     /**
      * @return array
      */
-    public function getFieldsParameter()
+    public function getFieldsParameter(): array
     {
-        return collect((array) $this->getFieldSets())->map(function ($values) {
+        return Collection::make((array) $this->getFieldSets())->map(function ($values) {
             return implode(',', (array) $values);
         })->all();
     }
@@ -71,7 +200,7 @@ class EncodingParameters extends NeomerxEncodingParameters implements Arrayable
     /**
      * @return string|null
      */
-    public function getSortParameter()
+    public function getSortParameter(): ?string
     {
         return implode(',', (array) $this->getSortParameters()) ?: null;
     }
@@ -79,18 +208,18 @@ class EncodingParameters extends NeomerxEncodingParameters implements Arrayable
     /**
      * @return array
      */
-    public function all()
+    public function all(): array
     {
         return array_replace($this->getUnrecognizedParameters() ?: [], [
-            QueryParametersParserInterface::PARAM_INCLUDE =>
+            BaseQueryParserInterface::PARAM_INCLUDE =>
                 $this->getIncludeParameter(),
-            QueryParametersParserInterface::PARAM_FIELDS =>
+            BaseQueryParserInterface::PARAM_FIELDS =>
                 $this->getFieldsParameter() ?: null,
-            QueryParametersParserInterface::PARAM_SORT =>
+            BaseQueryParserInterface::PARAM_SORT =>
                 $this->getSortParameter(),
-            QueryParametersParserInterface::PARAM_PAGE =>
+            BaseQueryParserInterface::PARAM_PAGE =>
                 $this->getPaginationParameters(),
-            QueryParametersParserInterface::PARAM_FILTER =>
+            BaseQueryParserInterface::PARAM_FILTER =>
                 $this->getFilteringParameters()
         ]);
     }
@@ -98,9 +227,27 @@ class EncodingParameters extends NeomerxEncodingParameters implements Arrayable
     /**
      * @inheritDoc
      */
-    public function toArray()
+    public function toArray(): array
     {
         return array_filter($this->all());
     }
 
+    /**
+     * @param array|null $sortParameters
+     * @return array|null
+     */
+    private function assertSortParameters(?array $sortParameters): ?array
+    {
+        if (null === $sortParameters) {
+            return null;
+        }
+
+        foreach ($sortParameters as $sortParameter) {
+            if (!$sortParameter instanceof SortParameterInterface) {
+                throw new \InvalidArgumentException('Expecting only sort parameter objects for the sort field.');
+            }
+        }
+
+        return $sortParameters;
+    }
 }

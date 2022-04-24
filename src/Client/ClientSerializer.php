@@ -17,10 +17,10 @@
 
 namespace CloudCreativity\LaravelJsonApi\Client;
 
+use CloudCreativity\LaravelJsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Encoder\SerializerInterface;
+use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use Illuminate\Support\Collection;
-use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
-use Neomerx\JsonApi\Contracts\Http\HttpFactoryInterface;
 
 /**
  * Class ClientSerializer
@@ -36,7 +36,7 @@ class ClientSerializer
     protected $serializer;
 
     /**
-     * @var HttpFactoryInterface
+     * @var Factory;
      */
     protected $factory;
 
@@ -64,9 +64,9 @@ class ClientSerializer
      * ClientSerializer constructor.
      *
      * @param SerializerInterface $serializer
-     * @param HttpFactoryInterface $factory
+     * @param Factory $factory
      */
-    public function __construct(SerializerInterface $serializer, HttpFactoryInterface $factory)
+    public function __construct(SerializerInterface $serializer, Factory $factory)
     {
         $this->serializer = $serializer;
         $this->factory = $factory;

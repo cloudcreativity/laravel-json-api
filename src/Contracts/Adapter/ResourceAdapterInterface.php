@@ -17,8 +17,8 @@
 
 namespace CloudCreativity\LaravelJsonApi\Contracts\Adapter;
 
+use CloudCreativity\LaravelJsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Queue\AsynchronousProcess;
-use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 /**
  * Interface ResourceAdapterInterface
