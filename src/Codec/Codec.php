@@ -100,10 +100,17 @@ class Codec
             throw new \RuntimeException('Codec does not support encoding JSON API content.');
         }
 
-        return $this->factory->createEncoder(
-            $this->container,
-            $this->encoding->getOptions()
-        );
+        $encoder = $this->factory->createEncoder($this->container);
+        $options = $this->encoding->getOptions();
+
+        if ($options) {
+            $encoder
+                ->withEncodeOptions($options->getOptions())
+                ->withEncodeDepth($options->getDepth())
+                ->withUrlPrefix($options->getUrlPrefix() ?? '');
+        }
+
+        return $encoder;
     }
 
     /**
