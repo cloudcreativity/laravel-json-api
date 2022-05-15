@@ -17,30 +17,17 @@
 
 declare(strict_types=1);
 
-namespace CloudCreativity\LaravelJsonApi\Contracts\Encoder\Parameters;
+namespace CloudCreativity\LaravelJsonApi\Contracts\Http\Query;
 
-use Stringable;
+use CloudCreativity\LaravelJsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
-interface SortParameterInterface extends Stringable
+interface QueryParametersParserInterface
 {
     /**
-     * Get sort field name.
+     * Parse input parameters from request.
      *
-     * @return string
+     * @param array $parameters
+     * @return EncodingParametersInterface
      */
-    public function getField(): string;
-
-    /**
-     * Get true if parameter is ascending.
-     *
-     * @return bool
-     */
-    public function isAscending(): bool;
-
-    /**
-     * Get true if parameter is descending.
-     *
-     * @return bool
-     */
-    public function isDescending(): bool;
+    public function parseQueryParameters(array $parameters): EncodingParametersInterface;
 }

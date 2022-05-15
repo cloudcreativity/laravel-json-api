@@ -17,9 +17,9 @@
 
 namespace CloudCreativity\LaravelJsonApi\Eloquent;
 
+use CloudCreativity\LaravelJsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use Illuminate\Database\Eloquent\Relations;
-use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 class HasOneThrough extends BelongsTo
 {

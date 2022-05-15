@@ -17,15 +17,15 @@
 
 namespace CloudCreativity\LaravelJsonApi\Pagination;
 
+use CloudCreativity\LaravelJsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Encoder\Parameters\SortParameterInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PageInterface;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use CloudCreativity\LaravelJsonApi\Utils\Str;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Contracts\Pagination\Paginator;
-use Neomerx\JsonApi\Contracts\Document\LinkInterface;
-use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
-use Neomerx\JsonApi\Contracts\Encoder\Parameters\SortParameterInterface;
-use Neomerx\JsonApi\Contracts\Http\Query\QueryParametersParserInterface;
+use Neomerx\JsonApi\Contracts\Http\Query\BaseQueryParserInterface;
+use Neomerx\JsonApi\Contracts\Schema\LinkInterface;
 
 /**
  * Trait CreatesPages
@@ -152,9 +152,9 @@ trait CreatesPages
     protected function buildParams(EncodingParametersInterface $parameters)
     {
         return array_filter([
-            QueryParametersParserInterface::PARAM_FILTER =>
+            BaseQueryParserInterface::PARAM_FILTER =>
                 $parameters->getFilteringParameters(),
-            QueryParametersParserInterface::PARAM_SORT =>
+            BaseQueryParserInterface::PARAM_SORT =>
                 $this->buildSortParams((array) $parameters->getSortParameters())
         ]);
     }
@@ -169,7 +169,7 @@ trait CreatesPages
     protected function createLink($page, $perPage, array $parameters = [], $meta = null)
     {
         return json_api()->links()->current($meta, array_merge($parameters, [
-            QueryParametersParserInterface::PARAM_PAGE => [
+            BaseQueryParserInterface::PARAM_PAGE => [
                 $this->getPageKey() => $page,
                 $this->getPerPageKey() => $perPage,
             ],

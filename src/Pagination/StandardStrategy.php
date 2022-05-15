@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2022 Cloud Creativity Limited
  *
@@ -18,13 +17,13 @@
 
 namespace CloudCreativity\LaravelJsonApi\Pagination;
 
+use CloudCreativity\LaravelJsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PagingStrategyInterface;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Support\Collection;
-use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
-use Neomerx\JsonApi\Contracts\Http\Query\QueryParametersParserInterface;
+use Neomerx\JsonApi\Contracts\Http\Query\BaseQueryParserInterface;
 
 /**
  * Class StandardStrategy
@@ -76,7 +75,7 @@ class StandardStrategy implements PagingStrategyInterface
      */
     public function __construct()
     {
-        $this->metaKey = QueryParametersParserInterface::PARAM_PAGE;
+        $this->metaKey = BaseQueryParserInterface::PARAM_PAGE;
     }
 
     /**

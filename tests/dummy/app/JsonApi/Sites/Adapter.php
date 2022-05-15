@@ -18,12 +18,12 @@
 namespace DummyApp\JsonApi\Sites;
 
 use CloudCreativity\LaravelJsonApi\Adapter\AbstractResourceAdapter;
+use CloudCreativity\LaravelJsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use CloudCreativity\LaravelJsonApi\Document\ResourceObject;
 use CloudCreativity\LaravelJsonApi\Utils\Str;
 use DummyApp\Entities\Site;
 use DummyApp\Entities\SiteRepository;
 use Illuminate\Support\Collection;
-use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 class Adapter extends AbstractResourceAdapter
 {

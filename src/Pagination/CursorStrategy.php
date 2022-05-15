@@ -17,12 +17,12 @@
 
 namespace CloudCreativity\LaravelJsonApi\Pagination;
 
+use CloudCreativity\LaravelJsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PagingStrategyInterface;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use CloudCreativity\LaravelJsonApi\Utils\Arr;
-use Neomerx\JsonApi\Contracts\Document\LinkInterface;
-use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
-use Neomerx\JsonApi\Contracts\Http\Query\QueryParametersParserInterface;
+use Neomerx\JsonApi\Contracts\Http\Query\BaseQueryParserInterface;
+use Neomerx\JsonApi\Contracts\Schema\LinkInterface;
 
 /**
  * Class CursorStrategy
@@ -55,7 +55,7 @@ class CursorStrategy implements PagingStrategyInterface
     /**
      * @var string|null
      */
-    private $meta = QueryParametersParserInterface::PARAM_PAGE;
+    private $meta = BaseQueryParserInterface::PARAM_PAGE;
 
     /**
      * @var bool
@@ -346,7 +346,7 @@ class CursorStrategy implements PagingStrategyInterface
      */
     protected function createLink(array $page, array $parameters = [], $meta = null)
     {
-        $parameters[QueryParametersParserInterface::PARAM_PAGE] = $page;
+        $parameters[BaseQueryParserInterface::PARAM_PAGE] = $page;
 
         return json_api()->links()->current($meta, $parameters);
     }
@@ -360,7 +360,7 @@ class CursorStrategy implements PagingStrategyInterface
     protected function buildParams(EncodingParametersInterface $parameters)
     {
         return array_filter([
-            QueryParametersParserInterface::PARAM_FILTER =>
+            BaseQueryParserInterface::PARAM_FILTER =>
                 $parameters->getFilteringParameters(),
         ]);
     }

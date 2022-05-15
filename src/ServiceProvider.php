@@ -23,6 +23,7 @@ use CloudCreativity\LaravelJsonApi\Contracts\Encoder\Parameters\EncodingParamete
 use CloudCreativity\LaravelJsonApi\Contracts\Exceptions\ExceptionParserInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\Headers\HeaderParametersInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\Headers\HeaderParametersParserInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Query\QueryParametersParserInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\ExceptionParser;
@@ -30,6 +31,7 @@ use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use CloudCreativity\LaravelJsonApi\Http\Middleware\Authorize;
 use CloudCreativity\LaravelJsonApi\Http\Middleware\BootJsonApi;
 use CloudCreativity\LaravelJsonApi\Http\Middleware\NegotiateContent;
+use CloudCreativity\LaravelJsonApi\Http\Query\QueryParametersParser;
 use CloudCreativity\LaravelJsonApi\Queue\UpdateClientProcess;
 use CloudCreativity\LaravelJsonApi\Routing\JsonApiRegistrar;
 use CloudCreativity\LaravelJsonApi\Routing\Route;
@@ -234,12 +236,14 @@ class ServiceProvider extends BaseServiceProvider
 
         $this->app->singleton(EncodingParametersInterface::class, function (Application $app) {
             /** @var QueryParametersParserInterface $parser */
-            $parser = $app->make(HttpFactoryInterface::class)->createQueryParametersParser();
+            $parser = $app->make(QueryParametersParserInterface::class);
 
             return $parser->parseQueryParameters(
                 request()->query()
             );
         });
+
+        $this->app->singleton(QueryParametersParserInterface::class, QueryParametersParser::class);
     }
 
     /**

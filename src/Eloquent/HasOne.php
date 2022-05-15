@@ -17,9 +17,9 @@
 
 namespace CloudCreativity\LaravelJsonApi\Eloquent;
 
+use CloudCreativity\LaravelJsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations;
-use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 class HasOne extends BelongsTo
 {

@@ -171,7 +171,6 @@ namespace App\JsonApi\Podcasts;
 
 use App\Jobs\ProcessPodcast;
 use CloudCreativity\LaravelJsonApi\Eloquent\AbstractAdapter;
-use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 class Adapter extends AbstractAdapter
 {
