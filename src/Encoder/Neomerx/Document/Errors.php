@@ -18,7 +18,7 @@
 namespace CloudCreativity\LaravelJsonApi\Encoder\Neomerx\Document;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Document\DocumentInterface;
-use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
+use Neomerx\JsonApi\Contracts\Schema\ErrorInterface;
 use Neomerx\JsonApi\Exceptions\JsonApiException;
 
 class Errors implements DocumentInterface

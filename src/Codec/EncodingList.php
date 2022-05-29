@@ -18,8 +18,8 @@
 namespace CloudCreativity\LaravelJsonApi\Codec;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Http\Headers\AcceptHeaderInterface;
+use CloudCreativity\LaravelJsonApi\Http\Headers\MediaTypeParser;
 use Neomerx\JsonApi\Contracts\Http\Headers\MediaTypeInterface;
-use Neomerx\JsonApi\Http\Headers\MediaType;
 
 /**
  * Class EncodingList
@@ -190,7 +190,7 @@ class EncodingList implements \IteratorAggregate, \Countable
      */
     public function find(string $mediaType): ?Encoding
     {
-        return $this->matchesTo(MediaType::parse(0, $mediaType));
+        return $this->matchesTo(MediaTypeParser::getInstance()->parse($mediaType));
     }
 
     /**

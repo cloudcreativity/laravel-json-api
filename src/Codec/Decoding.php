@@ -20,6 +20,7 @@ namespace CloudCreativity\LaravelJsonApi\Codec;
 use CloudCreativity\LaravelJsonApi\Contracts\Decoder\DecoderInterface;
 use CloudCreativity\LaravelJsonApi\Decoder\JsonApiDecoder;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
+use CloudCreativity\LaravelJsonApi\Http\Headers\MediaTypeParser;
 use Neomerx\JsonApi\Contracts\Http\Headers\MediaTypeInterface;
 use Neomerx\JsonApi\Http\Headers\MediaType;
 
@@ -51,7 +52,7 @@ class Decoding
     public static function create($mediaType, $decoder): self
     {
         if (is_string($mediaType)) {
-            $mediaType = MediaType::parse(0, $mediaType);
+            $mediaType = MediaTypeParser::getInstance()->parse($mediaType);
         }
 
         if (!$mediaType instanceof MediaTypeInterface) {

@@ -23,11 +23,11 @@ use CloudCreativity\LaravelJsonApi\Codec\Encoding;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
 use CloudCreativity\LaravelJsonApi\Document\Error\Error;
 use CloudCreativity\LaravelJsonApi\Document\Link\Link;
-use Neomerx\JsonApi\Contracts\Document\DocumentInterface;
-use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
-use Neomerx\JsonApi\Contracts\Document\LinkInterface;
 use Neomerx\JsonApi\Contracts\Factories\FactoryInterface;
-use Neomerx\JsonApi\Exceptions\ErrorCollection;
+use Neomerx\JsonApi\Contracts\Schema\DocumentInterface;
+use Neomerx\JsonApi\Contracts\Schema\ErrorInterface;
+use Neomerx\JsonApi\Contracts\Schema\LinkInterface;
+use Neomerx\JsonApi\Schema\ErrorCollection;
 
 /**
  * Class Factory

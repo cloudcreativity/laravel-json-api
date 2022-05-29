@@ -18,7 +18,7 @@
 namespace CloudCreativity\LaravelJsonApi\Schema;
 
 use CloudCreativity\LaravelJsonApi\Utils\Str;
-use Neomerx\JsonApi\Contracts\Document\DocumentInterface;
+use Neomerx\JsonApi\Contracts\Schema\DocumentInterface;
 
 trait DashCaseRelationUrls
 {

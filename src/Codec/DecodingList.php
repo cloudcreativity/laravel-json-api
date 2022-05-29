@@ -17,9 +17,9 @@
 
 namespace CloudCreativity\LaravelJsonApi\Codec;
 
-use Neomerx\JsonApi\Contracts\Http\Headers\HeaderInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Headers\HeaderInterface;
+use CloudCreativity\LaravelJsonApi\Http\Headers\MediaTypeParser;
 use Neomerx\JsonApi\Contracts\Http\Headers\MediaTypeInterface;
-use Neomerx\JsonApi\Http\Headers\MediaType;
 
 /**
  * Class DecodingList
@@ -142,7 +142,7 @@ class DecodingList implements \IteratorAggregate, \Countable
      */
     public function find(string $mediaType): ?Decoding
     {
-        return $this->equalsTo(MediaType::parse(0, $mediaType));
+        return $this->equalsTo(MediaTypeParser::getInstance()->parse($mediaType));
     }
 
     /**

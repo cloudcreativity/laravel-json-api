@@ -28,6 +28,7 @@ use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\ExceptionParser;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
+use CloudCreativity\LaravelJsonApi\Http\Headers\HeaderParametersParser;
 use CloudCreativity\LaravelJsonApi\Http\Middleware\Authorize;
 use CloudCreativity\LaravelJsonApi\Http\Middleware\BootJsonApi;
 use CloudCreativity\LaravelJsonApi\Http\Middleware\NegotiateContent;
@@ -180,6 +181,10 @@ class ServiceProvider extends BaseServiceProvider
     {
         $this->app->singleton(Factory::class);
         $this->app->alias(Factory::class, FactoryInterface::class);
+        $this->app->bind(
+            \Neomerx\JsonApi\Contracts\Http\Headers\HeaderParametersParserInterface::class,
+            \Neomerx\JsonApi\Http\Headers\HeaderParametersParser::class,
+        );
     }
 
     /**
@@ -226,7 +231,9 @@ class ServiceProvider extends BaseServiceProvider
             return json_api()->getContainer();
         });
 
-        $this->app->singleton(HeaderParametersInterface::class, function (Application $app) {
+        $this->app->bind(HeaderParametersParserInterface::class, HeaderParametersParser::class);
+
+        $this->app->scoped(HeaderParametersInterface::class, function (Application $app) {
             /** @var HeaderParametersParserInterface $parser */
             $parser = $app->make(HeaderParametersParserInterface::class);
             /** @var ServerRequestInterface $serverRequest */
@@ -234,7 +241,7 @@ class ServiceProvider extends BaseServiceProvider
             return $parser->parse($serverRequest, http_contains_body($serverRequest));
         });
 
-        $this->app->singleton(EncodingParametersInterface::class, function (Application $app) {
+        $this->app->scoped(EncodingParametersInterface::class, function (Application $app) {
             /** @var QueryParametersParserInterface $parser */
             $parser = $app->make(QueryParametersParserInterface::class);
 
@@ -243,7 +250,7 @@ class ServiceProvider extends BaseServiceProvider
             );
         });
 
-        $this->app->singleton(QueryParametersParserInterface::class, QueryParametersParser::class);
+        $this->app->scoped(QueryParametersParserInterface::class, QueryParametersParser::class);
     }
 
     /**

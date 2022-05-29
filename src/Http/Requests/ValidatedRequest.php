@@ -20,6 +20,7 @@ namespace CloudCreativity\LaravelJsonApi\Http\Requests;
 use CloudCreativity\LaravelJsonApi\Contracts\Auth\AuthorizerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Query\QueryParametersParserInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validation\DocumentValidatorInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorInterface;
@@ -214,7 +215,8 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
             return $this->parameters;
         }
 
-        $parser = $this->factory->createQueryParametersParser();
+        /** @var QueryParametersParserInterface $parser */
+        $parser = app(QueryParametersParserInterface::class);
 
         return $this->parameters = $parser->parseQueryParameters(
             $this->request->query()

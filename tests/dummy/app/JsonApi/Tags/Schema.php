@@ -17,33 +17,21 @@
 
 namespace DummyApp\JsonApi\Tags;
 
+use CloudCreativity\LaravelJsonApi\Schema\SchemaProvider;
 use DummyApp\Tag;
-use Neomerx\JsonApi\Schema\SchemaProvider;
 
 class Schema extends SchemaProvider
 {
-
     /**
      * @var string
      */
-    protected $resourceType = 'tags';
+    protected string $resourceType = 'tags';
 
     /**
-     * @param Tag $resource
-     *      the domain record being serialized.
-     * @return string
-     */
-    public function getId($resource)
-    {
-        return (string) $resource->getRouteKey();
-    }
-
-    /**
-     * @param Tag $resource
-     *      the domain record being serialized.
+     * @param Tag|object $resource
      * @return array
      */
-    public function getAttributes($resource)
+    public function getAttributes(object $resource): array
     {
         return [
             'createdAt' => $resource->created_at,

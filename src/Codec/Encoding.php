@@ -18,9 +18,9 @@
 namespace CloudCreativity\LaravelJsonApi\Codec;
 
 use CloudCreativity\LaravelJsonApi\Encoder\EncoderOptions;
+use CloudCreativity\LaravelJsonApi\Http\Headers\MediaTypeParser;
 use Neomerx\JsonApi\Contracts\Http\Headers\AcceptMediaTypeInterface;
 use Neomerx\JsonApi\Contracts\Http\Headers\MediaTypeInterface;
-use Neomerx\JsonApi\Http\Headers\MediaType;
 
 /**
  * Class Encoding
@@ -29,16 +29,15 @@ use Neomerx\JsonApi\Http\Headers\MediaType;
  */
 class Encoding
 {
-
     /**
      * @var MediaTypeInterface
      */
-    private $mediaType;
+    private MediaTypeInterface $mediaType;
 
     /**
      * @var EncoderOptions|null
      */
-    private $options;
+    private ?EncoderOptions $options;
 
     /**
      * Create an encoding that will encode JSON API content.
@@ -57,7 +56,7 @@ class Encoding
     ): self
     {
         if (!$mediaType instanceof MediaTypeInterface) {
-            $mediaType = MediaType::parse(0, $mediaType);
+            $mediaType = MediaTypeParser::getInstance()->parse($mediaType);
         }
 
         return new self($mediaType, new EncoderOptions($options, $urlPrefix, $depth));
@@ -90,7 +89,7 @@ class Encoding
     public static function custom($mediaType): self
     {
         if (!$mediaType instanceof MediaTypeInterface) {
-            $mediaType = MediaType::parse(0, $mediaType);
+            $mediaType = MediaTypeParser::getInstance()->parse($mediaType);
         }
 
         return new self($mediaType, null);
@@ -161,8 +160,8 @@ class Encoding
      */
     public function is(string ...$mediaTypes): bool
     {
-        $mediaTypes = collect($mediaTypes)->map(function ($mediaType, $index) {
-            return MediaType::parse($index, $mediaType);
+        $mediaTypes = collect($mediaTypes)->map(function ($mediaType) {
+            return MediaTypeParser::getInstance()->parse($mediaType);
         });
 
         return $this->any(...$mediaTypes);

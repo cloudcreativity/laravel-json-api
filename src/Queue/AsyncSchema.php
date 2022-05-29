@@ -25,18 +25,20 @@ trait AsyncSchema
     /**
      * @return string
      */
-    public function getResourceType()
+    public function getResourceType(): string
     {
-        $api = property_exists($this, 'api') ? $this->api : null;
+        if (empty($this->resourceType)) {
+            $this->resourceType = $this->resolveResourceType();
+        }
 
-        return json_api($api)->getJobs()->getResource();
+        return $this->resourceType;
     }
 
     /**
-     * @param AsynchronousProcess|null $resource
+     * @param AsynchronousProcess|object|null $resource
      * @return string
      */
-    public function getSelfSubUrl($resource = null)
+    public function getSelfSubUrl(object $resource = null): string
     {
         if (!$resource) {
             return '/' . $this->getResourceType();
@@ -48,5 +50,17 @@ trait AsyncSchema
             $this->getResourceType(),
             $this->getId($resource)
         );
+    }
+
+    /**
+     * Get the configured resource type.
+     *
+     * @return string
+     */
+    protected function resolveResourceType(): string
+    {
+        $api = property_exists($this, 'api') ? $this->api : null;
+
+        return json_api($api)->getJobs()->getResource();
     }
 }

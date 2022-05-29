@@ -22,9 +22,12 @@ use CloudCreativity\LaravelJsonApi\Contracts\Auth\AuthorizerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\ContentNegotiatorInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Schema\SchemaProviderInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
+use CloudCreativity\LaravelJsonApi\Schema\Schema;
 use Illuminate\Contracts\Container\Container as IlluminateContainer;
+use Neomerx\JsonApi\Contracts\Factories\FactoryInterface;
 use Neomerx\JsonApi\Contracts\Schema\SchemaInterface;
 
 /**
@@ -344,9 +347,16 @@ class Container implements ContainerInterface
      * @param string $className
      * @return SchemaInterface
      */
-    protected function createSchemaFromClassName($className): SchemaInterface
+    protected function createSchemaFromClassName(string $className): SchemaInterface
     {
         $schema = $this->create($className);
+
+        if ($schema instanceof SchemaProviderInterface) {
+            return new Schema(
+                $this->container->make(FactoryInterface::class),
+                $schema,
+            );
+        }
 
         if (!$schema instanceof SchemaInterface) {
             throw new RuntimeException("Class [$className] is not a schema provider.");
