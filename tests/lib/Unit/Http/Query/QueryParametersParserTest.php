@@ -70,6 +70,19 @@ class QueryParametersParserTest extends TestCase
         ], $actual->getUnrecognizedParameters());
     }
 
+    public function testNullable(): void
+    {
+        $parser = new QueryParametersParser();
+        $actual = $parser->parseQueryParameters([
+            'sort' => null,
+            'include' => null,
+            'fields' => null,
+        ]);
+
+        $this->assertSame([], $actual->getIncludePaths());
+        $this->assertSame([], $actual->getSortParameters());
+    }
+
     public function testEmpty(): void
     {
         $parser = new QueryParametersParser();

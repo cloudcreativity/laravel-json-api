@@ -17,11 +17,11 @@
 
 namespace CloudCreativity\LaravelJsonApi\Eloquent\Concerns;
 
+use CloudCreativity\LaravelJsonApi\Contracts\Encoder\Parameters\SortParameterInterface;
+use CloudCreativity\LaravelJsonApi\Encoder\Parameters\SortParameter;
 use CloudCreativity\LaravelJsonApi\Utils\Str;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Neomerx\JsonApi\Contracts\Encoder\Parameters\SortParameterInterface;
-use Neomerx\JsonApi\Encoder\Parameters\SortParameter;
 
 /**
  * Trait SortsModels

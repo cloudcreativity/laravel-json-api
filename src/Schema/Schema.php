@@ -22,7 +22,7 @@ namespace CloudCreativity\LaravelJsonApi\Schema;
 use CloudCreativity\LaravelJsonApi\Contracts\Schema\SchemaProviderInterface;
 use Neomerx\JsonApi\Contracts\Factories\FactoryInterface;
 use Neomerx\JsonApi\Contracts\Schema\ContextInterface;
-use Neomerx\JsonApi\Contracts\Schema\SchemaInterface;
+use Neomerx\JsonApi\Contracts\Schema\LinkInterface;
 use Neomerx\JsonApi\Schema\BaseSchema;
 
 class Schema extends BaseSchema
@@ -33,15 +33,25 @@ class Schema extends BaseSchema
     private SchemaProviderInterface $provider;
 
     /**
+     * @var SchemaFields
+     */
+    private SchemaFields $fields;
+
+    /**
      * Schema constructor.
      *
      * @param FactoryInterface $factory
      * @param SchemaProviderInterface $provider
+     * @param SchemaFields|null $fields
      */
-    public function __construct(FactoryInterface $factory, SchemaProviderInterface $provider)
-    {
+    public function __construct(
+        FactoryInterface $factory,
+        SchemaProviderInterface $provider,
+        SchemaFields $fields = null
+    ) {
         parent::__construct($factory);
         $this->provider = $provider;
+        $this->fields = $fields ?? new SchemaFields();
     }
 
     /**
@@ -78,7 +88,9 @@ class Schema extends BaseSchema
     public function getRelationships($resource, ContextInterface $context): iterable
     {
         $isPrimary = (0 === $context->getPosition()->getLevel());
-        $includeRelationships = []; // @TODO
+        $includeRelationships = $this->fields->getRequestedRelationships(
+            $context->getPosition()->getPath()
+        );
 
         $this->provider->setContext($context);
         $relations = $this->provider->getRelationships($resource, $isPrimary, $includeRelationships);
@@ -86,7 +98,7 @@ class Schema extends BaseSchema
         $resourceType = $this->getType();
 
         foreach ($relations as $field => $relation) {
-            yield SchemaProviderRelation::make($resourceType, $field, $relation)->parse();
+            yield $field => SchemaProviderRelation::make($resourceType, $field, $relation)->parse();
         }
     }
 
@@ -104,5 +116,21 @@ class Schema extends BaseSchema
     protected function getSelfSubUrl($resource): string
     {
         return $this->provider->getSelfSubUrl($resource);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getRelationshipSelfLink($resource, string $name): LinkInterface
+    {
+        return $this->provider->getRelationshipSelfLink($resource, $name);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getRelationshipRelatedLink($resource, string $name): LinkInterface
+    {
+        return $this->provider->getRelationshipRelatedLink($resource, $name);
     }
 }

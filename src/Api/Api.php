@@ -193,7 +193,7 @@ class Api
     public function getContainer()
     {
         if (!$this->container) {
-            $this->container = $this->factory->createExtendedContainer($this->resolver);
+            $this->container = $this->factory->createContainer($this->resolver);
         }
 
         return $this->container;

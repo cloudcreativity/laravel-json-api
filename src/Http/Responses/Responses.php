@@ -28,7 +28,8 @@ use CloudCreativity\LaravelJsonApi\Contracts\Exceptions\ExceptionParserInterface
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PageInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Queue\AsynchronousProcess;
 use CloudCreativity\LaravelJsonApi\Document\Error\Error;
-use CloudCreativity\LaravelJsonApi\Encoder\Neomerx\Factory;
+use CloudCreativity\LaravelJsonApi\Encoder\Encoder;
+use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use CloudCreativity\LaravelJsonApi\Routing\Route;
 use CloudCreativity\LaravelJsonApi\Utils\Helpers;
 use Illuminate\Http\RedirectResponse;
@@ -446,7 +447,7 @@ class Responses extends BaseResponses
     public function error($error, int $defaultStatusCode = null, array $headers = []): Response
     {
         if (!$error instanceof ErrorInterface) {
-            $error = $this->factory->createError(
+            $error = $this->factory->createDocumentMapper()->createError(
                 Error::cast($error)
             );
         }
@@ -469,7 +470,7 @@ class Responses extends BaseResponses
      */
     public function errors(iterable $errors, int $defaultStatusCode = null, array $headers = []): Response
     {
-        $errors = $this->factory->createErrors($errors);
+        $errors = $this->factory->createDocumentMapper()->createErrors($errors);
         $statusCode = Helpers::httpErrorStatus($errors, $defaultStatusCode);
 
         return $this->getErrorResponse($errors, $statusCode, $headers);
@@ -514,22 +515,17 @@ class Responses extends BaseResponses
     /**
      * Create a new and configured encoder.
      *
-     * @return EncoderInterface
+     * @return Encoder
      */
-    protected function createEncoder(): EncoderInterface
+    protected function createEncoder(): Encoder
     {
         $encoder = $this
             ->getCodec()
             ->getEncoder();
 
         $encoder
-            ->withUrlPrefix($this->getUrlPrefix());
-
-        if ($this->parameters) {
-            $encoder
-                ->withIncludedPaths($this->parameters->getIncludePaths() ?? [])
-                ->withFieldSets($this->parameters->getFieldSets() ?? []);
-        }
+            ->withUrlPrefix($this->getUrlPrefix())
+            ->withEncodingParameters($this->parameters);
 
         return $encoder;
     }
@@ -585,7 +581,7 @@ class Responses extends BaseResponses
     /**
      * @return ContainerInterface
      */
-    protected function getSchemaContainer(): ContainerInterface
+    protected function getContainer(): ContainerInterface
     {
         return $this->api->getContainer();
     }
@@ -633,11 +629,11 @@ class Responses extends BaseResponses
      */
     private function getResourceSelfLink($resource): LinkInterface
     {
-        $schema = $this
-            ->getSchemaContainer()
+        $schemaProvider = $this
+            ->getContainer()
             ->getSchema($resource);
 
-        return $schema->getSelfLink($resource);
+        return $schemaProvider->getSelfSubLink($resource);
     }
 
     /**

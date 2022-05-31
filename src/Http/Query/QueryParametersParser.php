@@ -62,6 +62,11 @@ class QueryParametersParser implements QueryParametersParserInterface
             return null;
         }
 
+        // convert null to empty array, as the client has specified no include parameters.
+        if (null === $parameters[BaseQueryParser::PARAM_INCLUDE]) {
+            return [];
+        }
+
         return $this->iteratorToArray($this->getIncludePaths($parameters, $message));
     }
 
@@ -76,6 +81,11 @@ class QueryParametersParser implements QueryParametersParserInterface
     {
         if (!array_key_exists(BaseQueryParser::PARAM_FIELDS, $parameters)) {
             return null;
+        }
+
+        // convert null to empty array, as the client has specified no sparse fields
+        if (null === $parameters[BaseQueryParser::PARAM_FIELDS]) {
+            return [];
         }
 
         $fieldSets = [];
@@ -98,6 +108,11 @@ class QueryParametersParser implements QueryParametersParserInterface
     {
         if (!array_key_exists(BaseQueryParser::PARAM_SORT, $parameters)) {
             return null;
+        }
+
+        // convert null to empty array, as the client has specified no sort parameters.
+        if (null === $parameters[BaseQueryParser::PARAM_SORT]) {
+            return [];
         }
 
         $values = [];

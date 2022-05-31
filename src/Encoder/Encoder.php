@@ -22,8 +22,11 @@ namespace CloudCreativity\LaravelJsonApi\Encoder;
 use CloudCreativity\LaravelJsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Encoder\SerializerInterface;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
+use CloudCreativity\LaravelJsonApi\Schema\SchemaContainer;
+use CloudCreativity\LaravelJsonApi\Schema\SchemaFields;
 use Neomerx\JsonApi\Contracts\Encoder\EncoderInterface;
 use Neomerx\JsonApi\Contracts\Schema\ErrorInterface;
+use Neomerx\JsonApi\Contracts\Schema\SchemaContainerInterface;
 use Neomerx\JsonApi\Encoder\Encoder as BaseEncoder;
 use RuntimeException;
 
@@ -130,5 +133,21 @@ class Encoder extends BaseEncoder implements SerializerInterface
     protected static function createFactory(): Factory
     {
         return app(Factory::class);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function getSchemaContainer(): SchemaContainerInterface
+    {
+        $schemaContainer = parent::getSchemaContainer();
+
+        if ($schemaContainer instanceof SchemaContainer) {
+            $schemaContainer->setSchemaFields(
+                new SchemaFields($this->getIncludePaths(), $this->getFieldSets())
+            );
+        }
+
+        return $schemaContainer;
     }
 }

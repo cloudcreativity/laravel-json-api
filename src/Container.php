@@ -25,10 +25,7 @@ use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Schema\SchemaProviderInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
-use CloudCreativity\LaravelJsonApi\Schema\Schema;
 use Illuminate\Contracts\Container\Container as IlluminateContainer;
-use Neomerx\JsonApi\Contracts\Factories\FactoryInterface;
-use Neomerx\JsonApi\Contracts\Schema\SchemaInterface;
 
 /**
  * Class Container
@@ -37,36 +34,35 @@ use Neomerx\JsonApi\Contracts\Schema\SchemaInterface;
  */
 class Container implements ContainerInterface
 {
-
     /**
      * @var IlluminateContainer
      */
-    private $container;
+    private IlluminateContainer $container;
 
     /**
      * @var ResolverInterface
      */
-    private $resolver;
+    private ResolverInterface $resolver;
 
     /**
      * @var array
      */
-    private $createdSchemas = [];
+    private array $createdSchemas = [];
 
     /**
      * @var array
      */
-    private $createdAdapters = [];
+    private array $createdAdapters = [];
 
     /**
      * @var array
      */
-    private $createdValidators = [];
+    private array $createdValidators = [];
 
     /**
      * @var array
      */
-    private $createdAuthorizers = [];
+    private array $createdAuthorizers = [];
 
     /**
      * Container constructor.
@@ -83,7 +79,7 @@ class Container implements ContainerInterface
     /**
      * @inheritDoc
      */
-    public function getSchema($resourceObject): SchemaInterface
+    public function getSchema($resourceObject): SchemaProviderInterface
     {
         return $this->getSchemaByType(get_class($resourceObject));
     }
@@ -91,7 +87,7 @@ class Container implements ContainerInterface
     /**
      * @inheritDoc
      */
-    public function hasSchema($resourceObject): bool
+    public function hasSchema(object $resourceObject): bool
     {
         $type = get_class($resourceObject);
 
@@ -104,9 +100,9 @@ class Container implements ContainerInterface
      * Get resource by object type.
      *
      * @param string $type
-     * @return SchemaInterface
+     * @return SchemaProviderInterface
      */
-    public function getSchemaByType(string $type): SchemaInterface
+    public function getSchemaByType(string $type): SchemaProviderInterface
     {
         $resourceType = $this->getResourceType($type);
 
@@ -117,9 +113,9 @@ class Container implements ContainerInterface
      * Get resource by JSON:API type.
      *
      * @param string $resourceType
-     * @return SchemaInterface
+     * @return SchemaProviderInterface
      */
-    public function getSchemaByResourceType(string $resourceType): SchemaInterface
+    public function getSchemaByResourceType(string $resourceType): SchemaProviderInterface
     {
         if ($this->hasCreatedSchema($resourceType)) {
             return $this->getCreatedSchema($resourceType);
@@ -326,39 +322,32 @@ class Container implements ContainerInterface
 
     /**
      * @param string $resourceType
-     * @return SchemaInterface
+     * @return SchemaProviderInterface
      */
-    protected function getCreatedSchema($resourceType): SchemaInterface
+    protected function getCreatedSchema($resourceType): SchemaProviderInterface
     {
         return $this->createdSchemas[$resourceType];
     }
 
     /**
      * @param string $resourceType
-     * @param SchemaInterface $schema
+     * @param SchemaProviderInterface $schema
      * @return void
      */
-    protected function setCreatedSchema($resourceType, SchemaInterface $schema): void
+    protected function setCreatedSchema($resourceType, SchemaProviderInterface $schema): void
     {
         $this->createdSchemas[$resourceType] = $schema;
     }
 
     /**
      * @param string $className
-     * @return SchemaInterface
+     * @return SchemaProviderInterface
      */
-    protected function createSchemaFromClassName(string $className): SchemaInterface
+    protected function createSchemaFromClassName(string $className): SchemaProviderInterface
     {
         $schema = $this->create($className);
 
-        if ($schema instanceof SchemaProviderInterface) {
-            return new Schema(
-                $this->container->make(FactoryInterface::class),
-                $schema,
-            );
-        }
-
-        if (!$schema instanceof SchemaInterface) {
+        if (!$schema instanceof SchemaProviderInterface) {
             throw new RuntimeException("Class [$className] is not a schema provider.");
         }
 

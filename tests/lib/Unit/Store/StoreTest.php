@@ -20,13 +20,13 @@ namespace CloudCreativity\LaravelJsonApi\Tests\Unit\Store;
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\RelationshipAdapterInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\ResourceAdapterInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Schema\SchemaProviderInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\LaravelJsonApi\Encoder\Parameters\EncodingParameters;
 use CloudCreativity\LaravelJsonApi\Exceptions\ResourceNotFoundException;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Store\Store;
 use CloudCreativity\LaravelJsonApi\Tests\Unit\TestCase;
-use Neomerx\JsonApi\Contracts\Schema\SchemaInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 
 /**
@@ -94,7 +94,7 @@ class StoreTest extends TestCase
             ->expects($this->once())
             ->method('getSchemaByResourceType')
             ->with('comments')
-            ->willReturn($schema = $this->createMock(SchemaInterface::class));
+            ->willReturn($schema = $this->createMock(SchemaProviderInterface::class));
 
         $schema
             ->expects($this->once())

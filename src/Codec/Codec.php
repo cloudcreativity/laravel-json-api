@@ -18,8 +18,8 @@
 namespace CloudCreativity\LaravelJsonApi\Codec;
 
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
-use Neomerx\JsonApi\Contracts\Encoder\EncoderInterface;
-use Neomerx\JsonApi\Contracts\Factories\FactoryInterface;
+use CloudCreativity\LaravelJsonApi\Encoder\Encoder;
+use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use Neomerx\JsonApi\Contracts\Http\Headers\MediaTypeInterface;
 use Neomerx\JsonApi\Http\Headers\MediaType;
 
@@ -30,37 +30,36 @@ use Neomerx\JsonApi\Http\Headers\MediaType;
  */
 class Codec
 {
-
     /**
-     * @var FactoryInterface
+     * @var Factory
      */
-    private $factory;
+    private Factory $factory;
 
     /**
      * @var ContainerInterface
      */
-    private $container;
+    private ContainerInterface $container;
 
     /**
      * @var Encoding
      */
-    private $encoding;
+    private Encoding $encoding;
 
     /**
      * @var Decoding|null
      */
-    private $decoding;
+    private ?Decoding $decoding;
 
     /**
      * Codec constructor.
      *
-     * @param FactoryInterface $factory
+     * @param Factory $factory
      * @param ContainerInterface $container
      * @param Encoding $encoding
      * @param Decoding|null $decoding
      */
     public function __construct(
-        FactoryInterface $factory,
+        Factory $factory,
         ContainerInterface $container,
         Encoding $encoding,
         ?Decoding $decoding
@@ -92,15 +91,18 @@ class Codec
     }
 
     /**
-     * @return EncoderInterface
+     * @return Encoder
      */
-    public function getEncoder(): EncoderInterface
+    public function getEncoder(): Encoder
     {
         if ($this->willNotEncode()) {
             throw new \RuntimeException('Codec does not support encoding JSON API content.');
         }
 
-        $encoder = $this->factory->createEncoder($this->container);
+        $encoder = $this->factory->createExtendedEncoder(
+            $this->factory->createLaravelSchemaContainer($this->container)
+        );
+
         $options = $this->encoding->getOptions();
 
         if ($options) {

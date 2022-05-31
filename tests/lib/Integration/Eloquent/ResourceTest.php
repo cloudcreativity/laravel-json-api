@@ -224,6 +224,7 @@ class ResourceTest extends TestCase
         unset($expected['relationships']);
 
         $response = $this
+            ->withoutExceptionHandling()
             ->jsonApi()
             ->withData($data)
             ->post('/api/v1/posts');
@@ -345,6 +346,7 @@ class ResourceTest extends TestCase
         $model->tags()->create(['name' => 'Important']);
 
         $response = $this
+            ->withoutExceptionHandling()
             ->jsonApi()
             ->get(url('/api/v1/posts', $model));
 
@@ -413,6 +415,7 @@ class ResourceTest extends TestCase
         $post = factory(Post::class)->create();
 
         $response = $this
+            ->withoutExceptionHandling()
             ->jsonApi()
             ->get("api/v1/posts/{$post->getRouteKey()}?include=");
 

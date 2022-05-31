@@ -39,9 +39,9 @@ use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorInterface;
 use CloudCreativity\LaravelJsonApi\Document\Error\Translator as ErrorTranslator;
+use CloudCreativity\LaravelJsonApi\Document\Mapper;
 use CloudCreativity\LaravelJsonApi\Document\ResourceObject;
 use CloudCreativity\LaravelJsonApi\Encoder\Encoder;
-use CloudCreativity\LaravelJsonApi\Encoder\Neomerx\Factory as EncoderFactory;
 use CloudCreativity\LaravelJsonApi\Encoder\Parameters\EncodingParameters;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Http\ContentNegotiator;
@@ -49,6 +49,7 @@ use CloudCreativity\LaravelJsonApi\Http\Responses\Responses;
 use CloudCreativity\LaravelJsonApi\Pagination\Page;
 use CloudCreativity\LaravelJsonApi\Resolver\ResolverFactory;
 use CloudCreativity\LaravelJsonApi\Routing\Route;
+use CloudCreativity\LaravelJsonApi\Schema\SchemaContainer;
 use CloudCreativity\LaravelJsonApi\Store\Store;
 use CloudCreativity\LaravelJsonApi\Validation;
 use Illuminate\Contracts\Container\Container as IlluminateContainer;
@@ -115,11 +116,22 @@ class Factory extends BaseFactory
 
     /**
      * @param ResolverInterface $resolver
-     * @return Container
+     * @return ContainerInterface
      */
-    public function createExtendedContainer(ResolverInterface $resolver)
+    public function createContainer(ResolverInterface $resolver): ContainerInterface
     {
         return new Container($this->container, $resolver);
+    }
+
+    /**
+     * Create the custom Laravel JSON:API schema container.
+     *
+     * @param ContainerInterface $container
+     * @return SchemaContainer
+     */
+    public function createLaravelSchemaContainer(ContainerInterface $container): SchemaContainer
+    {
+        return new SchemaContainer($container, $this);
     }
 
     /**
@@ -217,7 +229,7 @@ class Factory extends BaseFactory
     public function createResponseFactory(Api $api): Responses
     {
         return new Responses(
-            $this->container->make(EncoderFactory::class),
+            $this->container->make(Factory::class),
             $api,
             $this->container->make(Route::class),
             $this->container->make('json-api.exceptions')
@@ -372,6 +384,16 @@ class Factory extends BaseFactory
     public function createCodec(ContainerInterface $container, Encoding $encoding, ?Decoding $decoding): Codec
     {
         return new Codec($this, $container, $encoding, $decoding);
+    }
+
+    /**
+     * Create a document mapper.
+     *
+     * @return Mapper
+     */
+    public function createDocumentMapper(): Mapper
+    {
+        return new Mapper($this);
     }
 
     /**

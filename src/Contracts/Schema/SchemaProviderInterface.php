@@ -20,6 +20,7 @@ declare(strict_types=1);
 namespace CloudCreativity\LaravelJsonApi\Contracts\Schema;
 
 use Neomerx\JsonApi\Contracts\Schema\ContextInterface;
+use Neomerx\JsonApi\Contracts\Schema\LinkInterface;
 
 interface SchemaProviderInterface
 {
@@ -78,4 +79,30 @@ interface SchemaProviderInterface
      * @return string
      */
     public function getSelfSubUrl(object $resource = null): string;
+
+    /**
+     * Get the resource self sub link.
+     *
+     * @param object $resource
+     * @return LinkInterface
+     */
+    public function getSelfSubLink(object $resource): LinkInterface;
+
+    /**
+     * Get the relationship self link.
+     *
+     * @param object $resource
+     * @param string $field
+     * @return LinkInterface
+     */
+    public function getRelationshipSelfLink(object $resource, string $field): LinkInterface;
+
+    /**
+     * Get the relationship related link.
+     *
+     * @param object $resource
+     * @param string $field
+     * @return LinkInterface
+     */
+    public function getRelationshipRelatedLink(object $resource, string $field): LinkInterface;
 }

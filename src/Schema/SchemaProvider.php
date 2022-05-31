@@ -21,7 +21,10 @@ namespace CloudCreativity\LaravelJsonApi\Schema;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Schema\SchemaProviderInterface;
 use Illuminate\Database\Eloquent\Model;
+use Neomerx\JsonApi\Contracts\Factories\FactoryInterface;
 use Neomerx\JsonApi\Contracts\Schema\ContextInterface;
+use Neomerx\JsonApi\Contracts\Schema\DocumentInterface;
+use Neomerx\JsonApi\Contracts\Schema\LinkInterface;
 use RuntimeException;
 
 abstract class SchemaProvider implements SchemaProviderInterface
@@ -37,9 +40,24 @@ abstract class SchemaProvider implements SchemaProviderInterface
     protected string $selfSubUrl = '';
 
     /**
+     * @var FactoryInterface
+     */
+    private FactoryInterface $factory;
+
+    /**
      * @var ContextInterface|null
      */
     private ?ContextInterface $context = null;
+
+    /**
+     * SchemaProvider constructor.
+     *
+     * @param FactoryInterface $factory
+     */
+    public function __construct(FactoryInterface $factory)
+    {
+        $this->factory = $factory;
+    }
 
     /**
      * @inheritDoc
@@ -109,6 +127,70 @@ abstract class SchemaProvider implements SchemaProviderInterface
         }
 
         return $this->selfSubUrl;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getSelfSubLink(object $resource): LinkInterface
+    {
+        return $this->factory->createLink(
+            true,
+            $this->getSelfSubUrl($resource),
+            false,
+        );
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getRelationshipSelfLink(object $resource, string $field): LinkInterface
+    {
+        $url = $this->getRelationshipSelfUrl($resource, $field);
+
+        return $this->factory->createLink(
+            true,
+            $url,
+            false,
+        );
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getRelationshipRelatedLink(object $resource, string $field): LinkInterface
+    {
+        $url = $this->getRelationshipRelatedUrl($resource, $field);
+
+        return $this->factory->createLink(
+            true,
+            $url,
+            false,
+        );
+    }
+
+    /**
+     * Get the relationship self url.
+     *
+     * @param object $resource
+     * @param string $field
+     * @return string
+     */
+    protected function getRelationshipSelfUrl(object $resource, string $field): string
+    {
+        return $this->getSelfSubUrl($resource) . '/' . DocumentInterface::KEYWORD_RELATIONSHIPS . '/' . $field;
+    }
+
+    /**
+     * Get the relationship related url.
+     *
+     * @param object $resource
+     * @param string $field
+     * @return string
+     */
+    protected function getRelationshipRelatedUrl(object $resource, string $field): string
+    {
+        return $this->getSelfSubUrl($resource) . '/' . $field;
     }
 
     /**
