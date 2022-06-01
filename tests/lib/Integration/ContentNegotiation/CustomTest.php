@@ -73,7 +73,9 @@ class CustomTest extends TestCase
         $avatar = factory(Avatar::class)->create(compact('path'));
         $uri = url('/api/v1/avatars', $avatar);
 
-        $this->withDefaultNegotiator()
+        $this
+            ->withoutExceptionHandling()
+            ->withDefaultNegotiator()
             ->get($uri, ['Accept' => 'image/*'])
             ->assertSuccessful()
             ->assertHeader('Content-Type', $avatar->media_type);

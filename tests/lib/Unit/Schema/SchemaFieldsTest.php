@@ -24,7 +24,10 @@ use PHPUnit\Framework\TestCase;
 
 class SchemaFieldsTest extends TestCase
 {
-    public function test(): void
+    /**
+     * @return SchemaFields
+     */
+    public function test(): SchemaFields
     {
         $paths = [
             'a1',
@@ -58,5 +61,31 @@ class SchemaFieldsTest extends TestCase
         $this->assertNull($fields->getRequestedFields('blah'));
         $this->assertTrue($fields->isFieldRequested('articles', 'title'));
         $this->assertFalse($fields->isFieldRequested('articles', 'blah'));
+
+        return $fields;
+    }
+
+    /**
+     * @param SchemaFields $expected
+     * @return void
+     * @depends test
+     */
+    public function testAlreadyParsedParameters(SchemaFields $expected): void
+    {
+        $paths = [
+            'a1',
+            'a2',
+            'a1.b1',
+            'a2.b2.c2',
+        ];
+
+        $fieldSets = [
+            'articles' => ['title', 'body', 'a1'],
+            'people'   => ['name'],
+        ];
+
+        $actual = new SchemaFields($paths, $fieldSets);
+
+        $this->assertEquals($expected, $actual);
     }
 }

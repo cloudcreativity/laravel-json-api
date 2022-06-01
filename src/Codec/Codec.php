@@ -20,8 +20,9 @@ namespace CloudCreativity\LaravelJsonApi\Codec;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
 use CloudCreativity\LaravelJsonApi\Encoder\Encoder;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
+use CloudCreativity\LaravelJsonApi\Http\Headers\MediaTypeParser;
+use Illuminate\Support\Collection;
 use Neomerx\JsonApi\Contracts\Http\Headers\MediaTypeInterface;
-use Neomerx\JsonApi\Http\Headers\MediaType;
 
 /**
  * Class Codec
@@ -133,9 +134,9 @@ class Codec
     {
         $encoding = $this->getEncodingMediaType();
 
-        return collect($mediaTypes)->contains(function ($mediaType, $index) use ($encoding) {
-            return $encoding->equalsTo(MediaType::parse($index, $mediaType));
-        });
+        return Collection::make($mediaTypes)->contains(
+            fn($mediaType) => $encoding->equalsTo(MediaTypeParser::getInstance()->parse($mediaType))
+        );
     }
 
     /**
@@ -182,9 +183,9 @@ class Codec
             return false;
         }
 
-        return collect($mediaTypes)->contains(function ($mediaType, $index) use ($decoding) {
-            return $decoding->equalsTo(MediaType::parse($index, $mediaType));
-        });
+        return Collection::make($mediaTypes)->contains(
+            static fn($mediaType) => $decoding->equalsTo(MediaTypeParser::getInstance()->parse($mediaType))
+        );
     }
 
     /**

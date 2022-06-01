@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This package supports the [inclusion of related resources](http://jsonapi.org/format/1.0/#fetching-includes). 
+This package supports the [inclusion of related resources](http://jsonapi.org/format/1.0/#fetching-includes).
 This allows a client to specify resources related to the primary data that should be included in the response.
 The purpose is to allow the client to reduce the number of HTTP requests it needs to make to obtain all the data
 it requires.
@@ -20,13 +20,13 @@ For this feature to work, you will need to:
 default validators do not allow include paths.
 2. Add relationships to the resource [Schema](../basics/schemas.md) and ensure they return data.
 3. For Eloquent models, define the translation of any JSON API include paths to eager load paths
-on the resource [Adapter](../basics/adapters.md).  
+on the resource [Adapter](../basics/adapters.md).
 
 These are all described in this chapter.
 
 ## The Include Query Parameter
 
-Related resources are specified by the client using the `include` query parameter. This parameter 
+Related resources are specified by the client using the `include` query parameter. This parameter
 contains a comma separated list of relationship paths that should be included. The response will be a
 [compound document](http://jsonapi.org/format/#document-compound-documents) where the primary data of the
 request is in the JSON's `data` member, and the related resources are in the `included` member.
@@ -37,7 +37,7 @@ resources in the same request:
 ```http
 GET /api/posts?include=author,tags HTTP/1.1
 Accept: application/vnd.api+json
-``` 
+```
 
 If these include paths are valid, then the client will receive the following response:
 
@@ -79,7 +79,7 @@ Content-Type: application/vnd.api+json
                     "links": {
                         "self": "/api/posts/123/relationships/tags",
                         "related": "/api/posts/123/tags"
-                    }                
+                    }
                 }
             },
             "links": {
@@ -130,7 +130,7 @@ relationship, the client could request the following:
 ```http
 GET /api/posts?include=author.address,tags HTTP/1.1
 Accept: application/vnd.api+json
-``` 
+```
 
 For this request, both the author `users` resource and the user's `addresses` resource would be present in
 the `included` member of the JSON document.
@@ -201,7 +201,7 @@ class Validators extends AbstractValidators
         'author.address',
         'tags'
     ];
-    
+
     // ...
 }
 ```
@@ -235,7 +235,7 @@ the posts schema would have to return both the related author and the related ta
 ```php
 namespace App\JsonApi\Posts;
 
-use Neomerx\JsonApi\Schema\SchemaProvider;
+use CloudCreativity\LaravelJsonApi\Schema\SchemaProvider;
 
 class Schema extends SchemaProvider
 {
@@ -278,7 +278,7 @@ method on the `users` schema.
 
 ## Eager Loading
 
-The Eloquent adapter automatically converts JSON API include paths to Eloquent model 
+The Eloquent adapter automatically converts JSON API include paths to Eloquent model
 [eager loading](https://laravel.com/docs/eloquent-relationships#eager-loading) paths.
 The JSON API path is converted to a camel-case path. For example, the JSON API path
 `author.current-address` is converted to the `author.currentAddress` Eloquent path.
@@ -299,7 +299,7 @@ class Adapter extends AbstractAdapter
         'author' => 'createdBy',
         'author.current-address' => 'createdBy.currentAddress',
     ];
-    
+
     // ...
 }
 ```
@@ -324,7 +324,7 @@ requested as primary data:
 ```php
 namespace App\JsonApi\Posts;
 
-use Neomerx\JsonApi\Schema\SchemaProvider;
+use CloudCreativity\LaravelJsonApi\Schema\SchemaProvider;
 
 class Schema extends SchemaProvider
 {
@@ -344,7 +344,7 @@ This would mean that the following request receive a response with `users` and `
 ```http
 GET /api/posts HTTP/1.1
 Accept: application/vnd.api+json
-``` 
+```
 
 ### Default Path Eager Loading
 
@@ -359,7 +359,7 @@ use CloudCreativity\LaravelJsonApi\Eloquent\AbstractAdapter;
 class Adapter extends AbstractAdapter
 {
     protected $defaultWith = ['author', 'tags'];
-    
+
     // ...
 }
 ```

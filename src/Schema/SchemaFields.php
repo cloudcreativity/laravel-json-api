@@ -102,7 +102,8 @@ class SchemaFields
 
         if (null !== $fieldSets) {
             foreach ($fieldSets as $type => $fieldList) {
-                foreach (\explode(static::FIELD_SEPARATOR, $fieldList) as $field) {
+                $fieldList = \is_string($fieldList) ? \explode(static::FIELD_SEPARATOR, $fieldList) : $fieldList;
+                foreach ($fieldList as $field) {
                     $this->fastFields[$type][$field] = true;
                     $this->fastFieldLists[$type][$field] = $field;
                 }

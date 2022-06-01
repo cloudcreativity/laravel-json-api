@@ -143,7 +143,7 @@ class ClientSerializer
      */
     public function serialize($record, $meta = null, array $links = [])
     {
-        $serializer = clone $this->serializer;
+        $serializer = $this->setupSerializer();
         $serializer->withMeta($meta)->withLinks($links);
         $serialized = $serializer->serializeData($record, $this->createEncodingParameters());
         $resourceLinks = null;
@@ -173,7 +173,7 @@ class ClientSerializer
      */
     public function serializeRelated($related, $meta = null, array $links = [])
     {
-        $serializer = clone $this->serializer;
+        $serializer = $this->setupSerializer();
         $serializer->withMeta($meta)->withLinks($links);
 
         return $serializer->serializeIdentifiers($related);
@@ -290,5 +290,17 @@ class ClientSerializer
             $this->includePaths,
             $this->fieldsets
         );
+    }
+
+    /**
+     * @return SerializerInterface
+     */
+    private function setupSerializer(): SerializerInterface
+    {
+        $serializer = clone $this->serializer;
+        $serializer->withIncludedPaths($this->includePaths ?? []);
+        $serializer->withFieldSets($this->fieldsets ?? []);
+
+        return $serializer;
     }
 }
