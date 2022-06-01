@@ -19,6 +19,7 @@ declare(strict_types=1);
 
 namespace CloudCreativity\LaravelJsonApi\Http\Headers;
 
+use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use Neomerx\JsonApi\Contracts\Http\Headers\MediaTypeInterface;
 use Neomerx\JsonApi\Http\Headers\HeaderParametersParser as NeomerxParser;
 
@@ -32,9 +33,9 @@ class MediaTypeParser
     /**
      * @return MediaTypeParser
      */
-    public static function getInstance(): self
+    public static function make(): self
     {
-        return app(self::class);
+        return Factory::getInstance()->createMediaTypeParser();
     }
 
     /**

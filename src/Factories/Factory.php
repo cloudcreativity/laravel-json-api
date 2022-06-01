@@ -45,6 +45,7 @@ use CloudCreativity\LaravelJsonApi\Encoder\Encoder;
 use CloudCreativity\LaravelJsonApi\Encoder\Parameters\EncodingParameters;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Http\ContentNegotiator;
+use CloudCreativity\LaravelJsonApi\Http\Headers\MediaTypeParser;
 use CloudCreativity\LaravelJsonApi\Http\Responses\Responses;
 use CloudCreativity\LaravelJsonApi\Pagination\Page;
 use CloudCreativity\LaravelJsonApi\Resolver\ResolverFactory;
@@ -61,6 +62,7 @@ use Neomerx\JsonApi\Contracts\Encoder\EncoderInterface;
 use Neomerx\JsonApi\Contracts\Schema\LinkInterface;
 use Neomerx\JsonApi\Contracts\Schema\SchemaContainerInterface;
 use Neomerx\JsonApi\Factories\Factory as BaseFactory;
+use Neomerx\JsonApi\Http\Headers\HeaderParametersParser;
 
 /**
  * Class Factory
@@ -74,6 +76,14 @@ class Factory extends BaseFactory
      * @var IlluminateContainer
      */
     protected IlluminateContainer $container;
+
+    /**
+     * @return Factory
+     */
+    public static function getInstance(): Factory
+    {
+        return app(self::class);
+    }
 
     /**
      * Factory constructor.
@@ -158,6 +168,16 @@ class Factory extends BaseFactory
     public function createSerializer(SchemaContainerInterface $container): SerializerInterface
     {
         return $this->createExtendedEncoder($container);
+    }
+
+    /**
+     * @return MediaTypeParser
+     */
+    public function createMediaTypeParser(): MediaTypeParser
+    {
+        return new MediaTypeParser(
+            new HeaderParametersParser($this)
+        );
     }
 
     /**
@@ -383,7 +403,7 @@ class Factory extends BaseFactory
      */
     public function createCodec(ContainerInterface $container, Encoding $encoding, ?Decoding $decoding): Codec
     {
-        return new Codec($this, $container, $encoding, $decoding);
+        return new Codec($this, $this->createMediaTypeParser(), $container, $encoding, $decoding);
     }
 
     /**

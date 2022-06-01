@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+declare(strict_types=1);
+
 namespace CloudCreativity\LaravelJsonApi\Codec;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Decoder\DecoderInterface;
@@ -22,7 +24,6 @@ use CloudCreativity\LaravelJsonApi\Decoder\JsonApiDecoder;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Http\Headers\MediaTypeParser;
 use Neomerx\JsonApi\Contracts\Http\Headers\MediaTypeInterface;
-use Neomerx\JsonApi\Http\Headers\MediaType;
 
 /**
  * Class Decoding
@@ -31,16 +32,15 @@ use Neomerx\JsonApi\Http\Headers\MediaType;
  */
 class Decoding
 {
-
     /**
      * @var MediaTypeInterface
      */
-    private $mediaType;
+    private MediaTypeInterface $mediaType;
 
     /**
      * @var DecoderInterface
      */
-    private $decoder;
+    private DecoderInterface $decoder;
 
     /**
      * Create a decoding.
@@ -52,7 +52,7 @@ class Decoding
     public static function create($mediaType, $decoder): self
     {
         if (is_string($mediaType)) {
-            $mediaType = MediaTypeParser::getInstance()->parse($mediaType);
+            $mediaType = MediaTypeParser::make()->parse($mediaType);
         }
 
         if (!$mediaType instanceof MediaTypeInterface) {
@@ -146,37 +146,9 @@ class Decoding
     /**
      * @param MediaTypeInterface $mediaType
      * @return bool
-     * @todo normalization will not be necessary for neomerx/json-api:^3.0
-     * @see https://github.com/neomerx/json-api/issues/221
      */
     public function equalsTo(MediaTypeInterface $mediaType): bool
     {
-        return $this->normalize($this->mediaType)->equalsTo(
-            $this->normalize($mediaType)
-        );
+        return $mediaType->matchesTo($this->mediaType);
     }
-
-    /**
-     * @return array
-     */
-    private function getWildCardParameters(): array
-    {
-        return collect((array) $this->mediaType->getParameters())->filter(function ($value) {
-            return '*' === $value;
-        })->keys()->all();
-    }
-
-    /**
-     * @param MediaTypeInterface $mediaType
-     * @return MediaTypeInterface
-     */
-    private function normalize(MediaTypeInterface $mediaType): MediaTypeInterface
-    {
-        $params = collect((array) $mediaType->getParameters())->forget(
-            $this->getWildCardParameters()
-        )->all();
-
-        return new MediaType($mediaType->getType(), $mediaType->getSubType(), $params ?: null);
-    }
-
 }

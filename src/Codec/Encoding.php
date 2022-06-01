@@ -15,10 +15,13 @@
  * limitations under the License.
  */
 
+declare(strict_types=1);
+
 namespace CloudCreativity\LaravelJsonApi\Codec;
 
 use CloudCreativity\LaravelJsonApi\Encoder\EncoderOptions;
 use CloudCreativity\LaravelJsonApi\Http\Headers\MediaTypeParser;
+use Illuminate\Support\Collection;
 use Neomerx\JsonApi\Contracts\Http\Headers\AcceptMediaTypeInterface;
 use Neomerx\JsonApi\Contracts\Http\Headers\MediaTypeInterface;
 
@@ -56,7 +59,7 @@ class Encoding
     ): self
     {
         if (!$mediaType instanceof MediaTypeInterface) {
-            $mediaType = MediaTypeParser::getInstance()->parse($mediaType);
+            $mediaType = MediaTypeParser::make()->parse($mediaType);
         }
 
         return new self($mediaType, new EncoderOptions($options, $urlPrefix, $depth));
@@ -89,7 +92,7 @@ class Encoding
     public static function custom($mediaType): self
     {
         if (!$mediaType instanceof MediaTypeInterface) {
-            $mediaType = MediaTypeParser::getInstance()->parse($mediaType);
+            $mediaType = MediaTypeParser::make()->parse($mediaType);
         }
 
         return new self($mediaType, null);
@@ -101,7 +104,7 @@ class Encoding
      * @param string|null $urlPrefix
      * @return Encoding
      */
-    public static function fromArray($key, $value, string $urlPrefix = null)
+    public static function fromArray($key, $value, string $urlPrefix = null): self
     {
         if (is_numeric($key)) {
             $key = $value;
@@ -160,9 +163,9 @@ class Encoding
      */
     public function is(string ...$mediaTypes): bool
     {
-        $mediaTypes = collect($mediaTypes)->map(function ($mediaType) {
-            return MediaTypeParser::getInstance()->parse($mediaType);
-        });
+        $mediaTypes = Collection::make($mediaTypes)->map(
+            fn($mediaType) => MediaTypeParser::make()->parse($mediaType)
+        );
 
         return $this->any(...$mediaTypes);
     }
@@ -208,5 +211,4 @@ class Encoding
 
         return $this->matchesTo($mediaType);
     }
-
 }

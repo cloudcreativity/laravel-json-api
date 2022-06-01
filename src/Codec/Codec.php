@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+declare(strict_types=1);
+
 namespace CloudCreativity\LaravelJsonApi\Codec;
 
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
@@ -37,6 +39,11 @@ class Codec
     private Factory $factory;
 
     /**
+     * @var MediaTypeParser
+     */
+    private MediaTypeParser $mediaTypeParser;
+
+    /**
      * @var ContainerInterface
      */
     private ContainerInterface $container;
@@ -55,17 +62,20 @@ class Codec
      * Codec constructor.
      *
      * @param Factory $factory
+     * @param MediaTypeParser $mediaTypeParser
      * @param ContainerInterface $container
      * @param Encoding $encoding
      * @param Decoding|null $decoding
      */
     public function __construct(
         Factory $factory,
+        MediaTypeParser $mediaTypeParser,
         ContainerInterface $container,
         Encoding $encoding,
         ?Decoding $decoding
     ) {
         $this->factory = $factory;
+        $this->mediaTypeParser = $mediaTypeParser;
         $this->container = $container;
         $this->encoding = $encoding;
         $this->decoding = $decoding;
@@ -135,7 +145,7 @@ class Codec
         $encoding = $this->getEncodingMediaType();
 
         return Collection::make($mediaTypes)->contains(
-            fn($mediaType) => $encoding->equalsTo(MediaTypeParser::getInstance()->parse($mediaType))
+            fn($mediaType) => $encoding->equalsTo($this->mediaTypeParser->parse($mediaType))
         );
     }
 
@@ -184,7 +194,7 @@ class Codec
         }
 
         return Collection::make($mediaTypes)->contains(
-            static fn($mediaType) => $decoding->equalsTo(MediaTypeParser::getInstance()->parse($mediaType))
+            fn($mediaType) => $decoding->equalsTo($this->mediaTypeParser->parse($mediaType))
         );
     }
 
@@ -213,5 +223,4 @@ class Codec
     {
         return $this->decoding ? $this->decoding->getDecoder()->decode($request) : [];
     }
-
 }
