@@ -18,8 +18,10 @@
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Eloquent;
 
 use Carbon\Carbon;
+use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
 use DummyApp\Comment;
+use DummyApp\JsonApi\Posts\Schema;
 use DummyApp\Post;
 use DummyApp\Tag;
 use Illuminate\Support\Facades\Event;
@@ -420,6 +422,45 @@ class ResourceTest extends TestCase
             ->get("api/v1/posts/{$post->getRouteKey()}?include=");
 
         $response->assertFetchedOne($this->serialize($post));
+    }
+
+    public function testReadWithDefaultInclude(): void
+    {
+        $mockSchema = $this
+            ->getMockBuilder(Schema::class)
+            ->onlyMethods(['getIncludePaths'])
+            ->setConstructorArgs([$this->app->make(Factory::class)])
+            ->getMock();
+
+        $mockSchema->method('getIncludePaths')->willReturn(['author', 'tags', 'comments']);
+
+        $this->app->instance(Schema::class, $mockSchema);
+
+        $model = $this->createPost();
+        $tag = $model->tags()->create(['name' => 'Important']);
+
+        $expected = $this->serialize($model);
+
+        $expected['relationships']['author']['data'] = [
+            'type' => 'users',
+            'id' => (string) $model->author_id,
+        ];
+
+        $expected['relationships']['tags']['data'] = [
+            ['type' => 'tags', 'id' => $tag->uuid],
+        ];
+
+        $expected['relationships']['comments']['data'] = [];
+
+        $response = $this
+            ->withoutExceptionHandling()
+            ->jsonApi()
+            ->get(url('/api/v1/posts', $model));
+
+        $response
+            ->assertFetchedOne($expected)
+            ->assertIsIncluded('users', $model->author)
+            ->assertIsIncluded('tags', $tag);
     }
 
     /**

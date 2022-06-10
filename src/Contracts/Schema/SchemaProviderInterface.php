@@ -105,4 +105,11 @@ interface SchemaProviderInterface
      * @return LinkInterface
      */
     public function getRelationshipRelatedLink(object $resource, string $field): LinkInterface;
+
+    /**
+     * Get schema default include paths.
+     *
+     * @return string[]
+     */
+    public function getIncludePaths(): array;
 }

@@ -170,6 +170,14 @@ abstract class SchemaProvider implements SchemaProviderInterface
     }
 
     /**
+     * @inheritDoc
+     */
+    public function getIncludePaths(): array
+    {
+        return [];
+    }
+
+    /**
      * Get the relationship self url.
      *
      * @param object $resource
