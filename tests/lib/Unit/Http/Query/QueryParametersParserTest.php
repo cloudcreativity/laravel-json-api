@@ -19,7 +19,7 @@ declare(strict_types=1);
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Unit\Http\Query;
 
-use CloudCreativity\LaravelJsonApi\Encoder\Parameters\SortParameter;
+use CloudCreativity\LaravelJsonApi\Http\Query\SortParameter;
 use CloudCreativity\LaravelJsonApi\Http\Query\QueryParametersParser;
 use PHPUnit\Framework\TestCase;
 

@@ -17,20 +17,20 @@
 
 declare(strict_types=1);
 
-namespace CloudCreativity\LaravelJsonApi\Encoder\Parameters;
+namespace CloudCreativity\LaravelJsonApi\Http\Query;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Encoder\Parameters\SortParameterInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Query\QueryParametersInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Query\SortParameterInterface;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Collection;
 use Neomerx\JsonApi\Contracts\Http\Query\BaseQueryParserInterface;
 
 /**
- * Class EncodingParameters
+ * Class QueryParameters
  *
  * @package CloudCreativity\LaravelJsonApi
  */
-class EncodingParameters implements EncodingParametersInterface, Arrayable
+class QueryParameters implements QueryParametersInterface, Arrayable
 {
     /**
      * @var array|null
@@ -63,10 +63,10 @@ class EncodingParameters implements EncodingParametersInterface, Arrayable
     private ?array $unrecognizedParams;
 
     /**
-     * @param EncodingParametersInterface $parameters
-     * @return EncodingParameters
+     * @param QueryParametersInterface $parameters
+     * @return QueryParameters
      */
-    public static function cast(EncodingParametersInterface $parameters)
+    public static function cast(QueryParametersInterface $parameters)
     {
         if ($parameters instanceof self) {
             return $parameters;
@@ -83,7 +83,7 @@ class EncodingParameters implements EncodingParametersInterface, Arrayable
     }
 
     /**
-     * EncodingParameters constructor.
+     * QueryParameters constructor.
      *
      * @param string[]|null $includePaths
      * @param array|null $fieldSets

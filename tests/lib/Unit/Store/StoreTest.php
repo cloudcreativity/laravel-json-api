@@ -22,7 +22,7 @@ use CloudCreativity\LaravelJsonApi\Contracts\Adapter\ResourceAdapterInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Schema\SchemaProviderInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
-use CloudCreativity\LaravelJsonApi\Encoder\Parameters\EncodingParameters;
+use CloudCreativity\LaravelJsonApi\Http\Query\QueryParameters;
 use CloudCreativity\LaravelJsonApi\Exceptions\ResourceNotFoundException;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Store\Store;
@@ -57,7 +57,7 @@ class StoreTest extends TestCase
      */
     public function testQuery()
     {
-        $params = new EncodingParameters();
+        $params = new QueryParameters();
         $expected = new \DateTime();
 
         $store = $this->store([
@@ -75,14 +75,14 @@ class StoreTest extends TestCase
     {
         $store = $this->store(['posts' => $this->willNotQuery()]);
         $this->expectException(RuntimeException::class);
-        $store->queryRecords('users', new EncodingParameters());
+        $store->queryRecords('users', new QueryParameters());
     }
 
     public function testCreateRecord()
     {
         $document = ['foo' => 'bar'];
 
-        $params = new EncodingParameters();
+        $params = new QueryParameters();
         $expected = new \stdClass();
 
         $store = $this->store([
@@ -110,7 +110,7 @@ class StoreTest extends TestCase
     {
         $store = $this->store(['posts' => $this->willNotQuery()]);
         $this->expectException(RuntimeException::class);
-        $store->createRecord('comments', [], new EncodingParameters());
+        $store->createRecord('comments', [], new QueryParameters());
     }
 
     /**
@@ -119,7 +119,7 @@ class StoreTest extends TestCase
      */
     public function testReadRecord()
     {
-        $params = new EncodingParameters();
+        $params = new QueryParameters();
         $expected = new \stdClass();
 
         $store = $this->storeByTypes([
@@ -132,7 +132,7 @@ class StoreTest extends TestCase
 
     public function testUpdateRecord()
     {
-        $params = new EncodingParameters();
+        $params = new QueryParameters();
         $document = ['foo' => 'bar'];
         $record = new \stdClass();
         $expected = clone $record;
@@ -149,7 +149,7 @@ class StoreTest extends TestCase
 
     public function testDeleteRecord()
     {
-        $params = new EncodingParameters();
+        $params = new QueryParameters();
         $record = new \DateTime();
 
         $adapter = $this->willDeleteRecord($record, $params);
@@ -164,7 +164,7 @@ class StoreTest extends TestCase
 
     public function testDeleteRecordFails()
     {
-        $params = new EncodingParameters();
+        $params = new QueryParameters();
         $record = new \DateTime();
 
         $adapter = $this->willDeleteRecord($record, $params, false);
@@ -184,7 +184,7 @@ class StoreTest extends TestCase
      */
     public function testQueryRelated()
     {
-        $parameters = new EncodingParameters();
+        $parameters = new QueryParameters();
         $record = new \DateTime();
         $expected = new \DateInterval('P1W');
 
@@ -202,7 +202,7 @@ class StoreTest extends TestCase
      */
     public function testQueryRelationship()
     {
-        $parameters = new EncodingParameters();
+        $parameters = new QueryParameters();
         $record = new \DateTime();
         $expected = new \DateInterval('P1W');
 

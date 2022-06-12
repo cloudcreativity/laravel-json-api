@@ -19,7 +19,7 @@ declare(strict_types=1);
 
 namespace CloudCreativity\LaravelJsonApi\Encoder;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Query\QueryParametersInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Encoder\SerializerInterface;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use CloudCreativity\LaravelJsonApi\Schema\SchemaContainer;
@@ -55,10 +55,10 @@ class Encoder extends BaseEncoder implements SerializerInterface
     /**
      * Set the encoding parameters.
      *
-     * @param EncodingParametersInterface|null $parameters
+     * @param QueryParametersInterface|null $parameters
      * @return $this
      */
-    public function withEncodingParameters(?EncodingParametersInterface $parameters): self
+    public function withEncodingParameters(?QueryParametersInterface $parameters): self
     {
         if ($parameters) {
             $this

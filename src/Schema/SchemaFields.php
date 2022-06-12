@@ -19,7 +19,7 @@ declare(strict_types=1);
 
 namespace CloudCreativity\LaravelJsonApi\Schema;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Query\QueryParametersInterface;
 
 /**
  * Class SchemaFields
@@ -62,10 +62,10 @@ class SchemaFields
     /**
      * Make a new schema fields from encoding parameters.
      *
-     * @param EncodingParametersInterface|null $parameters
+     * @param QueryParametersInterface|null $parameters
      * @return static
      */
-    public static function make(?EncodingParametersInterface $parameters): self
+    public static function make(?QueryParametersInterface $parameters): self
     {
         if ($parameters) {
             return new self(

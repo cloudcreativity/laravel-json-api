@@ -18,7 +18,7 @@
 namespace CloudCreativity\LaravelJsonApi\Adapter;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\RelationshipAdapterInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Query\QueryParametersInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreAwareInterface;
 use CloudCreativity\LaravelJsonApi\Store\StoreAwareTrait;
 
@@ -52,7 +52,7 @@ abstract class AbstractRelationshipAdapter implements RelationshipAdapterInterfa
     /**
      * @inheritdoc
      */
-    public function relationship($record, EncodingParametersInterface $parameters)
+    public function relationship($record, QueryParametersInterface $parameters)
     {
         return $this->query($record, $parameters);
     }

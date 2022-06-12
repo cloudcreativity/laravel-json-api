@@ -17,7 +17,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Pagination;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Query\QueryParametersInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PagingStrategyInterface;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use CloudCreativity\LaravelJsonApi\Utils\Arr;
@@ -240,7 +240,7 @@ class CursorStrategy implements PagingStrategyInterface
     /**
      * @inheritDoc
      */
-    public function paginate($query, EncodingParametersInterface $parameters)
+    public function paginate($query, QueryParametersInterface $parameters)
     {
         $paginator = $this->query($query)->paginate(
             $this->cursor($parameters),
@@ -279,10 +279,10 @@ class CursorStrategy implements PagingStrategyInterface
     /**
      * Extract the cursor from the provided paging parameters.
      *
-     * @param EncodingParametersInterface $parameters
+     * @param QueryParametersInterface $parameters
      * @return Cursor
      */
-    protected function cursor(EncodingParametersInterface $parameters)
+    protected function cursor(QueryParametersInterface $parameters)
     {
         return Cursor::create(
             (array) $parameters->getPaginationParameters(),
@@ -354,10 +354,10 @@ class CursorStrategy implements PagingStrategyInterface
     /**
      * Build parameters that are to be included with pagination links.
      *
-     * @param EncodingParametersInterface $parameters
+     * @param QueryParametersInterface $parameters
      * @return array
      */
-    protected function buildParams(EncodingParametersInterface $parameters)
+    protected function buildParams(QueryParametersInterface $parameters)
     {
         return array_filter([
             BaseQueryParserInterface::PARAM_FILTER =>

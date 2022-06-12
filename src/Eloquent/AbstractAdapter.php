@@ -20,11 +20,11 @@ namespace CloudCreativity\LaravelJsonApi\Eloquent;
 use CloudCreativity\LaravelJsonApi\Adapter\AbstractResourceAdapter;
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\HasManyAdapterInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\RelationshipAdapterInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Query\QueryParametersInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PageInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PagingStrategyInterface;
 use CloudCreativity\LaravelJsonApi\Document\ResourceObject;
-use CloudCreativity\LaravelJsonApi\Encoder\Parameters\EncodingParameters;
+use CloudCreativity\LaravelJsonApi\Http\Query\QueryParameters;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -117,7 +117,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     /**
      * @inheritDoc
      */
-    public function query(EncodingParametersInterface $parameters)
+    public function query(QueryParametersInterface $parameters)
     {
         $parameters = $this->getQueryParameters($parameters);
 
@@ -131,11 +131,11 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      * comments adapter.
      *
      * @param Relations\BelongsToMany|Relations\HasMany|Relations\HasManyThrough|Builder $relation
-     * @param EncodingParametersInterface $parameters
+     * @param QueryParametersInterface $parameters
      * @return mixed
      * @todo default pagination causes a problem with polymorphic relations??
      */
-    public function queryToMany($relation, EncodingParametersInterface $parameters)
+    public function queryToMany($relation, QueryParametersInterface $parameters)
     {
         $this->applyScopes(
             $query = $this->newRelationQuery($relation)
@@ -154,10 +154,10 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      * user adapter when the author relation returns a `users` resource.
      *
      * @param Relations\BelongsTo|Relations\HasOne|Builder $relation
-     * @param EncodingParametersInterface $parameters
+     * @param QueryParametersInterface $parameters
      * @return mixed
      */
-    public function queryToOne($relation, EncodingParametersInterface $parameters)
+    public function queryToOne($relation, QueryParametersInterface $parameters)
     {
         $this->applyScopes(
             $query = $this->newRelationQuery($relation)
@@ -172,7 +172,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     /**
      * @inheritDoc
      */
-    public function read($record, EncodingParametersInterface $parameters)
+    public function read($record, QueryParametersInterface $parameters)
     {
         $parameters = $this->getQueryParameters($parameters);
 
@@ -190,7 +190,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     /**
      * @inheritdoc
      */
-    public function update($record, array $document, EncodingParametersInterface $parameters)
+    public function update($record, array $document, QueryParametersInterface $parameters)
     {
         $parameters = $this->getQueryParameters($parameters);
 
@@ -322,10 +322,10 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      * Does the record match the supplied filters?
      *
      * @param Model $record
-     * @param EncodingParametersInterface $parameters
+     * @param QueryParametersInterface $parameters
      * @return Model|null
      */
-    protected function readWithFilters($record, EncodingParametersInterface $parameters)
+    protected function readWithFilters($record, QueryParametersInterface $parameters)
     {
         $query = $this->newQuery()->whereKey($record->getKey());
         $this->applyFilters($query, collect($parameters->getFilteringParameters()));
@@ -377,7 +377,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
         $record,
         $field,
         array $relationship,
-        EncodingParametersInterface $parameters
+        QueryParametersInterface $parameters
     ) {
         $relation = $this->getRelated($field);
 
@@ -391,12 +391,12 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      *
      * @param Model $record
      * @param ResourceObject $resource
-     * @param EncodingParametersInterface $parameters
+     * @param QueryParametersInterface $parameters
      */
     protected function fillRelated(
         $record,
         ResourceObject $resource,
-        EncodingParametersInterface $parameters
+        QueryParametersInterface $parameters
     ) {
         $relationships = $resource->getRelationships();
         $changed = false;
@@ -495,10 +495,10 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      * Return the result for a paginated query.
      *
      * @param Builder $query
-     * @param EncodingParametersInterface $parameters
+     * @param QueryParametersInterface $parameters
      * @return PageInterface
      */
-    protected function paginate($query, EncodingParametersInterface $parameters)
+    protected function paginate($query, QueryParametersInterface $parameters)
     {
         if (!$this->paging) {
             throw new RuntimeException('Paging is not supported on adapter: ' . get_class($this));
@@ -622,10 +622,10 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      * Default query execution used when querying records or relations.
      *
      * @param $query
-     * @param EncodingParametersInterface $parameters
+     * @param QueryParametersInterface $parameters
      * @return mixed
      */
-    protected function queryAllOrOne($query, EncodingParametersInterface $parameters)
+    protected function queryAllOrOne($query, QueryParametersInterface $parameters)
     {
         $filters = collect($parameters->getFilteringParameters());
 
@@ -638,10 +638,10 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
 
     /**
      * @param $query
-     * @param EncodingParametersInterface $parameters
+     * @param QueryParametersInterface $parameters
      * @return PageInterface|mixed
      */
-    protected function queryAll($query, EncodingParametersInterface $parameters)
+    protected function queryAll($query, QueryParametersInterface $parameters)
     {
         /** Apply eager loading */
         $this->with($query, $parameters);
@@ -662,10 +662,10 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
 
     /**
      * @param $query
-     * @param EncodingParametersInterface $parameters
+     * @param QueryParametersInterface $parameters
      * @return Model
      */
-    protected function queryOne($query, EncodingParametersInterface $parameters)
+    protected function queryOne($query, QueryParametersInterface $parameters)
     {
         $parameters = $this->getQueryParameters($parameters);
 
@@ -687,12 +687,12 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
      * This method is used to push in any default parameter values that should
      * be used if the client has not provided any.
      *
-     * @param EncodingParametersInterface $parameters
-     * @return EncodingParametersInterface
+     * @param QueryParametersInterface $parameters
+     * @return QueryParametersInterface
      */
-    protected function getQueryParameters(EncodingParametersInterface $parameters)
+    protected function getQueryParameters(QueryParametersInterface $parameters)
     {
-        return new EncodingParameters(
+        return new QueryParameters(
             $parameters->getIncludePaths(),
             $parameters->getFieldSets(),
             $parameters->getSortParameters() ?: $this->defaultSort(),

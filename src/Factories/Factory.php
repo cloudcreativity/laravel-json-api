@@ -42,7 +42,7 @@ use CloudCreativity\LaravelJsonApi\Document\Error\Translator as ErrorTranslator;
 use CloudCreativity\LaravelJsonApi\Document\Mapper;
 use CloudCreativity\LaravelJsonApi\Document\ResourceObject;
 use CloudCreativity\LaravelJsonApi\Encoder\Encoder;
-use CloudCreativity\LaravelJsonApi\Encoder\Parameters\EncodingParameters;
+use CloudCreativity\LaravelJsonApi\Http\Query\QueryParameters;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Http\ContentNegotiator;
 use CloudCreativity\LaravelJsonApi\Http\Headers\MediaTypeParser;
@@ -285,7 +285,7 @@ class Factory extends BaseFactory
      * @param array|null $pagingParameters
      * @param array|null $filteringParameters
      * @param array|null $unrecognizedParams
-     * @return EncodingParameters
+     * @return QueryParameters
      */
     public function createQueryParameters(
         array $includePaths = null,
@@ -295,7 +295,7 @@ class Factory extends BaseFactory
         array $filteringParameters = null,
         array $unrecognizedParams = null
     ) {
-        return new EncodingParameters(
+        return new QueryParameters(
             $includePaths,
             $fieldSets,
             $sortParameters,

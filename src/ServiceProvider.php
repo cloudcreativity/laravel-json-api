@@ -19,7 +19,7 @@ namespace CloudCreativity\LaravelJsonApi;
 
 use CloudCreativity\LaravelJsonApi\Api\Repository;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Query\QueryParametersInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Exceptions\ExceptionParserInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\Headers\HeaderParametersInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\Headers\HeaderParametersParserInterface;
@@ -140,7 +140,7 @@ class ServiceProvider extends BaseServiceProvider
     {
         Response::macro('jsonApi', function ($api = null) {
             return json_api($api)->getResponses()->withEncodingParameters(
-                app(EncodingParametersInterface::class)
+                app(QueryParametersInterface::class)
             );
         });
     }
@@ -241,7 +241,7 @@ class ServiceProvider extends BaseServiceProvider
             return $parser->parse($serverRequest, http_contains_body($serverRequest));
         });
 
-        $this->app->scoped(EncodingParametersInterface::class, function (Application $app) {
+        $this->app->scoped(QueryParametersInterface::class, function (Application $app) {
             /** @var QueryParametersParserInterface $parser */
             $parser = $app->make(QueryParametersParserInterface::class);
 

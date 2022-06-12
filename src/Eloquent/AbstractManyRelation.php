@@ -19,7 +19,7 @@ namespace CloudCreativity\LaravelJsonApi\Eloquent;
 
 use CloudCreativity\LaravelJsonApi\Adapter\AbstractRelationshipAdapter;
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\HasManyAdapterInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Query\QueryParametersInterface;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -49,10 +49,10 @@ abstract class AbstractManyRelation extends AbstractRelationshipAdapter implemen
 
     /**
      * @param Model $record
-     * @param EncodingParametersInterface $parameters
+     * @param QueryParametersInterface $parameters
      * @return mixed
      */
-    public function query($record, EncodingParametersInterface $parameters)
+    public function query($record, QueryParametersInterface $parameters)
     {
         $relation = $this->getRelation($record, $this->key);
 

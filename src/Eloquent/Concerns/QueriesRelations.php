@@ -17,7 +17,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Eloquent\Concerns;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Query\QueryParametersInterface;
 use CloudCreativity\LaravelJsonApi\Eloquent\AbstractAdapter;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use Illuminate\Database\Eloquent\Builder;
@@ -69,10 +69,10 @@ trait QueriesRelations
      * Does the query need to be passed to the inverse adapter?
      *
      * @param $record
-     * @param EncodingParametersInterface $parameters
+     * @param QueryParametersInterface $parameters
      * @return bool
      */
-    protected function requiresInverseAdapter($record, EncodingParametersInterface $parameters)
+    protected function requiresInverseAdapter($record, QueryParametersInterface $parameters)
     {
         return !empty($parameters->getFilteringParameters()) ||
             !empty($parameters->getSortParameters()) ||

@@ -18,9 +18,9 @@
 namespace CloudCreativity\LaravelJsonApi\Client;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Client\ClientInterface;
-use CloudCreativity\LaravelJsonApi\Encoder\Parameters\EncodingParameters;
+use CloudCreativity\LaravelJsonApi\Http\Query\QueryParameters;
 use CloudCreativity\LaravelJsonApi\Exceptions\ClientException;
-use CloudCreativity\LaravelJsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Query\QueryParametersInterface;
 use Neomerx\JsonApi\Contracts\Schema\SchemaContainerInterface;
 use Neomerx\JsonApi\Http\Headers\MediaType;
 use Psr\Http\Message\ResponseInterface;
@@ -464,13 +464,13 @@ abstract class AbstractClient implements ClientInterface
     }
 
     /**
-     * @param EncodingParametersInterface|array $parameters
+     * @param QueryParametersInterface|array $parameters
      * @return array
      */
     protected function queryParameters($parameters)
     {
-        if ($parameters instanceof EncodingParametersInterface) {
-            return EncodingParameters::cast($parameters)->toArray();
+        if ($parameters instanceof QueryParametersInterface) {
+            return QueryParameters::cast($parameters)->toArray();
         }
 
         return $parameters;

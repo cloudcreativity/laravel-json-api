@@ -17,7 +17,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Pagination;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Query\QueryParametersInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PagingStrategyInterface;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -173,7 +173,7 @@ class StandardStrategy implements PagingStrategyInterface
     /**
      * @inheritDoc
      */
-    public function paginate($query, EncodingParametersInterface $parameters)
+    public function paginate($query, QueryParametersInterface $parameters)
     {
         $pageParameters = collect((array) $parameters->getPaginationParameters());
 

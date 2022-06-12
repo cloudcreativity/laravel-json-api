@@ -370,14 +370,14 @@ data. For example:
 ```php
 namespace App\JsonApi\Posts;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Query\QueryParametersInterface;
 use CloudCreativity\LaravelJsonApi\Eloquent\AbstractAdapter;
 
 class Adapter extends AbstractAdapter
 {
     // ...
     
-    public function create(array $document, EncodingParametersInterface $parameters)
+    public function create(array $document, QueryParametersInterface $parameters)
     {
         if ($this->didDecode('application/json')) {
             $document = [

@@ -19,7 +19,7 @@
 namespace CloudCreativity\LaravelJsonApi\View;
 
 use CloudCreativity\LaravelJsonApi\Encoder\Encoder;
-use CloudCreativity\LaravelJsonApi\Encoder\Parameters\EncodingParameters;
+use CloudCreativity\LaravelJsonApi\Http\Query\QueryParameters;
 use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
 
 /**
@@ -93,7 +93,7 @@ class Renderer
         $params = null;
 
         if ($includePaths || $fieldSets) {
-            $params = new EncodingParameters(
+            $params = new QueryParameters(
                 $includePaths ? (array) $includePaths : $includePaths,
                 $fieldSets
             );

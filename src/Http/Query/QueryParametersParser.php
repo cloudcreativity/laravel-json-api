@@ -19,10 +19,10 @@ declare(strict_types=1);
 
 namespace CloudCreativity\LaravelJsonApi\Http\Query;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Query\QueryParametersInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\Query\QueryParametersParserInterface;
-use CloudCreativity\LaravelJsonApi\Encoder\Parameters\EncodingParameters;
-use CloudCreativity\LaravelJsonApi\Encoder\Parameters\SortParameter;
+use CloudCreativity\LaravelJsonApi\Http\Query\QueryParameters;
+use CloudCreativity\LaravelJsonApi\Http\Query\SortParameter;
 use Neomerx\JsonApi\Http\Query\BaseQueryParser;
 use Neomerx\JsonApi\Http\Query\BaseQueryParserTrait;
 use RuntimeException;
@@ -35,11 +35,11 @@ class QueryParametersParser implements QueryParametersParserInterface
     /**
      * @inheritDoc
      */
-    public function parseQueryParameters(array $parameters): EncodingParametersInterface
+    public function parseQueryParameters(array $parameters): QueryParametersInterface
     {
         $message = BaseQueryParser::MSG_ERR_INVALID_PARAMETER;
 
-        return new EncodingParameters(
+        return new QueryParameters(
             $this->getIncludeParameters($parameters, $message),
             $this->getFieldParameters($parameters, $message),
             $this->getSortParameters($parameters, $message),

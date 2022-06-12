@@ -18,7 +18,7 @@
 namespace CloudCreativity\LaravelJsonApi\Contracts\Store;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\ResourceAdapterInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Query\QueryParametersInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\ResourceNotFoundException;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 
@@ -50,10 +50,10 @@ interface StoreInterface
      * Query the store for records using the supplied parameters.
      *
      * @param string $resourceType
-     * @param EncodingParametersInterface $params
+     * @param QueryParametersInterface $params
      * @return mixed
      */
-    public function queryRecords($resourceType, EncodingParametersInterface $params);
+    public function queryRecords($resourceType, QueryParametersInterface $params);
 
     /**
      * Create a domain record using data from the supplied resource object.
@@ -61,21 +61,21 @@ interface StoreInterface
      * @param string $resourceType
      * @param array $document
      *      the JSON API document received from the client.
-     * @param EncodingParametersInterface $params
+     * @param QueryParametersInterface $params
      * @return object
      *      the created domain record.
      */
-    public function createRecord($resourceType, array $document, EncodingParametersInterface $params);
+    public function createRecord($resourceType, array $document, QueryParametersInterface $params);
 
     /**
      * Query the store for a single record using the supplied parameters.
      *
      * @param object $record
      *      the domain record being read.
-     * @param EncodingParametersInterface $params
+     * @param QueryParametersInterface $params
      * @return object|null
      */
-    public function readRecord($record, EncodingParametersInterface $params);
+    public function readRecord($record, QueryParametersInterface $params);
 
     /**
      * Update a domain record with data from the supplied resource object.
@@ -84,20 +84,20 @@ interface StoreInterface
      *      the domain record to update.
      * @param array $document
      *      the JSON API document received from the client.
-     * @param EncodingParametersInterface $params
+     * @param QueryParametersInterface $params
      * @return object
      *      the updated domain record.
      */
-    public function updateRecord($record, array $document, EncodingParametersInterface $params);
+    public function updateRecord($record, array $document, QueryParametersInterface $params);
 
     /**
      * Delete a domain record.
      *
      * @param $record
-     * @param EncodingParametersInterface $params
+     * @param QueryParametersInterface $params
      * @return mixed|null
      */
-    public function deleteRecord($record, EncodingParametersInterface $params);
+    public function deleteRecord($record, QueryParametersInterface $params);
 
     /**
      * Query the store for related records using the supplied parameters.
@@ -113,12 +113,12 @@ interface StoreInterface
      *      the domain record on which the relationship exists.
      * @param $relationshipName
      *      the name of the relationship that is being queried.
-     * @param EncodingParametersInterface $params
+     * @param QueryParametersInterface $params
      *      the encoding parameters to use for the query.
      * @return mixed
      *      the related records
      */
-    public function queryRelated($record, $relationshipName, EncodingParametersInterface $params);
+    public function queryRelated($record, $relationshipName, QueryParametersInterface $params);
 
     /**
      * Query the store for relationship data using the supplied parameters.
@@ -134,12 +134,12 @@ interface StoreInterface
      *      the domain record on which the relationship exists.
      * @param $relationshipName
      *      the name of the relationship that is being queried.
-     * @param EncodingParametersInterface $params
+     * @param QueryParametersInterface $params
      *      the encoding parameters to use for the query.
      * @return mixed
      *      the related records
      */
-    public function queryRelationship($record, $relationshipName, EncodingParametersInterface $params);
+    public function queryRelationship($record, $relationshipName, QueryParametersInterface $params);
 
     /**
      * Update a domain record's relationship with data from the supplied relationship object.
@@ -156,7 +156,7 @@ interface StoreInterface
      *      the key of the relationship to hydrate.
      * @param array $document
      *      the JSON API document received from the client.
-     * @param EncodingParametersInterface $params
+     * @param QueryParametersInterface $params
      * @return object
      *      the updated domain record.
      */
@@ -164,7 +164,7 @@ interface StoreInterface
         $record,
         $relationshipKey,
         array $document,
-        EncodingParametersInterface $params
+        QueryParametersInterface $params
     );
 
     /**
@@ -178,7 +178,7 @@ interface StoreInterface
      * @param $relationshipKey
      * @param array $document
      *      the JSON API document received from the client.
-     * @param EncodingParametersInterface $params
+     * @param QueryParametersInterface $params
      * @return object
      *      the updated domain record.
      * @throws RuntimeException
@@ -188,7 +188,7 @@ interface StoreInterface
         $record,
         $relationshipKey,
         array $document,
-        EncodingParametersInterface $params
+        QueryParametersInterface $params
     );
 
     /**
@@ -202,7 +202,7 @@ interface StoreInterface
      * @param $relationshipKey
      * @param array $document
      *      the JSON API document received from the client.
-     * @param EncodingParametersInterface $params
+     * @param QueryParametersInterface $params
      * @return mixed
      *      the updated domain record.
      * @throws RuntimeException
@@ -212,7 +212,7 @@ interface StoreInterface
         $record,
         $relationshipKey,
         array $document,
-        EncodingParametersInterface $params
+        QueryParametersInterface $params
     );
 
     /**

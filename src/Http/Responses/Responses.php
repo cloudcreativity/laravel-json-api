@@ -23,7 +23,7 @@ use CloudCreativity\LaravelJsonApi\Api\Api;
 use CloudCreativity\LaravelJsonApi\Codec\Codec;
 use CloudCreativity\LaravelJsonApi\Codec\Encoding;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Query\QueryParametersInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Exceptions\ExceptionParserInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PageInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Queue\AsynchronousProcess;
@@ -77,9 +77,9 @@ class Responses extends BaseResponses
     private ?Codec $codec = null;
 
     /**
-     * @var EncodingParametersInterface|null
+     * @var QueryParametersInterface|null
      */
-    private ?EncodingParametersInterface $parameters = null;
+    private ?QueryParametersInterface $parameters = null;
 
     /**
      * @var EncoderInterface|null
@@ -173,10 +173,10 @@ class Responses extends BaseResponses
     /**
      * Set the encoding parameters to use.
      *
-     * @param EncodingParametersInterface|null $parameters
+     * @param QueryParametersInterface|null $parameters
      * @return $this
      */
-    public function withEncodingParameters(?EncodingParametersInterface $parameters): self
+    public function withEncodingParameters(?QueryParametersInterface $parameters): self
     {
         $this->parameters = $parameters;
 
@@ -571,9 +571,9 @@ class Responses extends BaseResponses
     }
 
     /**
-     * @return EncodingParametersInterface|null
+     * @return QueryParametersInterface|null
      */
-    protected function getEncodingParameters(): ?EncodingParametersInterface
+    protected function getEncodingParameters(): ?QueryParametersInterface
     {
         return $this->parameters;
     }

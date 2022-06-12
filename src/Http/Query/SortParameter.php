@@ -17,9 +17,9 @@
 
 declare(strict_types=1);
 
-namespace CloudCreativity\LaravelJsonApi\Encoder\Parameters;
+namespace CloudCreativity\LaravelJsonApi\Http\Query;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Encoder\Parameters\SortParameterInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Query\SortParameterInterface;
 use InvalidArgumentException;
 
 class SortParameter implements SortParameterInterface

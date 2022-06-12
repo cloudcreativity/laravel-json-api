@@ -17,7 +17,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Eloquent\Concerns;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Query\QueryParametersInterface;
 use CloudCreativity\LaravelJsonApi\Utils\Str;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -90,10 +90,10 @@ trait IncludesModels
      * Add eager loading to the query.
      *
      * @param Builder $query
-     * @param EncodingParametersInterface $parameters
+     * @param QueryParametersInterface $parameters
      * @return void
      */
-    protected function with($query, EncodingParametersInterface $parameters)
+    protected function with($query, QueryParametersInterface $parameters)
     {
         $query->with($this->getRelationshipPaths(
             (array) $parameters->getIncludePaths()
@@ -104,9 +104,9 @@ trait IncludesModels
      * Add eager loading to a record.
      *
      * @param Model $record
-     * @param EncodingParametersInterface $parameters
+     * @param QueryParametersInterface $parameters
      */
-    protected function load($record, EncodingParametersInterface $parameters)
+    protected function load($record, QueryParametersInterface $parameters)
     {
         $relationshipPaths = $this->getRelationshipPaths($parameters->getIncludePaths());
         $record->loadMissing($relationshipPaths);

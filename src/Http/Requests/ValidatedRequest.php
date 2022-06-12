@@ -19,7 +19,7 @@ namespace CloudCreativity\LaravelJsonApi\Http\Requests;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Auth\AuthorizerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Query\QueryParametersInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\Query\QueryParametersParserInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validation\DocumentValidatorInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorFactoryInterface;
@@ -70,7 +70,7 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
     private $data;
 
     /**
-     * @var EncodingParametersInterface|null
+     * @var QueryParametersInterface|null
      */
     private $parameters;
 
@@ -207,7 +207,7 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
     }
 
     /**
-     * @return EncodingParametersInterface
+     * @return QueryParametersInterface
      */
     public function getEncodingParameters()
     {

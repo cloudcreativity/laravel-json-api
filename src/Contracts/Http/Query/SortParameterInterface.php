@@ -17,7 +17,7 @@
 
 declare(strict_types=1);
 
-namespace CloudCreativity\LaravelJsonApi\Contracts\Encoder\Parameters;
+namespace CloudCreativity\LaravelJsonApi\Contracts\Http\Query;
 
 use Stringable;
 

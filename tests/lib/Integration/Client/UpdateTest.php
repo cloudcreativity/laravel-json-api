@@ -17,7 +17,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Client;
 
-use CloudCreativity\LaravelJsonApi\Encoder\Parameters\EncodingParameters;
+use CloudCreativity\LaravelJsonApi\Http\Query\QueryParameters;
 use CloudCreativity\LaravelJsonApi\Exceptions\ClientException;
 use DummyApp\Post;
 
@@ -257,7 +257,7 @@ class UpdateTest extends TestCase
 
     public function testWithEncodingParameters()
     {
-        $parameters = new EncodingParameters(
+        $parameters = new QueryParameters(
             ['author', 'site'],
             ['author' => ['first-name', 'surname'], 'site' => ['uri']]
         );

@@ -17,7 +17,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Eloquent;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Query\QueryParametersInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations;
@@ -33,10 +33,10 @@ class HasMany extends AbstractManyRelation
     /**
      * @param Model $record
      * @param array $relationship
-     * @param EncodingParametersInterface $parameters
+     * @param QueryParametersInterface $parameters
      * @return void
      */
-    public function update($record, array $relationship, EncodingParametersInterface $parameters)
+    public function update($record, array $relationship, QueryParametersInterface $parameters)
     {
         $related = $this->findRelated($record, $relationship);
         $relation = $this->getRelation($record, $this->key);
@@ -54,10 +54,10 @@ class HasMany extends AbstractManyRelation
     /**
      * @param Model $record
      * @param array $relationship
-     * @param EncodingParametersInterface $parameters
+     * @param QueryParametersInterface $parameters
      * @return Model
      */
-    public function replace($record, array $relationship, EncodingParametersInterface $parameters)
+    public function replace($record, array $relationship, QueryParametersInterface $parameters)
     {
         $this->update($record, $relationship, $parameters);
         $record->refresh(); // in case the relationship has been cached.
@@ -74,10 +74,10 @@ class HasMany extends AbstractManyRelation
      *
      * @param Model $record
      * @param array $relationship
-     * @param EncodingParametersInterface $parameters
+     * @param QueryParametersInterface $parameters
      * @return Model
      */
-    public function add($record, array $relationship, EncodingParametersInterface $parameters)
+    public function add($record, array $relationship, QueryParametersInterface $parameters)
     {
         $related = $this->findRelated($record, $relationship);
         $relation = $this->getRelation($record, $this->key);
@@ -96,10 +96,10 @@ class HasMany extends AbstractManyRelation
     /**
      * @param Model $record
      * @param array $relationship
-     * @param EncodingParametersInterface $parameters
+     * @param QueryParametersInterface $parameters
      * @return Model
      */
-    public function remove($record, array $relationship, EncodingParametersInterface $parameters)
+    public function remove($record, array $relationship, QueryParametersInterface $parameters)
     {
         $related = $this->findRelated($record, $relationship);
         $relation = $this->getRelation($record, $this->key);

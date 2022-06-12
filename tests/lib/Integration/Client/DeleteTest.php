@@ -17,7 +17,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Client;
 
-use CloudCreativity\LaravelJsonApi\Encoder\Parameters\EncodingParameters;
+use CloudCreativity\LaravelJsonApi\Http\Query\QueryParameters;
 use CloudCreativity\LaravelJsonApi\Exceptions\ClientException;
 use DummyApp\Post;
 
@@ -71,7 +71,7 @@ class DeleteTest extends TestCase
 
     public function testWithEncodingParameters()
     {
-        $parameters = new EncodingParameters(
+        $parameters = new QueryParameters(
             null,
             null,
             null,

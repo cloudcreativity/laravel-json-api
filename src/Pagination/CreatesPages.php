@@ -17,8 +17,8 @@
 
 namespace CloudCreativity\LaravelJsonApi\Pagination;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
-use CloudCreativity\LaravelJsonApi\Contracts\Encoder\Parameters\SortParameterInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Query\QueryParametersInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Query\SortParameterInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PageInterface;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use CloudCreativity\LaravelJsonApi\Utils\Str;
@@ -73,10 +73,10 @@ trait CreatesPages
 
     /**
      * @param Paginator $paginator
-     * @param EncodingParametersInterface $parameters
+     * @param QueryParametersInterface $parameters
      * @return PageInterface
      */
-    protected function createPage(Paginator $paginator, EncodingParametersInterface $parameters)
+    protected function createPage(Paginator $paginator, QueryParametersInterface $parameters)
     {
         $params = $this->buildParams($parameters);
 
@@ -146,10 +146,10 @@ trait CreatesPages
     /**
      * Build parameters that are to be included with pagination links.
      *
-     * @param EncodingParametersInterface $parameters
+     * @param QueryParametersInterface $parameters
      * @return array
      */
-    protected function buildParams(EncodingParametersInterface $parameters)
+    protected function buildParams(QueryParametersInterface $parameters)
     {
         return array_filter([
             BaseQueryParserInterface::PARAM_FILTER =>

@@ -19,7 +19,7 @@ namespace CloudCreativity\LaravelJsonApi\Tests\Unit\View;
 
 use CloudCreativity\LaravelJsonApi\Api\Api;
 use CloudCreativity\LaravelJsonApi\Encoder\Encoder;
-use CloudCreativity\LaravelJsonApi\Encoder\Parameters\EncodingParameters;
+use CloudCreativity\LaravelJsonApi\Http\Query\QueryParameters;
 use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
 use CloudCreativity\LaravelJsonApi\View\Renderer;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -110,7 +110,7 @@ class RendererTest extends TestCase
 
     public function testEncodeWithParameters()
     {
-        $params = new EncodingParameters(['comments'], ['author' => ['name']]);
+        $params = new QueryParameters(['comments'], ['author' => ['name']]);
         $post = $this->withEncoder(null, 0, 512, $params);
         $this->renderer->encode($post, 'comments', ['author' => ['name']]);
     }
@@ -119,10 +119,10 @@ class RendererTest extends TestCase
      * @param $name
      * @param int $options
      * @param int $depth
-     * @param EncodingParameters|null $parameters
+     * @param QueryParameters|null $parameters
      * @return object
      */
-    private function withEncoder($name = null, $options = 0, $depth = 512, EncodingParameters $parameters = null)
+    private function withEncoder($name = null, $options = 0, $depth = 512, QueryParameters $parameters = null)
     {
         $post = (object) ['type' => 'posts', 'id' => '1'];
 

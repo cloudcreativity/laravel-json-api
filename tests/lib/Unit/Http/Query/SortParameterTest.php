@@ -17,9 +17,9 @@
 
 declare(strict_types=1);
 
-namespace CloudCreativity\LaravelJsonApi\Tests\Unit\Encoder\Parameters;
+namespace CloudCreativity\LaravelJsonApi\Tests\Unit\Http\Query;
 
-use CloudCreativity\LaravelJsonApi\Encoder\Parameters\SortParameter;
+use CloudCreativity\LaravelJsonApi\Http\Query\SortParameter;
 use PHPUnit\Framework\TestCase;
 
 class SortParameterTest extends TestCase

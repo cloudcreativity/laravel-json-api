@@ -17,7 +17,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Client;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Query\QueryParametersInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Encoder\SerializerInterface;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use Illuminate\Support\Collection;
@@ -282,7 +282,7 @@ class ClientSerializer
     }
 
     /**
-     * @return EncodingParametersInterface
+     * @return QueryParametersInterface
      */
     protected function createEncodingParameters()
     {

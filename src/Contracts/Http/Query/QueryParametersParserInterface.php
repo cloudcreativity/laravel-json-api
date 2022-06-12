@@ -19,7 +19,7 @@ declare(strict_types=1);
 
 namespace CloudCreativity\LaravelJsonApi\Contracts\Http\Query;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Query\QueryParametersInterface;
 
 interface QueryParametersParserInterface
 {
@@ -27,7 +27,7 @@ interface QueryParametersParserInterface
      * Parse input parameters from request.
      *
      * @param array $parameters
-     * @return EncodingParametersInterface
+     * @return QueryParametersInterface
      */
-    public function parseQueryParameters(array $parameters): EncodingParametersInterface;
+    public function parseQueryParameters(array $parameters): QueryParametersInterface;
 }

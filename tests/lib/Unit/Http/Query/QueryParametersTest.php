@@ -17,17 +17,17 @@
 
 declare(strict_types=1);
 
-namespace CloudCreativity\LaravelJsonApi\Tests\Unit\Encoder\Parameters;
+namespace CloudCreativity\LaravelJsonApi\Tests\Unit\Http\Query;
 
-use CloudCreativity\LaravelJsonApi\Encoder\Parameters\EncodingParameters;
-use CloudCreativity\LaravelJsonApi\Encoder\Parameters\SortParameter;
+use CloudCreativity\LaravelJsonApi\Http\Query\QueryParameters;
+use CloudCreativity\LaravelJsonApi\Http\Query\SortParameter;
 use PHPUnit\Framework\TestCase;
 
-class EncodingParametersTest extends TestCase
+class QueryParametersTest extends TestCase
 {
     public function test(): void
     {
-        $params = new EncodingParameters(
+        $params = new QueryParameters(
             $include = ['author', 'comments.user'],
             $fields = ['posts' => ['author', 'createdAt', 'comments'], 'users' => ['name']],
             $sort = [new SortParameter('createdAt', false), new SortParameter('title', true)],
@@ -64,7 +64,7 @@ class EncodingParametersTest extends TestCase
 
     public function testEmpty(): void
     {
-        $params = new EncodingParameters();
+        $params = new QueryParameters();
 
         $this->assertNull($params->getIncludePaths());
         $this->assertNull($params->getFieldSets());
@@ -89,7 +89,7 @@ class EncodingParametersTest extends TestCase
 
     public function testEmptyWithEmptyArrayValues(): void
     {
-        $params = new EncodingParameters(
+        $params = new QueryParameters(
             [],
             [],
             [],
