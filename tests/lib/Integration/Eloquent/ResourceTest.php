@@ -22,6 +22,7 @@ use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
 use DummyApp\Comment;
 use DummyApp\JsonApi\Posts\Schema;
+use DummyApp\Phone;
 use DummyApp\Post;
 use DummyApp\Tag;
 use Illuminate\Support\Facades\Event;
@@ -407,6 +408,43 @@ class ResourceTest extends TestCase
             ->assertFetchedOne($expected)
             ->assertIsIncluded('users', $model->author)
             ->assertIsIncluded('tags', $tag);
+    }
+
+    public function testReadWithIncludeAtDepth(): void
+    {
+        $model = $this->createPost();
+
+        $phone = factory(Phone::class)->create(['user_id' => $model->author]);
+
+        $comments = factory(Comment::class, 2)->create([
+            'commentable_type' => Post::class,
+            'commentable_id' => $model,
+        ]);
+
+        $expected = $this->serialize($model);
+
+        $expected['relationships']['author']['data'] = $userId = [
+            'type' => 'users',
+            'id' => (string) $model->getRouteKey(),
+        ];
+
+        $expected['relationships']['comments']['data'] = $commentIds = $comments->map(
+            fn(Comment $comment) => ['type' => 'comments', 'id' => (string) $comment->getRouteKey()],
+        );
+
+        $response = $this
+            ->jsonApi()
+            ->includePaths('author.phone', 'comments.createdBy')
+            ->get(url('/api/v1/posts', $model));
+
+        $response->assertFetchedOne($expected)->assertIncluded([
+            $userId,
+            ['type' => 'phones', 'id' => (string) $phone->getRouteKey()],
+            $commentIds[0],
+            ['type' => 'users', 'id' => (string) $comments[0]->user->getRouteKey()],
+            $commentIds[1],
+            ['type' => 'users', 'id' => (string) $comments[1]->user->getRouteKey()],
+        ]);
     }
 
     /**

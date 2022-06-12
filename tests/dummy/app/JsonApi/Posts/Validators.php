@@ -52,6 +52,7 @@ class Validators extends AbstractValidators
      */
     protected $allowedIncludePaths = [
         'author',
+        'author.phone',
         'comments',
         'comments.createdBy',
         'image',

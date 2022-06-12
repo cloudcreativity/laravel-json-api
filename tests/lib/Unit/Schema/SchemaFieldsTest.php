@@ -47,6 +47,7 @@ class SchemaFieldsTest extends TestCase
         $this->assertTrue($fields->isRelationshipRequested('', 'a2'));
         $this->assertFalse($fields->isRelationshipRequested('', 'blah'));
 
+        $this->assertSame(['b2' => 'b2'], $fields->getRequestedRelationships('a2'));
         $this->assertSame(['c2' => 'c2'], $fields->getRequestedRelationships('a2.b2'));
         $this->assertTrue($fields->isRelationshipRequested('a2.b2', 'c2'));
         $this->assertFalse($fields->isRelationshipRequested('a2.b2', 'blah'));
@@ -63,6 +64,20 @@ class SchemaFieldsTest extends TestCase
         $this->assertFalse($fields->isFieldRequested('articles', 'blah'));
 
         return $fields;
+    }
+
+    public function test2(): void
+    {
+        $fields = new SchemaFields([
+            'author.phone',
+            'comments.createdBy',
+        ]);
+
+        $this->assertSame(['author' => 'author', 'comments' => 'comments'], $fields->getRequestedRelationships(''));
+        $this->assertSame(['phone' => 'phone'], $fields->getRequestedRelationships('author'));
+        $this->assertEmpty($fields->getRequestedRelationships('author.phone'));
+        $this->assertSame(['createdBy' => 'createdBy'], $fields->getRequestedRelationships('comments'));
+        $this->assertEmpty($fields->getRequestedRelationships('comments.createdBy'));
     }
 
     /**

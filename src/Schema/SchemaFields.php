@@ -87,16 +87,12 @@ class SchemaFields
     {
         if (null !== $paths) {
             foreach ($paths as $path) {
-                $separatorPos = \strrpos($path, static::PATH_SEPARATOR);
-                if ($separatorPos === false) {
-                    $curPath = '';
-                    $relationship = $path;
-                } else {
-                    $curPath = \substr($path, 0, $separatorPos);
-                    $relationship = \substr($path, $separatorPos + 1);
+                $path = RelationshipPath::cast($path);
+                foreach ($path as $key => $relationship) {
+                    $curPath = (0 === $key) ? '' : $path->take($key)->toString();
+                    $this->fastRelationships[$curPath][$relationship] = true;
+                    $this->fastRelationshipLists[$curPath][$relationship] = $relationship;
                 }
-                $this->fastRelationships[$curPath][$relationship] = true;
-                $this->fastRelationshipLists[$curPath][$relationship] = $relationship;
             }
         }
 
