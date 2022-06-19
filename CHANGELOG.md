@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## [5.0] - UNRELEASED
+
+### Changed
+
+- **BREAKING** Upgraded the `neomerx/json-api` dependency from `v1` to `v5` of our fork
+  `laravel-json-api/neomerx-json-api`. Refer to the [Upgrade Guide](./docs/upgrade.md) for details of the required
+  changes.  
+
 ## [4.0.1] - 2022-04-24
 
 ### Fixed
