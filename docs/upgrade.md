@@ -109,3 +109,11 @@ public function getId(object $resource): string
 Check whether you are using the Neomerx error object directly anywhere, by searching for the new import statement:
 `Neomerx\JsonApi\Schema\Error`. If you are, you should be aware that the constructor arguments have changed. Check
 your use against the new constructor arguments by inspecting the class directly.
+
+## 3.x to 4.0
+
+[Use this link to view the 4.0 upgrade guide.](https://github.com/cloudcreativity/laravel-json-api/blob/v4.0.0/docs/upgrade.md)
+
+## 2.x to 3.0
+
+[Use this link to view the 3.0 upgrade guide.](https://github.com/cloudcreativity/laravel-json-api/blob/v3.3.0/docs/upgrade.md)
