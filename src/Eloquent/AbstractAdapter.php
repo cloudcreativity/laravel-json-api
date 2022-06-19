@@ -20,9 +20,12 @@ namespace CloudCreativity\LaravelJsonApi\Eloquent;
 use CloudCreativity\LaravelJsonApi\Adapter\AbstractResourceAdapter;
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\HasManyAdapterInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\RelationshipAdapterInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\ContainerAwareInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\Query\QueryParametersInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PageInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PagingStrategyInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Schema\SchemaProviderInterface;
 use CloudCreativity\LaravelJsonApi\Document\ResourceObject;
 use CloudCreativity\LaravelJsonApi\Http\Query\QueryParameters;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
@@ -37,7 +40,7 @@ use Illuminate\Support\Collection;
  *
  * @package CloudCreativity\LaravelJsonApi
  */
-abstract class AbstractAdapter extends AbstractResourceAdapter
+abstract class AbstractAdapter extends AbstractResourceAdapter implements ContainerAwareInterface
 {
 
     use Concerns\DeserializesAttributes,
@@ -93,6 +96,11 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     private $scopes;
 
     /**
+     * @var SchemaProviderInterface|null
+     */
+    private ?SchemaProviderInterface $schema = null;
+
+    /**
      * Apply the supplied filters to the builder instance.
      *
      * @param Builder $query
@@ -112,6 +120,14 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
         $this->model = $model;
         $this->paging = $paging;
         $this->scopes = [];
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function withContainer(ContainerInterface $container): void
+    {
+        $this->schema = $container->getSchema($this->model);
     }
 
     /**
@@ -682,7 +698,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     }
 
     /**
-     * Get JSON API parameters to use when constructing an Eloquent query.
+     * Get JSON:API parameters to use when constructing an Eloquent query.
      *
      * This method is used to push in any default parameter values that should
      * be used if the client has not provided any.
@@ -693,13 +709,28 @@ abstract class AbstractAdapter extends AbstractResourceAdapter
     protected function getQueryParameters(QueryParametersInterface $parameters)
     {
         return new QueryParameters(
-            $parameters->getIncludePaths(),
+            $parameters->getIncludePaths() ?? $this->getSchema()->getIncludePaths(),
             $parameters->getFieldSets(),
             $parameters->getSortParameters() ?: $this->defaultSort(),
             $parameters->getPaginationParameters() ?: $this->defaultPagination(),
             $parameters->getFilteringParameters(),
             $parameters->getUnrecognizedParameters()
         );
+    }
+
+    /**
+     * @return SchemaProviderInterface
+     */
+    protected function getSchema(): SchemaProviderInterface
+    {
+        if ($this->schema) {
+            return $this->schema;
+        }
+
+        throw new RuntimeException(sprintf(
+            'Expecting schema to be set in adapters %s.',
+            get_class($this),
+        ));
     }
 
     /**

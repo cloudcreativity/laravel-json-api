@@ -19,12 +19,14 @@ declare(strict_types=1);
 
 namespace CloudCreativity\LaravelJsonApi\Encoder;
 
-use CloudCreativity\LaravelJsonApi\Contracts\Http\Query\QueryParametersInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Encoder\SerializerInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Query\QueryParametersInterface;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use CloudCreativity\LaravelJsonApi\Schema\SchemaContainer;
 use CloudCreativity\LaravelJsonApi\Schema\SchemaFields;
+use Generator;
 use Neomerx\JsonApi\Contracts\Encoder\EncoderInterface;
+use Neomerx\JsonApi\Contracts\Factories\FactoryInterface;
 use Neomerx\JsonApi\Contracts\Schema\ErrorInterface;
 use Neomerx\JsonApi\Contracts\Schema\SchemaContainerInterface;
 use Neomerx\JsonApi\Encoder\Encoder as BaseEncoder;
@@ -37,6 +39,16 @@ use RuntimeException;
  */
 class Encoder extends BaseEncoder implements SerializerInterface
 {
+    /**
+     * @var DataAnalyser
+     */
+    private DataAnalyser $dataAnalyser;
+
+    /**
+     * @var bool
+     */
+    private bool $hasIncludePaths = false;
+
     /**
      * Assert that the encoder is an extended encoder.
      *
@@ -53,6 +65,22 @@ class Encoder extends BaseEncoder implements SerializerInterface
     }
 
     /**
+     * Encoder constructor.
+     *
+     * @param FactoryInterface $factory
+     * @param SchemaContainerInterface $container
+     * @param DataAnalyser $dataAnalyser
+     */
+    public function __construct(
+        FactoryInterface $factory,
+        SchemaContainerInterface $container,
+        DataAnalyser $dataAnalyser
+    ) {
+        parent::__construct($factory, $container);
+        $this->dataAnalyser = $dataAnalyser;
+    }
+
+    /**
      * Set the encoding parameters.
      *
      * @param QueryParametersInterface|null $parameters
@@ -62,9 +90,21 @@ class Encoder extends BaseEncoder implements SerializerInterface
     {
         if ($parameters) {
             $this
-                ->withIncludedPaths($parameters->getIncludePaths() ?? [])
+                ->withIncludedPaths($parameters->getIncludePaths())
                 ->withFieldSets($parameters->getFieldSets() ?? []);
         }
+
+        return $this;
+    }
+
+    /**
+     * @param iterable|null $paths
+     * @return $this
+     */
+    public function withIncludedPaths(?iterable $paths): EncoderInterface
+    {
+        parent::withIncludedPaths($paths ?? []);
+        $this->hasIncludePaths = (null !== $paths);
 
         return $this;
     }
@@ -125,6 +165,23 @@ class Encoder extends BaseEncoder implements SerializerInterface
     public function serializeMeta($meta): array
     {
         return $this->encodeMetaToArray($meta);
+    }
+
+    /**
+     * @param iterable|object|null $data
+     * @return array
+     */
+    protected function encodeDataToArray($data): array
+    {
+        if (false === $this->hasIncludePaths) {
+            if ($data instanceof Generator) {
+                $data = iterator_to_array($data);
+            }
+            parent::withIncludedPaths($this->dataAnalyser->getIncludePaths($data));
+            $this->hasIncludePaths = true;
+        }
+
+        return parent::encodeDataToArray($data);
     }
 
     /**

@@ -110,8 +110,8 @@ class Codec
             throw new \RuntimeException('Codec does not support encoding JSON API content.');
         }
 
-        $encoder = $this->factory->createExtendedEncoder(
-            $this->factory->createLaravelSchemaContainer($this->container)
+        $encoder = $this->factory->createLaravelEncoder(
+            $this->container,
         );
 
         $options = $this->encoding->getOptions();

@@ -41,11 +41,12 @@ use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorInterface;
 use CloudCreativity\LaravelJsonApi\Document\Error\Translator as ErrorTranslator;
 use CloudCreativity\LaravelJsonApi\Document\Mapper;
 use CloudCreativity\LaravelJsonApi\Document\ResourceObject;
+use CloudCreativity\LaravelJsonApi\Encoder\DataAnalyser;
 use CloudCreativity\LaravelJsonApi\Encoder\Encoder;
-use CloudCreativity\LaravelJsonApi\Http\Query\QueryParameters;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use CloudCreativity\LaravelJsonApi\Http\ContentNegotiator;
 use CloudCreativity\LaravelJsonApi\Http\Headers\MediaTypeParser;
+use CloudCreativity\LaravelJsonApi\Http\Query\QueryParameters;
 use CloudCreativity\LaravelJsonApi\Http\Responses\Responses;
 use CloudCreativity\LaravelJsonApi\Pagination\Page;
 use CloudCreativity\LaravelJsonApi\Resolver\ResolverFactory;
@@ -58,9 +59,7 @@ use Illuminate\Contracts\Routing\UrlGenerator as IlluminateUrlGenerator;
 use Illuminate\Contracts\Translation\Translator;
 use Illuminate\Contracts\Validation\Factory as ValidatorFactoryContract;
 use Illuminate\Contracts\Validation\Validator;
-use Neomerx\JsonApi\Contracts\Encoder\EncoderInterface;
 use Neomerx\JsonApi\Contracts\Schema\LinkInterface;
-use Neomerx\JsonApi\Contracts\Schema\SchemaContainerInterface;
 use Neomerx\JsonApi\Factories\Factory as BaseFactory;
 use Neomerx\JsonApi\Http\Headers\HeaderParametersParser;
 
@@ -145,29 +144,27 @@ class Factory extends BaseFactory
     }
 
     /**
-     * @inheritDoc
-     */
-    public function createEncoder(SchemaContainerInterface $container): EncoderInterface
-    {
-        return $this->createExtendedEncoder($container);
-    }
-
-    /**
-     * @param SchemaContainerInterface $container
+     * Create the custom Laravel JSON:API schema container.
+     *
+     * @param ContainerInterface $container
      * @return Encoder
      */
-    public function createExtendedEncoder(SchemaContainerInterface $container): Encoder
+    public function createLaravelEncoder(ContainerInterface $container): Encoder
     {
-        return new Encoder($this, $container);
+        return new Encoder(
+            $this,
+            $this->createLaravelSchemaContainer($container),
+            new DataAnalyser($container),
+        );
     }
 
     /**
-     * @param SchemaContainerInterface $container
+     * @param ContainerInterface $container
      * @return SerializerInterface
      */
-    public function createSerializer(SchemaContainerInterface $container): SerializerInterface
+    public function createSerializer(ContainerInterface $container): SerializerInterface
     {
-        return $this->createExtendedEncoder($container);
+        return $this->createLaravelEncoder($container);
     }
 
     /**
@@ -182,19 +179,19 @@ class Factory extends BaseFactory
 
     /**
      * @param mixed $httpClient
-     * @param SchemaContainerInterface $container
+     * @param ContainerInterface $container
      * @param SerializerInterface $encoder
      * @return ClientInterface
      */
     public function createClient(
         $httpClient,
-        SchemaContainerInterface $container,
+        ContainerInterface $container,
         SerializerInterface $encoder
     ): ClientInterface
     {
         return new GuzzleClient(
             $httpClient,
-            $container,
+            $this->createLaravelSchemaContainer($container),
             new ClientSerializer($encoder, $this)
         );
     }

@@ -30,15 +30,6 @@ class EncodingTest extends TestCase
     protected $appRoutes = false;
 
     /**
-     * Test that the extended encoder returns itself if `Encoder::instance()` is called.
-     */
-    public function testInstance()
-    {
-        $encoder = Encoder::instance();
-        $this->assertInstanceOf(Encoder::class, $encoder);
-    }
-
-    /**
      * If the URL host is set to `null`, we expect the request host to be prepended to links.
      */
     public function testRequestedResourceHasRequestHost()

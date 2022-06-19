@@ -19,12 +19,14 @@ namespace CloudCreativity\LaravelJsonApi;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\ResourceAdapterInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Auth\AuthorizerInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\ContainerAwareInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\ContentNegotiatorInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Schema\SchemaProviderInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
+use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Contracts\Container\Container as IlluminateContainer;
 
 /**
@@ -501,18 +503,37 @@ class Container implements ContainerInterface
     }
 
     /**
-     * @inheritDoc
+     * @param string|null $className
+     * @return mixed|nulL
      */
-    protected function create($className)
+    protected function create(?string $className)
     {
-        return $this->exists($className) ? $this->container->make($className) : null;
+        if (false === $this->exists($className)) {
+            return null;
+        }
+
+        try {
+            $value = $this->container->make($className);
+        } catch (BindingResolutionException $ex) {
+            throw new RuntimeException(
+                sprintf('JSON:API container was unable to build %s via the service container.', $className),
+                0,
+                $ex,
+            );
+        }
+
+        if ($value instanceof ContainerAwareInterface) {
+            $value->withContainer($this);
+        }
+
+        return $value;
     }
 
     /**
-     * @param $className
+     * @param string|null $className
      * @return bool
      */
-    protected function exists($className): bool
+    protected function exists(?string $className): bool
     {
         if (null === $className) {
             return false;

@@ -34,7 +34,6 @@ use CloudCreativity\LaravelJsonApi\Resolver\AggregateResolver;
 use CloudCreativity\LaravelJsonApi\Resolver\NamespaceResolver;
 use GuzzleHttp\Client;
 use Neomerx\JsonApi\Contracts\Http\Headers\MediaTypeInterface;
-use Neomerx\JsonApi\Contracts\Schema\SchemaContainerInterface;
 
 /**
  * Class Api
@@ -322,7 +321,7 @@ class Api
         }
 
         return $this->factory
-            ->createExtendedEncoder($this->getSchemaContainer())
+            ->createLaravelEncoder($this->getContainer())
             ->withEncoderOptions($options);
     }
 
@@ -359,7 +358,7 @@ class Api
 
         $client = ($clientHostOrOptions instanceof Client) ? $clientHostOrOptions : new Client($options);
 
-        return $this->factory->createClient($client, $this->getSchemaContainer(), $this->encoder());
+        return $this->factory->createClient($client, $this->getContainer(), $this->encoder());
     }
 
     /**
@@ -398,15 +397,5 @@ class Api
     public function register(AbstractProvider $provider)
     {
         $this->resolver->attach($provider->getResolver());
-    }
-
-    /**
-     * @return SchemaContainerInterface
-     */
-    private function getSchemaContainer(): SchemaContainerInterface
-    {
-        return $this->factory->createLaravelSchemaContainer(
-            $this->getContainer()
-        );
     }
 }
