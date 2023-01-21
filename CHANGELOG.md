@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## [5.0.0] - 2023-01-21
+
+### Changed
+
+- Drop support for PHP `7.4` - minimum PHP version is now `8.0`.
+- Drop support for Laravel 8 - package requires Laravel 9.
+
 ## [5.0.0-alpha.1] - 2022-06-25
 
 ### Changed
@@ -11,7 +18,7 @@ All notable changes to this project will be documented in this file. This projec
   `laravel-json-api/neomerx-json-api`. Refer to the [Upgrade Guide](./docs/upgrade.md) for details of the required
   changes.  
 
-## [4.1.0] - 2023-01-19
+## [4.1.0] - 2023-01-21
 
 ### Changed
 
