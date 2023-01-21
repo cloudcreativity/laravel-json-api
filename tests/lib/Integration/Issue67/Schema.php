@@ -26,7 +26,7 @@ class Schema extends BaseSchema
     /**
      * @inheritdoc
      */
-    public function getAttributes($resource)
+    public function getAttributes(object $resource): array
     {
         throw new JsonApiException([], 500);
     }

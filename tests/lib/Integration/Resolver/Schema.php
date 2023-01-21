@@ -25,5 +25,5 @@ class Schema extends BaseSchema
     /**
      * @var string
      */
-    protected $resourceType = 'foobars';
+    protected string $resourceType = 'foobars';
 }

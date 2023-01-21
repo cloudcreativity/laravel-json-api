@@ -15,24 +15,30 @@
  * limitations under the License.
  */
 
+declare(strict_types=1);
+
 namespace CloudCreativity\LaravelJsonApi\Codec;
 
-use Neomerx\JsonApi\Contracts\Http\Headers\AcceptHeaderInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Headers\AcceptHeaderInterface;
+use CloudCreativity\LaravelJsonApi\Http\Headers\MediaTypeParser;
+use Countable;
+use Generator;
+use Illuminate\Support\Collection;
+use IteratorAggregate;
 use Neomerx\JsonApi\Contracts\Http\Headers\MediaTypeInterface;
-use Neomerx\JsonApi\Http\Headers\MediaType;
 
 /**
  * Class EncodingList
  *
  * @package CloudCreativity\LaravelJsonApi
  */
-class EncodingList implements \IteratorAggregate, \Countable
+class EncodingList implements IteratorAggregate, Countable
 {
 
     /**
      * @var Encoding[]
      */
-    private $stack;
+    private array $stack;
 
     /**
      * Create encodings from array config.
@@ -43,11 +49,11 @@ class EncodingList implements \IteratorAggregate, \Countable
      */
     public static function fromArray(iterable $config, string $urlPrefix = null): self
     {
-        return new self(
-            ...collect($config)->map(function ($value, $key) use ($urlPrefix) {
-                return Encoding::fromArray($key, $value, $urlPrefix);
-            })->values()
-        );
+        $values = Collection::make($config)
+            ->map(fn($value, $key) => Encoding::fromArray($key, $value, $urlPrefix))
+            ->values();
+
+        return new self(...$values);
     }
 
     /**
@@ -59,9 +65,9 @@ class EncodingList implements \IteratorAggregate, \Countable
     public static function createCustom(...$mediaTypes): self
     {
         $encodings = new self();
-        $encodings->stack = collect($mediaTypes)->map(function ($mediaType) {
-            return Encoding::custom($mediaType);
-        })->all();
+        $encodings->stack = Collection::make($mediaTypes)->map(
+            fn($mediaType) => Encoding::custom($mediaType)
+        )->all();
 
         return $encodings;
     }
@@ -99,7 +105,7 @@ class EncodingList implements \IteratorAggregate, \Countable
     public function push(Encoding ...$encodings): self
     {
         $copy = new self();
-        $copy->stack = collect($this->stack)->merge($encodings)->all();
+        $copy->stack = Collection::make($this->stack)->merge($encodings)->all();
 
         return $copy;
     }
@@ -113,7 +119,7 @@ class EncodingList implements \IteratorAggregate, \Countable
     public function merge(EncodingList $encodings): self
     {
         $copy = new self();
-        $copy->stack = collect($this->stack)->merge($encodings->stack)->all();
+        $copy->stack = Collection::make($this->stack)->merge($encodings->stack)->all();
 
         return $copy;
     }
@@ -190,7 +196,7 @@ class EncodingList implements \IteratorAggregate, \Countable
      */
     public function find(string $mediaType): ?Encoding
     {
-        return $this->matchesTo(MediaType::parse(0, $mediaType));
+        return $this->matchesTo(MediaTypeParser::make()->parse($mediaType));
     }
 
     /**
@@ -201,7 +207,7 @@ class EncodingList implements \IteratorAggregate, \Countable
      */
     public function matchesTo(MediaTypeInterface $mediaType): ?Encoding
     {
-        return collect($this->stack)->first(function (Encoding $encoding) use ($mediaType) {
+        return Collection::make($this->stack)->first(function (Encoding $encoding) use ($mediaType) {
             return $encoding->matchesTo($mediaType);
         });
     }
@@ -228,7 +234,7 @@ class EncodingList implements \IteratorAggregate, \Countable
      */
     public function first(): ?Encoding
     {
-        return collect($this->stack)->first();
+        return Collection::make($this->stack)->first();
     }
 
     /**
@@ -242,9 +248,9 @@ class EncodingList implements \IteratorAggregate, \Countable
     /**
      * @inheritDoc
      */
-    public function getIterator(): \ArrayIterator
+    public function getIterator(): Generator
     {
-        return new \ArrayIterator($this->stack);
+        yield from $this->stack;
     }
 
     /**
@@ -270,5 +276,4 @@ class EncodingList implements \IteratorAggregate, \Countable
     {
         return !$this->isEmpty();
     }
-
 }

@@ -18,12 +18,12 @@
 namespace DummyApp\JsonApi\Sites;
 
 use CloudCreativity\LaravelJsonApi\Adapter\AbstractResourceAdapter;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Query\QueryParametersInterface;
 use CloudCreativity\LaravelJsonApi\Document\ResourceObject;
 use CloudCreativity\LaravelJsonApi\Utils\Str;
 use DummyApp\Entities\Site;
 use DummyApp\Entities\SiteRepository;
 use Illuminate\Support\Collection;
-use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 class Adapter extends AbstractResourceAdapter
 {
@@ -54,7 +54,7 @@ class Adapter extends AbstractResourceAdapter
     /**
      * @inheritDoc
      */
-    public function query(EncodingParametersInterface $parameters)
+    public function query(QueryParametersInterface $parameters)
     {
         return $this->repository->all();
     }

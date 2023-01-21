@@ -17,9 +17,9 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Client;
 
+use CloudCreativity\LaravelJsonApi\Http\Query\QueryParameters;
 use CloudCreativity\LaravelJsonApi\Exceptions\ClientException;
 use DummyApp\Post;
-use Neomerx\JsonApi\Encoder\Parameters\EncodingParameters;
 
 class ReadTest extends TestCase
 {
@@ -72,7 +72,7 @@ class ReadTest extends TestCase
 
     public function testWithEncodingParameters()
     {
-        $parameters = new EncodingParameters(
+        $parameters = new QueryParameters(
             ['author', 'site'],
             ['author' => ['first-name', 'surname'], 'site' => ['uri']]
         );

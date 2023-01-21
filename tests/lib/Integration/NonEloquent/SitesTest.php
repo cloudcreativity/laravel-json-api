@@ -75,6 +75,7 @@ class SitesTest extends TestCase
         ];
 
         $response = $this
+            ->withoutExceptionHandling()
             ->jsonApi()
             ->get('/api/v1/sites/my-site');
 

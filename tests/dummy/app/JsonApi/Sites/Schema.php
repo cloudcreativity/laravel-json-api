@@ -17,45 +17,35 @@
 
 namespace DummyApp\JsonApi\Sites;
 
+use CloudCreativity\LaravelJsonApi\Schema\SchemaProvider;
 use DummyApp\Entities\Site;
-use Neomerx\JsonApi\Schema\SchemaProvider;
 
 class Schema extends SchemaProvider
 {
-
     /**
      * @var string
      */
-    protected $resourceType = 'sites';
+    protected string $resourceType = 'sites';
 
     /**
-     * @var array
-     */
-    protected $attributes = [
-        'domain',
-        'name',
-    ];
-
-    /**
-     * @param Site $resource
+     * @param Site|object $resource
      * @return string
      */
-    public function getId($resource)
+    public function getId(object $resource): string
     {
         return $resource->getSlug();
     }
 
     /**
-     * @param Site $resource
+     * @param Site|object $resource
      * @return array
      */
-    public function getAttributes($resource)
+    public function getAttributes(object $resource): array
     {
         return [
             'domain' => $resource->getDomain(),
             'name' => $resource->getName(),
         ];
     }
-
 }
 

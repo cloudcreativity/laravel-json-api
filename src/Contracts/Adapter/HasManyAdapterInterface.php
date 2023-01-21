@@ -17,7 +17,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Contracts\Adapter;
 
-use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Query\QueryParametersInterface;
 
 interface HasManyAdapterInterface extends RelationshipAdapterInterface
 {
@@ -31,11 +31,11 @@ interface HasManyAdapterInterface extends RelationshipAdapterInterface
      * @param mixed $record
      * @param array $relationship
      *      The JSON API relationship object.
-     * @param EncodingParametersInterface $parameters
+     * @param QueryParametersInterface $parameters
      * @return object
      *      the updated domain record.
      */
-    public function add($record, array $relationship, EncodingParametersInterface $parameters);
+    public function add($record, array $relationship, QueryParametersInterface $parameters);
 
     /**
      * Remove data from a domain record's relationship using data from the supplied relationship object.
@@ -47,10 +47,10 @@ interface HasManyAdapterInterface extends RelationshipAdapterInterface
      * @param mixed $record
      * @param array $relationship
      *      The JSON API relationship object.
-     * @param EncodingParametersInterface $parameters
+     * @param QueryParametersInterface $parameters
      * @return object
      *      the updated domain record.
      */
-    public function remove($record, array $relationship, EncodingParametersInterface $parameters);
+    public function remove($record, array $relationship, QueryParametersInterface $parameters);
 
 }

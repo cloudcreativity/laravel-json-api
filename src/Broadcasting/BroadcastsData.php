@@ -19,7 +19,7 @@
 namespace CloudCreativity\LaravelJsonApi\Broadcasting;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Encoder\SerializerInterface;
-use Neomerx\JsonApi\Encoder\Parameters\EncodingParameters;
+use CloudCreativity\LaravelJsonApi\Http\Query\QueryParameters;
 
 /**
  * Trait BroadcastsData
@@ -53,7 +53,7 @@ trait BroadcastsData
      */
     protected function serializeData($data, $includePaths = null, array $fieldsets = null)
     {
-        $params = new EncodingParameters($includePaths ? (array) $includePaths : null, $fieldsets);
+        $params = new QueryParameters($includePaths ? (array) $includePaths : null, $fieldsets);
 
         return $this->broadcastEncoder()->serializeData($data, $params);
     }

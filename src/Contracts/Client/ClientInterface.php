@@ -18,8 +18,8 @@
 
 namespace CloudCreativity\LaravelJsonApi\Contracts\Client;
 
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Query\QueryParametersInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\ClientException;
-use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use Psr\Http\Message\ResponseInterface;
 
 /**
@@ -126,7 +126,7 @@ interface ClientInterface
      * Query a resource type on the remote JSON API.
      *
      * @param string $resourceType
-     * @param array|EncodingParametersInterface $parameters
+     * @param array|QueryParametersInterface $parameters
      *      the parameters to send to the remote server.
      * @return ResponseInterface
      * @throws ClientException
@@ -138,7 +138,7 @@ interface ClientInterface
      *
      * @param string $resourceType
      * @param array $payload
-     * @param array|EncodingParametersInterface $parameters
+     * @param array|QueryParametersInterface $parameters
      * @return ResponseInterface
      * @throws ClientException
      */
@@ -149,7 +149,7 @@ interface ClientInterface
      *
      * @param object $record
      *      the resource fields to send, if sending sparse field-sets.
-     * @param array|EncodingParametersInterface $parameters
+     * @param array|QueryParametersInterface $parameters
      * @return ResponseInterface
      * @throws ClientException
      */
@@ -160,7 +160,7 @@ interface ClientInterface
      *
      * @param string $resourceType
      * @param string $resourceId
-     * @param array|EncodingParametersInterface $parameters
+     * @param array|QueryParametersInterface $parameters
      * @return ResponseInterface
      * @throws ClientException
      */
@@ -170,7 +170,7 @@ interface ClientInterface
      * Read the domain record from the remote JSON API.
      *
      * @param $record
-     * @param array|EncodingParametersInterface $parameters
+     * @param array|QueryParametersInterface $parameters
      * @return ResponseInterface
      * @throws ClientException
      */
@@ -182,7 +182,7 @@ interface ClientInterface
      * @param $resourceType
      * @param $resourceId
      * @param array $payload
-     * @param array|EncodingParametersInterface $parameters
+     * @param array|QueryParametersInterface $parameters
      * @return ResponseInterface
      * @throws ClientException
      */
@@ -192,7 +192,7 @@ interface ClientInterface
      * Serialize the domain record and update it on the remote JSON API.
      *
      * @param object $record
-     * @param array|EncodingParametersInterface $parameters
+     * @param array|QueryParametersInterface $parameters
      * @return ResponseInterface
      * @throws ClientException
      */
@@ -203,7 +203,7 @@ interface ClientInterface
      *
      * @param string $resourceType
      * @param string $resourceId
-     * @param array|EncodingParametersInterface $parameters
+     * @param array|QueryParametersInterface $parameters
      * @return ResponseInterface
      * @throws ClientException
      */
@@ -213,7 +213,7 @@ interface ClientInterface
      * Delete the domain record from the remote JSON API.
      *
      * @param object $record
-     * @param array|EncodingParametersInterface $parameters
+     * @param array|QueryParametersInterface $parameters
      * @return ResponseInterface
      * @throws ClientException
      */
@@ -226,7 +226,7 @@ interface ClientInterface
      * @param string $resourceId
      * @param string $relationship
      *      the field name for the relationship.
-     * @param array|EncodingParametersInterface $parameters
+     * @param array|QueryParametersInterface $parameters
      * @return ResponseInterface
      * @throws ClientException
      */
@@ -238,7 +238,7 @@ interface ClientInterface
      * @param object $record
      * @param string $relationship
      *      the field name for the relationship.
-     * @param array|EncodingParametersInterface $parameters
+     * @param array|QueryParametersInterface $parameters
      * @return ResponseInterface
      * @throws ClientException
      */
@@ -251,7 +251,7 @@ interface ClientInterface
      * @param string $resourceId
      * @param string $relationship
      *      the field name for the relationship.
-     * @param array|EncodingParametersInterface $parameters
+     * @param array|QueryParametersInterface $parameters
      * @return ResponseInterface
      * @throws ClientException
      */
@@ -262,7 +262,7 @@ interface ClientInterface
      *
      * @param object $record
      * @param string $relationship
-     * @param array|EncodingParametersInterface $parameters
+     * @param array|QueryParametersInterface $parameters
      * @return ResponseInterface
      * @throws ClientException
      */
@@ -276,7 +276,7 @@ interface ClientInterface
      * @param string $relationship
      *      the field name for the relationship.
      * @param array $payload
-     * @param array|EncodingParametersInterface $parameters
+     * @param array|QueryParametersInterface $parameters
      * @return ResponseInterface
      */
     public function replaceRelationship($resourceType, $resourceId, $relationship, array $payload, $parameters = []);
@@ -302,7 +302,7 @@ interface ClientInterface
      *      the related record or record(s) to replace the relationship with.
      * @param string $relationship
      *      the field name for the relationship.
-     * @param array|EncodingParametersInterface $parameters
+     * @param array|QueryParametersInterface $parameters
      * @return ResponseInterface
      * @throws ClientException
      */
@@ -316,7 +316,7 @@ interface ClientInterface
      * @param string $relationship
      *      the field name for the relationship.
      * @param array $payload
-     * @param array|EncodingParametersInterface $parameters
+     * @param array|QueryParametersInterface $parameters
      * @return ResponseInterface
      */
     public function addToRelationship($resourceType, $resourceId, $relationship, array $payload, $parameters = []);
@@ -330,7 +330,7 @@ interface ClientInterface
      *      the related records to replace the relationship with.
      * @param string $relationship
      *      the field name for the relationship.
-     * @param array|EncodingParametersInterface $parameters
+     * @param array|QueryParametersInterface $parameters
      * @return ResponseInterface
      * @throws ClientException
      */
@@ -344,7 +344,7 @@ interface ClientInterface
      * @param string $relationship
      *      the field name for the relationship.
      * @param array $payload
-     * @param array|EncodingParametersInterface $parameters
+     * @param array|QueryParametersInterface $parameters
      * @return ResponseInterface
      */
     public function removeFromRelationship(
@@ -364,7 +364,7 @@ interface ClientInterface
      *      the related records to replace the relationship with.
      * @param string $relationship
      *      the field name for the relationship.
-     * @param array|EncodingParametersInterface $parameters
+     * @param array|QueryParametersInterface $parameters
      * @return ResponseInterface
      * @throws ClientException
      */

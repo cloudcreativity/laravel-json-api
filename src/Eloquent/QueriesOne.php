@@ -18,10 +18,10 @@
 namespace CloudCreativity\LaravelJsonApi\Eloquent;
 
 use CloudCreativity\LaravelJsonApi\Adapter\AbstractRelationshipAdapter;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Query\QueryParametersInterface;
 use CloudCreativity\LaravelJsonApi\Eloquent\Concerns\QueriesRelations;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use Illuminate\Database\Eloquent\Builder;
-use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 /**
  * Class QueriesOne
@@ -62,7 +62,7 @@ class QueriesOne extends AbstractRelationshipAdapter
     /**
      * @inheritDoc
      */
-    public function query($record, EncodingParametersInterface $parameters)
+    public function query($record, QueryParametersInterface $parameters)
     {
         $relation = $this($record);
 
@@ -72,7 +72,7 @@ class QueriesOne extends AbstractRelationshipAdapter
     /**
      * @inheritDoc
      */
-    public function relationship($record, EncodingParametersInterface $parameters)
+    public function relationship($record, QueryParametersInterface $parameters)
     {
         return $this->query($record, $parameters);
     }
@@ -80,7 +80,7 @@ class QueriesOne extends AbstractRelationshipAdapter
     /**
      * @inheritDoc
      */
-    public function update($record, array $relationship, EncodingParametersInterface $parameters)
+    public function update($record, array $relationship, QueryParametersInterface $parameters)
     {
         throw new RuntimeException('Modifying a queries-one relation is not supported.');
     }
@@ -88,7 +88,7 @@ class QueriesOne extends AbstractRelationshipAdapter
     /**
      * @inheritDoc
      */
-    public function replace($record, array $relationship, EncodingParametersInterface $parameters)
+    public function replace($record, array $relationship, QueryParametersInterface $parameters)
     {
         throw new RuntimeException('Modifying a queries-one relation is not supported.');
     }

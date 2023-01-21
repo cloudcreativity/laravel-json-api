@@ -59,6 +59,7 @@ class UpdateTest extends TestCase
         $this->actingAs($this->avatar->user, 'api');
 
         $response = $this
+            ->withoutExceptionHandling()
             ->jsonApi()
             ->contentType($contentType)
             ->includePaths('user')

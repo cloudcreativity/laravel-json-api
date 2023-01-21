@@ -515,10 +515,11 @@ For example:
 
 ```php
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PagingStrategyInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Query\QueryParametersInterface;
 
 class DateRangeStrategy implements PagingStrategyInterface
 {
-    public function paginate($query, EncodingParametersInterface $pagingParameters)
+    public function paginate($query, QueryParametersInterface $pagingParameters)
     {
         // ...paging logic here, that returns a JSON API page object.
     }

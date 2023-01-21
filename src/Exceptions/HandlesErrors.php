@@ -23,7 +23,8 @@ use CloudCreativity\LaravelJsonApi\Services\JsonApiService;
 use CloudCreativity\LaravelJsonApi\Utils\Helpers;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
+use Illuminate\Support\Collection;
+use Neomerx\JsonApi\Contracts\Schema\ErrorInterface;
 use Neomerx\JsonApi\Exceptions\JsonApiException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Throwable;
@@ -81,9 +82,9 @@ trait HandlesErrors
      */
     protected function prepareJsonApiException(JsonApiException $ex)
     {
-        $error = collect($ex->getErrors())->map(function (ErrorInterface $err) {
-            return $err->getDetail() ?: $err->getTitle();
-        })->filter()->first();
+        $error = Collection::make($ex->getErrors())->map(
+            fn(ErrorInterface $err) => $err->getDetail() ?: $err->getTitle()
+        )->filter()->first();
 
         return new HttpException($ex->getHttpCode(), $error, $ex);
     }

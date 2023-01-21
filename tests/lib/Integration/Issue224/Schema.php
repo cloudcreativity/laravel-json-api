@@ -17,7 +17,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Issue224;
 
-use Neomerx\JsonApi\Schema\SchemaProvider;
+use CloudCreativity\LaravelJsonApi\Schema\SchemaProvider;
 
 class Schema extends SchemaProvider
 {
@@ -25,12 +25,12 @@ class Schema extends SchemaProvider
     /**
      * @var string
      */
-    protected $resourceType = 'endUsers';
+    protected string $resourceType = 'endUsers';
 
     /**
      * @inheritdoc
      */
-    public function getId($resource)
+    public function getId(object $resource): string
     {
         return $resource->getRouteKey();
     }
@@ -38,7 +38,7 @@ class Schema extends SchemaProvider
     /**
      * @inheritDoc
      */
-    public function getAttributes($resource)
+    public function getAttributes(object $resource): array
     {
         return [
             'name' => $resource->name,

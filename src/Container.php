@@ -19,13 +19,15 @@ namespace CloudCreativity\LaravelJsonApi;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\ResourceAdapterInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Auth\AuthorizerInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\ContainerAwareInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\ContentNegotiatorInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Schema\SchemaProviderInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
+use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Contracts\Container\Container as IlluminateContainer;
-use Neomerx\JsonApi\Contracts\Schema\SchemaProviderInterface;
 
 /**
  * Class Container
@@ -34,36 +36,35 @@ use Neomerx\JsonApi\Contracts\Schema\SchemaProviderInterface;
  */
 class Container implements ContainerInterface
 {
-
     /**
      * @var IlluminateContainer
      */
-    private $container;
+    private IlluminateContainer $container;
 
     /**
      * @var ResolverInterface
      */
-    private $resolver;
+    private ResolverInterface $resolver;
 
     /**
      * @var array
      */
-    private $createdSchemas = [];
+    private array $createdSchemas = [];
 
     /**
      * @var array
      */
-    private $createdAdapters = [];
+    private array $createdAdapters = [];
 
     /**
      * @var array
      */
-    private $createdValidators = [];
+    private array $createdValidators = [];
 
     /**
      * @var array
      */
-    private $createdAuthorizers = [];
+    private array $createdAuthorizers = [];
 
     /**
      * Container constructor.
@@ -80,7 +81,7 @@ class Container implements ContainerInterface
     /**
      * @inheritDoc
      */
-    public function getSchema($resourceObject)
+    public function getSchema($resourceObject): SchemaProviderInterface
     {
         return $this->getSchemaByType(get_class($resourceObject));
     }
@@ -88,7 +89,22 @@ class Container implements ContainerInterface
     /**
      * @inheritDoc
      */
-    public function getSchemaByType($type)
+    public function hasSchema(object $resourceObject): bool
+    {
+        $type = get_class($resourceObject);
+
+        $jsonApiType = $this->resolver->getResourceType($type);
+
+        return !empty($jsonApiType);
+    }
+
+    /**
+     * Get resource by object type.
+     *
+     * @param string $type
+     * @return SchemaProviderInterface
+     */
+    public function getSchemaByType(string $type): SchemaProviderInterface
     {
         $resourceType = $this->getResourceType($type);
 
@@ -96,9 +112,12 @@ class Container implements ContainerInterface
     }
 
     /**
-     * @inheritDoc
+     * Get resource by JSON:API type.
+     *
+     * @param string $resourceType
+     * @return SchemaProviderInterface
      */
-    public function getSchemaByResourceType($resourceType)
+    public function getSchemaByResourceType(string $resourceType): SchemaProviderInterface
     {
         if ($this->hasCreatedSchema($resourceType)) {
             return $this->getCreatedSchema($resourceType);
@@ -305,9 +324,9 @@ class Container implements ContainerInterface
 
     /**
      * @param string $resourceType
-     * @return ResourceAdapterInterface|null
+     * @return SchemaProviderInterface
      */
-    protected function getCreatedSchema($resourceType)
+    protected function getCreatedSchema($resourceType): SchemaProviderInterface
     {
         return $this->createdSchemas[$resourceType];
     }
@@ -317,7 +336,7 @@ class Container implements ContainerInterface
      * @param SchemaProviderInterface $schema
      * @return void
      */
-    protected function setCreatedSchema($resourceType, SchemaProviderInterface $schema)
+    protected function setCreatedSchema($resourceType, SchemaProviderInterface $schema): void
     {
         $this->createdSchemas[$resourceType] = $schema;
     }
@@ -326,7 +345,7 @@ class Container implements ContainerInterface
      * @param string $className
      * @return SchemaProviderInterface
      */
-    protected function createSchemaFromClassName($className)
+    protected function createSchemaFromClassName(string $className): SchemaProviderInterface
     {
         $schema = $this->create($className);
 
@@ -484,18 +503,37 @@ class Container implements ContainerInterface
     }
 
     /**
-     * @inheritDoc
+     * @param string|null $className
+     * @return mixed|nulL
      */
-    protected function create($className)
+    protected function create(?string $className)
     {
-        return $this->exists($className) ? $this->container->make($className) : null;
+        if (false === $this->exists($className)) {
+            return null;
+        }
+
+        try {
+            $value = $this->container->make($className);
+        } catch (BindingResolutionException $ex) {
+            throw new RuntimeException(
+                sprintf('JSON:API container was unable to build %s via the service container.', $className),
+                0,
+                $ex,
+            );
+        }
+
+        if ($value instanceof ContainerAwareInterface) {
+            $value->withContainer($this);
+        }
+
+        return $value;
     }
 
     /**
-     * @param $className
+     * @param string|null $className
      * @return bool
      */
-    protected function exists($className): bool
+    protected function exists(?string $className): bool
     {
         if (null === $className) {
             return false;

@@ -15,13 +15,16 @@
  * limitations under the License.
  */
 
+declare(strict_types=1);
+
 namespace CloudCreativity\LaravelJsonApi\Codec;
 
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
-use Neomerx\JsonApi\Contracts\Encoder\EncoderInterface;
-use Neomerx\JsonApi\Contracts\Factories\FactoryInterface;
+use CloudCreativity\LaravelJsonApi\Encoder\Encoder;
+use CloudCreativity\LaravelJsonApi\Factories\Factory;
+use CloudCreativity\LaravelJsonApi\Http\Headers\MediaTypeParser;
+use Illuminate\Support\Collection;
 use Neomerx\JsonApi\Contracts\Http\Headers\MediaTypeInterface;
-use Neomerx\JsonApi\Http\Headers\MediaType;
 
 /**
  * Class Codec
@@ -30,42 +33,49 @@ use Neomerx\JsonApi\Http\Headers\MediaType;
  */
 class Codec
 {
+    /**
+     * @var Factory
+     */
+    private Factory $factory;
 
     /**
-     * @var FactoryInterface
+     * @var MediaTypeParser
      */
-    private $factory;
+    private MediaTypeParser $mediaTypeParser;
 
     /**
      * @var ContainerInterface
      */
-    private $container;
+    private ContainerInterface $container;
 
     /**
      * @var Encoding
      */
-    private $encoding;
+    private Encoding $encoding;
 
     /**
      * @var Decoding|null
      */
-    private $decoding;
+    private ?Decoding $decoding;
 
     /**
      * Codec constructor.
      *
-     * @param FactoryInterface $factory
+     * @param Factory $factory
+     * @param MediaTypeParser $mediaTypeParser
      * @param ContainerInterface $container
      * @param Encoding $encoding
      * @param Decoding|null $decoding
      */
     public function __construct(
-        FactoryInterface $factory,
+        Factory $factory,
+        MediaTypeParser $mediaTypeParser,
         ContainerInterface $container,
         Encoding $encoding,
         ?Decoding $decoding
     ) {
         $this->factory = $factory;
+        $this->mediaTypeParser = $mediaTypeParser;
         $this->container = $container;
         $this->encoding = $encoding;
         $this->decoding = $decoding;
@@ -92,18 +102,28 @@ class Codec
     }
 
     /**
-     * @return EncoderInterface
+     * @return Encoder
      */
-    public function getEncoder(): EncoderInterface
+    public function getEncoder(): Encoder
     {
         if ($this->willNotEncode()) {
             throw new \RuntimeException('Codec does not support encoding JSON API content.');
         }
 
-        return $this->factory->createEncoder(
+        $encoder = $this->factory->createLaravelEncoder(
             $this->container,
-            $this->encoding->getOptions()
         );
+
+        $options = $this->encoding->getOptions();
+
+        if ($options) {
+            $encoder
+                ->withEncodeOptions($options->getOptions())
+                ->withEncodeDepth($options->getDepth())
+                ->withUrlPrefix($options->getUrlPrefix() ?? '');
+        }
+
+        return $encoder;
     }
 
     /**
@@ -124,9 +144,9 @@ class Codec
     {
         $encoding = $this->getEncodingMediaType();
 
-        return collect($mediaTypes)->contains(function ($mediaType, $index) use ($encoding) {
-            return $encoding->equalsTo(MediaType::parse($index, $mediaType));
-        });
+        return Collection::make($mediaTypes)->contains(
+            fn($mediaType) => $encoding->equalsTo($this->mediaTypeParser->parse($mediaType))
+        );
     }
 
     /**
@@ -173,9 +193,9 @@ class Codec
             return false;
         }
 
-        return collect($mediaTypes)->contains(function ($mediaType, $index) use ($decoding) {
-            return $decoding->equalsTo(MediaType::parse($index, $mediaType));
-        });
+        return Collection::make($mediaTypes)->contains(
+            fn($mediaType) => $decoding->equalsTo($this->mediaTypeParser->parse($mediaType))
+        );
     }
 
     /**
@@ -203,5 +223,4 @@ class Codec
     {
         return $this->decoding ? $this->decoding->getDecoder()->decode($request) : [];
     }
-
 }

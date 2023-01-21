@@ -17,7 +17,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Client;
 
-use CloudCreativity\LaravelJsonApi\Encoder\Parameters\EncodingParameters;
+use CloudCreativity\LaravelJsonApi\Http\Query\QueryParameters;
 use DummyApp\Post;
 
 class ToOneTest extends TestCase
@@ -62,7 +62,7 @@ class ToOneTest extends TestCase
 
     public function testRelatedWithEncodingParameters()
     {
-        $parameters = new EncodingParameters(
+        $parameters = new QueryParameters(
             ['posts'],
             ['author' => ['first-name', 'surname']]
         );
@@ -103,7 +103,7 @@ class ToOneTest extends TestCase
 
     public function testRelationshipWithEncodingParameters()
     {
-        $parameters = new EncodingParameters(
+        $parameters = new QueryParameters(
             ['posts'],
             ['author' => ['first-name', 'surname']]
         );

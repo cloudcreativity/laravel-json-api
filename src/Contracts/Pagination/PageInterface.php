@@ -18,8 +18,8 @@
 
 namespace CloudCreativity\LaravelJsonApi\Contracts\Pagination;
 
-use Neomerx\JsonApi\Contracts\Document\DocumentInterface;
-use Neomerx\JsonApi\Contracts\Document\LinkInterface;
+use Neomerx\JsonApi\Contracts\Schema\DocumentInterface;
+use Neomerx\JsonApi\Contracts\Schema\LinkInterface;
 
 /**
  * Interface PageInterface

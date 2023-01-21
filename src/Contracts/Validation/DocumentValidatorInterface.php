@@ -17,7 +17,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Contracts\Validation;
 
-use Neomerx\JsonApi\Exceptions\ErrorCollection;
+use Neomerx\JsonApi\Schema\ErrorCollection;
 
 /**
  * Interface DocumentValidatorInterface

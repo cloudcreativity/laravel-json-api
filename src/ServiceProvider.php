@@ -19,14 +19,20 @@ namespace CloudCreativity\LaravelJsonApi;
 
 use CloudCreativity\LaravelJsonApi\Api\Repository;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Query\QueryParametersInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Exceptions\ExceptionParserInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Headers\HeaderParametersInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Headers\HeaderParametersParserInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Query\QueryParametersParserInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\ExceptionParser;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
+use CloudCreativity\LaravelJsonApi\Http\Headers\HeaderParametersParser;
 use CloudCreativity\LaravelJsonApi\Http\Middleware\Authorize;
 use CloudCreativity\LaravelJsonApi\Http\Middleware\BootJsonApi;
 use CloudCreativity\LaravelJsonApi\Http\Middleware\NegotiateContent;
+use CloudCreativity\LaravelJsonApi\Http\Query\QueryParametersParser;
 use CloudCreativity\LaravelJsonApi\Queue\UpdateClientProcess;
 use CloudCreativity\LaravelJsonApi\Routing\JsonApiRegistrar;
 use CloudCreativity\LaravelJsonApi\Routing\Route;
@@ -38,19 +44,8 @@ use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 use Illuminate\View\Compilers\BladeCompiler;
-use Neomerx\JsonApi\Contracts\Document\DocumentFactoryInterface;
-use Neomerx\JsonApi\Contracts\Encoder\Handlers\HandlerFactoryInterface;
-use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
-use Neomerx\JsonApi\Contracts\Encoder\Parser\ParserFactoryInterface;
-use Neomerx\JsonApi\Contracts\Encoder\Stack\StackFactoryInterface;
 use Neomerx\JsonApi\Contracts\Factories\FactoryInterface;
-use Neomerx\JsonApi\Contracts\Http\Headers\HeaderParametersInterface;
-use Neomerx\JsonApi\Contracts\Http\Headers\HeaderParametersParserInterface;
-use Neomerx\JsonApi\Contracts\Http\HttpFactoryInterface;
-use Neomerx\JsonApi\Contracts\Http\Query\QueryParametersParserInterface;
-use Neomerx\JsonApi\Contracts\Schema\SchemaFactoryInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Psr\Log\LoggerInterface;
 
 /**
  * Class ServiceProvider
@@ -145,7 +140,7 @@ class ServiceProvider extends BaseServiceProvider
     {
         Response::macro('jsonApi', function ($api = null) {
             return json_api($api)->getResponses()->withEncodingParameters(
-                app(EncodingParametersInterface::class)
+                app(QueryParametersInterface::class)
             );
         });
     }
@@ -180,30 +175,16 @@ class ServiceProvider extends BaseServiceProvider
      * This ensures that we can override any parts of the Neomerx JSON API package
      * that we want.
      *
-     * As the Neomerx package splits the factories into multiple interfaces, we
-     * also register aliases for each of the factory interfaces.
-     *
-     * The Neomerx package allows a logger to be injected into the factory. This
-     * enables the Neomerx package to log messages. When creating the factory, we
-     * therefore set the logger as our application's logger.
-     *
      * @return void
      */
-    protected function bindNeomerx()
+    protected function bindNeomerx(): void
     {
-        $this->app->singleton(Factory::class, function (Application $app) {
-            $factory = new Factory($app);
-            $factory->setLogger($app->make(LoggerInterface::class));
-            return $factory;
-        });
-
+        $this->app->singleton(Factory::class);
         $this->app->alias(Factory::class, FactoryInterface::class);
-        $this->app->alias(Factory::class, DocumentFactoryInterface::class);
-        $this->app->alias(Factory::class, HandlerFactoryInterface::class);
-        $this->app->alias(Factory::class, HttpFactoryInterface::class);
-        $this->app->alias(Factory::class, ParserFactoryInterface::class);
-        $this->app->alias(Factory::class, SchemaFactoryInterface::class);
-        $this->app->alias(Factory::class, StackFactoryInterface::class);
+        $this->app->bind(
+            \Neomerx\JsonApi\Contracts\Http\Headers\HeaderParametersParserInterface::class,
+            \Neomerx\JsonApi\Http\Headers\HeaderParametersParser::class,
+        );
     }
 
     /**
@@ -250,23 +231,26 @@ class ServiceProvider extends BaseServiceProvider
             return json_api()->getContainer();
         });
 
-        $this->app->singleton(HeaderParametersInterface::class, function (Application $app) {
+        $this->app->bind(HeaderParametersParserInterface::class, HeaderParametersParser::class);
+
+        $this->app->scoped(HeaderParametersInterface::class, function (Application $app) {
             /** @var HeaderParametersParserInterface $parser */
-            $parser = $app->make(HttpFactoryInterface::class)->createHeaderParametersParser();
+            $parser = $app->make(HeaderParametersParserInterface::class);
             /** @var ServerRequestInterface $serverRequest */
             $serverRequest = $app->make(ServerRequestInterface::class);
-
             return $parser->parse($serverRequest, http_contains_body($serverRequest));
         });
 
-        $this->app->singleton(EncodingParametersInterface::class, function (Application $app) {
+        $this->app->scoped(QueryParametersInterface::class, function (Application $app) {
             /** @var QueryParametersParserInterface $parser */
-            $parser = $app->make(HttpFactoryInterface::class)->createQueryParametersParser();
+            $parser = $app->make(QueryParametersParserInterface::class);
 
             return $parser->parseQueryParameters(
                 request()->query()
             );
         });
+
+        $this->app->scoped(QueryParametersParserInterface::class, QueryParametersParser::class);
     }
 
     /**

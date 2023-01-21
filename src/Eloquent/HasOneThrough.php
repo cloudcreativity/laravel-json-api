@@ -17,9 +17,9 @@
 
 namespace CloudCreativity\LaravelJsonApi\Eloquent;
 
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Query\QueryParametersInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use Illuminate\Database\Eloquent\Relations;
-use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 class HasOneThrough extends BelongsTo
 {
@@ -27,7 +27,7 @@ class HasOneThrough extends BelongsTo
     /**
      * @inheritDoc
      */
-    public function update($record, array $relationship, EncodingParametersInterface $parameters)
+    public function update($record, array $relationship, QueryParametersInterface $parameters)
     {
         throw new RuntimeException('Modifying a has-one-through Eloquent relation is not supported.');
     }
@@ -35,7 +35,7 @@ class HasOneThrough extends BelongsTo
     /**
      * @inheritDoc
      */
-    public function replace($record, array $relationship, EncodingParametersInterface $parameters)
+    public function replace($record, array $relationship, QueryParametersInterface $parameters)
     {
         throw new RuntimeException('Modifying a has-one-through Eloquent relation is not supported.');
     }

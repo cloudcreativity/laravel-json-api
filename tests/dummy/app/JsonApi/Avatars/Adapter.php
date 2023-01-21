@@ -17,12 +17,12 @@
 
 namespace DummyApp\JsonApi\Avatars;
 
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Query\QueryParametersInterface;
 use CloudCreativity\LaravelJsonApi\Eloquent\AbstractAdapter;
 use DummyApp\Avatar;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 class Adapter extends AbstractAdapter
 {
@@ -38,7 +38,7 @@ class Adapter extends AbstractAdapter
     /**
      * @inheritdoc
      */
-    public function create(array $document, EncodingParametersInterface $parameters)
+    public function create(array $document, QueryParametersInterface $parameters)
     {
         $path = request()->file('avatar')->store('avatars');
 
@@ -56,10 +56,10 @@ class Adapter extends AbstractAdapter
     /**
      * @param Avatar $record
      * @param array $document
-     * @param EncodingParametersInterface $parameters
+     * @param QueryParametersInterface $parameters
      * @return mixed
      */
-    public function update($record, array $document, EncodingParametersInterface $parameters)
+    public function update($record, array $document, QueryParametersInterface $parameters)
     {
         if ($this->didDecode('application/vnd.api+json')) {
             return parent::update($record, $document, $parameters);

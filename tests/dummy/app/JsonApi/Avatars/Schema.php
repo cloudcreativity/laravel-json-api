@@ -17,31 +17,21 @@
 
 namespace DummyApp\JsonApi\Avatars;
 
+use CloudCreativity\LaravelJsonApi\Schema\SchemaProvider;
 use DummyApp\Avatar;
-use Neomerx\JsonApi\Schema\SchemaProvider;
 
 class Schema extends SchemaProvider
 {
-
     /**
      * @var string
      */
-    protected $resourceType = 'avatars';
+    protected string $resourceType = 'avatars';
 
     /**
-     * @param Avatar $resource
-     * @return string
-     */
-    public function getId($resource)
-    {
-        return (string) $resource->getRouteKey();
-    }
-
-    /**
-     * @param Avatar $resource
+     * @param Avatar|object $resource
      * @return array
      */
-    public function getAttributes($resource)
+    public function getAttributes(object $resource): array
     {
         return [
             'createdAt' => $resource->created_at,
@@ -51,12 +41,12 @@ class Schema extends SchemaProvider
     }
 
     /**
-     * @param Avatar $resource
+     * @param Avatar|object $resource
      * @param bool $isPrimary
      * @param array $includeRelationships
      * @return array
      */
-    public function getRelationships($resource, $isPrimary, array $includeRelationships)
+    public function getRelationships(object $resource, bool $isPrimary, array $includeRelationships): array
     {
         return [
             'user' => [
@@ -69,6 +59,4 @@ class Schema extends SchemaProvider
             ],
         ];
     }
-
-
 }

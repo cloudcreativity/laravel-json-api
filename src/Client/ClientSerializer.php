@@ -17,10 +17,10 @@
 
 namespace CloudCreativity\LaravelJsonApi\Client;
 
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Query\QueryParametersInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Encoder\SerializerInterface;
+use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use Illuminate\Support\Collection;
-use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
-use Neomerx\JsonApi\Contracts\Http\HttpFactoryInterface;
 
 /**
  * Class ClientSerializer
@@ -36,7 +36,7 @@ class ClientSerializer
     protected $serializer;
 
     /**
-     * @var HttpFactoryInterface
+     * @var Factory;
      */
     protected $factory;
 
@@ -64,9 +64,9 @@ class ClientSerializer
      * ClientSerializer constructor.
      *
      * @param SerializerInterface $serializer
-     * @param HttpFactoryInterface $factory
+     * @param Factory $factory
      */
-    public function __construct(SerializerInterface $serializer, HttpFactoryInterface $factory)
+    public function __construct(SerializerInterface $serializer, Factory $factory)
     {
         $this->serializer = $serializer;
         $this->factory = $factory;
@@ -143,7 +143,7 @@ class ClientSerializer
      */
     public function serialize($record, $meta = null, array $links = [])
     {
-        $serializer = clone $this->serializer;
+        $serializer = $this->setupSerializer();
         $serializer->withMeta($meta)->withLinks($links);
         $serialized = $serializer->serializeData($record, $this->createEncodingParameters());
         $resourceLinks = null;
@@ -173,7 +173,7 @@ class ClientSerializer
      */
     public function serializeRelated($related, $meta = null, array $links = [])
     {
-        $serializer = clone $this->serializer;
+        $serializer = $this->setupSerializer();
         $serializer->withMeta($meta)->withLinks($links);
 
         return $serializer->serializeIdentifiers($related);
@@ -282,7 +282,7 @@ class ClientSerializer
     }
 
     /**
-     * @return EncodingParametersInterface
+     * @return QueryParametersInterface
      */
     protected function createEncodingParameters()
     {
@@ -290,5 +290,17 @@ class ClientSerializer
             $this->includePaths,
             $this->fieldsets
         );
+    }
+
+    /**
+     * @return SerializerInterface
+     */
+    private function setupSerializer(): SerializerInterface
+    {
+        $serializer = clone $this->serializer;
+        $serializer->withIncludedPaths($this->includePaths ?? []);
+        $serializer->withFieldSets($this->fieldsets ?? []);
+
+        return $serializer;
     }
 }

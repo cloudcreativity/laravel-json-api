@@ -17,9 +17,9 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Unit\Exceptions;
 
-use Neomerx\JsonApi\Document\Error;
 use CloudCreativity\LaravelJsonApi\Exceptions\ValidationException;
 use CloudCreativity\LaravelJsonApi\Tests\Unit\TestCase;
+use Neomerx\JsonApi\Schema\Error;
 
 /**
  * Class ValidationExceptionTest
@@ -37,7 +37,7 @@ class ValidationExceptionTest extends TestCase
 
     public function testErrorStatus()
     {
-        $err = new Error(null, null, 401);
+        $err = new Error(null, null, null, 401);
         $ex = new ValidationException($err);
         $this->assertEquals(401, $ex->getHttpCode());
     }

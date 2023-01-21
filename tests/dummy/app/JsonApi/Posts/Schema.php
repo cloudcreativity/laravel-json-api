@@ -17,31 +17,21 @@
 
 namespace DummyApp\JsonApi\Posts;
 
+use CloudCreativity\LaravelJsonApi\Schema\SchemaProvider;
 use DummyApp\Post;
-use Neomerx\JsonApi\Schema\SchemaProvider;
 
 class Schema extends SchemaProvider
 {
-
     /**
      * @var string
      */
-    protected $resourceType = 'posts';
+    protected string $resourceType = 'posts';
 
     /**
-     * @param Post $resource
-     * @return string
-     */
-    public function getId($resource)
-    {
-        return (string) $resource->getRouteKey();
-    }
-
-    /**
-     * @param Post $resource
+     * @param Post|object $resource
      * @return array
      */
-    public function getAttributes($resource)
+    public function getAttributes(object $resource): array
     {
         return [
             'createdAt' => $resource->created_at,
@@ -55,12 +45,12 @@ class Schema extends SchemaProvider
     }
 
     /**
-     * @param Post $record
+     * @param Post|object $record
      * @param bool $isPrimary
      * @param array $includedRelationships
      * @return array
      */
-    public function getRelationships($record, $isPrimary, array $includedRelationships)
+    public function getRelationships(object $record, bool $isPrimary, array $includedRelationships): array
     {
         return [
             'author' => [

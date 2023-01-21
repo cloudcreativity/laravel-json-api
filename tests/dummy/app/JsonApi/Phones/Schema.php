@@ -17,29 +17,20 @@
 
 namespace DummyApp\JsonApi\Phones;
 
+use CloudCreativity\LaravelJsonApi\Schema\SchemaProvider;
 use DummyApp\Phone;
-use Neomerx\JsonApi\Schema\SchemaProvider;
 
 class Schema extends SchemaProvider
 {
-
     /**
      * @var string
      */
-    protected $resourceType = 'phones';
+    protected string $resourceType = 'phones';
 
     /**
      * @inheritDoc
      */
-    public function getId($resource)
-    {
-        return (string) $resource->getRouteKey();
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getAttributes($resource)
+    public function getAttributes(object $resource): array
     {
         return [
             'createdAt' => $resource->created_at,
@@ -49,12 +40,12 @@ class Schema extends SchemaProvider
     }
 
     /**
-     * @param Phone $resource
+     * @param Phone|object $resource
      * @param bool $isPrimary
      * @param array $includeRelationships
      * @return array
      */
-    public function getRelationships($resource, $isPrimary, array $includeRelationships)
+    public function getRelationships(object $resource, bool $isPrimary, array $includeRelationships): array
     {
         return [
             'user' => [
@@ -67,5 +58,4 @@ class Schema extends SchemaProvider
             ],
         ];
     }
-
 }

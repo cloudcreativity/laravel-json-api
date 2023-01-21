@@ -17,9 +17,9 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Client;
 
+use CloudCreativity\LaravelJsonApi\Http\Query\QueryParameters;
+use CloudCreativity\LaravelJsonApi\Http\Query\SortParameter;
 use CloudCreativity\LaravelJsonApi\Exceptions\ClientException;
-use Neomerx\JsonApi\Encoder\Parameters\EncodingParameters;
-use Neomerx\JsonApi\Encoder\Parameters\SortParameter;
 
 class ListAllTest extends TestCase
 {
@@ -56,7 +56,7 @@ class ListAllTest extends TestCase
 
     public function testWithEncodingParameters()
     {
-        $parameters = new EncodingParameters(
+        $parameters = new QueryParameters(
             ['author', 'site'],
             ['author' => ['first-name', 'surname'], 'site' => ['uri']],
             [new SortParameter('created-at', false), new SortParameter('author', true)],

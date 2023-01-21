@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Copyright 2022 Cloud Creativity Limited
  *
@@ -16,26 +15,32 @@
  * limitations under the License.
  */
 
+declare(strict_types=1);
+
 namespace CloudCreativity\LaravelJsonApi\Http\Responses;
 
 use CloudCreativity\LaravelJsonApi\Api\Api;
 use CloudCreativity\LaravelJsonApi\Codec\Codec;
 use CloudCreativity\LaravelJsonApi\Codec\Encoding;
+use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Query\QueryParametersInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Exceptions\ExceptionParserInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PageInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Queue\AsynchronousProcess;
 use CloudCreativity\LaravelJsonApi\Document\Error\Error;
-use CloudCreativity\LaravelJsonApi\Encoder\Neomerx\Factory;
+use CloudCreativity\LaravelJsonApi\Encoder\Encoder;
+use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use CloudCreativity\LaravelJsonApi\Routing\Route;
 use CloudCreativity\LaravelJsonApi\Utils\Helpers;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Response;
 use InvalidArgumentException;
-use Neomerx\JsonApi\Contracts\Document\DocumentInterface;
-use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
-use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
+use Neomerx\JsonApi\Contracts\Encoder\EncoderInterface;
 use Neomerx\JsonApi\Contracts\Http\Headers\MediaTypeInterface;
-use Neomerx\JsonApi\Http\Responses as BaseResponses;
+use Neomerx\JsonApi\Contracts\Schema\DocumentInterface;
+use Neomerx\JsonApi\Contracts\Schema\ErrorInterface;
+use Neomerx\JsonApi\Contracts\Schema\LinkInterface;
+use Neomerx\JsonApi\Http\BaseResponses;
 use UnexpectedValueException;
 
 /**
@@ -49,32 +54,37 @@ class Responses extends BaseResponses
     /**
      * @var Factory
      */
-    private $factory;
+    private Factory $factory;
 
     /**
      * @var Api
      */
-    private $api;
+    private Api $api;
 
     /**
      * @var Route
      */
-    private $route;
+    private Route $route;
 
     /**
      * @var ExceptionParserInterface
      */
-    private $exceptions;
+    private ExceptionParserInterface $exceptions;
 
     /**
      * @var Codec|null
      */
-    private $codec;
+    private ?Codec $codec = null;
 
     /**
-     * @var EncodingParametersInterface|null
+     * @var QueryParametersInterface|null
      */
-    private $parameters;
+    private ?QueryParametersInterface $parameters = null;
+
+    /**
+     * @var EncoderInterface|null
+     */
+    private ?EncoderInterface $encoder = null;
 
     /**
      * Responses constructor.
@@ -83,7 +93,7 @@ class Responses extends BaseResponses
      * @param Api $api
      *      the API that is sending the responses.
      * @param Route $route
-     * @param $exceptions
+     * @param ExceptionParserInterface $exceptions
      */
     public function __construct(
         Factory $factory,
@@ -163,10 +173,10 @@ class Responses extends BaseResponses
     /**
      * Set the encoding parameters to use.
      *
-     * @param EncodingParametersInterface|null $parameters
+     * @param QueryParametersInterface|null $parameters
      * @return $this
      */
-    public function withEncodingParameters(?EncodingParametersInterface $parameters): self
+    public function withEncodingParameters(?QueryParametersInterface $parameters): self
     {
         $this->parameters = $parameters;
 
@@ -174,11 +184,11 @@ class Responses extends BaseResponses
     }
 
     /**
-     * @param $statusCode
+     * @param int $statusCode
      * @param array $headers
      * @return Response
      */
-    public function statusCode($statusCode, array $headers = []): Response
+    public function statusCode(int $statusCode, array $headers = []): Response
     {
         return $this->getCodeResponse($statusCode, $headers);
     }
@@ -193,19 +203,19 @@ class Responses extends BaseResponses
     }
 
     /**
-     * @param $meta
+     * @param mixed $meta
      * @param int $statusCode
      * @param array $headers
      * @return Response
      */
-    public function meta($meta, $statusCode = self::HTTP_OK, array $headers = []): Response
+    public function meta($meta, int $statusCode = self::HTTP_OK, array $headers = []): Response
     {
         return $this->getMetaResponse($meta, $statusCode, $headers);
     }
 
     /**
      * @param array $links
-     * @param $meta
+     * @param mixed $meta
      * @param int $statusCode
      * @param array $headers
      * @return Response
@@ -230,35 +240,40 @@ class Responses extends BaseResponses
         $data,
         array $links = [],
         $meta = null,
-        $statusCode = self::HTTP_OK,
+        int $statusCode = self::HTTP_OK,
         array $headers = []
     ): Response {
-        return $this->getContentResponse($data, $statusCode, $links, $meta, $headers);
+        return $this->getContentResponseBackwardsCompat($data, $statusCode, $links, $meta, $headers);
     }
 
-
     /**
-     * Get response with regular JSON API Document in body.
+     * Get response with regular JSON:API Document in body.
+     *
+     * This method provides backwards compatibility with the `getContentResponse()` method
+     * from the Neomerx 1.x package.
      *
      * @param array|object $data
      * @param int $statusCode
-     * @param null $links
-     * @param null $meta
+     * @param array|null $links
+     * @param mixed|null $meta
      * @param array $headers
      * @return Response
      */
-    public function getContentResponse(
+    public function getContentResponseBackwardsCompat(
         $data,
-        $statusCode = self::HTTP_OK,
-        $links = null,
+        int $statusCode = self::HTTP_OK,
+        array $links = null,
         $meta = null,
         array $headers = []
-    ): Response {
+    ): Response
+    {
         if ($data instanceof PageInterface) {
             [$data, $meta, $links] = $this->extractPage($data, $meta, $links);
         }
 
-        return parent::getContentResponse($data, $statusCode, $links, $meta, $headers);
+        $this->getEncoder()->withLinks($links ?? [])->withMeta($meta);
+
+        return parent::getContentResponse($data, $statusCode, $headers);
     }
 
     /**
@@ -282,7 +297,30 @@ class Responses extends BaseResponses
             return $this->accepted($resource, $links, $meta, $headers);
         }
 
-        return $this->getCreatedResponse($resource, $links, $meta, $headers);
+        return $this->getCreatedResponseBackwardsCompat($resource, $links, $meta, $headers);
+    }
+
+    /**
+     * @param $resource
+     * @param array $links
+     * @param null $meta
+     * @param array $headers
+     * @return Response
+     */
+    public function getCreatedResponseBackwardsCompat(
+        $resource,
+        array $links = [],
+        $meta = null,
+        array $headers = []
+    ): Response
+    {
+        $this->getEncoder()->withLinks($links)->withMeta($meta);
+
+        $url = $this
+            ->getResourceSelfLink($resource)
+            ->getStringRepresentation($this->getUrlPrefix());
+
+        return $this->getCreatedResponse($resource, $url, $headers);
     }
 
     /**
@@ -330,15 +368,19 @@ class Responses extends BaseResponses
      */
     public function accepted(AsynchronousProcess $job, array $links = [], $meta = null, array $headers = []): Response
     {
-        $headers['Content-Location'] = $this->getResourceLocationUrl($job);
+        $url = $this
+            ->getResourceSelfLink($job)
+            ->getStringRepresentation($this->getUrlPrefix());
 
-        return $this->getContentResponse($job, Response::HTTP_ACCEPTED, $links, $meta, $headers);
+        $headers['Content-Location'] = $url;
+
+        return $this->getContentResponseBackwardsCompat($job, Response::HTTP_ACCEPTED, $links, $meta, $headers);
     }
 
     /**
      * @param AsynchronousProcess $job
      * @param array $links
-     * @param null $meta
+     * @param mixed|null $meta
      * @param array $headers
      * @return RedirectResponse|mixed
      */
@@ -349,7 +391,7 @@ class Responses extends BaseResponses
             return $this->createJsonApiResponse(null, Response::HTTP_SEE_OTHER, $headers);
         }
 
-        return $this->getContentResponse($job, self::HTTP_OK, $links, $meta, $headers);
+        return $this->getContentResponseBackwardsCompat($job, self::HTTP_OK, $links, $meta, $headers);
     }
 
     /**
@@ -367,21 +409,21 @@ class Responses extends BaseResponses
         $statusCode = 200,
         array $headers = []
     ): Response {
-        return $this->getIdentifiersResponse($data, $statusCode, $links, $meta, $headers);
+        return $this->getIdentifiersResponseBackwardsCompat($data, $statusCode, $links, $meta, $headers);
     }
 
     /**
      * @param array|object $data
      * @param int $statusCode
-     * @param $links
-     * @param $meta
+     * @param array|null $links
+     * @param mixed|null $meta
      * @param array $headers
      * @return Response
      */
-    public function getIdentifiersResponse(
+    public function getIdentifiersResponseBackwardsCompat(
         $data,
-        $statusCode = self::HTTP_OK,
-        $links = null,
+        int $statusCode = self::HTTP_OK,
+        array $links = null,
         $meta = null,
         array $headers = []
     ): Response {
@@ -389,7 +431,9 @@ class Responses extends BaseResponses
             [$data, $meta, $links] = $this->extractPage($data, $meta, $links);
         }
 
-        return parent::getIdentifiersResponse($data, $statusCode, $links, $meta, $headers);
+        $this->getEncoder()->withLinks($links)->withMeta($meta);
+
+        return parent::getIdentifiersResponse($data, $statusCode, $headers);
     }
 
     /**
@@ -403,7 +447,7 @@ class Responses extends BaseResponses
     public function error($error, int $defaultStatusCode = null, array $headers = []): Response
     {
         if (!$error instanceof ErrorInterface) {
-            $error = $this->factory->createError(
+            $error = $this->factory->createDocumentMapper()->createError(
                 Error::cast($error)
             );
         }
@@ -426,7 +470,7 @@ class Responses extends BaseResponses
      */
     public function errors(iterable $errors, int $defaultStatusCode = null, array $headers = []): Response
     {
-        $errors = $this->factory->createErrors($errors);
+        $errors = $this->factory->createDocumentMapper()->createErrors($errors);
         $statusCode = Helpers::httpErrorStatus($errors, $defaultStatusCode);
 
         return $this->getErrorResponse($errors, $statusCode, $headers);
@@ -435,7 +479,7 @@ class Responses extends BaseResponses
     /**
      * @param $resource
      * @param array $links
-     * @param null $meta
+     * @param mixed|null $meta
      * @param array $headers
      * @return Response
      */
@@ -453,21 +497,43 @@ class Responses extends BaseResponses
             return $this->accepted($resource, $links, $meta, $headers);
         }
 
-        return $this->getContentResponse($resource, self::HTTP_OK, $links, $meta, $headers);
+        return $this->getContentResponseBackwardsCompat($resource, self::HTTP_OK, $links, $meta, $headers);
     }
 
     /**
      * @inheritdoc
      */
-    protected function getEncoder()
+    protected function getEncoder(): EncoderInterface
     {
-        return $this->getCodec()->getEncoder();
+        if ($this->encoder) {
+            return $this->encoder;
+        }
+
+        return $this->encoder = $this->createEncoder();
+    }
+
+    /**
+     * Create a new and configured encoder.
+     *
+     * @return Encoder
+     */
+    protected function createEncoder(): Encoder
+    {
+        $encoder = $this
+            ->getCodec()
+            ->getEncoder();
+
+        $encoder
+            ->withUrlPrefix($this->getUrlPrefix())
+            ->withEncodingParameters($this->parameters);
+
+        return $encoder;
     }
 
     /**
      * @inheritdoc
      */
-    protected function getMediaType()
+    protected function getMediaType(): MediaTypeInterface
     {
         return $this->getCodec()->getEncodingMediaType();
     }
@@ -475,19 +541,19 @@ class Responses extends BaseResponses
     /**
      * @return Codec
      */
-    protected function getCodec()
+    protected function getCodec(): Codec
     {
-        if (!$this->codec) {
-            $this->codec = $this->getDefaultCodec();
+        if ($this->codec) {
+            return $this->codec;
         }
 
-        return $this->codec;
+        return $this->codec = $this->getDefaultCodec();
     }
 
     /**
      * @return Codec
      */
-    protected function getDefaultCodec()
+    protected function getDefaultCodec(): Codec
     {
         if ($this->route->hasCodec()) {
             return $this->route->getCodec();
@@ -497,35 +563,27 @@ class Responses extends BaseResponses
     }
 
     /**
-     * @inheritdoc
+     * @return string
      */
-    protected function getUrlPrefix()
+    protected function getUrlPrefix(): string
     {
         return $this->api->getUrl()->toString();
     }
 
     /**
-     * @inheritdoc
+     * @return QueryParametersInterface|null
      */
-    protected function getEncodingParameters()
+    protected function getEncodingParameters(): ?QueryParametersInterface
     {
         return $this->parameters;
     }
 
     /**
-     * @inheritdoc
+     * @return ContainerInterface
      */
-    protected function getSchemaContainer()
+    protected function getContainer(): ContainerInterface
     {
         return $this->api->getContainer();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function getSupportedExtensions()
-    {
-        return $this->api->getSupportedExtensions();
     }
 
     /**
@@ -534,10 +592,9 @@ class Responses extends BaseResponses
      * @param string|null $content
      * @param int $statusCode
      * @param array $headers
-     *
      * @return Response
      */
-    protected function createResponse($content, $statusCode, array $headers): Response
+    protected function createResponse(?string $content, int $statusCode, array $headers = []): Response
     {
         return response($content, $statusCode, $headers);
     }
@@ -550,7 +607,7 @@ class Responses extends BaseResponses
      * @param $meta
      * @return bool
      */
-    protected function isNoContent($resource, $links, $meta)
+    protected function isNoContent($resource, $links, $meta): bool
     {
         return is_null($resource) && empty($links) && empty($meta);
     }
@@ -561,21 +618,23 @@ class Responses extends BaseResponses
      * @param $data
      * @return bool
      */
-    protected function isAsync($data)
+    protected function isAsync($data): bool
     {
         return $data instanceof AsynchronousProcess;
     }
 
     /**
-     * Reset the encoder.
-     *
-     * @return void
+     * @param $resource
+     * @return LinkInterface
      */
-    protected function resetEncoder()
+    private function getResourceSelfLink($resource): LinkInterface
     {
-        $this->getEncoder()->withLinks([])->withMeta(null);
-    }
+        $schemaProvider = $this
+            ->getContainer()
+            ->getSchema($resource);
 
+        return $schemaProvider->getSelfSubLink($resource);
+    }
 
     /**
      * @param PageInterface $page
@@ -583,7 +642,7 @@ class Responses extends BaseResponses
      * @param $links
      * @return array
      */
-    private function extractPage(PageInterface $page, $meta, $links)
+    private function extractPage(PageInterface $page, $meta, $links): array
     {
         return [
             $page->getData(),
@@ -597,7 +656,7 @@ class Responses extends BaseResponses
      * @param PageInterface $page
      * @return array
      */
-    private function mergePageMeta($existing, PageInterface $page)
+    private function mergePageMeta($existing, PageInterface $page): array
     {
         if (!$merge = $page->getMeta()) {
             return $existing;
@@ -618,7 +677,7 @@ class Responses extends BaseResponses
      * @param PageInterface $page
      * @return array
      */
-    private function mergePageLinks(array $existing, PageInterface $page)
+    private function mergePageLinks(array $existing, PageInterface $page): array
     {
         return array_replace($existing, array_filter([
             DocumentInterface::KEYWORD_FIRST => $page->getFirstLink(),

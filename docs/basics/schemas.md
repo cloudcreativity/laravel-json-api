@@ -35,7 +35,7 @@ can locate a schema for each PHP class it encounters.
 ## Creating Schemas
 
 To generate a schema that extends, use the following command. The generated schema will extend
-`Neomerx\JsonApi\Schema\SchemaProvider`.
+`CloudCreativity\LaravelJsonApi\Schema\SchemaProvider`.
 
 ```bash
 php artisan make:json-api:schema <resource-type> [<api>]

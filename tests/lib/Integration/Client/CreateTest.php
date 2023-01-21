@@ -17,9 +17,9 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Client;
 
+use CloudCreativity\LaravelJsonApi\Http\Query\QueryParameters;
 use CloudCreativity\LaravelJsonApi\Exceptions\ClientException;
 use DummyApp\Post;
-use Neomerx\JsonApi\Encoder\Parameters\EncodingParameters;
 
 class CreateTest extends TestCase
 {
@@ -166,7 +166,7 @@ class CreateTest extends TestCase
             ],
         ];
 
-        $params = new EncodingParameters(['author', 'comments'], ['users' => ['name', 'email']]);
+        $params = new QueryParameters(['author', 'comments'], ['users' => ['name', 'email']]);
 
         $expected = $this->willSeeResource($post, 201);
         $actual = $this->client
@@ -253,7 +253,7 @@ class CreateTest extends TestCase
 
     public function testWithEncodingParameters()
     {
-        $parameters = new EncodingParameters(
+        $parameters = new QueryParameters(
             ['author', 'site'],
             ['author' => ['first-name', 'surname'], 'site' => ['uri']],
             null,
