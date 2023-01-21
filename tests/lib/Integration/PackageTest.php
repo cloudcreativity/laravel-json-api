@@ -51,10 +51,8 @@ class PackageTest extends TestCase
     /**
      * Test that we can read a resource from the application.
      */
-    public function testReadPost()
+    public function testReadPost(): void
     {
-        $this->resourceType = 'posts';
-
         /** @var Post $post */
         $post = factory(Post::class)->create();
 

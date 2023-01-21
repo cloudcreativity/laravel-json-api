@@ -70,7 +70,7 @@ $factory->define(DummyApp\Download::class, function (Faker $faker) {
 /** Image */
 $factory->define(DummyApp\Image::class, function (Faker $faker) {
     return [
-        'url' => $faker->imageUrl(),
+        'url' => $faker->url(),
     ];
 });
 
