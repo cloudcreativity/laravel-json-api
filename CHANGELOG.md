@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## Unreleased
+
+### Changed
+
+- Upgraded `laravel-json-api/neomerx-json-api` dependency to `^1.2`. This allows v1, v2 and v3 of the PSR log
+  dependency, whereas previously only v1 was allowed.
+
 ## [4.0.1] - 2022-04-24
 
 ### Fixed
@@ -23,12 +30,12 @@ All notable changes to this project will be documented in this file. This projec
 - Package now depends on our fork of the Neomerx JSON:API package - `laravel-json-api/neomerx-json-api`. This is a
   non-breaking change.
 - **BREAKING** Added return types to internal methods, to remove deprecation notices in PHP 8.1. This will affect your
-  implementation if you have extended any of our classes and overloaded a method that now has a return type. 
+  implementation if you have extended any of our classes and overloaded a method that now has a return type.
 
 ### Removed
 
-- **BREAKING** Removed the following classes from the `CloudCreativity\LaravelJsonApi\Testing` namespace. You must 
-  use classes (with the same names) from the `LaravelJsonApi\Testing` namespace, after installing the 
+- **BREAKING** Removed the following classes from the `CloudCreativity\LaravelJsonApi\Testing` namespace. You must
+  use classes (with the same names) from the `LaravelJsonApi\Testing` namespace, after installing the
   `laravel-json-api/testing` package as a dev dependency. Refer to the upgrade guide for details. Classes/traits removed
   are:
     - `MakesJsonApiRequests`
@@ -206,43 +213,43 @@ All notable changes to this project will be documented in this file. This projec
   the [documented validation implementation](./docs/basics/validators.md) instead.
 - The deprecated `json_api_request()` helper was removed.
 - The following methods were removed from the JSON API service (and are therefore no longer available via the facade):
-  - `request()`: use `currentRoute()` instead.
-  - `defaultApi()`: set the default API via `LaravelJsonApi::defaultApi()` instead.
+    - `request()`: use `currentRoute()` instead.
+    - `defaultApi()`: set the default API via `LaravelJsonApi::defaultApi()` instead.
 - All deprecated methods on the `Testing\MakesJsonApiRequests` trait and `Testing\TestResponse` class were removed.
 - Removed the `Http\Requests\ValidatedRequest::validate()` method, as Laravel replaced it with
   `validateResolved()`. This affects all JSON API request classes.
 - Additionally, the following deprecated interfaces, classes and traits were removed:
-  - `Api\ResourceProvider` - extend `Api\AbstractProvider` instead.
-  - `Contracts\Document\MutableErrorInterface`
-  - `Contracts\Exceptions\ErrorIdAllocatorInterface`
-  - `Contracts\Factories\FactoryInterface`
-  - `Contracts\Http\Responses\ErrorResponseInterface`
-  - `Contracts\Object\*` - all interfaces in this namespace.
-  - `Contracts\Repositories\ErrorRepositoryInterface`
-  - `Contracts\Utils\ErrorReporterInterface`
-  - `Contracts\Utils\ErrorsAwareInterface`
-  - `Contracts\Utils\ReplacerInterface`
-  - `Document\Error` - use `Document\Error\Error` instead.
-  - `Eloquent\AbstractSchema` - extend the `neomerx/json-api` schema instead.
-  - `Eloquent\Concerns\SerializesModels` trait.
-  - `Exceptions\MutableErrorCollection`
-  - `Exceptions\NotFoundException`
-  - `Exceptions\RecordNotFoundException` - use `Exceptions\ResourceNotFoundException` instead.
-  - `Http\Query\ChecksQueryParameters` trait.
-  - `Http\Requests\JsonApiRequest`
-  - `Http\Responses\ErrorResponse`
-  - `Object\*` - all classes in this namespace.
-  - `Repositories\ErrorRepository`
-  - `Schema\AbstractSchema` - extend the `neomerx/json-api` schema instead.
-  - `Schema\CreatesEloquentIdentities` trait.
-  - `Schema\CreatesLinks` trait.
-  - `Schema\EloquentSchema` - extend the `neomerx/json-api` schema instead.
-  - `Utils\AbstractErrorBag`
-  - `Utils\ErrorBag`
-  - `Utils\ErrorCreatorTrait`
-  - `Utils\ErrorsAwareTrait`
-  - `Utils\Pointer`
-  - `Utils\Replacer`
+    - `Api\ResourceProvider` - extend `Api\AbstractProvider` instead.
+    - `Contracts\Document\MutableErrorInterface`
+    - `Contracts\Exceptions\ErrorIdAllocatorInterface`
+    - `Contracts\Factories\FactoryInterface`
+    - `Contracts\Http\Responses\ErrorResponseInterface`
+    - `Contracts\Object\*` - all interfaces in this namespace.
+    - `Contracts\Repositories\ErrorRepositoryInterface`
+    - `Contracts\Utils\ErrorReporterInterface`
+    - `Contracts\Utils\ErrorsAwareInterface`
+    - `Contracts\Utils\ReplacerInterface`
+    - `Document\Error` - use `Document\Error\Error` instead.
+    - `Eloquent\AbstractSchema` - extend the `neomerx/json-api` schema instead.
+    - `Eloquent\Concerns\SerializesModels` trait.
+    - `Exceptions\MutableErrorCollection`
+    - `Exceptions\NotFoundException`
+    - `Exceptions\RecordNotFoundException` - use `Exceptions\ResourceNotFoundException` instead.
+    - `Http\Query\ChecksQueryParameters` trait.
+    - `Http\Requests\JsonApiRequest`
+    - `Http\Responses\ErrorResponse`
+    - `Object\*` - all classes in this namespace.
+    - `Repositories\ErrorRepository`
+    - `Schema\AbstractSchema` - extend the `neomerx/json-api` schema instead.
+    - `Schema\CreatesEloquentIdentities` trait.
+    - `Schema\CreatesLinks` trait.
+    - `Schema\EloquentSchema` - extend the `neomerx/json-api` schema instead.
+    - `Utils\AbstractErrorBag`
+    - `Utils\ErrorBag`
+    - `Utils\ErrorCreatorTrait`
+    - `Utils\ErrorsAwareTrait`
+    - `Utils\Pointer`
+    - `Utils\Replacer`
 
 ## [1.7.0] - 2020-04-13
 
@@ -450,30 +457,30 @@ $ composer require --dev cloudcreativity/json-api-testing:^2.0
 
 - The following classes in the `Validation` namespace were removed as the `Validation\Validator`
   class can be used instead, or validators can be constructed via the factory instead:
-  - `AbstractValidator`
-  - `ResourceValidator`
-  - `QueryValidator`
+    - `AbstractValidator`
+    - `ResourceValidator`
+    - `QueryValidator`
 - The deprecated `EloquentController` was removed - extend `JsonApiController` directly.
 - The `Store\EloquentAdapter` was removed - extend `Eloquent\AbstractAdapter` directly.
 - The following previously deprecated methods/properties were removed from the `EloquentAdapter`:
-  - public method `queryRelation()`: renamed `queryToMany()`.
-  - protected property `$with`: renamed `$defaultWith`.
-  - protected method `keyForAttribute()`: renamed `modelKeyForField()`.
-  - protected method `columnForField()`: renamed `getSortColumn()`.
-  - protected method `all()`: renamed `searchAll()`.
-  - protected method `extractIncludePaths()`: overload the `getQueryParameters()` method instead.
-  - protected method `extractFilters()`: overload the `getQueryParameters()` method instead.
-  - protected method `extractPagination()`: overload the `getQueryParameters()` method instead.
+    - public method `queryRelation()`: renamed `queryToMany()`.
+    - protected property `$with`: renamed `$defaultWith`.
+    - protected method `keyForAttribute()`: renamed `modelKeyForField()`.
+    - protected method `columnForField()`: renamed `getSortColumn()`.
+    - protected method `all()`: renamed `searchAll()`.
+    - protected method `extractIncludePaths()`: overload the `getQueryParameters()` method instead.
+    - protected method `extractFilters()`: overload the `getQueryParameters()` method instead.
+    - protected method `extractPagination()`: overload the `getQueryParameters()` method instead.
 - The previously deprecated `Eloquent\Concerns\AbstractRelation` class was removed.
   Extend `Adapter\AbstractRelationshipAdapter` and use the `Eloquent\Concerns\QueriesRelations` trait.
 - Removed the deprecated `Contracts\Utils\ConfigurableInterface` as this has not been in use for some time.
 - Removed the deprecated `createResourceDocumentValidator()` method from the factory.
 - Removed the following previously deprecated methods from the `TestResponse` class:
-  - `assertJsonApiResponse()`: use `jsonApi()`.
-  - `normalizeIds()` and `normalizeId()` as these are not in use by the refactored test implementation.
+    - `assertJsonApiResponse()`: use `jsonApi()`.
+    - `normalizeIds()` and `normalizeId()` as these are not in use by the refactored test implementation.
 - Removed the following previously deprecated methods from the JSON API service/facade:
-  - `report()`: no longer supported for access via the service.
-  - `requestOrFail()`: no longer required.
+    - `report()`: no longer supported for access via the service.
+    - `requestOrFail()`: no longer required.
 - Removed the previously deprecated `Schema\ExtractsAttributesTrait` as it has not been used for some time.
 
 ## [1.0.0-beta.6] - 2019-01-03
@@ -543,24 +550,24 @@ $ composer require --dev cloudcreativity/json-api-testing:^2.0
   were not in use.
 - The previously deprecated `InteractsWithModels` testing trait was removed.
 - The following (majority previously deprecated methods) on the `TestResponse` class were removed:
-  - `assertDocument`
-  - `assertResourceResponse`
-  - `assertResourcesResponse`
-  - `assertRelatedResourcesResponse`
-  - `assertSearchResponse`
-  - `assertSearchOneResponse`
-  - `assertCreateResponse`
-  - `assertReadResponse`
-  - `assertUpdateResponse`
-  - `assertDeleteResponse`
-  - `assertRelatedResourceResponse`
-  - `assertHasOneRelationshipResponse`
-  - `assertDataCollection`
-  - `assertDataResource`
-  - `assertDataResourceIdentifier`
-  - `assertSearchByIdResponse`
-  - `assertSearchedPolymorphIds`
-  - `assertReadPolymorphHasMany`
+    - `assertDocument`
+    - `assertResourceResponse`
+    - `assertResourcesResponse`
+    - `assertRelatedResourcesResponse`
+    - `assertSearchResponse`
+    - `assertSearchOneResponse`
+    - `assertCreateResponse`
+    - `assertReadResponse`
+    - `assertUpdateResponse`
+    - `assertDeleteResponse`
+    - `assertRelatedResourceResponse`
+    - `assertHasOneRelationshipResponse`
+    - `assertDataCollection`
+    - `assertDataResource`
+    - `assertDataResourceIdentifier`
+    - `assertSearchByIdResponse`
+    - `assertSearchedPolymorphIds`
+    - `assertReadPolymorphHasMany`
 
 ### Deprecated
 
@@ -607,10 +614,10 @@ $ composer require --dev cloudcreativity/json-api-testing:^2.0
 - The `Document\Error` and `Contracts\Document\MutableErrorInterface` are deprecated and will be removed at `2.0`. You
   should use the error interface/class from the `neomerx/jsonapi` package instead.
 - The following utility classes/traits/interfaces are deprecated and will be removed at `2.0`:
-  - `Utils/ErrorCreatorTrait`
-  - `Utils/ErrorsAwareTrait` and `Contracts\Utils\ErrorsAwareInterface`
-  - `Utils/Pointers`
-  - `Utils/Replacer` and `Contracts\Utils\ReplacerInterface`
+    - `Utils/ErrorCreatorTrait`
+    - `Utils/ErrorsAwareTrait` and `Contracts\Utils\ErrorsAwareInterface`
+    - `Utils/Pointers`
+    - `Utils/Replacer` and `Contracts\Utils\ReplacerInterface`
 - The `Contracts\Factories\FactoryInterface` is deprecated and will be removed at `1.0`. You should
   type-hint `Factories\Factory` directly instead.
 
@@ -642,10 +649,10 @@ $ composer require --dev cloudcreativity/json-api-testing:^2.0
 ### Deprecated
 
 - The following methods on the Eloquent adapter will be removed in `1.0.0` as they are no longer required:
-  - `extractIncludePaths`
-  - `extractFilters`
-  - `extractPagination`
-  - `columnForField`: use `getSortColumn` instead.
+    - `extractIncludePaths`
+    - `extractFilters`
+    - `extractPagination`
+    - `columnForField`: use `getSortColumn` instead.
 
 ## [1.0.0-beta.2] - 2018-08-25
 
@@ -688,12 +695,12 @@ $ composer require --dev cloudcreativity/json-api-testing:^2.0
 ### Removed
 
 - The following deprecated methods have been removed from the Eloquent adapter:
-  - `first`: use `searchOne` instead.
+    - `first`: use `searchOne` instead.
 
 ### Deprecated
 
 - The follow methods are deprecated on the Eloquent adapter and will be removed in `1.0.0`:
-  - `queryRelation`: use `queryToMany` or `queryToOne` instead.
+    - `queryRelation`: use `queryToMany` or `queryToOne` instead.
 
 ### Fixed
 
@@ -775,8 +782,8 @@ $ composer require --dev cloudcreativity/json-api-testing:^2.0
 - Can now generate authorizers using the `make:json-api:authorizer` command, or the `--auth` flag when generating a
   resource with `make:json-api:resource`.
 - The JSON API controller now has the following additional hooks:
-  - `searching` for an *index* action.
-  - `reading` for a *read* action.
+    - `searching` for an *index* action.
+    - `reading` for a *read* action.
 - [#163](https://github.com/cloudcreativity/laravel-json-api/issues/163)
   Added relationship hooks to the JSON API controller.
 
@@ -789,20 +796,20 @@ $ composer require --dev cloudcreativity/json-api-testing:^2.0
 ### Removed
 
 - The previous authorizer implementation has been removed in favour of the new one. The following were deleted:
-  - `Contract\Authorizer\AuthorizerInterface`
-  - `Authorizer\AbstractAuthorizer`
-  - `Authorizer\ReadOnlyAuthorizer`
-  - `Exceptions\AuthorizationException`
+    - `Contract\Authorizer\AuthorizerInterface`
+    - `Authorizer\AbstractAuthorizer`
+    - `Authorizer\ReadOnlyAuthorizer`
+    - `Exceptions\AuthorizationException`
 
 ### Deprecated
 
 - Eloquent schemas are now deprecated in favour of using generic schemas. This is because of the amount of processing
   involved without any benefit, as generic schemas are straight-forward to construct. The following classes/traits are
   deprecated:
-  - `Eloquent\AbstractSchema`
-  - `Eloquent\SerializesModels`
-  - `Schema\CreatesLinks`
-  - `Schema\EloquentSchema` (was deprecated in `1.0.0-alpha.1`).
+    - `Eloquent\AbstractSchema`
+    - `Eloquent\SerializesModels`
+    - `Schema\CreatesLinks`
+    - `Schema\EloquentSchema` (was deprecated in `1.0.0-alpha.1`).
 
 ## [1.0.0-alpha.1] - 2018-04-29
 
