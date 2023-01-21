@@ -117,8 +117,6 @@ class QueryValidationTest extends TestCase
             'source' => ['parameter' => $param],
         ];
 
-        $this->resourceType = 'posts';
-
         $response = $this
             ->jsonApi('posts')
             ->query($params)
