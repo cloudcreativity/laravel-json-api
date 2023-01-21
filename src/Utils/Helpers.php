@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2022 Cloud Creativity Limited
+ * Copyright 2023 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ namespace CloudCreativity\LaravelJsonApi\Utils;
 use CloudCreativity\LaravelJsonApi\Exceptions\DocumentRequiredException;
 use CloudCreativity\LaravelJsonApi\Exceptions\InvalidJsonException;
 use Illuminate\Support\Str as IlluminateStr;
-use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
+use Neomerx\JsonApi\Contracts\Schema\ErrorInterface;
 use Neomerx\JsonApi\Http\Headers\MediaType;
 use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\RequestInterface;

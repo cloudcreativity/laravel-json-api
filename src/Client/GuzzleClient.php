@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Copyright 2022 Cloud Creativity Limited
+ * Copyright 2023 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Exception\TransferException;
 use GuzzleHttp\Psr7\Request;
-use Neomerx\JsonApi\Contracts\Schema\ContainerInterface;
+use Neomerx\JsonApi\Contracts\Schema\SchemaContainerInterface;
 
 /**
  * Class GuzzleClient
@@ -42,12 +42,12 @@ class GuzzleClient extends AbstractClient
      * GuzzleClient constructor.
      *
      * @param Client $http
-     * @param ContainerInterface $schemas
+     * @param SchemaContainerInterface $schemas
      * @param ClientSerializer $serializer
      */
     public function __construct(
         Client $http,
-        ContainerInterface $schemas,
+        SchemaContainerInterface $schemas,
         ClientSerializer $serializer
     ) {
         parent::__construct($schemas, $serializer);

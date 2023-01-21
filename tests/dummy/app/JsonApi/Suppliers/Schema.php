@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2022 Cloud Creativity Limited
+ * Copyright 2023 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,44 +18,34 @@
 namespace DummyApp\JsonApi\Suppliers;
 
 use CloudCreativity\LaravelJsonApi\Schema\DashCaseRelationUrls;
+use CloudCreativity\LaravelJsonApi\Schema\SchemaProvider;
 use DummyApp\Supplier;
-use Neomerx\JsonApi\Schema\SchemaProvider;
 
 class Schema extends SchemaProvider
 {
-
     use DashCaseRelationUrls;
 
     /**
      * @var string
      */
-    protected $resourceType = 'suppliers';
+    protected string $resourceType = 'suppliers';
 
     /**
-     * @param Supplier $resource
-     * @return string
-     */
-    public function getId($resource)
-    {
-        return (string) $resource->getRouteKey();
-    }
-
-    /**
-     * @param Supplier $resource
+     * @param Supplier|object $resource
      * @return array
      */
-    public function getAttributes($resource)
+    public function getAttributes(object $resource): array
     {
         return ['name' => $resource->name];
     }
 
     /**
-     * @param Supplier $resource
+     * @param Supplier|object $resource
      * @param bool $isPrimary
      * @param array $includeRelationships
      * @return array
      */
-    public function getRelationships($resource, $isPrimary, array $includeRelationships)
+    public function getRelationships(object $resource, bool $isPrimary, array $includeRelationships): array
     {
         return [
             'userHistory' => [
@@ -68,6 +58,4 @@ class Schema extends SchemaProvider
             ],
         ];
     }
-
-
 }

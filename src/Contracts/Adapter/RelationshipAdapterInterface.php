@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2022 Cloud Creativity Limited
+ * Copyright 2023 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Contracts\Adapter;
 
-use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Query\QueryParametersInterface;
 
 interface RelationshipAdapterInterface
 {
@@ -37,10 +37,10 @@ interface RelationshipAdapterInterface
      * This method would be invoked providing the post that is being queried as the `$record` argument.
      *
      * @param mixed $record
-     * @param EncodingParametersInterface $parameters
+     * @param QueryParametersInterface $parameters
      * @return mixed
      */
-    public function query($record, EncodingParametersInterface $parameters);
+    public function query($record, QueryParametersInterface $parameters);
 
     /**
      * Query relationship data for the specified domain record.
@@ -49,10 +49,10 @@ interface RelationshipAdapterInterface
      * This method would be invoked providing the post that is being queried as the `$record` argument.
      *
      * @param mixed $record
-     * @param EncodingParametersInterface $parameters
+     * @param QueryParametersInterface $parameters
      * @return mixed
      */
-    public function relationship($record, EncodingParametersInterface $parameters);
+    public function relationship($record, QueryParametersInterface $parameters);
 
     /**
      * Update a domain record's relationship when filling a resource's relationships.
@@ -66,11 +66,11 @@ interface RelationshipAdapterInterface
      * @param mixed $record
      * @param array $relationship
      *      The JSON API relationship object.
-     * @param EncodingParametersInterface $parameters
+     * @param QueryParametersInterface $parameters
      * @return object
      *      the updated domain record.
      */
-    public function update($record, array $relationship, EncodingParametersInterface $parameters);
+    public function update($record, array $relationship, QueryParametersInterface $parameters);
 
     /**
      * Replace a domain record's relationship with data from the supplied relationship object.
@@ -78,10 +78,10 @@ interface RelationshipAdapterInterface
      * @param mixed $record
      * @param array $relationship
      *      The JSON API relationship object.
-     * @param EncodingParametersInterface $parameters
+     * @param QueryParametersInterface $parameters
      * @return object
      *      the updated domain record.
      */
-    public function replace($record, array $relationship, EncodingParametersInterface $parameters);
+    public function replace($record, array $relationship, QueryParametersInterface $parameters);
 
 }

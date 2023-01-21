@@ -71,7 +71,7 @@ In the generated schema, you will need to add the `AsyncSchema` trait, for examp
 
 ```php
 use CloudCreativity\LaravelJsonApi\Queue\AsyncSchema;
-use Neomerx\JsonApi\Schema\SchemaProvider;
+use CloudCreativity\LaravelJsonApi\Schema\SchemaProvider;
 
 class Schema extends SchemaProvider
 {
@@ -171,7 +171,6 @@ namespace App\JsonApi\Podcasts;
 
 use App\Jobs\ProcessPodcast;
 use CloudCreativity\LaravelJsonApi\Eloquent\AbstractAdapter;
-use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 class Adapter extends AbstractAdapter
 {

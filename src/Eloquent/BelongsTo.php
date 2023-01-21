@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2022 Cloud Creativity Limited
+ * Copyright 2023 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,9 @@
 namespace CloudCreativity\LaravelJsonApi\Eloquent;
 
 use CloudCreativity\LaravelJsonApi\Adapter\AbstractRelationshipAdapter;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Query\QueryParametersInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations;
-use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 /**
  * Class HasOne
@@ -49,10 +49,10 @@ class BelongsTo extends AbstractRelationshipAdapter
 
     /**
      * @param Model $record
-     * @param EncodingParametersInterface $parameters
+     * @param QueryParametersInterface $parameters
      * @return mixed
      */
-    public function query($record, EncodingParametersInterface $parameters)
+    public function query($record, QueryParametersInterface $parameters)
     {
         if (!$this->requiresInverseAdapter($record, $parameters)) {
             return $record->{$this->key};
@@ -65,10 +65,10 @@ class BelongsTo extends AbstractRelationshipAdapter
 
     /**
      * @param Model $record
-     * @param EncodingParametersInterface $parameters
+     * @param QueryParametersInterface $parameters
      * @return mixed
      */
-    public function relationship($record, EncodingParametersInterface $parameters)
+    public function relationship($record, QueryParametersInterface $parameters)
     {
         return $this->query($record, $parameters);
     }
@@ -76,10 +76,10 @@ class BelongsTo extends AbstractRelationshipAdapter
     /**
      * @param Model $record
      * @param array $relationship
-     * @param EncodingParametersInterface $parameters
+     * @param QueryParametersInterface $parameters
      * @return void
      */
-    public function update($record, array $relationship, EncodingParametersInterface $parameters)
+    public function update($record, array $relationship, QueryParametersInterface $parameters)
     {
         $relation = $this->getRelation($record, $this->key);
 
@@ -93,10 +93,10 @@ class BelongsTo extends AbstractRelationshipAdapter
     /**
      * @param Model $record
      * @param array $relationship
-     * @param EncodingParametersInterface $parameters
+     * @param QueryParametersInterface $parameters
      * @return Model
      */
-    public function replace($record, array $relationship, EncodingParametersInterface $parameters)
+    public function replace($record, array $relationship, QueryParametersInterface $parameters)
     {
         $this->update($record, $relationship, $parameters);
         $record->save();

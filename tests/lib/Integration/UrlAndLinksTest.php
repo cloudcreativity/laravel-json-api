@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Copyright 2022 Cloud Creativity Limited
+ * Copyright 2023 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration;
 
-use Neomerx\JsonApi\Document\Link;
+use Neomerx\JsonApi\Schema\Link;
 
 /**
  * Class UrlTest
@@ -72,7 +72,7 @@ class UrlAndLinksTest extends TestCase
     public function testLink($expected, $method, $resourceId = null, $relationship = null)
     {
         $links = json_api()->links();
-        $expected = new Link("http://localhost$expected", null, true);
+        $expected = new Link(false, "http://localhost$expected", false);
         $args = $this->normalizeArgs($resourceId, $relationship);
 
         $this->assertEquals($expected, call_user_func_array([$links, $method], $args));
@@ -89,7 +89,7 @@ class UrlAndLinksTest extends TestCase
     {
         $meta = (object) ['foo' => 'bar'];
         $links = json_api()->links();
-        $expected = new Link("http://localhost$expected", $meta, true);
+        $expected = new Link(false, "http://localhost$expected", true, $meta);
         $args = $this->normalizeArgs($resourceId, $relationship);
         $args[] = $meta;
 

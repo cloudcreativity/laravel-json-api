@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2022 Cloud Creativity Limited
+ * Copyright 2023 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,7 +73,9 @@ class CustomTest extends TestCase
         $avatar = factory(Avatar::class)->create(compact('path'));
         $uri = url('/api/v1/avatars', $avatar);
 
-        $this->withDefaultNegotiator()
+        $this
+            ->withoutExceptionHandling()
+            ->withDefaultNegotiator()
             ->get($uri, ['Accept' => 'image/*'])
             ->assertSuccessful()
             ->assertHeader('Content-Type', $avatar->media_type);

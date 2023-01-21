@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2022 Cloud Creativity Limited
+ * Copyright 2023 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Client;
 
-use CloudCreativity\LaravelJsonApi\Encoder\Parameters\EncodingParameters;
+use CloudCreativity\LaravelJsonApi\Http\Query\QueryParameters;
 use DummyApp\Post;
 
 class ToOneTest extends TestCase
@@ -62,7 +62,7 @@ class ToOneTest extends TestCase
 
     public function testRelatedWithEncodingParameters()
     {
-        $parameters = new EncodingParameters(
+        $parameters = new QueryParameters(
             ['posts'],
             ['author' => ['first-name', 'surname']]
         );
@@ -103,7 +103,7 @@ class ToOneTest extends TestCase
 
     public function testRelationshipWithEncodingParameters()
     {
-        $parameters = new EncodingParameters(
+        $parameters = new QueryParameters(
             ['posts'],
             ['author' => ['first-name', 'surname']]
         );

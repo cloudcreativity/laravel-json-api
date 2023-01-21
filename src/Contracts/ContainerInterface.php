@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2022 Cloud Creativity Limited
+ * Copyright 2023 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,16 +20,47 @@ namespace CloudCreativity\LaravelJsonApi\Contracts;
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\ResourceAdapterInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Auth\AuthorizerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\ContentNegotiatorInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Schema\SchemaProviderInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorFactoryInterface;
-use Neomerx\JsonApi\Contracts\Schema\ContainerInterface as BaseContainerInterface;
 
 /**
  * Interface ContainerInterface
  *
  * @package CloudCreativity\LaravelJsonApi
  */
-interface ContainerInterface extends BaseContainerInterface
+interface ContainerInterface
 {
+    /**
+     * Get schema provider for resource object.
+     *
+     * @param object $resourceObject
+     * @return SchemaProviderInterface
+     */
+    public function getSchema(object $resourceObject): SchemaProviderInterface;
+
+    /**
+     * If container has a Schema for a given input.
+     *
+     * @param object $resourceObject
+     * @return bool
+     */
+    public function hasSchema(object $resourceObject): bool;
+
+    /**
+     * Get schema provider by resource type.
+     *
+     * @param string $type
+     * @return SchemaProviderInterface
+     */
+    public function getSchemaByType(string $type): SchemaProviderInterface;
+
+    /**
+     * Get schema provider by JSON:API type.
+     *
+     * @param string $resourceType
+     * @return SchemaProviderInterface
+     */
+    public function getSchemaByResourceType(string $resourceType): SchemaProviderInterface;
 
     /**
      * Get a resource adapter for a domain record.

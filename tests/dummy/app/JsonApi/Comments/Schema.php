@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2022 Cloud Creativity Limited
+ * Copyright 2023 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,40 +18,23 @@
 namespace DummyApp\JsonApi\Comments;
 
 use CloudCreativity\LaravelJsonApi\Schema\DashCaseRelationUrls;
+use CloudCreativity\LaravelJsonApi\Schema\SchemaProvider;
 use DummyApp\Comment;
-use Neomerx\JsonApi\Schema\SchemaProvider;
 
 class Schema extends SchemaProvider
 {
-
     use DashCaseRelationUrls;
 
     /**
      * @var string
      */
-    protected $resourceType = 'comments';
+    protected string $resourceType = 'comments';
 
     /**
-     * @var array
-     */
-    protected $attributes = [
-        'content'
-    ];
-
-    /**
-     * @param Comment $resource
-     * @return string
-     */
-    public function getId($resource)
-    {
-        return (string) $resource->getRouteKey();
-    }
-
-    /**
-     * @param Comment $resource
+     * @param Comment|object $resource
      * @return array
      */
-    public function getAttributes($resource)
+    public function getAttributes(object $resource): array
     {
         return [
             'createdAt' => $resource->created_at,
@@ -61,12 +44,12 @@ class Schema extends SchemaProvider
     }
 
     /**
-     * @param Comment $resource
+     * @param Comment|object $resource
      * @param bool $isPrimary
      * @param array $includeRelationships
      * @return array
      */
-    public function getRelationships($resource, $isPrimary, array $includeRelationships)
+    public function getRelationships(object $resource, bool $isPrimary, array $includeRelationships): array
     {
         return [
             'commentable' => [

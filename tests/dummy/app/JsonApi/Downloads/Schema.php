@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2022 Cloud Creativity Limited
+ * Copyright 2023 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,28 +17,19 @@
 
 namespace DummyApp\JsonApi\Downloads;
 
-use Neomerx\JsonApi\Schema\SchemaProvider;
+use CloudCreativity\LaravelJsonApi\Schema\SchemaProvider;
 
 class Schema extends SchemaProvider
 {
-
     /**
      * @var string
      */
-    protected $resourceType = 'downloads';
+    protected string $resourceType = 'downloads';
 
     /**
      * @inheritDoc
      */
-    public function getId($resource)
-    {
-        return $resource->getRouteKey();
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getAttributes($resource)
+    public function getAttributes(object $resource): array
     {
         return [
             'category' => $resource->category,
@@ -46,5 +37,4 @@ class Schema extends SchemaProvider
             'updatedAt' => $resource->updated_at,
         ];
     }
-
 }

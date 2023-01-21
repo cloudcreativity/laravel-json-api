@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2022 Cloud Creativity Limited
+ * Copyright 2023 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
 namespace CloudCreativity\LaravelJsonApi\Exceptions;
 
 use Exception;
-use Neomerx\JsonApi\Document\Error;
+use Neomerx\JsonApi\Schema\Error;
 use Neomerx\JsonApi\Exceptions\JsonApiException;
 
 /**
@@ -100,6 +100,7 @@ class InvalidJsonException extends JsonApiException
     protected function createError()
     {
         return new Error(
+            null,
             null,
             null,
             self::HTTP_CODE_BAD_REQUEST,

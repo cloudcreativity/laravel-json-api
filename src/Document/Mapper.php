@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2022 Cloud Creativity Limited
+ * Copyright 2023 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,35 +15,27 @@
  * limitations under the License.
  */
 
-namespace CloudCreativity\LaravelJsonApi\Encoder\Neomerx;
+declare(strict_types=1);
 
-use CloudCreativity\LaravelJsonApi\Codec\Codec;
-use CloudCreativity\LaravelJsonApi\Codec\Decoding;
-use CloudCreativity\LaravelJsonApi\Codec\Encoding;
-use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
+namespace CloudCreativity\LaravelJsonApi\Document;
+
 use CloudCreativity\LaravelJsonApi\Document\Error\Error;
 use CloudCreativity\LaravelJsonApi\Document\Link\Link;
-use Neomerx\JsonApi\Contracts\Document\DocumentInterface;
-use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
-use Neomerx\JsonApi\Contracts\Document\LinkInterface;
 use Neomerx\JsonApi\Contracts\Factories\FactoryInterface;
-use Neomerx\JsonApi\Exceptions\ErrorCollection;
+use Neomerx\JsonApi\Contracts\Schema\DocumentInterface;
+use Neomerx\JsonApi\Contracts\Schema\ErrorInterface;
+use Neomerx\JsonApi\Contracts\Schema\LinkInterface;
+use Neomerx\JsonApi\Schema\ErrorCollection;
 
-/**
- * Class Factory
- *
- * @package CloudCreativity\LaravelJsonApi
- */
-class Factory
+class Mapper
 {
-
     /**
      * @var FactoryInterface
      */
-    private $factory;
+    private FactoryInterface $factory;
 
     /**
-     * Factory constructor.
+     * Mapper constructor.
      *
      * @param FactoryInterface $factory
      */
@@ -53,7 +45,7 @@ class Factory
     }
 
     /**
-     * Create an error.
+     * Map a Laravel JSON:API error to a Neomerx error.
      *
      * @param Error $error
      * @return ErrorInterface
@@ -61,17 +53,35 @@ class Factory
     public function createError(Error $error): ErrorInterface
     {
         $about = $error->getLinks()[DocumentInterface::KEYWORD_ERRORS_ABOUT] ?? null;
+        $meta = $error->getMeta();
 
-        return $this->factory->createError(
+        return new \Neomerx\JsonApi\Schema\Error(
             $error->getId(),
             $about ? $this->createLink($about) : null,
+            null,
             $error->getStatus(),
             $error->getCode(),
             $error->getTitle(),
             $error->getDetail(),
             $error->getSource(),
-            $error->getMeta()
+            !empty($meta),
+            $meta,
         );
+    }
+
+    /**
+     * Cast an error to a Neomerx error.
+     *
+     * @param ErrorInterface|Error|array $error
+     * @return ErrorInterface
+     */
+    public function castError($error): ErrorInterface
+    {
+        if ($error instanceof ErrorInterface) {
+            return $error;
+        }
+
+        return $this->createError(Error::cast($error));
     }
 
     /**
@@ -86,34 +96,30 @@ class Factory
             return $errors->getArrayCopy();
         }
 
-        return collect($errors)->map(function ($error) {
-            return ($error instanceof ErrorInterface) ? $error : $this->createError(Error::cast($error));
-        })->all();
+        $converted = [];
+
+        foreach ($errors as $error) {
+            $converted[] = $this->castError($error);
+        }
+
+        return $converted;
     }
 
     /**
-     * Create a link.
+     * Map a Laravel JSON:API link to a Neomerx link.
      *
      * @param Link $link
      * @return LinkInterface
      */
-    public function createLink(Link $link): LinkInterface
+    private function createLink(Link $link): LinkInterface
     {
-        return $this->factory->createLink(
-            $link->getHref(),
-            $link->getMeta(),
-            true
-        );
-    }
+        $meta = $link->getMeta();
 
-    /**
-     * @param ContainerInterface $container
-     * @param Encoding $encoding
-     * @param Decoding|null $decoding
-     * @return Codec
-     */
-    public function createCodec(ContainerInterface $container, Encoding $encoding, ?Decoding $decoding): Codec
-    {
-        return new Codec($this->factory, $container, $encoding, $decoding);
+        return $this->factory->createLink(
+            false,
+            $link->getHref(),
+            !empty($meta),
+            $meta,
+        );
     }
 }

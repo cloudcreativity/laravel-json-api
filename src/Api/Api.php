@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2022 Cloud Creativity Limited
+ * Copyright 2023 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,14 +27,13 @@ use CloudCreativity\LaravelJsonApi\Contracts\Encoder\SerializerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Exceptions\ExceptionParserInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Resolver\ResolverInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
+use CloudCreativity\LaravelJsonApi\Encoder\EncoderOptions;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use CloudCreativity\LaravelJsonApi\Http\Responses\Responses;
 use CloudCreativity\LaravelJsonApi\Resolver\AggregateResolver;
 use CloudCreativity\LaravelJsonApi\Resolver\NamespaceResolver;
 use GuzzleHttp\Client;
 use Neomerx\JsonApi\Contracts\Http\Headers\MediaTypeInterface;
-use Neomerx\JsonApi\Contracts\Http\Headers\SupportedExtensionsInterface;
-use Neomerx\JsonApi\Encoder\EncoderOptions;
 
 /**
  * Class Api
@@ -194,7 +193,7 @@ class Api
     public function getContainer()
     {
         if (!$this->container) {
-            $this->container = $this->factory->createExtendedContainer($this->resolver);
+            $this->container = $this->factory->createContainer($this->resolver);
         }
 
         return $this->container;
@@ -210,18 +209,6 @@ class Api
         }
 
         return $this->store;
-    }
-
-    /**
-     * @return SupportedExtensionsInterface|null
-     */
-    public function getSupportedExtensions()
-    {
-        if ($ext = $this->config->supportedExt()) {
-            return $this->factory->createSupportedExtensions($ext);
-        }
-
-        return null;
     }
 
     /**
@@ -333,7 +320,9 @@ class Api
             $options = new EncoderOptions($options, $this->getUrl()->toString(), $depth);
         }
 
-        return $this->factory->createEncoder($this->getContainer(), $options);
+        return $this->factory
+            ->createLaravelEncoder($this->getContainer())
+            ->withEncoderOptions($options);
     }
 
     /**
@@ -409,5 +398,4 @@ class Api
     {
         $this->resolver->attach($provider->getResolver());
     }
-
 }

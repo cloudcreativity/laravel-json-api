@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Copyright 2022 Cloud Creativity Limited
+ * Copyright 2023 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ namespace CloudCreativity\LaravelJsonApi\Adapter;
 use CloudCreativity\LaravelJsonApi\Codec\ChecksMediaTypes;
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\RelationshipAdapterInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\ResourceAdapterInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Query\QueryParametersInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Queue\AsynchronousProcess;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreAwareInterface;
 use CloudCreativity\LaravelJsonApi\Document\ResourceObject;
@@ -29,7 +30,6 @@ use CloudCreativity\LaravelJsonApi\Store\StoreAwareTrait;
 use CloudCreativity\LaravelJsonApi\Utils\InvokesHooks;
 use CloudCreativity\LaravelJsonApi\Utils\Str;
 use Illuminate\Support\Collection;
-use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 /**
  * Class AbstractResourceAdaptor
@@ -86,7 +86,7 @@ abstract class AbstractResourceAdapter implements ResourceAdapterInterface, Stor
     /**
      * @inheritdoc
      */
-    public function create(array $document, EncodingParametersInterface $parameters)
+    public function create(array $document, QueryParametersInterface $parameters)
     {
         $record = $this->createRecord(
             $resource = $this->deserialize($document)
@@ -98,7 +98,7 @@ abstract class AbstractResourceAdapter implements ResourceAdapterInterface, Stor
     /**
      * @inheritDoc
      */
-    public function read($record, EncodingParametersInterface $parameters)
+    public function read($record, QueryParametersInterface $parameters)
     {
         return $record;
     }
@@ -106,7 +106,7 @@ abstract class AbstractResourceAdapter implements ResourceAdapterInterface, Stor
     /**
      * @inheritdoc
      */
-    public function update($record, array $document, EncodingParametersInterface $parameters)
+    public function update($record, array $document, QueryParametersInterface $parameters)
     {
         $resource = $this->deserialize($document, $record);
 
@@ -116,7 +116,7 @@ abstract class AbstractResourceAdapter implements ResourceAdapterInterface, Stor
     /**
      * @inheritDoc
      */
-    public function delete($record, EncodingParametersInterface $params)
+    public function delete($record, QueryParametersInterface $params)
     {
         if ($result = $this->invoke('deleting', $record)) {
             return $result;
@@ -233,10 +233,10 @@ abstract class AbstractResourceAdapter implements ResourceAdapterInterface, Stor
      *
      * @param $record
      * @param ResourceObject $resource
-     * @param EncodingParametersInterface $parameters
+     * @param QueryParametersInterface $parameters
      * @return void
      */
-    protected function fill($record, ResourceObject $resource, EncodingParametersInterface $parameters)
+    protected function fill($record, ResourceObject $resource, QueryParametersInterface $parameters)
     {
         $this->fillAttributes($record, $resource->getAttributes());
         $this->fillRelationships($record, $resource->getRelationships(), $parameters);
@@ -247,13 +247,13 @@ abstract class AbstractResourceAdapter implements ResourceAdapterInterface, Stor
      *
      * @param $record
      * @param Collection $relationships
-     * @param EncodingParametersInterface $parameters
+     * @param QueryParametersInterface $parameters
      * @return void
      */
     protected function fillRelationships(
         $record,
         Collection $relationships,
-        EncodingParametersInterface $parameters
+        QueryParametersInterface $parameters
     ) {
         $relationships->filter(function ($value, $field) use ($record) {
             return $this->isFillableRelation($field, $record);
@@ -268,13 +268,13 @@ abstract class AbstractResourceAdapter implements ResourceAdapterInterface, Stor
      * @param $record
      * @param $field
      * @param array $relationship
-     * @param EncodingParametersInterface $parameters
+     * @param QueryParametersInterface $parameters
      */
     protected function fillRelationship(
         $record,
         $field,
         array $relationship,
-        EncodingParametersInterface $parameters
+        QueryParametersInterface $parameters
     ) {
         $relation = $this->getRelated($field);
 
@@ -289,9 +289,9 @@ abstract class AbstractResourceAdapter implements ResourceAdapterInterface, Stor
      *
      * @param $record
      * @param ResourceObject $resource
-     * @param EncodingParametersInterface $parameters
+     * @param QueryParametersInterface $parameters
      */
-    protected function fillRelated($record, ResourceObject $resource, EncodingParametersInterface $parameters)
+    protected function fillRelated($record, ResourceObject $resource, QueryParametersInterface $parameters)
     {
         // no-op
     }
@@ -299,14 +299,14 @@ abstract class AbstractResourceAdapter implements ResourceAdapterInterface, Stor
     /**
      * @param mixed $record
      * @param ResourceObject $resource
-     * @param EncodingParametersInterface $parameters
+     * @param QueryParametersInterface $parameters
      * @param bool $updating
      * @return AsynchronousProcess|mixed
      */
     protected function fillAndPersist(
         $record,
         ResourceObject $resource,
-        EncodingParametersInterface $parameters,
+        QueryParametersInterface $parameters,
         $updating
     ) {
         $this->fill($record, $resource, $parameters);

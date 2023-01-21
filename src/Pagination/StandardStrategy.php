@@ -1,7 +1,6 @@
 <?php
-
 /*
- * Copyright 2022 Cloud Creativity Limited
+ * Copyright 2023 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,13 +17,13 @@
 
 namespace CloudCreativity\LaravelJsonApi\Pagination;
 
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Query\QueryParametersInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Pagination\PagingStrategyInterface;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Support\Collection;
-use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
-use Neomerx\JsonApi\Contracts\Http\Query\QueryParametersParserInterface;
+use Neomerx\JsonApi\Contracts\Http\Query\BaseQueryParserInterface;
 
 /**
  * Class StandardStrategy
@@ -76,7 +75,7 @@ class StandardStrategy implements PagingStrategyInterface
      */
     public function __construct()
     {
-        $this->metaKey = QueryParametersParserInterface::PARAM_PAGE;
+        $this->metaKey = BaseQueryParserInterface::PARAM_PAGE;
     }
 
     /**
@@ -174,7 +173,7 @@ class StandardStrategy implements PagingStrategyInterface
     /**
      * @inheritDoc
      */
-    public function paginate($query, EncodingParametersInterface $parameters)
+    public function paginate($query, QueryParametersInterface $parameters)
     {
         $pageParameters = collect((array) $parameters->getPaginationParameters());
 

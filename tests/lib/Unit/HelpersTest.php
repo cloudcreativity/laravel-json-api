@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2022 Cloud Creativity Limited
+ * Copyright 2023 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
 use Illuminate\Http\Request as IlluminateRequest;
 use Illuminate\Http\Response as IlluminateResponse;
-use Neomerx\JsonApi\Document\Error;
+use Neomerx\JsonApi\Schema\Error;
 use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 use function CloudCreativity\LaravelJsonApi\http_contains_body;
@@ -289,7 +289,7 @@ class HelpersTest extends TestCase
     public function testHttpErrorStatus(array $errors, int $expected): void
     {
         $errors = collect($errors)->map(function (?int $status) {
-            return new Error(null, null, $status);
+            return new Error(null, null, null, $status);
         })->all();
 
         $this->assertSame(Helpers::httpErrorStatus($errors), $expected);

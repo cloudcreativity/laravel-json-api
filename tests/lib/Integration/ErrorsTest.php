@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2022 Cloud Creativity Limited
+ * Copyright 2023 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,8 +32,8 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\MessageBag;
 use Illuminate\Validation\ValidationException;
 use LaravelJsonApi\Testing\TestResponse;
-use Neomerx\JsonApi\Document\Error as NeomerxError;
 use Neomerx\JsonApi\Exceptions\JsonApiException as NeomerxException;
+use Neomerx\JsonApi\Schema\Error as NeomerxError;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
@@ -259,7 +259,8 @@ class ErrorsTest extends TestCase
             throw new NeomerxException(new NeomerxError(
                 null,
                 null,
-                422,
+                null,
+                '422',
                 null,
                 null,
                 'My foobar error message.'

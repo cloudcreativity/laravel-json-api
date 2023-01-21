@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2022 Cloud Creativity Limited
+ * Copyright 2023 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,24 +15,28 @@
  * limitations under the License.
  */
 
+declare(strict_types=1);
+
 namespace CloudCreativity\LaravelJsonApi\Codec;
 
-use Neomerx\JsonApi\Contracts\Http\Headers\HeaderInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Headers\HeaderInterface;
+use CloudCreativity\LaravelJsonApi\Http\Headers\MediaTypeParser;
+use Countable;
+use Illuminate\Support\Collection;
+use IteratorAggregate;
 use Neomerx\JsonApi\Contracts\Http\Headers\MediaTypeInterface;
-use Neomerx\JsonApi\Http\Headers\MediaType;
 
 /**
  * Class DecodingList
  *
  * @package CloudCreativity\LaravelJsonApi
  */
-class DecodingList implements \IteratorAggregate, \Countable
+class DecodingList implements IteratorAggregate, Countable
 {
-
     /**
      * @var Decoding[]
      */
-    private $stack;
+    private array $stack;
 
     /**
      * @param iterable $input
@@ -41,9 +45,9 @@ class DecodingList implements \IteratorAggregate, \Countable
     public static function fromArray(iterable $input): self
     {
         $list = new self();
-        $list->stack = collect($input)->map(function ($value, $key) {
-            return Decoding::fromArray($key, $value);
-        })->all();
+        $list->stack = Collection::make($input)->map(
+            static fn($value, $key) => Decoding::fromArray($key, $value)
+        )->all();
 
         return $list;
     }
@@ -81,7 +85,7 @@ class DecodingList implements \IteratorAggregate, \Countable
     public function push(Decoding ...$decodings): self
     {
         $copy = new self();
-        $copy->stack = collect($this->stack)->merge($decodings)->all();
+        $copy->stack = Collection::make($this->stack)->merge($decodings)->all();
 
         return $copy;
     }
@@ -95,7 +99,7 @@ class DecodingList implements \IteratorAggregate, \Countable
     public function merge(DecodingList $decodings): self
     {
         $copy = new self();
-        $copy->stack = collect($this->stack)->merge($decodings->stack)->all();
+        $copy->stack = Collection::make($this->stack)->merge($decodings->stack)->all();
 
         return $copy;
     }
@@ -142,7 +146,7 @@ class DecodingList implements \IteratorAggregate, \Countable
      */
     public function find(string $mediaType): ?Decoding
     {
-        return $this->equalsTo(MediaType::parse(0, $mediaType));
+        return $this->equalsTo(MediaTypeParser::make()->parse($mediaType));
     }
 
     /**
@@ -153,7 +157,7 @@ class DecodingList implements \IteratorAggregate, \Countable
      */
     public function equalsTo(MediaTypeInterface $mediaType): ?Decoding
     {
-        return collect($this->stack)->first(function (Decoding $decoding) use ($mediaType) {
+        return Collection::make($this->stack)->first(function (Decoding $decoding) use ($mediaType) {
             return $decoding->equalsTo($mediaType);
         });
     }
@@ -178,7 +182,7 @@ class DecodingList implements \IteratorAggregate, \Countable
      */
     public function first(): ?Decoding
     {
-        return collect($this->stack)->first();
+        return Collection::make($this->stack)->first();
     }
 
     /**
@@ -192,9 +196,9 @@ class DecodingList implements \IteratorAggregate, \Countable
     /**
      * @inheritDoc
      */
-    public function getIterator(): \ArrayIterator
+    public function getIterator(): \Generator
     {
-        return new \ArrayIterator($this->stack);
+        yield from $this->stack;
     }
 
     /**
@@ -220,5 +224,4 @@ class DecodingList implements \IteratorAggregate, \Countable
     {
         return !$this->isEmpty();
     }
-
 }

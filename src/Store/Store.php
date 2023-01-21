@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2022 Cloud Creativity Limited
+ * Copyright 2023 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,11 @@ namespace CloudCreativity\LaravelJsonApi\Store;
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\HasManyAdapterInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\ResourceAdapterInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Query\QueryParametersInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreAwareInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Store\StoreInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\ResourceNotFoundException;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
-use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 /**
  * Class Store
@@ -66,7 +66,7 @@ class Store implements StoreInterface
     /**
      * @inheritDoc
      */
-    public function queryRecords($resourceType, EncodingParametersInterface $params)
+    public function queryRecords($resourceType, QueryParametersInterface $params)
     {
         return $this
             ->adapterFor($resourceType)
@@ -76,7 +76,7 @@ class Store implements StoreInterface
     /**
      * @inheritDoc
      */
-    public function createRecord($resourceType, array $document, EncodingParametersInterface $params)
+    public function createRecord($resourceType, array $document, QueryParametersInterface $params)
     {
         $record = $this
             ->adapterFor($resourceType)
@@ -92,7 +92,7 @@ class Store implements StoreInterface
     /**
      * @inheritDoc
      */
-    public function readRecord($record, EncodingParametersInterface $params)
+    public function readRecord($record, QueryParametersInterface $params)
     {
         return $this
             ->adapterFor($record)
@@ -102,7 +102,7 @@ class Store implements StoreInterface
     /**
      * @inheritDoc
      */
-    public function updateRecord($record, array $document, EncodingParametersInterface $params)
+    public function updateRecord($record, array $document, QueryParametersInterface $params)
     {
         return $this
             ->adapterFor($record)
@@ -112,7 +112,7 @@ class Store implements StoreInterface
     /**
      * @inheritDoc
      */
-    public function deleteRecord($record, EncodingParametersInterface $params)
+    public function deleteRecord($record, QueryParametersInterface $params)
     {
         $adapter = $this->adapterFor($record);
         $result = $adapter->delete($record, $params);
@@ -130,7 +130,7 @@ class Store implements StoreInterface
     public function queryRelated(
         $record,
         $relationshipName,
-        EncodingParametersInterface $params
+        QueryParametersInterface $params
     ) {
         return $this
             ->adapterFor($record)
@@ -144,7 +144,7 @@ class Store implements StoreInterface
     public function queryRelationship(
         $record,
         $relationshipName,
-        EncodingParametersInterface $params
+        QueryParametersInterface $params
     ) {
         return $this
             ->adapterFor($record)
@@ -159,7 +159,7 @@ class Store implements StoreInterface
         $record,
         $relationshipName,
         array $document,
-        EncodingParametersInterface $params
+        QueryParametersInterface $params
     ) {
         return $this
             ->adapterFor($record)
@@ -174,7 +174,7 @@ class Store implements StoreInterface
         $record,
         $relationshipName,
         array $document,
-        EncodingParametersInterface $params
+        QueryParametersInterface $params
     ) {
         return $this
             ->adapterForHasMany($record, $relationshipName)
@@ -188,7 +188,7 @@ class Store implements StoreInterface
         $record,
         $relationshipName,
         array $document,
-        EncodingParametersInterface $params
+        QueryParametersInterface $params
     ) {
         return $this
             ->adapterForHasMany($record, $relationshipName)

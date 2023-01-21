@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2022 Cloud Creativity Limited
+ * Copyright 2023 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,10 @@
 namespace CloudCreativity\LaravelJsonApi\Client;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Client\ClientInterface;
-use CloudCreativity\LaravelJsonApi\Encoder\Parameters\EncodingParameters;
+use CloudCreativity\LaravelJsonApi\Http\Query\QueryParameters;
 use CloudCreativity\LaravelJsonApi\Exceptions\ClientException;
-use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
-use Neomerx\JsonApi\Contracts\Schema\ContainerInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Query\QueryParametersInterface;
+use Neomerx\JsonApi\Contracts\Schema\SchemaContainerInterface;
 use Neomerx\JsonApi\Http\Headers\MediaType;
 use Psr\Http\Message\ResponseInterface;
 
@@ -34,9 +34,9 @@ abstract class AbstractClient implements ClientInterface
 {
 
     /**
-     * @var ContainerInterface
+     * @var SchemaContainerInterface
      */
-    protected $schemas;
+    protected SchemaContainerInterface $schemas;
 
     /**
      * @var ClientSerializer
@@ -79,10 +79,10 @@ abstract class AbstractClient implements ClientInterface
     /**
      * AbstractClient constructor.
      *
-     * @param ContainerInterface $schemas
+     * @param SchemaContainerInterface $schemas
      * @param ClientSerializer $serializer
      */
-    public function __construct(ContainerInterface $schemas, ClientSerializer $serializer)
+    public function __construct(SchemaContainerInterface $schemas, ClientSerializer $serializer)
     {
         $this->schemas = $schemas;
         $this->serializer = $serializer;
@@ -406,7 +406,7 @@ abstract class AbstractClient implements ClientInterface
     {
         $schema = $this->schemas->getSchema($record);
 
-        return [$schema->getResourceType(), $schema->getId($record)];
+        return [$schema->getType(), $schema->getId($record)];
     }
 
     /**
@@ -464,13 +464,13 @@ abstract class AbstractClient implements ClientInterface
     }
 
     /**
-     * @param EncodingParametersInterface|array $parameters
+     * @param QueryParametersInterface|array $parameters
      * @return array
      */
     protected function queryParameters($parameters)
     {
-        if ($parameters instanceof EncodingParametersInterface) {
-            return EncodingParameters::cast($parameters)->toArray();
+        if ($parameters instanceof QueryParametersInterface) {
+            return QueryParameters::cast($parameters)->toArray();
         }
 
         return $parameters;

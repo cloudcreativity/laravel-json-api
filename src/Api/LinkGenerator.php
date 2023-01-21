@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Copyright 2022 Cloud Creativity Limited
+ * Copyright 2023 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@
 namespace CloudCreativity\LaravelJsonApi\Api;
 
 use Illuminate\Contracts\Routing\UrlGenerator as IlluminateUrlGenerator;
-use Neomerx\JsonApi\Contracts\Document\LinkInterface;
-use Neomerx\JsonApi\Contracts\Schema\SchemaFactoryInterface;
+use Neomerx\JsonApi\Contracts\Factories\FactoryInterface;
+use Neomerx\JsonApi\Contracts\Schema\LinkInterface;
 
 /**
  * Class LinkGenerator
@@ -31,28 +31,28 @@ class LinkGenerator
 {
 
     /**
-     * @var SchemaFactoryInterface
+     * @var FactoryInterface
      */
-    private $factory;
+    private FactoryInterface $factory;
 
     /**
      * @var UrlGenerator
      */
-    private $urls;
+    private UrlGenerator $urls;
 
     /**
      * @var IlluminateUrlGenerator
      */
-    private $generator;
+    private IlluminateUrlGenerator $generator;
 
     /**
      * LinkGenerator constructor.
      *
-     * @param SchemaFactoryInterface $factory
+     * @param FactoryInterface $factory
      * @param UrlGenerator $urls
      * @param IlluminateUrlGenerator $generator
      */
-    public function __construct(SchemaFactoryInterface $factory, UrlGenerator $urls, IlluminateUrlGenerator $generator)
+    public function __construct(FactoryInterface $factory, UrlGenerator $urls, IlluminateUrlGenerator $generator)
     {
         $this->factory = $factory;
         $this->urls = $urls;
@@ -74,7 +74,7 @@ class LinkGenerator
             $url .= '?' . http_build_query($queryParams);
         }
 
-        return $this->factory->createLink($url, $meta, true);
+        return $this->createLink($url, $meta, true);
     }
 
     /**
@@ -87,7 +87,7 @@ class LinkGenerator
      */
     public function index($resourceType, $meta = null, array $queryParams = [])
     {
-        return $this->factory->createLink(
+        return $this->createLink(
             $this->urls->index($resourceType, $queryParams),
             $meta,
             true
@@ -104,7 +104,7 @@ class LinkGenerator
      */
     public function create($resourceType, $meta = null, array $queryParams = [])
     {
-        return $this->factory->createLink(
+        return $this->createLink(
             $this->urls->create($resourceType, $queryParams),
             $meta,
             true
@@ -122,7 +122,7 @@ class LinkGenerator
      */
     public function read($resourceType, $id, $meta = null, array $queryParams = [])
     {
-        return $this->factory->createLink(
+        return $this->createLink(
             $this->urls->read($resourceType, $id, $queryParams),
             $meta,
             true
@@ -140,7 +140,7 @@ class LinkGenerator
      */
     public function update($resourceType, $id, $meta = null, array $queryParams = [])
     {
-        return $this->factory->createLink(
+        return $this->createLink(
             $this->urls->update($resourceType, $id, $queryParams),
             $meta,
             true
@@ -158,7 +158,7 @@ class LinkGenerator
      */
     public function delete($resourceType, $id, $meta = null, array $queryParams = [])
     {
-        return $this->factory->createLink(
+        return $this->createLink(
             $this->urls->delete($resourceType, $id, $queryParams),
             $meta,
             true
@@ -177,7 +177,7 @@ class LinkGenerator
      */
     public function relatedResource($resourceType, $id, $relationshipKey, $meta = null, array $queryParams = [])
     {
-        return $this->factory->createLink(
+        return $this->createLink(
             $this->urls->relatedResource($resourceType, $id, $relationshipKey, $queryParams),
             $meta,
             true
@@ -196,7 +196,7 @@ class LinkGenerator
      */
     public function readRelationship($resourceType, $id, $relationshipKey, $meta = null, array $queryParams = [])
     {
-        return $this->factory->createLink(
+        return $this->createLink(
             $this->urls->readRelationship($resourceType, $id, $relationshipKey, $queryParams),
             $meta,
             true
@@ -215,7 +215,7 @@ class LinkGenerator
      */
     public function replaceRelationship($resourceType, $id, $relationshipKey, $meta = null, array $queryParams = [])
     {
-        return $this->factory->createLink(
+        return $this->createLink(
             $this->urls->replaceRelationship($resourceType, $id, $relationshipKey, $queryParams),
             $meta,
             true
@@ -234,7 +234,7 @@ class LinkGenerator
      */
     public function addRelationship($resourceType, $id, $relationshipKey, $meta = null, array $queryParams = [])
     {
-        return $this->factory->createLink(
+        return $this->createLink(
             $this->urls->addRelationship($resourceType, $id, $relationshipKey, $queryParams),
             $meta,
             true
@@ -249,15 +249,35 @@ class LinkGenerator
      * @param $relationshipKey
      * @param array|object|null $meta
      * @param array $queryParams
-     * @return string
+     * @return LinkInterface
      */
     public function removeRelationship($resourceType, $id, $relationshipKey, $meta = null, array $queryParams = [])
     {
-        return $this->factory->createLink(
+        return $this->createLink(
             $this->urls->removeRelationship($resourceType, $id, $relationshipKey, $queryParams),
             $meta,
             true
         );
     }
 
+    /**
+     * Create a link.
+     *
+     * This method uses the old method signature for creating a link via the Neomerx factory, and converts
+     * it to a call to the new factory method signature.
+     *
+     * @param string $subHref
+     * @param array|object|null $meta
+     * @param bool $treatAsHref
+     * @return LinkInterface
+     */
+    private function createLink(string $subHref, $meta = null, bool $treatAsHref = false): LinkInterface
+    {
+        return $this->factory->createLink(
+            false === $treatAsHref,
+            $subHref,
+            !is_null($meta),
+            $meta,
+        );
+    }
 }

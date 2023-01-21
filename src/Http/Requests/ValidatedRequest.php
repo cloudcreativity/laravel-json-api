@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2022 Cloud Creativity Limited
+ * Copyright 2023 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@ namespace CloudCreativity\LaravelJsonApi\Http\Requests;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Auth\AuthorizerInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\ContainerInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Query\QueryParametersInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Query\QueryParametersParserInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validation\DocumentValidatorInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorFactoryInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorInterface;
@@ -32,7 +34,6 @@ use Illuminate\Contracts\Validation\ValidatesWhenResolved;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Arr;
-use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 use Neomerx\JsonApi\Exceptions\JsonApiException;
 
 /**
@@ -69,7 +70,7 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
     private $data;
 
     /**
-     * @var EncodingParametersInterface|null
+     * @var QueryParametersInterface|null
      */
     private $parameters;
 
@@ -206,7 +207,7 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
     }
 
     /**
-     * @return EncodingParametersInterface
+     * @return QueryParametersInterface
      */
     public function getEncodingParameters()
     {
@@ -214,7 +215,8 @@ abstract class ValidatedRequest implements ValidatesWhenResolved
             return $this->parameters;
         }
 
-        $parser = $this->factory->createQueryParametersParser();
+        /** @var QueryParametersParserInterface $parser */
+        $parser = app(QueryParametersParserInterface::class);
 
         return $this->parameters = $parser->parseQueryParameters(
             $this->request->query()

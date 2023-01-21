@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2022 Cloud Creativity Limited
+ * Copyright 2023 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ namespace CloudCreativity\LaravelJsonApi\Eloquent;
 
 use CloudCreativity\LaravelJsonApi\Adapter\AbstractRelationshipAdapter;
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\HasManyAdapterInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Query\QueryParametersInterface;
 use Illuminate\Database\Eloquent\Model;
-use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 /**
  * Class AbstractManyRelation
@@ -49,10 +49,10 @@ abstract class AbstractManyRelation extends AbstractRelationshipAdapter implemen
 
     /**
      * @param Model $record
-     * @param EncodingParametersInterface $parameters
+     * @param QueryParametersInterface $parameters
      * @return mixed
      */
-    public function query($record, EncodingParametersInterface $parameters)
+    public function query($record, QueryParametersInterface $parameters)
     {
         $relation = $this->getRelation($record, $this->key);
 

@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2022 Cloud Creativity Limited
+ * Copyright 2023 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@
 
 namespace CloudCreativity\LaravelJsonApi\Contracts\Adapter;
 
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Query\QueryParametersInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Queue\AsynchronousProcess;
-use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 /**
  * Interface ResourceAdapterInterface
@@ -36,31 +36,31 @@ interface ResourceAdapterInterface
     /**
      * Query many domain records.
      *
-     * @param EncodingParametersInterface $parameters
+     * @param QueryParametersInterface $parameters
      * @return mixed
      */
-    public function query(EncodingParametersInterface $parameters);
+    public function query(QueryParametersInterface $parameters);
 
     /**
      * Create a domain record using data from the supplied resource object.
      *
      * @param array $document
      *      The JSON API document received from the client.
-     * @param EncodingParametersInterface $parameters
+     * @param QueryParametersInterface $parameters
      * @return AsynchronousProcess|mixed
      *      the created domain record, or the process to create it.
      */
-    public function create(array $document, EncodingParametersInterface $parameters);
+    public function create(array $document, QueryParametersInterface $parameters);
 
     /**
      * Query a single domain record.
      *
      * @param mixed $record
      *      the domain record being read.
-     * @param EncodingParametersInterface $parameters
+     * @param QueryParametersInterface $parameters
      * @return mixed|null
      */
-    public function read($record, EncodingParametersInterface $parameters);
+    public function read($record, QueryParametersInterface $parameters);
 
     /**
      * Update a domain record with data from the supplied resource object.
@@ -69,21 +69,21 @@ interface ResourceAdapterInterface
      *      the domain record to update.
      * @param array $document
      *      The JSON API document received from the client.
-     * @param EncodingParametersInterface $params
+     * @param QueryParametersInterface $params
      * @return AsynchronousProcess|mixed
      *      the updated domain record or the process to updated it.
      */
-    public function update($record, array $document, EncodingParametersInterface $params);
+    public function update($record, array $document, QueryParametersInterface $params);
 
     /**
      * Delete a domain record.
      *
      * @param mixed $record
-     * @param EncodingParametersInterface $params
+     * @param QueryParametersInterface $params
      * @return AsynchronousProcess|bool
      *      whether the record was successfully destroyed, or the process to delete it.
      */
-    public function delete($record, EncodingParametersInterface $params);
+    public function delete($record, QueryParametersInterface $params);
 
     /**
      * Does a domain record of the specified JSON API resource id exist?

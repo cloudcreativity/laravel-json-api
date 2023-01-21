@@ -1,7 +1,6 @@
 <?php
-
 /*
- * Copyright 2022 Cloud Creativity Limited
+ * Copyright 2023 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +17,10 @@
 
 namespace CloudCreativity\LaravelJsonApi\Contracts\Pagination;
 
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Query\QueryParametersInterface;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Query\Builder as QueryBuilder;
-use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 /**
  * Interface PagingStrategyInterface
@@ -33,9 +32,9 @@ interface PagingStrategyInterface
 
     /**
      * @param QueryBuilder|EloquentBuilder|Relation $query
-     * @param EncodingParametersInterface $parameters
+     * @param QueryParametersInterface $parameters
      * @return PageInterface
      */
-    public function paginate($query, EncodingParametersInterface $parameters);
+    public function paginate($query, QueryParametersInterface $parameters);
 
 }

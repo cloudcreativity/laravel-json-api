@@ -2,7 +2,7 @@
 
 namespace DummyNamespace;
 
-use Neomerx\JsonApi\Schema\SchemaProvider;
+use CloudCreativity\LaravelJsonApi\Schema\SchemaProvider;
 
 class DummyClass extends SchemaProvider
 {

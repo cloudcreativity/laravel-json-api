@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2022 Cloud Creativity Limited
+ * Copyright 2023 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,33 +18,31 @@
 namespace CloudCreativity\LaravelJsonApi\Schema;
 
 use CloudCreativity\LaravelJsonApi\Utils\Str;
-use Neomerx\JsonApi\Contracts\Document\DocumentInterface;
+use Neomerx\JsonApi\Contracts\Schema\DocumentInterface;
 
 trait DashCaseRelationUrls
 {
-
     /**
      * @param object $resource
-     * @param string $name
+     * @param string $field
      * @return string
      */
-    protected function getRelationshipSelfUrl($resource, $name)
+    protected function getRelationshipSelfUrl(object $resource, string $field): string
     {
         return sprintf(
             '%s/%s/%s',
             $this->getSelfSubUrl($resource),
             DocumentInterface::KEYWORD_RELATIONSHIPS,
-            Str::dasherize($name)
+            Str::dasherize($field)
         );
     }
 
     /**
      * @param object $resource
      * @param string $name
-     *
      * @return string
      */
-    protected function getRelationshipRelatedUrl($resource, $name)
+    protected function getRelationshipRelatedUrl(object $resource, string $name): string
     {
         return $this->getSelfSubUrl($resource) . '/' . Str::dasherize($name);
     }

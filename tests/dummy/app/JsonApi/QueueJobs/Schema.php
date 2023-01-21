@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2022 Cloud Creativity Limited
+ * Copyright 2023 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,27 +19,17 @@ namespace DummyApp\JsonApi\QueueJobs;
 
 use CloudCreativity\LaravelJsonApi\Queue\AsyncSchema;
 use CloudCreativity\LaravelJsonApi\Queue\ClientJob;
-use Neomerx\JsonApi\Schema\SchemaProvider;
+use CloudCreativity\LaravelJsonApi\Schema\SchemaProvider;
 
 class Schema extends SchemaProvider
 {
-
     use AsyncSchema;
 
     /**
-     * @param ClientJob $resource
-     * @return string
-     */
-    public function getId($resource)
-    {
-        return (string) $resource->getRouteKey();
-    }
-
-    /**
-     * @param ClientJob $resource
+     * @param ClientJob|object $resource
      * @return array
      */
-    public function getAttributes($resource)
+    public function getAttributes(object $resource): array
     {
         return [
             'attempts' => $resource->attempts,
@@ -53,5 +43,4 @@ class Schema extends SchemaProvider
             'updatedAt' => $resource->updated_at,
         ];
     }
-
 }

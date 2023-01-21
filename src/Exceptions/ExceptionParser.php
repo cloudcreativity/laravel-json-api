@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2022 Cloud Creativity Limited
+ * Copyright 2023 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,9 +26,9 @@ use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Response;
 use Illuminate\Session\TokenMismatchException;
 use Illuminate\Validation\ValidationException as IlluminateValidationException;
-use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
-use Neomerx\JsonApi\Document\Error;
+use Neomerx\JsonApi\Contracts\Schema\ErrorInterface;
 use Neomerx\JsonApi\Exceptions\JsonApiException as NeomerxJsonApiException;
+use Neomerx\JsonApi\Schema\Error;
 use Symfony\Component\HttpFoundation\Exception\RequestExceptionInterface;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
@@ -127,7 +127,7 @@ class ExceptionParser implements ExceptionParserInterface
         $status = $e->getStatusCode();
         $title = $this->getDefaultTitle($status);
 
-        return new Error(null, null, $status, null, $title, $e->getMessage() ?: null);
+        return new Error(null, null, null, $status, null, $title, $e->getMessage() ?: null);
     }
 
     /**
@@ -137,6 +137,7 @@ class ExceptionParser implements ExceptionParserInterface
     protected function getRequestError(RequestExceptionInterface $e): ErrorInterface
     {
         return new Error(
+            null,
             null,
             null,
             $status = Response::HTTP_BAD_REQUEST,
@@ -152,6 +153,7 @@ class ExceptionParser implements ExceptionParserInterface
     protected function getDefaultError(): ErrorInterface
     {
         return new Error(
+            null,
             null,
             null,
             $status = Response::HTTP_INTERNAL_SERVER_ERROR,

@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2022 Cloud Creativity Limited
+ * Copyright 2023 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,17 +15,19 @@
  * limitations under the License.
  */
 
+declare(strict_types=1);
+
 namespace CloudCreativity\LaravelJsonApi\Http\Middleware;
 
 use Closure;
 use CloudCreativity\LaravelJsonApi\Api\Api;
 use CloudCreativity\LaravelJsonApi\Api\Repository;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Query\QueryParametersInterface;
 use CloudCreativity\LaravelJsonApi\Exceptions\ResourceNotFoundException;
 use CloudCreativity\LaravelJsonApi\Routing\Route;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\AbstractPaginator;
-use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 /**
  * Class BootJsonApi
@@ -38,7 +40,7 @@ class BootJsonApi
     /**
      * @var Container
      */
-    private $container;
+    private Container $container;
 
     /**
      * @param Container $container
@@ -122,7 +124,7 @@ class BootJsonApi
     {
         /** Override the current page resolution */
         AbstractPaginator::currentPageResolver(function ($pageName) {
-            $pagination = app(EncodingParametersInterface::class)->getPaginationParameters() ?: [];
+            $pagination = app(QueryParametersInterface::class)->getPaginationParameters() ?: [];
 
             return $pagination[$pageName] ?? null;
         });

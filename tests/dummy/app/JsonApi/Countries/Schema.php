@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2022 Cloud Creativity Limited
+ * Copyright 2023 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,30 +17,21 @@
 
 namespace DummyApp\JsonApi\Countries;
 
+use CloudCreativity\LaravelJsonApi\Schema\SchemaProvider;
 use DummyApp\Country;
-use Neomerx\JsonApi\Schema\SchemaProvider;
 
 class Schema extends SchemaProvider
 {
-
     /**
      * @var string
      */
-    protected $resourceType = 'countries';
+    protected string $resourceType = 'countries';
 
     /**
-     * @inheritDoc
-     */
-    public function getId($resource)
-    {
-        return (string) $resource->getRouteKey();
-    }
-
-    /**
-     * @param Country $resource
+     * @param Country|object $resource
      * @return array
      */
-    public function getAttributes($resource)
+    public function getAttributes(object $resource): array
     {
         return [
             'createdAt' => $resource->created_at,
@@ -49,6 +40,4 @@ class Schema extends SchemaProvider
             'updatedAt' => $resource->updated_at,
         ];
     }
-
-
 }

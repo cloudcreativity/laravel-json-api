@@ -582,9 +582,9 @@ For example, this would create the following for a `posts` resource:
 namespace App\JsonApi\Posts;
 
 use CloudCreativity\LaravelJsonApi\Adapter\AbstractResourceAdapter;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Query\QueryParametersInterface;
 use CloudCreativity\LaravelJsonApi\Document\ResourceObject;
 use Illuminate\Support\Collection;
-use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 class DummyClass extends AbstractResourceAdapter
 {
@@ -624,7 +624,7 @@ class DummyClass extends AbstractResourceAdapter
     /**
      * @inheritDoc
      */
-    public function query(EncodingParametersInterface $parameters)
+    public function query(QueryParametersInterface $parameters)
     {
         // TODO: Implement query() method.
     }

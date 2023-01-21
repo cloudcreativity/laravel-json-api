@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2022 Cloud Creativity Limited
+ * Copyright 2023 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,11 @@
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration\Eloquent;
 
 use Carbon\Carbon;
+use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use CloudCreativity\LaravelJsonApi\Tests\Integration\TestCase;
 use DummyApp\Comment;
+use DummyApp\JsonApi\Posts\Schema;
+use DummyApp\Phone;
 use DummyApp\Post;
 use DummyApp\Tag;
 use Illuminate\Support\Facades\Event;
@@ -224,6 +227,7 @@ class ResourceTest extends TestCase
         unset($expected['relationships']);
 
         $response = $this
+            ->withoutExceptionHandling()
             ->jsonApi()
             ->withData($data)
             ->post('/api/v1/posts');
@@ -345,6 +349,7 @@ class ResourceTest extends TestCase
         $model->tags()->create(['name' => 'Important']);
 
         $response = $this
+            ->withoutExceptionHandling()
             ->jsonApi()
             ->get(url('/api/v1/posts', $model));
 
@@ -405,6 +410,43 @@ class ResourceTest extends TestCase
             ->assertIsIncluded('tags', $tag);
     }
 
+    public function testReadWithIncludeAtDepth(): void
+    {
+        $model = $this->createPost();
+
+        $phone = factory(Phone::class)->create(['user_id' => $model->author]);
+
+        $comments = factory(Comment::class, 2)->create([
+            'commentable_type' => Post::class,
+            'commentable_id' => $model,
+        ]);
+
+        $expected = $this->serialize($model);
+
+        $expected['relationships']['author']['data'] = $userId = [
+            'type' => 'users',
+            'id' => (string) $model->getRouteKey(),
+        ];
+
+        $expected['relationships']['comments']['data'] = $commentIds = $comments->map(
+            fn(Comment $comment) => ['type' => 'comments', 'id' => (string) $comment->getRouteKey()],
+        );
+
+        $response = $this
+            ->jsonApi()
+            ->includePaths('author.phone', 'comments.createdBy')
+            ->get(url('/api/v1/posts', $model));
+
+        $response->assertFetchedOne($expected)->assertIncluded([
+            $userId,
+            ['type' => 'phones', 'id' => (string) $phone->getRouteKey()],
+            $commentIds[0],
+            ['type' => 'users', 'id' => (string) $comments[0]->user->getRouteKey()],
+            $commentIds[1],
+            ['type' => 'users', 'id' => (string) $comments[1]->user->getRouteKey()],
+        ]);
+    }
+
     /**
      * @see https://github.com/cloudcreativity/laravel-json-api/issues/518
      */
@@ -413,10 +455,50 @@ class ResourceTest extends TestCase
         $post = factory(Post::class)->create();
 
         $response = $this
+            ->withoutExceptionHandling()
             ->jsonApi()
             ->get("api/v1/posts/{$post->getRouteKey()}?include=");
 
         $response->assertFetchedOne($this->serialize($post));
+    }
+
+    public function testReadWithDefaultInclude(): void
+    {
+        $mockSchema = $this
+            ->getMockBuilder(Schema::class)
+            ->onlyMethods(['getIncludePaths'])
+            ->setConstructorArgs([$this->app->make(Factory::class)])
+            ->getMock();
+
+        $mockSchema->method('getIncludePaths')->willReturn(['author', 'tags', 'comments']);
+
+        $this->app->instance(Schema::class, $mockSchema);
+
+        $model = $this->createPost();
+        $tag = $model->tags()->create(['name' => 'Important']);
+
+        $expected = $this->serialize($model);
+
+        $expected['relationships']['author']['data'] = [
+            'type' => 'users',
+            'id' => (string) $model->author_id,
+        ];
+
+        $expected['relationships']['tags']['data'] = [
+            ['type' => 'tags', 'id' => $tag->uuid],
+        ];
+
+        $expected['relationships']['comments']['data'] = [];
+
+        $response = $this
+            ->withoutExceptionHandling()
+            ->jsonApi()
+            ->get(url('/api/v1/posts', $model));
+
+        $response
+            ->assertFetchedOne($expected)
+            ->assertIsIncluded('users', $model->author)
+            ->assertIsIncluded('tags', $tag);
     }
 
     /**

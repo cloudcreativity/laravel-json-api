@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2022 Cloud Creativity Limited
+ * Copyright 2023 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,10 +19,10 @@ namespace CloudCreativity\LaravelJsonApi\Eloquent;
 
 use CloudCreativity\LaravelJsonApi\Adapter\AbstractRelationshipAdapter;
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\HasManyAdapterInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Query\QueryParametersInterface;
 use CloudCreativity\LaravelJsonApi\Eloquent\Concerns\QueriesRelations;
 use CloudCreativity\LaravelJsonApi\Exceptions\RuntimeException;
 use Illuminate\Database\Eloquent\Builder;
-use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 /**
  * Class QueriesMany
@@ -61,7 +61,7 @@ class QueriesMany extends AbstractRelationshipAdapter implements HasManyAdapterI
     /**
      * @inheritDoc
      */
-    public function query($record, EncodingParametersInterface $parameters)
+    public function query($record, QueryParametersInterface $parameters)
     {
         $relation = $this($record);
 
@@ -71,7 +71,7 @@ class QueriesMany extends AbstractRelationshipAdapter implements HasManyAdapterI
     /**
      * @inheritDoc
      */
-    public function relationship($record, EncodingParametersInterface $parameters)
+    public function relationship($record, QueryParametersInterface $parameters)
     {
         return $this->query($record, $parameters);
     }
@@ -79,7 +79,7 @@ class QueriesMany extends AbstractRelationshipAdapter implements HasManyAdapterI
     /**
      * @inheritDoc
      */
-    public function update($record, array $relationship, EncodingParametersInterface $parameters)
+    public function update($record, array $relationship, QueryParametersInterface $parameters)
     {
         throw new RuntimeException('Modifying a queries-many relation is not supported.');
     }
@@ -87,7 +87,7 @@ class QueriesMany extends AbstractRelationshipAdapter implements HasManyAdapterI
     /**
      * @inheritDoc
      */
-    public function replace($record, array $relationship, EncodingParametersInterface $parameters)
+    public function replace($record, array $relationship, QueryParametersInterface $parameters)
     {
         throw new RuntimeException('Modifying a queries-many relation is not supported.');
     }
@@ -95,7 +95,7 @@ class QueriesMany extends AbstractRelationshipAdapter implements HasManyAdapterI
     /**
      * @inheritDoc
      */
-    public function add($record, array $relationship, EncodingParametersInterface $parameters)
+    public function add($record, array $relationship, QueryParametersInterface $parameters)
     {
         throw new RuntimeException('Modifying a queries-many relation is not supported.');
     }
@@ -103,7 +103,7 @@ class QueriesMany extends AbstractRelationshipAdapter implements HasManyAdapterI
     /**
      * @inheritDoc
      */
-    public function remove($record, array $relationship, EncodingParametersInterface $parameters)
+    public function remove($record, array $relationship, QueryParametersInterface $parameters)
     {
         throw new RuntimeException('Modifying a queries-many relation is not supported.');
     }

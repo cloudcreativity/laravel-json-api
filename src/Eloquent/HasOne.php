@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2022 Cloud Creativity Limited
+ * Copyright 2023 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,9 @@
 
 namespace CloudCreativity\LaravelJsonApi\Eloquent;
 
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Query\QueryParametersInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations;
-use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 class HasOne extends BelongsTo
 {
@@ -27,7 +27,7 @@ class HasOne extends BelongsTo
     /**
      * @inheritDoc
      */
-    public function update($record, array $relationship, EncodingParametersInterface $parameters)
+    public function update($record, array $relationship, QueryParametersInterface $parameters)
     {
         $relation = $this->getRelation($record, $this->key);
         $related = $this->findToOne($relationship);
@@ -55,7 +55,7 @@ class HasOne extends BelongsTo
     /**
      * @inheritDoc
      */
-    public function replace($record, array $relationship, EncodingParametersInterface $parameters)
+    public function replace($record, array $relationship, QueryParametersInterface $parameters)
     {
         $this->update($record, $relationship, $parameters);
         $record->refresh(); // in case the relationship has been cached.

@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2022 Cloud Creativity Limited
+ * Copyright 2023 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,10 +23,10 @@ use CloudCreativity\LaravelJsonApi\Codec\DecodingList;
 use CloudCreativity\LaravelJsonApi\Codec\Encoding;
 use CloudCreativity\LaravelJsonApi\Codec\EncodingList;
 use CloudCreativity\LaravelJsonApi\Contracts\Http\ContentNegotiatorInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Headers\AcceptHeaderInterface;
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Headers\HeaderInterface;
 use CloudCreativity\LaravelJsonApi\Factories\Factory;
 use Illuminate\Http\Request;
-use Neomerx\JsonApi\Contracts\Http\Headers\AcceptHeaderInterface;
-use Neomerx\JsonApi\Contracts\Http\Headers\HeaderInterface;
 use Neomerx\JsonApi\Contracts\Http\Headers\MediaTypeInterface;
 use Neomerx\JsonApi\Http\Headers\MediaType;
 use Symfony\Component\HttpKernel\Exception\HttpException;

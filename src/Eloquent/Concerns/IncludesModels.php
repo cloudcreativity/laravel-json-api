@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2022 Cloud Creativity Limited
+ * Copyright 2023 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,11 @@
 
 namespace CloudCreativity\LaravelJsonApi\Eloquent\Concerns;
 
+use CloudCreativity\LaravelJsonApi\Contracts\Http\Query\QueryParametersInterface;
 use CloudCreativity\LaravelJsonApi\Utils\Str;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
-use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
 
 /**
  * Trait IncludesModels
@@ -90,10 +90,10 @@ trait IncludesModels
      * Add eager loading to the query.
      *
      * @param Builder $query
-     * @param EncodingParametersInterface $parameters
+     * @param QueryParametersInterface $parameters
      * @return void
      */
-    protected function with($query, EncodingParametersInterface $parameters)
+    protected function with($query, QueryParametersInterface $parameters)
     {
         $query->with($this->getRelationshipPaths(
             (array) $parameters->getIncludePaths()
@@ -104,9 +104,9 @@ trait IncludesModels
      * Add eager loading to a record.
      *
      * @param Model $record
-     * @param EncodingParametersInterface $parameters
+     * @param QueryParametersInterface $parameters
      */
-    protected function load($record, EncodingParametersInterface $parameters)
+    protected function load($record, QueryParametersInterface $parameters)
     {
         $relationshipPaths = $this->getRelationshipPaths($parameters->getIncludePaths());
         $record->loadMissing($relationshipPaths);

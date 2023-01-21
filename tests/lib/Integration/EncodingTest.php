@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2022 Cloud Creativity Limited
+ * Copyright 2023 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,15 +28,6 @@ class EncodingTest extends TestCase
      * @var bool
      */
     protected $appRoutes = false;
-
-    /**
-     * Test that the extended encoder returns itself if `Encoder::instance()` is called.
-     */
-    public function testInstance()
-    {
-        $encoder = Encoder::instance();
-        $this->assertInstanceOf(Encoder::class, $encoder);
-    }
 
     /**
      * If the URL host is set to `null`, we expect the request host to be prepended to links.

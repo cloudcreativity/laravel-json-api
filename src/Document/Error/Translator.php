@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2022 Cloud Creativity Limited
+ * Copyright 2023 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,10 +24,10 @@ use Illuminate\Contracts\Translation\Translator as IlluminateTranslator;
 use Illuminate\Contracts\Validation\Validator as ValidatorContract;
 use Illuminate\Http\Response;
 use Illuminate\Support\Collection;
-use Neomerx\JsonApi\Contracts\Document\ErrorInterface;
-use Neomerx\JsonApi\Document\Error as NeomerxError;
-use Neomerx\JsonApi\Exceptions\ErrorCollection;
+use Neomerx\JsonApi\Contracts\Schema\ErrorInterface;
 use Neomerx\JsonApi\Exceptions\JsonApiException;
+use Neomerx\JsonApi\Schema\Error as NeomerxError;
+use Neomerx\JsonApi\Schema\ErrorCollection;
 
 /**
  * Class Translator
@@ -70,6 +70,7 @@ class Translator
         return new NeomerxError(
             null,
             null,
+            null,
             Response::HTTP_UNAUTHORIZED,
             $this->trans('unauthorized', 'code'),
             $this->trans('unauthorized', 'title'),
@@ -85,6 +86,7 @@ class Translator
     public function authorization(): ErrorInterface
     {
         return new NeomerxError(
+            null,
             null,
             null,
             Response::HTTP_FORBIDDEN,
@@ -104,6 +106,7 @@ class Translator
         return new NeomerxError(
             null,
             null,
+            null,
             419,
             $this->trans('token_mismatch', 'code'),
             $this->trans('token_mismatch', 'title'),
@@ -121,6 +124,7 @@ class Translator
     public function memberRequired(string $path, string $member): ErrorInterface
     {
         return new NeomerxError(
+            null,
             null,
             null,
             Response::HTTP_BAD_REQUEST,
@@ -143,6 +147,7 @@ class Translator
         return new NeomerxError(
             null,
             null,
+            null,
             Response::HTTP_BAD_REQUEST,
             $this->trans('member_object_expected', 'code'),
             $this->trans('member_object_expected', 'title'),
@@ -161,6 +166,7 @@ class Translator
     public function memberNotIdentifier(string $path, string $member): ErrorInterface
     {
         return new NeomerxError(
+            null,
             null,
             null,
             Response::HTTP_BAD_REQUEST,
@@ -184,6 +190,7 @@ class Translator
         return new NeomerxError(
             null,
             null,
+            null,
             Response::HTTP_BAD_REQUEST,
             $this->trans('member_field_not_allowed', 'code'),
             $this->trans('member_field_not_allowed', 'title'),
@@ -204,6 +211,7 @@ class Translator
         return new NeomerxError(
             null,
             null,
+            null,
             Response::HTTP_BAD_REQUEST,
             $this->trans('member_string_expected', 'code'),
             $this->trans('member_string_expected', 'title'),
@@ -222,6 +230,7 @@ class Translator
     public function memberEmpty(string $path, string $member): ErrorInterface
     {
         return new NeomerxError(
+            null,
             null,
             null,
             Response::HTTP_BAD_REQUEST,
@@ -245,6 +254,7 @@ class Translator
         return new NeomerxError(
             null,
             null,
+            null,
             Response::HTTP_CONFLICT,
             $this->trans('resource_type_not_supported', 'code'),
             $this->trans('resource_type_not_supported', 'title'),
@@ -264,6 +274,7 @@ class Translator
     public function resourceTypeNotRecognised(string $type, string $path = '/data'): ErrorInterface
     {
         return new NeomerxError(
+            null,
             null,
             null,
             Response::HTTP_BAD_REQUEST,
@@ -287,6 +298,7 @@ class Translator
         return new NeomerxError(
             null,
             null,
+            null,
             Response::HTTP_CONFLICT,
             $this->trans('resource_id_not_supported', 'code'),
             $this->trans('resource_id_not_supported', 'title'),
@@ -305,6 +317,7 @@ class Translator
     public function resourceDoesNotSupportClientIds(string $type, string $path = '/data'): ErrorInterface
     {
         return new NeomerxError(
+            null,
             null,
             null,
             Response::HTTP_FORBIDDEN,
@@ -330,6 +343,7 @@ class Translator
         return new NeomerxError(
             null,
             null,
+            null,
             Response::HTTP_CONFLICT,
             $this->trans('resource_exists', 'code'),
             $this->trans('resource_exists', 'title'),
@@ -347,6 +361,7 @@ class Translator
     public function resourceDoesNotExist(string $path): ErrorInterface
     {
         return new NeomerxError(
+            null,
             null,
             null,
             Response::HTTP_NOT_FOUND,
@@ -372,6 +387,7 @@ class Translator
         return new NeomerxError(
             null,
             null,
+            null,
             Response::HTTP_BAD_REQUEST,
             $this->trans('resource_field_exists_in_attributes_and_relationships', 'code'),
             $this->trans('resource_field_exists_in_attributes_and_relationships', 'title'),
@@ -389,6 +405,7 @@ class Translator
     public function resourceCannotBeDeleted(string $detail = null): ErrorInterface
     {
         return new NeomerxError(
+            null,
             null,
             null,
             Response::HTTP_UNPROCESSABLE_ENTITY,
@@ -417,11 +434,13 @@ class Translator
         return new NeomerxError(
             null,
             null,
+            null,
             Response::HTTP_UNPROCESSABLE_ENTITY,
             $this->trans('resource_invalid', 'code'),
             $this->trans('resource_invalid', 'title'),
             $detail ?: $this->trans('resource_invalid', 'detail'),
             $this->pointer($path),
+            !empty($failed),
             $failed ? compact('failed') : null
         );
     }
@@ -441,11 +460,13 @@ class Translator
         return new NeomerxError(
             null,
             null,
+            null,
             Response::HTTP_BAD_REQUEST,
             $this->trans('query_invalid', 'code'),
             $this->trans('query_invalid', 'title'),
             $detail ?: $this->trans('query_invalid', 'detail'),
             [NeomerxError::SOURCE_PARAMETER => $param],
+            !empty($failed),
             $failed ? compact('failed') : null
         );
     }
@@ -474,6 +495,7 @@ class Translator
                 }
 
                 $errors->add(new NeomerxError(
+                    null,
                     null,
                     null,
                     Response::HTTP_UNPROCESSABLE_ENTITY,
