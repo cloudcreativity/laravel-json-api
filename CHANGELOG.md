@@ -7,6 +7,8 @@ All notable changes to this project will be documented in this file. This projec
 
 ### Changed
 
+- Drop support for PHP `7.4` - minimum PHP version is now `8.0`.
+- Drop support for Laravel 8.
 - Upgraded `laravel-json-api/neomerx-json-api` dependency to `^1.2`. This allows v1, v2 and v3 of the PSR log
   dependency, whereas previously only v1 was allowed.
 
