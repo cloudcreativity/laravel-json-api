@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## Unreleased (6.0)
+
+### Changed
+
+- Dropped support for PHP 8.0 - minimum PHP version is now 8.1.
+- Upgraded to Laravel 10, dropping support for Laravel 9.
+
 ## [5.0.0] - 2023-01-21
 
 ### Changed

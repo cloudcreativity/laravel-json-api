@@ -17,7 +17,6 @@
 
 namespace CloudCreativity\LaravelJsonApi\Tests\Integration;
 
-use Carbon\Carbon;
 use CloudCreativity\LaravelJsonApi\Document\Error\Error;
 use CloudCreativity\LaravelJsonApi\Exceptions\DocumentRequiredException;
 use CloudCreativity\LaravelJsonApi\Exceptions\InvalidJsonException;
@@ -25,7 +24,6 @@ use CloudCreativity\LaravelJsonApi\Exceptions\JsonApiException;
 use CloudCreativity\LaravelJsonApi\Exceptions\ResourceNotFoundException;
 use DummyApp\Post;
 use Illuminate\Contracts\Validation\Validator;
-use Illuminate\Foundation\Http\Exceptions\MaintenanceModeException;
 use Illuminate\Http\Response;
 use Illuminate\Session\TokenMismatchException;
 use Illuminate\Support\Facades\Route;
@@ -324,24 +322,6 @@ class ErrorsTest extends TestCase
             ->assertStatus(422)
             ->assertHeader('Content-Type', 'application/vnd.api+json')
             ->assertExactJson($expected);
-    }
-
-    public function testMaintenanceMode()
-    {
-        $ex = new MaintenanceModeException(Carbon::now()->getTimestamp(), 60, "We'll be back soon.");
-
-        $this->request($ex)
-            ->assertStatus(503)
-            ->assertHeader('Content-Type', 'application/vnd.api+json')
-            ->assertExactJson([
-                'errors' => [
-                    [
-                        'title' => 'Service Unavailable',
-                        'detail' => "We'll be back soon.",
-                        'status' => '503',
-                    ],
-                ],
-            ]);
     }
 
     /**
