@@ -111,7 +111,7 @@ class ClientGeneratedIdTest extends TestCase
 
         $error = [
             'title' => 'Unprocessable Entity',
-            'detail' => 'The id format is invalid.',
+            'detail' => 'The id field format is invalid.',
             'status' => '422',
             'source' => ['pointer' => '/data/id'],
         ];

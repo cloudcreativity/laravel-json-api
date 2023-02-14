@@ -45,8 +45,6 @@ class GeneratorsTest extends TestCase
     {
         parent::setUp();
 
-        $this->markTestSkipped('@TODO requires bugfix: https://github.com/laravel/framework/pull/45864');
-
         // required for tests to work in Laravel 5.7
         if (method_exists($this, 'withoutMockingConsoleOutput')) {
             $this->withoutMockingConsoleOutput();
