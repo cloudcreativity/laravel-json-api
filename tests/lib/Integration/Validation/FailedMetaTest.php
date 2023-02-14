@@ -73,7 +73,7 @@ class FailedMetaTest extends TestCase
                 [
                     'status' => '422',
                     'title' => 'Unprocessable Entity',
-                    'detail' => 'The value must be a date before or equal to 2018-12-31 23:59:59.',
+                    'detail' => 'The value field must be a date before or equal to 2018-12-31 23:59:59.',
                     'meta' => [
                         'failed' => [
                             'rule' => 'before-or-equal',
@@ -93,7 +93,7 @@ class FailedMetaTest extends TestCase
                 [
                     'status' => '422',
                     'title' => 'Unprocessable Entity',
-                    'detail' => 'The value must be between 1 and 9.',
+                    'detail' => 'The value field must be between 1 and 9.',
                     'meta' => [
                         'failed' => [
                             'rule' => 'between',
@@ -234,7 +234,7 @@ class FailedMetaTest extends TestCase
             [
                 'status' => '422',
                 'title' => 'Unprocessable Entity',
-                'detail' => 'The title must be a string.',
+                'detail' => 'The title field must be a string.',
                 'source' => [
                     'pointer' => '/data/attributes/title',
                 ],
@@ -247,7 +247,7 @@ class FailedMetaTest extends TestCase
             [
                 'status' => '422',
                 'title' => 'Unprocessable Entity',
-                'detail' => 'The title must be between 5 and 255 characters.',
+                'detail' => 'The title field must be between 5 and 255 characters.',
                 'source' => [
                     'pointer' => '/data/attributes/title',
                 ],

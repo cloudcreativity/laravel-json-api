@@ -270,7 +270,7 @@ class ResourceTest extends TestCase
             [
                 'status' => '422',
                 'title' => 'Unprocessable Entity',
-                'detail' => 'The title must be a string.',
+                'detail' => 'The title field must be a string.',
                 'source' => [
                     'pointer' => '/data/attributes/title',
                 ],
@@ -278,7 +278,7 @@ class ResourceTest extends TestCase
             [
                 'status' => '422',
                 'title' => 'Unprocessable Entity',
-                'detail' => 'The title must be between 5 and 255 characters.',
+                'detail' => 'The title field must be between 5 and 255 characters.',
                 'source' => [
                     'pointer' => '/data/attributes/title',
                 ],
