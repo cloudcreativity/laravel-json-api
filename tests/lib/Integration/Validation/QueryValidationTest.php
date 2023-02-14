@@ -77,7 +77,7 @@ class QueryValidationTest extends TestCase
             'page:invalid' => [
                 ['page' => ['number' => 0, 'size' => 10]],
                 'page.number',
-                'The page.number must be at least 1.',
+                'The page.number field must be at least 1.',
             ],
             'page:not allowed (singular)' => [
                 ['page' => ['foo' => 'bar', 'size' => 10]],

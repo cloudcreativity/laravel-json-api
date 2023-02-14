@@ -74,17 +74,11 @@ class ClientJob extends Model implements AsynchronousProcess
      */
     protected $casts = [
         'attempts' => 'integer',
+        'completed_at' => 'datetime',
         'failed' => 'boolean',
         'timeout' => 'integer',
+        'timeout_at' => 'datetime',
         'tries' => 'integer',
-    ];
-
-    /**
-     * @var array
-     */
-    protected $dates = [
-        'completed_at',
-        'timeout_at',
     ];
 
     /**
