@@ -61,7 +61,6 @@ class ServiceProvider extends BaseServiceProvider
     public function boot(Router $router)
     {
         $this->bootMiddleware($router);
-        $this->bootResponseMacro();
         $this->bootBladeDirectives();
         $this->bootTranslations();
 
@@ -90,6 +89,8 @@ class ServiceProvider extends BaseServiceProvider
                 Console\Commands\MakeSchema::class,
                 Console\Commands\MakeValidators::class,
             ]);
+        } else {
+            $this->bootResponseMacro();
         }
     }
 
