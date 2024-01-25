@@ -428,26 +428,19 @@ document, overload the `getIncludedResourceLinks()` method instead.
 
 ## Meta
 
-You can add top-level `meta` to your resource object using the `getPrimaryMeta()` or `getInclusionMeta()` methods
-on your schema. These are called depending on whether your resource is appearing in either the primary `data`
-member of the JSON API document or the `included` member.
+You can add top-level `meta` to your resource object using the `getResourceMeta()` method
+on your schema.
 
-For example, the following would add meta to your resource object regardless of whether it is primary data or
-included in the document:
+For example:
 
 ```php
 class Schema extends SchemaProvider
 {
     // ...
 
-    public function getPrimaryMeta($resource)
+    public function getResourceMeta($resource)
     {
         return ['foo' => 'bar'];
-    }
-
-    public function getInclusionMeta($resource)
-    {
-        return $this->getPrimaryMeta($resource);
     }
 
 }
