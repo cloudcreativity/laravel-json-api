@@ -20,7 +20,6 @@ declare(strict_types=1);
 namespace CloudCreativity\LaravelJsonApi\Schema;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Schema\SchemaProviderInterface;
-use CloudCreativity\LaravelJsonApi\Document\Link\Link;
 use Neomerx\JsonApi\Contracts\Factories\FactoryInterface;
 use Neomerx\JsonApi\Contracts\Schema\ContextInterface;
 use Neomerx\JsonApi\Contracts\Schema\LinkInterface;
