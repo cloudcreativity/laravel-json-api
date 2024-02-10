@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## Unreleased
+
+### Fixed
+
+- [#642](https://github.com/cloudcreativity/laravel-json-api/pull/642) Add missing resource meta functionality.
+
 ## [6.0.0] - 2023-02-14
 
 ### Changed
