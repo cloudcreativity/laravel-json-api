@@ -133,4 +133,24 @@ class Schema extends BaseSchema
     {
         return $this->provider->getRelationshipRelatedLink($resource, $name);
     }
+    
+    /**
+     * @inheritDoc
+     */
+    public function getResourceMeta($resource): ?array
+    {
+        if($this->hasResourceMeta($resource)){
+            return $this->provider->getResourceMeta($resource);
+        }
+
+        return null;
+    }
+    
+    /**
+     * @inheritDoc
+     */
+    public function hasResourceMeta($resource): bool
+    {
+        return method_exists($this->provider, 'getResourceMeta');
+    }
 }

@@ -103,6 +103,28 @@ public function getId(object $resource): string
     return (string) $resource->getRouteKey();
 }
 ```
+The functions that are used to call meta data has also been changed. Before there were these 2 functions:
+
+```php
+public function getPrimaryMeta($resource)
+{
+    return ['foo => 'bar'];
+}
+public function getInclusionMeta($resource)
+{
+    return $this->getPrimaryMeta($resource);
+}
+```
+
+These have now been replaced with 1 function:
+
+```php
+  public function getResourceMeta($resource): ?array
+  {
+      return ['foo => 'bar'];
+  }
+```
+This method will be used in place of the other 2. In the rare event that your inclution meta was different from primary, you may need to amalgemate.
 
 ### Errors
 
