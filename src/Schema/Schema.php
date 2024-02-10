@@ -20,6 +20,7 @@ declare(strict_types=1);
 namespace CloudCreativity\LaravelJsonApi\Schema;
 
 use CloudCreativity\LaravelJsonApi\Contracts\Schema\SchemaProviderInterface;
+use CloudCreativity\LaravelJsonApi\Document\Link\Link;
 use Neomerx\JsonApi\Contracts\Factories\FactoryInterface;
 use Neomerx\JsonApi\Contracts\Schema\ContextInterface;
 use Neomerx\JsonApi\Contracts\Schema\LinkInterface;
@@ -100,6 +101,30 @@ class Schema extends BaseSchema
         foreach ($relations as $field => $relation) {
             yield $field => SchemaProviderRelation::make($resourceType, $field, $relation)->parse();
         }
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getLinks($resource): iterable
+    {
+        $links = [];
+
+        if (method_exists($this->provider, 'getResourceLinks')) {
+            $links = $this->provider->getResourceLinks($resource);
+        }
+
+        if ($links === null) {
+            return [];
+        }
+
+        $self = $links[LinkInterface::SELF] ?? null;
+
+        if (!$self instanceof LinkInterface && $self !== false) {
+            $links[LinkInterface::SELF] = $this->getSelfLink($resource);
+        }
+
+        return $links;
     }
 
     /**

@@ -30,7 +30,7 @@ use RuntimeException;
 abstract class SchemaProvider implements SchemaProviderInterface
 {
     /**
-     * @var string|null
+     * @var string
      */
     protected string $resourceType = '';
 
@@ -134,10 +134,8 @@ abstract class SchemaProvider implements SchemaProviderInterface
      */
     public function getSelfSubLink(object $resource): LinkInterface
     {
-        return $this->factory->createLink(
-            true,
+        return $this->createLink(
             $this->getSelfSubUrl($resource),
-            false,
         );
     }
 
@@ -146,12 +144,8 @@ abstract class SchemaProvider implements SchemaProviderInterface
      */
     public function getRelationshipSelfLink(object $resource, string $field): LinkInterface
     {
-        $url = $this->getRelationshipSelfUrl($resource, $field);
-
-        return $this->factory->createLink(
-            true,
-            $url,
-            false,
+        return $this->createLink(
+            $this->getRelationshipSelfUrl($resource, $field),
         );
     }
 
@@ -160,12 +154,8 @@ abstract class SchemaProvider implements SchemaProviderInterface
      */
     public function getRelationshipRelatedLink(object $resource, string $field): LinkInterface
     {
-        $url = $this->getRelationshipRelatedUrl($resource, $field);
-
-        return $this->factory->createLink(
-            true,
-            $url,
-            false,
+        return $this->createLink(
+            $this->getRelationshipRelatedUrl($resource, $field),
         );
     }
 
@@ -210,6 +200,21 @@ abstract class SchemaProvider implements SchemaProviderInterface
             return $this->context;
         }
 
-        throw new RuntimeException('No currenct context set.');
+        throw new RuntimeException('No current context set.');
+    }
+
+    /**
+     * Create a link.
+     *
+     * This method was on the v1 schema provider, so is provided here for backwards compatibility.
+     *
+     * @param string $subHref
+     * @param null|mixed $meta
+     * @param bool $treatAsHref
+     * @return LinkInterface
+     */
+    protected function createLink(string $subHref, array $meta = null, bool $treatAsHref = false): LinkInterface
+    {
+        return $this->factory->createLink(!$treatAsHref, $subHref, !empty($meta), $meta);
     }
 }
