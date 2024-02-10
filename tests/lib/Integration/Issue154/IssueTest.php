@@ -44,7 +44,7 @@ class IssueTest extends TestCase
     /**
      * @return array
      */
-    public function createProvider()
+    public static function createProvider()
     {
         return [
             ['saving', ['creating', 'saved', 'created']],
@@ -93,7 +93,7 @@ class IssueTest extends TestCase
     /**
      * @return array
      */
-    public function updateProvider()
+    public static function updateProvider()
     {
         return [
             ['saving', ['updating', 'saved', 'updated']],
@@ -133,7 +133,7 @@ class IssueTest extends TestCase
     /**
      * @return array
      */
-    public function deleteProvider()
+    public static function deleteProvider()
     {
         return [
             ['deleting', ['deleted']],

@@ -41,7 +41,7 @@ class DateTimeIso8601Test extends TestCase
     /**
      * @return array
      */
-    public function validProvider(): array
+    public static function validProvider(): array
     {
         return [
             ['2018-01-01T12:00+00:00'],
@@ -62,7 +62,7 @@ class DateTimeIso8601Test extends TestCase
     /**
      * @return array
      */
-    public function invalidProvider(): array
+    public static function invalidProvider(): array
     {
         return [
             [null],

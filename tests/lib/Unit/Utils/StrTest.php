@@ -32,7 +32,7 @@ class StrTest extends TestCase
     /**
      * @return array
      */
-    public function dasherizeProvider()
+    public static function dasherizeProvider()
     {
         return [
             ['foo', 'foo'],
@@ -55,7 +55,7 @@ class StrTest extends TestCase
     /**
      * @return array
      */
-    public function decamelizeProvider()
+    public static function decamelizeProvider()
     {
         return [
             ['foo', 'foo'],
@@ -78,7 +78,7 @@ class StrTest extends TestCase
     /**
      * @return array
      */
-    public function underscoreProvider()
+    public static function underscoreProvider()
     {
         return [
             ['foo', 'foo'],
@@ -103,7 +103,7 @@ class StrTest extends TestCase
     /**
      * @return array
      */
-    public function camelizeProvider()
+    public static function camelizeProvider()
     {
         return [
             ['foo', 'foo'],

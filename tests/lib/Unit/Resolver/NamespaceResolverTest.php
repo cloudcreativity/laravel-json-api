@@ -27,7 +27,7 @@ class NamespaceResolverTest extends TestCase
     /**
      * @return array
      */
-    public function byResourceProvider()
+    public static function byResourceProvider()
     {
         return [
             [
@@ -66,7 +66,7 @@ class NamespaceResolverTest extends TestCase
     /**
      * @return array
      */
-    public function notByResourceProvider()
+    public static function notByResourceProvider()
     {
         return [
             [
@@ -105,7 +105,7 @@ class NamespaceResolverTest extends TestCase
     /**
      * @return array
      */
-    public function genericAuthorizerProvider()
+    public static function genericAuthorizerProvider()
     {
         return [
             // By resource

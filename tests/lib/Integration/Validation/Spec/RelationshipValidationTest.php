@@ -30,7 +30,7 @@ class RelationshipValidationTest extends TestCase
     /**
      * @return array
      */
-    public function toOneProvider()
+    public static function toOneProvider()
     {
         return [
             'data:required' => [
@@ -217,7 +217,7 @@ class RelationshipValidationTest extends TestCase
     /**
      * @return array
      */
-    public function toManyProvider()
+    public static function toManyProvider()
     {
         return [
             'data:required' => [

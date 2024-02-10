@@ -225,7 +225,7 @@ class ResourceObjectTest extends TestCase
     /**
      * @return array
      */
-    public function pointerProvider(): array
+    public static function pointerProvider(): array
     {
         return [
             ['type', '/type'],
@@ -267,7 +267,7 @@ class ResourceObjectTest extends TestCase
     /**
      * @return array
      */
-    public function pointerForRelationshipProvider(): array
+    public static function pointerForRelationshipProvider(): array
     {
         return [
             ['author', null],

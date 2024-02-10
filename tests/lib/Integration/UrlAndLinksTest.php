@@ -31,7 +31,7 @@ class UrlAndLinksTest extends TestCase
     /**
      * @return array
      */
-    public function urlProvider()
+    public static function urlProvider()
     {
         return [
             ['/api/v1/posts', 'index'],

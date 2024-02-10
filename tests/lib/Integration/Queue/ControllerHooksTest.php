@@ -42,7 +42,7 @@ class ControllerHooksTest extends TestCase
         $mock = $this
             ->getMockBuilder(Adapter::class)
             ->setConstructorArgs([new StandardStrategy()])
-            ->setMethods(['create', 'update','delete'])
+            ->onlyMethods(['create', 'update','delete'])
             ->getMock();
 
         $mock->expects($this->never())->method('create');

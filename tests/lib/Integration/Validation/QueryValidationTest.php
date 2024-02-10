@@ -36,7 +36,7 @@ class QueryValidationTest extends TestCase
     /**
      * @return array
      */
-    public function searchProvider()
+    public static function searchProvider()
     {
         return [
             'fields:not allowed (singular)' => [

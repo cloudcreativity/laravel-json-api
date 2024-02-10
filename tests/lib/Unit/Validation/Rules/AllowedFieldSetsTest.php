@@ -26,7 +26,7 @@ class AllowedFieldSetsTest extends TestCase
     /**
      * @return array
      */
-    public function allowedProvider(): array
+    public static function allowedProvider(): array
     {
         return [
             'valid' => [

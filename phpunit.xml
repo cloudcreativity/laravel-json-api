@@ -1,25 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          backupGlobals="false"
-         backupStaticAttributes="false"
          beStrictAboutTestsThatDoNotTestAnything="true"
          bootstrap="vendor/autoload.php"
          colors="true"
-         convertErrorsToExceptions="true"
-         convertNoticesToExceptions="true"
-         convertWarningsToExceptions="true"
-         convertDeprecationsToExceptions="true"
          processIsolation="false"
          stopOnError="false"
          stopOnFailure="false"
-         verbose="true"
-         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.4/phpunit.xsd"
+         cacheDirectory=".phpunit.cache"
+         backupStaticProperties="false"
+         failOnWarning="true"
+         failOnDeprecation="true"
+         failOnNotice="true"
 >
-  <coverage>
-    <include>
-      <directory suffix=".php">src/</directory>
-    </include>
-  </coverage>
+  <coverage/>
   <testsuites>
     <testsuite name="Unit">
       <directory suffix="Test.php">./tests/lib/Unit/</directory>
@@ -36,4 +31,9 @@
     <ini name="memory_limit" value="256M"/>
     <env name="APP_KEY" value="base64:BMfTqJC1cFk6A/jTPsjQgC+cROx7TDaEeGIAat6CuqY="/>
   </php>
+  <source>
+    <include>
+      <directory suffix=".php">src/</directory>
+    </include>
+  </source>
 </phpunit>

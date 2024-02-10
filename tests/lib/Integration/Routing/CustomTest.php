@@ -58,7 +58,7 @@ class CustomTest extends TestCase
     /**
      * @return array
      */
-    public function versionProvider(): array
+    public static function versionProvider(): array
     {
         return [
             'root' => ['/api/v1'],

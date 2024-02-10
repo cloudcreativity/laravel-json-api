@@ -38,7 +38,7 @@
         "laravel/ui": "^4.2",
         "mockery/mockery": "^1.1",
         "orchestra/testbench": "^8.0",
-        "phpunit/phpunit": "^9.5.28"
+        "phpunit/phpunit": "^10.5"
     },
     "suggest": {
         "cloudcreativity/json-api-testing": "Required to use the test helpers."

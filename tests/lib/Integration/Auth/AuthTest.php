@@ -68,7 +68,7 @@ class AuthTest extends TestCase
     /**
      * @return array
      */
-    public function resourceAuthProvider()
+    public static function resourceAuthProvider()
     {
         return [
             [false, 'posts', 200],

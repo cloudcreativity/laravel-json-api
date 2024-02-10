@@ -45,7 +45,7 @@ class FailedMetaTest extends TestCase
 
         $this->validator = $this
             ->getMockBuilder(Validators::class)
-            ->setMethods(['rules'])
+            ->onlyMethods(['rules'])
             ->setConstructorArgs([$this->app->make(Factory::class), json_api('v1')->getContainer()])
             ->getMock();
 
@@ -64,7 +64,7 @@ class FailedMetaTest extends TestCase
     /**
      * @return array
      */
-    public function rulesProvider(): array
+    public static function rulesProvider(): array
     {
         return [
             'before_or_equal' => [

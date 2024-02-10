@@ -95,7 +95,7 @@ class GeneratorsTest extends TestCase
     /**
      * @return array
      */
-    public function byResourceProvider()
+    public static function byResourceProvider()
     {
         return [
             'by-resource' => [true],

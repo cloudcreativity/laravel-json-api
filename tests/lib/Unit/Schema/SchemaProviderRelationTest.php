@@ -29,7 +29,7 @@ class SchemaProviderRelationTest extends TestCase
     /**
      * @return array
      */
-    public function dataProvider(): array
+    public static function dataProvider(): array
     {
         return [
             [null],
@@ -105,7 +105,7 @@ class SchemaProviderRelationTest extends TestCase
     /**
      * @return array
      */
-    public function metaProvider(): array
+    public static function metaProvider(): array
     {
         return [
             [['foo' => 'bar']],
@@ -132,7 +132,7 @@ class SchemaProviderRelationTest extends TestCase
     /**
      * @return array
      */
-    public function emptyMetaProvider(): array
+    public static function emptyMetaProvider(): array
     {
         return [
             [null],
@@ -158,7 +158,7 @@ class SchemaProviderRelationTest extends TestCase
     /**
      * @return array
      */
-    public function booleanProvider(): array
+    public static function booleanProvider(): array
     {
         return [
             [true],

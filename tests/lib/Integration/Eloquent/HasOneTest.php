@@ -78,7 +78,7 @@ class HasOneTest extends TestCase
     /**
      * @return array
      */
-    public function confirmationProvider(): array
+    public static function confirmationProvider(): array
     {
         return [
             ['passwordConfirmation', 'foo'],

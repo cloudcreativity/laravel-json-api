@@ -71,7 +71,7 @@ class ErrorsTest extends TestCase
     /**
      * @return array
      */
-    public function invalidDocumentProvider()
+    public static function invalidDocumentProvider()
     {
         return [
             'empty' => [''],
@@ -118,7 +118,7 @@ class ErrorsTest extends TestCase
     /**
      * @return array
      */
-    public function ignoreDocumentProvider()
+    public static function ignoreDocumentProvider()
     {
         return [
             'empty' => [''],
