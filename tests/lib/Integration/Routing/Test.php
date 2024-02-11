@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2023 Cloud Creativity Limited
+ * Copyright 2024 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ class Test extends TestCase
     /**
      * @var array
      */
-    private $defaults = [
+    private static $defaults = [
         'index' => ['GET', '/api/v1/posts', '@index'],
         'create' => ['POST', '/api/v1/posts', '@create'],
         'read' => ['GET', '/api/v1/posts/1', '@read'],
@@ -59,9 +59,9 @@ class Test extends TestCase
     /**
      * @return array
      */
-    public function defaultsProvider()
+    public static function defaultsProvider(): array
     {
-        return $this->defaults;
+        return self::$defaults;
     }
 
     /**
@@ -69,9 +69,9 @@ class Test extends TestCase
      *
      * @return array
      */
-    public function recordProvider()
+    public static function recordProvider()
     {
-        $args = $this->defaults;
+        $args = self::$defaults;
         unset($args['index'], $args['create']);
 
         return $args;
@@ -117,7 +117,7 @@ class Test extends TestCase
     /**
      * @return array
      */
-    public function uriProvider(): array
+    public static function uriProvider(): array
     {
         return [
             'index' => ['GET', '/api/v1/blog_posts', '@index'],
@@ -268,7 +268,7 @@ class Test extends TestCase
     /**
      * @return array
      */
-    public function onlyProvider()
+    public static function onlyProvider()
     {
         return [
             ['index', [
@@ -328,7 +328,7 @@ class Test extends TestCase
     /**
      * @return array
      */
-    public function exceptProvider()
+    public static function exceptProvider()
     {
         return [
             ['create', [
@@ -388,7 +388,7 @@ class Test extends TestCase
     /**
      * @return array
      */
-    public function hasOneOnlyProvider()
+    public static function hasOneOnlyProvider()
     {
         return [
             ['related', [
@@ -450,7 +450,7 @@ class Test extends TestCase
     /**
      * @return array
      */
-    public function hasOneExceptProvider()
+    public static function hasOneExceptProvider()
     {
         return [
             ['related', [
@@ -548,7 +548,7 @@ class Test extends TestCase
     /**
      * @return array
      */
-    public function hasManyOnlyProvider()
+    public static function hasManyOnlyProvider()
     {
         return [
             ['related', [
@@ -623,7 +623,7 @@ class Test extends TestCase
     /**
      * @return array
      */
-    public function hasManyExceptProvider()
+    public static function hasManyExceptProvider()
     {
         return [
             ['related', [
@@ -886,7 +886,7 @@ class Test extends TestCase
     /**
      * @return array
      */
-    public function multiWordProvider()
+    public static function multiWordProvider()
     {
         return [
             ['end-users'],
@@ -936,7 +936,7 @@ class Test extends TestCase
     /**
      * @return array
      */
-    public function processProvider(): array
+    public static function processProvider(): array
     {
         return [
             'fetch-many' => ['GET', '/api/v1/photos/queue-jobs', '@processes'],

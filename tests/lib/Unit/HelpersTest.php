@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2023 Cloud Creativity Limited
+ * Copyright 2024 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ class HelpersTest extends TestCase
     /**
      * @return array
      */
-    public function invalidJsonProvider()
+    public static function invalidJsonProvider()
     {
         return [
             'parse error' => ['{ "data": { "type": "foo" }', true],
@@ -72,7 +72,7 @@ class HelpersTest extends TestCase
     /**
      * @return array
      */
-    public function requestContainsBodyProvider()
+    public static function requestContainsBodyProvider()
     {
         return [
             'neither header' => [[], false],
@@ -132,7 +132,7 @@ class HelpersTest extends TestCase
     /**
      * @return array
      */
-    public function responseContainsBodyProvider()
+    public static function responseContainsBodyProvider()
     {
         return [
             'head never contains body' => [false, 'HEAD', 200],
@@ -197,7 +197,7 @@ class HelpersTest extends TestCase
     /**
      * @return array
      */
-    public function mediaTypesProvider()
+    public static function mediaTypesProvider()
     {
         return [
             ['application/vnd.api+json', true],
@@ -235,7 +235,7 @@ class HelpersTest extends TestCase
     /**
      * @return array
      */
-    public function httpErrorProvider(): array
+    public static function httpErrorProvider(): array
     {
         return [
             'empty' => [

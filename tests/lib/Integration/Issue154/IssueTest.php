@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2023 Cloud Creativity Limited
+ * Copyright 2024 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@ class IssueTest extends TestCase
     /**
      * @return array
      */
-    public function createProvider()
+    public static function createProvider()
     {
         return [
             ['saving', ['creating', 'saved', 'created']],
@@ -93,7 +93,7 @@ class IssueTest extends TestCase
     /**
      * @return array
      */
-    public function updateProvider()
+    public static function updateProvider()
     {
         return [
             ['saving', ['updating', 'saved', 'updated']],
@@ -133,7 +133,7 @@ class IssueTest extends TestCase
     /**
      * @return array
      */
-    public function deleteProvider()
+    public static function deleteProvider()
     {
         return [
             ['deleting', ['deleted']],

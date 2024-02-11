@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2023 Cloud Creativity Limited
+ * Copyright 2024 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,7 +74,7 @@ class DataAnalyserTest extends TestCase
     /**
      * @return array[]
      */
-    public function iteratorProvider(): array
+    public static function iteratorProvider(): array
     {
         return [
             'array' => [
@@ -88,10 +88,17 @@ class DataAnalyserTest extends TestCase
                 },
             ],
             'iterator aggregate' => [
-                function (object ...$objects): \IteratorAggregate {
-                    $mock = $this->createMock(\IteratorAggregate::class);
-                    $mock->method('getIterator')->willReturn(new \ArrayIterator($objects));
-                    return $mock;
+                static function (object ...$objects): \IteratorAggregate {
+                    return new class($objects) implements \IteratorAggregate {
+                        public function __construct(private readonly array $objects)
+                        {
+                        }
+
+                        public function getIterator(): \ArrayIterator
+                        {
+                            return new \ArrayIterator($this->objects);
+                        }
+                    };
                 },
             ],
             'iterator' => [

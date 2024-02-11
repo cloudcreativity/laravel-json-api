@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2023 Cloud Creativity Limited
+ * Copyright 2024 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ class FailedMetaTest extends TestCase
 
         $this->validator = $this
             ->getMockBuilder(Validators::class)
-            ->setMethods(['rules'])
+            ->onlyMethods(['rules'])
             ->setConstructorArgs([$this->app->make(Factory::class), json_api('v1')->getContainer()])
             ->getMock();
 
@@ -64,7 +64,7 @@ class FailedMetaTest extends TestCase
     /**
      * @return array
      */
-    public function rulesProvider(): array
+    public static function rulesProvider(): array
     {
         return [
             'before_or_equal' => [

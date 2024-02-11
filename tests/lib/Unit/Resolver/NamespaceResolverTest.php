@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2023 Cloud Creativity Limited
+ * Copyright 2024 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ class NamespaceResolverTest extends TestCase
     /**
      * @return array
      */
-    public function byResourceProvider()
+    public static function byResourceProvider()
     {
         return [
             [
@@ -66,7 +66,7 @@ class NamespaceResolverTest extends TestCase
     /**
      * @return array
      */
-    public function notByResourceProvider()
+    public static function notByResourceProvider()
     {
         return [
             [
@@ -105,7 +105,7 @@ class NamespaceResolverTest extends TestCase
     /**
      * @return array
      */
-    public function genericAuthorizerProvider()
+    public static function genericAuthorizerProvider()
     {
         return [
             // By resource

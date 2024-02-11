@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2023 Cloud Creativity Limited
+ * Copyright 2024 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -105,6 +105,30 @@ class Schema extends BaseSchema
     /**
      * @inheritDoc
      */
+    public function getLinks($resource): iterable
+    {
+        $links = [];
+
+        if (method_exists($this->provider, 'getResourceLinks')) {
+            $links = $this->provider->getResourceLinks($resource);
+        }
+
+        if ($links === null) {
+            return [];
+        }
+
+        $self = $links[LinkInterface::SELF] ?? null;
+
+        if (!$self instanceof LinkInterface && $self !== false) {
+            $links[LinkInterface::SELF] = $this->getSelfLink($resource);
+        }
+
+        return $links;
+    }
+
+    /**
+     * @inheritDoc
+     */
     protected function getResourcesSubUrl(): string
     {
         return $this->provider->getSelfSubUrl();
@@ -132,5 +156,25 @@ class Schema extends BaseSchema
     public function getRelationshipRelatedLink($resource, string $name): LinkInterface
     {
         return $this->provider->getRelationshipRelatedLink($resource, $name);
+    }
+    
+    /**
+     * @inheritDoc
+     */
+    public function getResourceMeta($resource): ?array
+    {
+        if($this->hasResourceMeta($resource)){
+            return $this->provider->getResourceMeta($resource);
+        }
+
+        return null;
+    }
+    
+    /**
+     * @inheritDoc
+     */
+    public function hasResourceMeta($resource): bool
+    {
+        return method_exists($this->provider, 'getResourceMeta');
     }
 }

@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Copyright 2023 Cloud Creativity Limited
+ * Copyright 2024 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ class StrTest extends TestCase
     /**
      * @return array
      */
-    public function dasherizeProvider()
+    public static function dasherizeProvider()
     {
         return [
             ['foo', 'foo'],
@@ -55,7 +55,7 @@ class StrTest extends TestCase
     /**
      * @return array
      */
-    public function decamelizeProvider()
+    public static function decamelizeProvider()
     {
         return [
             ['foo', 'foo'],
@@ -78,7 +78,7 @@ class StrTest extends TestCase
     /**
      * @return array
      */
-    public function underscoreProvider()
+    public static function underscoreProvider()
     {
         return [
             ['foo', 'foo'],
@@ -103,7 +103,7 @@ class StrTest extends TestCase
     /**
      * @return array
      */
-    public function camelizeProvider()
+    public static function camelizeProvider()
     {
         return [
             ['foo', 'foo'],

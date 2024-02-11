@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2023 Cloud Creativity Limited
+ * Copyright 2024 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ abstract class TestCase extends BaseTestCase
     /**
      * @return array
      */
-    public function fieldProvider(): array
+    public static function fieldProvider(): array
     {
         return [
             'created-at' => ['created-at'],
@@ -50,7 +50,7 @@ abstract class TestCase extends BaseTestCase
     /**
      * @return array
      */
-    public function multipartProvider(): array
+    public static function multipartProvider(): array
     {
         return [
             'form-data' => ['multipart/form-data'],

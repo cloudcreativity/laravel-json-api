@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2023 Cloud Creativity Limited
+ * Copyright 2024 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,7 +68,7 @@ class AuthTest extends TestCase
     /**
      * @return array
      */
-    public function resourceAuthProvider()
+    public static function resourceAuthProvider()
     {
         return [
             [false, 'posts', 200],

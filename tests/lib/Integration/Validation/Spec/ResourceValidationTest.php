@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2023 Cloud Creativity Limited
+ * Copyright 2024 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ class ResourceValidationTest extends TestCase
     /**
      * @return array
      */
-    public function postProvider()
+    public static function postProvider()
     {
         return [
             'data:required' => [
@@ -398,7 +398,7 @@ class ResourceValidationTest extends TestCase
     /**
      * @return array
      */
-    public function patchProvider()
+    public static function patchProvider()
     {
         return [
             'data.id:required' => [

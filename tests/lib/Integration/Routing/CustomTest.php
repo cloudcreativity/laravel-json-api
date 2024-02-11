@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2023 Cloud Creativity Limited
+ * Copyright 2024 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,7 +58,7 @@ class CustomTest extends TestCase
     /**
      * @return array
      */
-    public function versionProvider(): array
+    public static function versionProvider(): array
     {
         return [
             'root' => ['/api/v1'],
