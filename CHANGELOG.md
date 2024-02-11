@@ -5,6 +5,8 @@ All notable changes to this project will be documented in this file. This projec
 
 ## Unreleased
 
+## [6.1.0] - 2024-02-11
+
 ### Fixed
 
 - [#642](https://github.com/cloudcreativity/laravel-json-api/pull/642) Add missing resource meta functionality.
