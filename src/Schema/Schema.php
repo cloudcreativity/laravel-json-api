@@ -105,6 +105,30 @@ class Schema extends BaseSchema
     /**
      * @inheritDoc
      */
+    public function getLinks($resource): iterable
+    {
+        $links = [];
+
+        if (method_exists($this->provider, 'getResourceLinks')) {
+            $links = $this->provider->getResourceLinks($resource);
+        }
+
+        if ($links === null) {
+            return [];
+        }
+
+        $self = $links[LinkInterface::SELF] ?? null;
+
+        if (!$self instanceof LinkInterface && $self !== false) {
+            $links[LinkInterface::SELF] = $this->getSelfLink($resource);
+        }
+
+        return $links;
+    }
+
+    /**
+     * @inheritDoc
+     */
     protected function getResourcesSubUrl(): string
     {
         return $this->provider->getSelfSubUrl();

@@ -384,20 +384,35 @@ By default all resource objects will be encoded with their `self` link, e.g.:
 }
 ```
 
-You can change this behaviour by overloading the `getResourceLinks` or `getIncludedResourceLinks` methods.
-For example:
+You can change this behaviour by implementing the `getResourceLinks` method. For example, if you do not want any links
+to be serialized:
 
 ```php
 class Schema extends SchemaProvider
 {
     // ...
 
-    public function getResourceLinks($resource)
+    public function getResourceLinks($resource): ?array
     {
-        $links = parent::getResourceLinks($resource);
-        $links['foo'] = $this->createLink('posts/foo');
+        return null;
+    }
+}
+```
 
-        return $links;
+If you return an array without any `self` key in it, the `self` link will be automatically added. If you do not want
+the `self` link to be set, set the array key `self` to `false`.
+
+```php
+class Schema extends SchemaProvider
+{
+    // ...
+
+    public function getResourceLinks($resource): array
+    {
+        return [
+            // "self" will automatically be added as it is not set to false.
+            'foo' => $this->createLink('posts/foo'),
+        ];
     }
 
 }
@@ -422,9 +437,6 @@ This would result in the following resource object:
 
 > The `createLink` method allows you to pass in link meta and set whether the URI is relative to the API or an
 absolute path.
-
-If you want to only change the links when the resource is appearing in the `included` section of the JSON API
-document, overload the `getIncludedResourceLinks()` method instead.
 
 ## Meta
 
