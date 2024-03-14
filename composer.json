@@ -22,22 +22,22 @@
         }
     ],
     "require": {
-        "php": "^8.1",
+        "php": "^8.2",
         "ext-json": "*",
-        "laravel-json-api/neomerx-json-api": "^5.0.1",
-        "laravel/framework": "^10.0",
-        "nyholm/psr7": "^1.2",
+        "laravel-json-api/neomerx-json-api": "^5.0.2",
+        "laravel/framework": "^11.0",
+        "nyholm/psr7": "^1.8",
         "ramsey/uuid": "^4.0",
-        "symfony/psr-http-message-bridge": "^2.0"
+        "symfony/psr-http-message-bridge": "^7.0"
     },
     "require-dev": {
         "ext-sqlite3": "*",
-        "guzzlehttp/guzzle": "^7.0",
-        "laravel-json-api/testing": "^2.0",
-        "laravel/legacy-factories": "^1.0.4",
-        "laravel/ui": "^4.2",
-        "mockery/mockery": "^1.1",
-        "orchestra/testbench": "^8.0",
+        "guzzlehttp/guzzle": "^7.8",
+        "laravel-json-api/testing": "^3.0",
+        "laravel/legacy-factories": "^1.4.0",
+        "laravel/ui": "^4.4",
+        "mockery/mockery": "^1.6",
+        "orchestra/testbench": "^9.0",
         "phpunit/phpunit": "^10.5"
     },
     "suggest": {
@@ -61,7 +61,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-develop": "5.x-dev"
+            "dev-develop": "7.x-dev"
         },
         "laravel": {
             "providers": [
