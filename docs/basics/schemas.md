@@ -392,9 +392,9 @@ class Schema extends SchemaProvider
 {
     // ...
 
-    public function getResourceLinks($resource): ?array
+    public function getResourceLinks($resource): iterable
     {
-        return null;
+        return ['self' => false];
     }
 }
 ```
