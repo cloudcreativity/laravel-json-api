@@ -50,7 +50,7 @@ class AllowedFieldSets implements Rule
      *
      * @param array|null $allowed
      */
-    public function __construct(array $allowed = null)
+    public function __construct(?array $allowed = null)
     {
         $this->all = is_null($allowed);
         $this->allowed = collect($allowed);
@@ -64,7 +64,7 @@ class AllowedFieldSets implements Rule
      *      the allowed fields, empty array for none allowed, or null for all allowed.
      * @return $this
      */
-    public function allow(string $resourceType, array $fields = null): self
+    public function allow(string $resourceType, ?array $fields = null): self
     {
         $this->all = false;
         $this->allowed[$resourceType] = $fields;

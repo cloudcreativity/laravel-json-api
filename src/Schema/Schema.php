@@ -47,7 +47,7 @@ class Schema extends BaseSchema
     public function __construct(
         FactoryInterface $factory,
         SchemaProviderInterface $provider,
-        SchemaFields $fields = null
+        ?SchemaFields $fields = null,
     ) {
         parent::__construct($factory);
         $this->provider = $provider;
@@ -121,6 +121,10 @@ class Schema extends BaseSchema
 
         if (!$self instanceof LinkInterface && $self !== false) {
             $links[LinkInterface::SELF] = $this->getSelfLink($resource);
+        }
+
+        if ($self === false) {
+            unset($links[LinkInterface::SELF]);
         }
 
         return $links;

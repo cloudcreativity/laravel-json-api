@@ -83,7 +83,7 @@ abstract class TestCase extends BaseTestCase
      * @param array $headers
      * @return Response
      */
-    protected function willSeeResponse(array $json = null, $status = 200, array $headers = [])
+    protected function willSeeResponse(?array $json = null, $status = 200, array $headers = [])
     {
         if ($json) {
             $body = json_encode($json);

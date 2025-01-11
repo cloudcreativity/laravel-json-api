@@ -59,7 +59,7 @@ class ValidationException extends JsonApiException
      * @param string|int|null $defaultHttpCode
      * @param Exception|null $previous
      */
-    public function __construct($errors, $defaultHttpCode = self::DEFAULT_HTTP_CODE, Exception $previous = null)
+    public function __construct($errors, $defaultHttpCode = self::DEFAULT_HTTP_CODE, ?Exception $previous = null)
     {
         parent::__construct(
             $errors,

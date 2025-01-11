@@ -79,7 +79,7 @@ final class RouteRegistration extends IlluminateRegistrar
      * @param string|null $inverse
      * @return $this
      */
-    public function field(string $field, string $inverse = null): self
+    public function field(string $field, ?string $inverse = null): self
     {
         $this->defaults = array_merge($this->defaults, [
             ResourceRegistrar::PARAM_RELATIONSHIP_NAME => $field,

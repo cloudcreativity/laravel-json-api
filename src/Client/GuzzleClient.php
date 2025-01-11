@@ -60,7 +60,7 @@ class GuzzleClient extends AbstractClient
     protected function request(
         $method,
         $uri,
-        array $payload = null,
+        ?array $payload = null,
         array $parameters = []
     ) {
         $request = new Request($method, $uri);

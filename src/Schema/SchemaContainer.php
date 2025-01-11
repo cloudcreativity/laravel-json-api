@@ -48,7 +48,7 @@ class SchemaContainer implements SchemaContainerInterface
      * @param FactoryInterface $factory
      * @param SchemaFields|null $fields
      */
-    public function __construct(ContainerInterface $container, FactoryInterface $factory, SchemaFields $fields = null)
+    public function __construct(ContainerInterface $container, FactoryInterface $factory, ?SchemaFields $fields = null)
     {
         $this->container = $container;
         $this->factory = $factory;

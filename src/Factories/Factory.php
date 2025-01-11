@@ -19,6 +19,7 @@ declare(strict_types=1);
 
 namespace CloudCreativity\LaravelJsonApi\Factories;
 
+use Closure;
 use CloudCreativity\LaravelJsonApi\Api\AbstractProvider;
 use CloudCreativity\LaravelJsonApi\Api\Api;
 use CloudCreativity\LaravelJsonApi\Api\LinkGenerator;
@@ -217,12 +218,12 @@ class Factory extends BaseFactory
      */
     public function createPage(
         $data,
-        LinkInterface $first = null,
-        LinkInterface $previous = null,
-        LinkInterface $next = null,
-        LinkInterface $last = null,
+        ?LinkInterface $first = null,
+        ?LinkInterface $previous = null,
+        ?LinkInterface $next = null,
+        ?LinkInterface $last = null,
         $meta = null,
-        string $metaKey = null
+        ?string $metaKey = null
     ): PageInterface
     {
         return new Page($data, $first, $previous, $next, $last, $meta, $metaKey);
@@ -285,12 +286,12 @@ class Factory extends BaseFactory
      * @return QueryParameters
      */
     public function createQueryParameters(
-        array $includePaths = null,
-        array $fieldSets = null,
-        array $sortParameters = null,
-        array $pagingParameters = null,
-        array $filteringParameters = null,
-        array $unrecognizedParams = null
+        ?array $includePaths = null,
+        ?array $fieldSets = null,
+        ?array $sortParameters = null,
+        ?array $pagingParameters = null,
+        ?array $filteringParameters = null,
+        ?array $unrecognizedParams = null
     ) {
         return new QueryParameters(
             $includePaths,
@@ -420,7 +421,7 @@ class Factory extends BaseFactory
      * @param array $rules
      * @param array $messages
      * @param array $customAttributes
-     * @param \Closure|null $callback
+     * @param Closure|null $callback
      *       a closure for creating an error, that will be bound to the error translator.
      * @return ValidatorInterface
      */
@@ -429,7 +430,7 @@ class Factory extends BaseFactory
         array $rules,
         array $messages = [],
         array $customAttributes = [],
-        \Closure $callback = null
+        ?Closure $callback = null
     ): ValidatorInterface
     {
         $translator = $this->createErrorTranslator();

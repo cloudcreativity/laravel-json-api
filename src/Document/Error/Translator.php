@@ -17,6 +17,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Document\Error;
 
+use Closure;
 use CloudCreativity\LaravelJsonApi\Exceptions\ValidationException;
 use CloudCreativity\LaravelJsonApi\LaravelJsonApi;
 use CloudCreativity\LaravelJsonApi\Utils\Str;
@@ -402,7 +403,7 @@ class Translator
      * @param string|null $detail
      * @return ErrorInterface
      */
-    public function resourceCannotBeDeleted(string $detail = null): ErrorInterface
+    public function resourceCannotBeDeleted(?string $detail = null): ErrorInterface
     {
         return new NeomerxError(
             null,
@@ -475,11 +476,11 @@ class Translator
      * Create errors for a failed validator.
      *
      * @param ValidatorContract $validator
-     * @param \Closure|null $closure
+     * @param Closure|null $closure
      *      a closure that is bound to the translator.
      * @return ErrorCollection
      */
-    public function failedValidator(ValidatorContract $validator, \Closure $closure = null): ErrorCollection
+    public function failedValidator(ValidatorContract $validator, ?Closure $closure = null): ErrorCollection
     {
         $failed = $this->doesIncludeFailed() ? $validator->failed() : [];
         $errors = new ErrorCollection();
@@ -513,12 +514,12 @@ class Translator
      * Create a JSON API exception for a failed validator.
      *
      * @param ValidatorContract $validator
-     * @param \Closure|null $closure
+     * @param Closure|null $closure
      * @return JsonApiException
      */
     public function failedValidatorException(
         ValidatorContract $validator,
-        \Closure $closure = null
+        ?Closure $closure = null
     ): JsonApiException
     {
         return new ValidationException(
@@ -529,11 +530,11 @@ class Translator
     /**
      * Create an error by calling the closure with it bound to the error translator.
      *
-     * @param \Closure $closure
+     * @param Closure $closure
      * @param mixed ...$args
      * @return ErrorInterface
      */
-    public function call(\Closure $closure, ...$args): ErrorInterface
+    public function call(Closure $closure, ...$args): ErrorInterface
     {
         return $closure->call($this, ...$args);
     }

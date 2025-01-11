@@ -38,7 +38,7 @@ trait AsyncSchema
      * @param AsynchronousProcess|object|null $resource
      * @return string
      */
-    public function getSelfSubUrl(object $resource = null): string
+    public function getSelfSubUrl(?object $resource = null): string
     {
         if (!$resource) {
             return '/' . $this->getResourceType();

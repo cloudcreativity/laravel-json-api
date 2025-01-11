@@ -51,7 +51,7 @@ trait BroadcastsData
      * @param array|null $fieldsets
      * @return array
      */
-    protected function serializeData($data, $includePaths = null, array $fieldsets = null)
+    protected function serializeData($data, $includePaths = null, ?array $fieldsets = null)
     {
         $params = new QueryParameters($includePaths ? (array) $includePaths : null, $fieldsets);
 

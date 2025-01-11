@@ -116,7 +116,7 @@ abstract class SchemaProvider implements SchemaProviderInterface
     /**
      * @inheritDoc
      */
-    public function getSelfSubUrl(object $resource = null): string
+    public function getSelfSubUrl(?object $resource = null): string
     {
         if (empty($this->selfSubUrl)) {
             $this->selfSubUrl = '/' . $this->getResourceType();
@@ -213,7 +213,7 @@ abstract class SchemaProvider implements SchemaProviderInterface
      * @param bool $treatAsHref
      * @return LinkInterface
      */
-    protected function createLink(string $subHref, array $meta = null, bool $treatAsHref = false): LinkInterface
+    protected function createLink(string $subHref, ?array $meta = null, bool $treatAsHref = false): LinkInterface
     {
         return $this->factory->createLink(!$treatAsHref, $subHref, !empty($meta), $meta);
     }

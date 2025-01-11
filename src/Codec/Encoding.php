@@ -54,7 +54,7 @@ class Encoding
     public static function create(
         $mediaType,
         int $options = 0,
-        string $urlPrefix = null,
+        ?string $urlPrefix = null,
         int $depth = 512
     ): self
     {
@@ -73,7 +73,7 @@ class Encoding
      * @param int $depth
      * @return Encoding
      */
-    public static function jsonApi(int $options = 0, string $urlPrefix = null, int $depth = 512): self
+    public static function jsonApi(int $options = 0, ?string $urlPrefix = null, int $depth = 512): self
     {
         return self::create(
             MediaTypeInterface::JSON_API_MEDIA_TYPE,
@@ -104,7 +104,7 @@ class Encoding
      * @param string|null $urlPrefix
      * @return Encoding
      */
-    public static function fromArray($key, $value, string $urlPrefix = null): self
+    public static function fromArray($key, $value, ?string $urlPrefix = null): self
     {
         if (is_numeric($key)) {
             $key = $value;

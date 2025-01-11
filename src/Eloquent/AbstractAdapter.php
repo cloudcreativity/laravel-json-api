@@ -17,6 +17,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Eloquent;
 
+use Closure;
 use CloudCreativity\LaravelJsonApi\Adapter\AbstractResourceAdapter;
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\HasManyAdapterInterface;
 use CloudCreativity\LaravelJsonApi\Contracts\Adapter\RelationshipAdapterInterface;
@@ -115,7 +116,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter implements Contai
      * @param Model $model
      * @param PagingStrategyInterface|null $paging
      */
-    public function __construct(Model $model, PagingStrategyInterface $paging = null)
+    public function __construct(Model $model, ?PagingStrategyInterface $paging = null)
     {
         $this->model = $model;
         $this->paging = $paging;
@@ -259,11 +260,11 @@ abstract class AbstractAdapter extends AbstractResourceAdapter implements Contai
     /**
      * Add a global scope using a closure.
      *
-     * @param \Closure $scope
+     * @param Closure $scope
      * @param string|null $identifier
      * @return $this
      */
-    public function addClosureScope(\Closure $scope, string $identifier = null): self
+    public function addClosureScope(Closure $scope, ?string $identifier = null): self
     {
         $identifier = $identifier ?: spl_object_hash($scope);
 
@@ -616,20 +617,20 @@ abstract class AbstractAdapter extends AbstractResourceAdapter implements Contai
     }
 
     /**
-     * @param \Closure $factory
+     * @param Closure $factory
      *      a factory that creates a new Eloquent query builder.
      * @return QueriesMany
      */
-    protected function queriesMany(\Closure $factory)
+    protected function queriesMany(Closure $factory)
     {
         return new QueriesMany($factory);
     }
 
     /**
-     * @param \Closure $factory
+     * @param Closure $factory
      * @return QueriesOne
      */
-    protected function queriesOne(\Closure $factory)
+    protected function queriesOne(Closure $factory)
     {
         return new QueriesOne($factory);
     }

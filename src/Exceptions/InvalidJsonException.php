@@ -44,7 +44,7 @@ class InvalidJsonException extends JsonApiException
      * @param Exception|null $previous
      * @return InvalidJsonException
      */
-    public static function create($defaultHttpCode = self::HTTP_CODE_BAD_REQUEST, Exception $previous = null)
+    public static function create($defaultHttpCode = self::HTTP_CODE_BAD_REQUEST, ?Exception $previous = null)
     {
         return new self(json_last_error(), json_last_error_msg(), $defaultHttpCode, $previous);
     }
@@ -61,7 +61,7 @@ class InvalidJsonException extends JsonApiException
         $jsonError = null,
         $jsonErrorMessage = null,
         $defaultHttpCode = self::HTTP_CODE_BAD_REQUEST,
-        Exception $previous = null
+        ?Exception $previous = null
     ) {
         parent::__construct([], $defaultHttpCode, $previous);
 

@@ -54,7 +54,7 @@ abstract class AbstractAllowedRule implements Rule
      *
      * @param array|null $allowed
      */
-    public function __construct(array $allowed = null)
+    public function __construct(?array $allowed = null)
     {
         $this->all = is_null($allowed);
         $this->allowed = collect($allowed)->combine($allowed);

@@ -43,7 +43,7 @@ class EncoderOptions
      * @param string|null $urlPrefix
      * @param int $depth
      */
-    public function __construct(int $options = 0, string $urlPrefix = null, int $depth = 512)
+    public function __construct(int $options = 0, ?string $urlPrefix = null, int $depth = 512)
     {
         $this->options   = $options;
         $this->depth     = $depth;

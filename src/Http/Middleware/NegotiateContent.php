@@ -80,7 +80,7 @@ class NegotiateContent
      * @return mixed
      * @throws HttpException
      */
-    public function handle($request, \Closure $next, string $default = null)
+    public function handle($request, \Closure $next, ?string $default = null)
     {
         $api = $this->container->make(Api::class);
         /** @var HeaderParametersInterface $headers */

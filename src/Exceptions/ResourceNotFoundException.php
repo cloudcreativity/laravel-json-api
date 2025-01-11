@@ -17,6 +17,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Exceptions;
 
+use Exception;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class ResourceNotFoundException extends NotFoundHttpException
@@ -37,14 +38,14 @@ class ResourceNotFoundException extends NotFoundHttpException
      *
      * @param string $type
      * @param string $id
-     * @param \Exception|null $previous
+     * @param Exception|null $previous
      * @param int $code
      * @param array $headers
      */
     public function __construct(
         string $type,
         string $id,
-        \Exception $previous = null,
+        ?Exception $previous = null,
         int $code = 0,
         array $headers = []
     ) {
