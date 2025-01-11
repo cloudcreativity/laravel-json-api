@@ -123,6 +123,10 @@ class Schema extends BaseSchema
             $links[LinkInterface::SELF] = $this->getSelfLink($resource);
         }
 
+        if ($self === false) {
+            unset($links[LinkInterface::SELF]);
+        }
+
         return $links;
     }
 
