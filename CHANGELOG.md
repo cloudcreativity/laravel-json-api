@@ -5,9 +5,16 @@ All notable changes to this project will be documented in this file. This projec
 
 ## Unreleased
 
+## [7.1.0] - 2025-01-11
+
 ### Changed
 
 - Removed PHP 8.4 deprecation notices.
+
+### Fixed
+
+- [#648](https://github.com/cloudcreativity/laravel-json-api/pull/648) Ensure self link is removed when it is returned
+  as `false`.
 
 ## [7.0.0] - 2024-03-14
 
@@ -43,7 +50,7 @@ All notable changes to this project will be documented in this file. This projec
 
 - **BREAKING** Upgraded the `neomerx/json-api` dependency from `v1` to `v5` of our fork
   `laravel-json-api/neomerx-json-api`. Refer to the [Upgrade Guide](./docs/upgrade.md) for details of the required
-  changes.  
+  changes.
 
 ## [4.1.0] - 2023-01-21
 
