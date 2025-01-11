@@ -379,7 +379,7 @@ class Container implements ContainerInterface
      * @param ResourceAdapterInterface|null $adapter
      * @return void
      */
-    protected function setCreatedAdapter($resourceType, ResourceAdapterInterface $adapter = null)
+    protected function setCreatedAdapter($resourceType, ?ResourceAdapterInterface $adapter = null)
     {
         $this->createdAdapters[$resourceType] = $adapter;
     }
@@ -467,7 +467,7 @@ class Container implements ContainerInterface
      * @param AuthorizerInterface|null $authorizer
      * @return void
      */
-    protected function setCreatedAuthorizer($resourceType, AuthorizerInterface $authorizer = null)
+    protected function setCreatedAuthorizer($resourceType, ?AuthorizerInterface $authorizer = null)
     {
         $this->createdAuthorizers[$resourceType] = $authorizer;
     }

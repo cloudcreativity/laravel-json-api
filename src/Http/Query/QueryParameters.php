@@ -93,12 +93,12 @@ class QueryParameters implements QueryParametersInterface, Arrayable
      * @param array|null $unrecognizedParams
      */
     public function __construct(
-        array $includePaths = null,
-        array $fieldSets = null,
-        array $sortParameters = null,
-        array $pagingParameters = null,
-        array $filteringParameters = null,
-        array $unrecognizedParams = null
+        ?array $includePaths = null,
+        ?array $fieldSets = null,
+        ?array $sortParameters = null,
+        ?array $pagingParameters = null,
+        ?array $filteringParameters = null,
+        ?array $unrecognizedParams = null
     ) {
         $this->fieldSets = $fieldSets;
         $this->includePaths = $includePaths;

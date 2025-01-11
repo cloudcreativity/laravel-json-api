@@ -134,12 +134,12 @@ class Error implements Arrayable, \JsonSerializable
     public function __construct(
         $id = null,
         $status = null,
-        string $code = null,
-        string $title = null,
-        string $detail = null,
-        iterable $source = null,
-        iterable $links = null,
-        iterable $meta = null
+        ?string $code = null,
+        ?string $title = null,
+        ?string $detail = null,
+        ?iterable $source = null,
+        ?iterable $links = null,
+        ?iterable $meta = null
     )
     {
         $this->setId($id);

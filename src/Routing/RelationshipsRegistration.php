@@ -55,7 +55,7 @@ final class RelationshipsRegistration implements Arrayable
      * @param string|null $inverse
      * @return RelationshipRegistration
      */
-    public function hasOne(string $field, string $inverse = null): RelationshipRegistration
+    public function hasOne(string $field, ?string $inverse = null): RelationshipRegistration
     {
         $rel = $this->hasOne[$field] ?? new RelationshipRegistration();
 
@@ -71,7 +71,7 @@ final class RelationshipsRegistration implements Arrayable
      * @param string|null $inverse
      * @return RelationshipRegistration
      */
-    public function hasMany(string $field, string $inverse = null): RelationshipRegistration
+    public function hasMany(string $field, ?string $inverse = null): RelationshipRegistration
     {
         $rel = $this->hasMany[$field] ?? new RelationshipRegistration();
 

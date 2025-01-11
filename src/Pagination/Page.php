@@ -76,12 +76,12 @@ class Page implements PageInterface
      */
     public function __construct(
         $data,
-        LinkInterface $first = null,
-        LinkInterface $previous = null,
-        LinkInterface $next = null,
-        LinkInterface $last = null,
+        ?LinkInterface $first = null,
+        ?LinkInterface $previous = null,
+        ?LinkInterface $next = null,
+        ?LinkInterface $last = null,
         $meta = null,
-        string $metaKey = null
+        ?string $metaKey = null
     ) {
         $this->data = $data;
         $this->first = $first;

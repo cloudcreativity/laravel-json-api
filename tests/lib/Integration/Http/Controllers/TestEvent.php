@@ -58,7 +58,7 @@ class TestEvent
     public function __construct(
         $hook,
         $record,
-        ValidatedRequest $request = null,
+        ?ValidatedRequest $request = null,
         $related = null
     ) {
         $this->hook = $hook;

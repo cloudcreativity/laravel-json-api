@@ -17,6 +17,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Validation;
 
+use Closure;
 use CloudCreativity\LaravelJsonApi\Contracts\Validation\ValidatorInterface;
 use CloudCreativity\LaravelJsonApi\Document\Error\Translator as ErrorTranslator;
 use Illuminate\Contracts\Validation\Validator as ValidatorContract;
@@ -41,7 +42,7 @@ class Validator implements ValidatorInterface
     protected $translator;
 
     /**
-     * @var \Closure|null
+     * @var Closure|null
      */
     protected $callback;
 
@@ -50,12 +51,12 @@ class Validator implements ValidatorInterface
      *
      * @param ValidatorContract $validator
      * @param ErrorTranslator $translator
-     * @param \Closure|null $callback
+     * @param Closure|null $callback
      */
     public function __construct(
         ValidatorContract $validator,
         ErrorTranslator $translator,
-        \Closure $callback = null
+        ?Closure $callback = null
     ) {
         $this->validator = $validator;
         $this->translator = $translator;

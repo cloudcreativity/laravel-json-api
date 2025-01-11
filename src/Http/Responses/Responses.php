@@ -262,7 +262,7 @@ class Responses extends BaseResponses
     public function getContentResponseBackwardsCompat(
         $data,
         int $statusCode = self::HTTP_OK,
-        array $links = null,
+        ?array $links = null,
         $meta = null,
         array $headers = []
     ): Response
@@ -423,7 +423,7 @@ class Responses extends BaseResponses
     public function getIdentifiersResponseBackwardsCompat(
         $data,
         int $statusCode = self::HTTP_OK,
-        array $links = null,
+        ?array $links = null,
         $meta = null,
         array $headers = []
     ): Response {
@@ -444,7 +444,7 @@ class Responses extends BaseResponses
      * @param array $headers
      * @return Response
      */
-    public function error($error, int $defaultStatusCode = null, array $headers = []): Response
+    public function error($error, ?int $defaultStatusCode = null, array $headers = []): Response
     {
         if (!$error instanceof ErrorInterface) {
             $error = $this->factory->createDocumentMapper()->createError(
@@ -468,7 +468,7 @@ class Responses extends BaseResponses
      *
      * @return Response
      */
-    public function errors(iterable $errors, int $defaultStatusCode = null, array $headers = []): Response
+    public function errors(iterable $errors, ?int $defaultStatusCode = null, array $headers = []): Response
     {
         $errors = $this->factory->createDocumentMapper()->createErrors($errors);
         $statusCode = Helpers::httpErrorStatus($errors, $defaultStatusCode);

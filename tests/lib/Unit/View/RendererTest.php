@@ -122,7 +122,7 @@ class RendererTest extends TestCase
      * @param QueryParameters|null $parameters
      * @return object
      */
-    private function withEncoder($name = null, $options = 0, $depth = 512, QueryParameters $parameters = null)
+    private function withEncoder($name = null, $options = 0, $depth = 512, ?QueryParameters $parameters = null)
     {
         $post = (object) ['type' => 'posts', 'id' => '1'];
 

@@ -46,7 +46,7 @@ class JsonApiException extends Exception implements HttpExceptionInterface, Resp
      * @param Throwable|null $previous
      * @return static
      */
-    public static function make($errors, Throwable $previous = null): self
+    public static function make($errors, ?Throwable $previous = null): self
     {
         return new self($errors, $previous);
     }
@@ -58,7 +58,7 @@ class JsonApiException extends Exception implements HttpExceptionInterface, Resp
      * @param Throwable|null $previous
      * @param array $headers
      */
-    public function __construct($errors, Throwable $previous = null, array $headers = [])
+    public function __construct($errors, ?Throwable $previous = null, array $headers = [])
     {
         parent::__construct('JSON API error', 0, $previous);
         $this->errors = Errors::cast($errors);

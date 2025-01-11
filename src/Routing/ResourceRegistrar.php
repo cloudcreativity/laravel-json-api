@@ -17,6 +17,7 @@
 
 namespace CloudCreativity\LaravelJsonApi\Routing;
 
+use Closure;
 use Illuminate\Contracts\Routing\Registrar;
 use Illuminate\Routing\Route;
 use Illuminate\Support\Str;
@@ -50,7 +51,7 @@ final class ResourceRegistrar
     use RegistersResources;
 
     /**
-     * @var \Closure|null
+     * @var Closure|null
      */
     private $group;
 
@@ -60,9 +61,9 @@ final class ResourceRegistrar
      * @param Registrar $router
      * @param string $resourceType
      * @param array $options
-     * @param \Closure|null $group
+     * @param Closure|null $group
      */
-    public function __construct(Registrar $router, string $resourceType, array $options = [], \Closure $group = null)
+    public function __construct(Registrar $router, string $resourceType, array $options = [], ?Closure $group = null)
     {
         $this->router = $router;
         $this->resourceType = $resourceType;

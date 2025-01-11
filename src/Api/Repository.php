@@ -72,7 +72,7 @@ class Repository
      *      route parameters, if needed.
      * @return Api
      */
-    public function createApi(string $apiName, string $host = null, array $parameters = [])
+    public function createApi(string $apiName, ?string $host = null, array $parameters = [])
     {
         $config = $this->configFor($apiName);
         $config = $this->normalize($config, $host);

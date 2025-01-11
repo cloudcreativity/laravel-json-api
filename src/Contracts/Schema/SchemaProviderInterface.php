@@ -78,7 +78,7 @@ interface SchemaProviderInterface
      * @param object|null $resource
      * @return string
      */
-    public function getSelfSubUrl(object $resource = null): string;
+    public function getSelfSubUrl(?object $resource = null): string;
 
     /**
      * Get the resource self sub link.

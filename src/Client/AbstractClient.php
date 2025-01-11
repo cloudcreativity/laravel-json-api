@@ -72,7 +72,7 @@ abstract class AbstractClient implements ClientInterface
     abstract protected function request(
         $method,
         $uri,
-        array $payload = null,
+        ?array $payload = null,
         array $parameters = []
     );
 

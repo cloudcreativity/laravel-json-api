@@ -73,7 +73,7 @@ final class JsonApiRegistrar
      * @param Closure|null $routes
      * @return ApiRegistration
      */
-    public function api(string $apiName, $options = [], Closure $routes = null): ApiRegistration
+    public function api(string $apiName, $options = [], ?Closure $routes = null): ApiRegistration
     {
         if ($options instanceof Closure) {
             $routes = $options;

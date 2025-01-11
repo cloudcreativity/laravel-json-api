@@ -83,7 +83,7 @@ class ClientDispatch extends PendingDispatch
      * @param string|null $id
      * @return ClientDispatch
      */
-    public function setResource(string $type, string $id = null): ClientDispatch
+    public function setResource(string $type, ?string $id = null): ClientDispatch
     {
         $this->resourceType = $type;
         $this->resourceId = $id;

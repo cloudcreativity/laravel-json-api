@@ -83,7 +83,7 @@ class SchemaFields
      * @param iterable|null $paths
      * @param iterable|null $fieldSets
      */
-    public function __construct(iterable $paths = null, iterable $fieldSets = null)
+    public function __construct(?iterable $paths = null, ?iterable $fieldSets = null)
     {
         if (null !== $paths) {
             foreach ($paths as $path) {

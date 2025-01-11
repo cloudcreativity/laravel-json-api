@@ -47,7 +47,7 @@ class EncodingList implements IteratorAggregate, Countable
      * @param string|null $urlPrefix
      * @return EncodingList
      */
-    public static function fromArray(iterable $config, string $urlPrefix = null): self
+    public static function fromArray(iterable $config, ?string $urlPrefix = null): self
     {
         $values = Collection::make($config)
             ->map(fn($value, $key) => Encoding::fromArray($key, $value, $urlPrefix))

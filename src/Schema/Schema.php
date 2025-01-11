@@ -47,7 +47,7 @@ class Schema extends BaseSchema
     public function __construct(
         FactoryInterface $factory,
         SchemaProviderInterface $provider,
-        SchemaFields $fields = null
+        ?SchemaFields $fields = null,
     ) {
         parent::__construct($factory);
         $this->provider = $provider;

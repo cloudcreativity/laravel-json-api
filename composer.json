@@ -24,7 +24,7 @@
     "require": {
         "php": "^8.2",
         "ext-json": "*",
-        "laravel-json-api/neomerx-json-api": "^5.0.2",
+        "laravel-json-api/neomerx-json-api": "^5.0.3",
         "laravel/framework": "^11.0",
         "nyholm/psr7": "^1.8",
         "ramsey/uuid": "^4.0",
