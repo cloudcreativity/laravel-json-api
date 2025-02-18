@@ -2,20 +2,23 @@ name: Tests
 
 on:
   push:
-    branches: [ main, develop ]
+    branches:
+      - main
+      - develop
   pull_request:
-    branches: [ main, develop ]
+    branches:
+      - main
+      - develop
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     strategy:
       fail-fast: true
       matrix:
         php: [8.2, 8.3, 8.4]
-        laravel: [11]
+        laravel: [11, '12']
 
     steps:
       - name: Checkout Code
