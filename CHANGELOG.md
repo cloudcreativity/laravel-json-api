@@ -5,6 +5,8 @@ All notable changes to this project will be documented in this file. This projec
 
 ## Unreleased
 
+## [7.2.0] - 2025-03-21
+
 ### Added
 
 - Package now supports Laravel 12.
