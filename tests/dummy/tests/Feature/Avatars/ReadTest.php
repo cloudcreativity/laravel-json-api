@@ -75,9 +75,9 @@ class ReadTest extends TestCase
             ->accept('image/*')
             ->get(url('/api/v1/avatars', $avatar));
 
-        $response
-            ->assertStatus(404)
-            ->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+        $response->assertStatus(404);
+
+        $this->assertSame('text/html; charset=utf-8', strtolower($response->headers->get('Content-Type')));
     }
 
     /**

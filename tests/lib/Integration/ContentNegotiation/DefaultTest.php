@@ -108,9 +108,9 @@ class DefaultTest extends TestCase
      */
     public function testAcceptable()
     {
-        $this->get('/api/v1/posts', ['Accept' => 'text/plain'])
-            ->assertStatus(200)
-            ->assertHeader('Content-Type', 'text/plain; charset=UTF-8');
+        $response = $this->get('/api/v1/posts', ['Accept' => 'text/plain']);
+        $response->assertStatus(200);
+        $this->assertSame('text/plain; charset=utf-8', strtolower($response->headers->get('Content-Type')));
     }
 
     /**
