@@ -81,7 +81,7 @@ class Link implements Arrayable, \JsonSerializable
      * @param string $href
      * @param array|null $meta
      */
-    public function __construct(string $href, array $meta = null)
+    public function __construct(string $href, ?array $meta = null)
     {
         $this->setHref($href);
         $this->setMeta($meta);
@@ -132,7 +132,7 @@ class Link implements Arrayable, \JsonSerializable
     /**
      * @inheritDoc
      */
-    public function jsonSerialize()
+    public function jsonSerialize(): mixed
     {
         if ($this->hasMeta()) {
             return $this->toArray();
