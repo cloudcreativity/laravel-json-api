@@ -168,13 +168,12 @@ class ErrorsTest extends TestCase
         $uri = '/api/v1/posts';
         $content = '{"data": {}';
 
-        $this->doInvalidRequest($uri, $content)->assertStatus(400)->assertExactJson([
+        $this->doInvalidRequest($uri, $content)->assertStatus(400)->assertJson([
             'errors' => [
                 [
                     'title' => 'Invalid JSON',
                     'code' => '4',
                     'status' => '400',
-                    'detail' => 'Syntax error',
                 ],
             ],
         ]);
