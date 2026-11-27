@@ -88,7 +88,7 @@ abstract class TestCase extends BaseTestCase
         if ($json) {
             $body = json_encode($json);
             $headers['Content-Type'] = 'application/vnd.api+json';
-            $headers['Content-Length'] = mb_strlen($body, '8bit');
+            $headers['Content-Length'] = (string) mb_strlen($body, '8bit');
         } else {
             $body = null;
         }
