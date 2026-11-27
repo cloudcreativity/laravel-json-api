@@ -266,7 +266,7 @@ abstract class AbstractAdapter extends AbstractResourceAdapter implements Contai
      */
     public function addClosureScope(Closure $scope, ?string $identifier = null): self
     {
-        $identifier = $identifier ?: spl_object_hash($scope);
+        $identifier = $identifier ?: strval(spl_object_id($scope));
 
         $this->scopes[$identifier] = $scope;
 
