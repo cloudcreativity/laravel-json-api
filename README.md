@@ -78,15 +78,19 @@ Join the Laravel JSON:API community on
 ## Laravel Versions
 
 | Laravel | This Package |
-| --- | --- |
-| `^9.0` | `^4.0` |
-| `^8.0` | `^3.0|^4.0` |
-| `^7.0` | `^2.0` |
-| `^6.0` | `^1.7` |
-| `5.8.*` | `^1.7` |
-| `5.7.*` | `^1.0` |
-| `5.6.*` | `^1.0` |
-| `5.5.*` | `^1.0` |
+|---------|--------------|
+| `^13.0` | `^7.3`       |
+| `^12.0` | `^7.2`       |
+| `^11.0` | `^7.0`       |
+| `^10.0` | `^6.0`       |
+| `^9.0`  | `^5.0`       |
+| `^8.0`  | `^3.0`       |
+| `^7.0`  | `^2.0`       |
+| `^6.0`  | `^1.7`       |
+| `5.8.*` | `^1.7`       |
+| `5.7.*` | `^1.0`       |
+| `5.6.*` | `^1.0`       |
+| `5.5.*` | `^1.0`       |
 
 Make sure you consult the [Upgrade Guide](http://laravel-json-api.readthedocs.io/en/latest/upgrade/)
 when upgrading between major or pre-release versions.

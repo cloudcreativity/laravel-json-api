@@ -5,9 +5,15 @@ All notable changes to this project will be documented in this file. This projec
 
 ## Unreleased
 
+## [7.4.0] - 2026-11-27
+
 ### Changed
 
 - Dropped support for Laravel 11, which is end-of-life and no longer supported for security fixes.
+
+### Fixed
+
+- [#657](https://github.com/cloudcreativity/laravel-json-api/pull/657) Remove PHP deprecations and fix Guzzle in tests.
 
 ## [7.3.0] - 2026-03-30
 
